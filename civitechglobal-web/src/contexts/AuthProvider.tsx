@@ -1,0 +1,103 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { api, setAccessToken } from '@/config/api';
+import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload, UpdateProfilePayload } from '@/types/auth';
+
+interface AuthContextValue {
+  user: AuthUser | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (payload: LoginPayload) => Promise<AuthUser>;
+  register: (payload: RegisterPayload) => Promise<AuthUser>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // On mount: silently try to refresh the access token from the httpOnly cookie,
+  // then fetch the current user. Any failure just means "not logged in".
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootstrap() {
+      try {
+        const refreshRes = await api.post<{ accessToken: string }>('/auth/refresh');
+        setAccessToken(refreshRes.data.accessToken);
+        const meRes = await api.get<{ user: AuthUser }>('/auth/me');
+        if (!cancelled) setUser(meRes.data.user);
+      } catch {
+        setAccessToken(null);
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const login = useCallback(async (payload: LoginPayload) => {
+    const res = await api.post<AuthResponse>('/auth/login', payload);
+    setAccessToken(res.data.accessToken);
+    setUser(res.data.user);
+    return res.data.user;
+  }, []);
+
+  const register = useCallback(async (payload: RegisterPayload) => {
+    const res = await api.post<AuthResponse>('/auth/register', payload);
+    setAccessToken(res.data.accessToken);
+    setUser(res.data.user);
+    return res.data.user;
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    const res = await api.get<{ user: AuthUser }>('/auth/me');
+    setUser(res.data.user);
+  }, []);
+
+  // NOTE: PUT /api/auth/me is assumed — see ProfilePage for the backend follow-up note.
+  const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
+    const res = await api.put<{ user: AuthUser }>('/auth/me', payload);
+    setUser(res.data.user);
+    return res.data.user;
+  }, []);
+
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: Boolean(user),
+      login,
+      register,
+      logout,
+      refreshUser,
+      updateProfile,
+    }),
+    [user, isLoading, login, register, logout, refreshUser, updateProfile]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
+}

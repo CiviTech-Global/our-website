@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+/// Named bundle of permission strings that can be assigned to a User in
+/// addition to (or instead of) ad-hoc permissions on the user itself.
+model AdminRole {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  permissions String[]  @default([])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  users User[]
+
+  @@index([deletedAt])
+  @@map("admin_roles")
+}
+
+model User {
+  id        String  @id @default(cuid())
+  // NOTE: email is stored in plaintext for this pass. `emailHash` is a
+  // deterministic (non-reversible) lookup key so uniqueness/queries never
+  // need to scan-and-compare plaintext. If field-level encryption at rest is
+  // added later, `email` becomes ciphertext and every read path already goes
+  // through emailHash, so no query code needs to change.
+  email     String
+  emailHash String  @unique @map("email_hash")
+
+  username String? @unique
+
+  password  String
+  firstName String
+  lastName  String
+
+  role        Role     @default(USER)
+  permissions String[] @default([])
+
+  phone String?
+
+  adminRoleId String?
+  adminRole   AdminRole? @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+
+  // Bumped to invalidate every outstanding access/refresh token for this user
+  // (e.g. "log out everywhere", password reset, account compromise).
+  tokenVersion Int @default(0)
+
+  emailVerified Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  refreshTokens  RefreshToken[]
+  assignedLeads  Lead[]         @relation("LeadAssignee")
+
+  @@index([role])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+/// One row per issued refresh token. We never store the raw JWT — only a
+/// SHA-256 hash of its `jti` claim — so a leaked database dump can't be
+/// replayed as a valid refresh token.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model InsuranceCategory {
+  id    String  @id @default(cuid())
+  title String  @unique
+  emoji String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subcategories InsuranceSubcategory[]
+  leads         Lead[]
+
+  @@map("insurance_categories")
+}
+
+model InsuranceSubcategory {
+  id         String @id @default(cuid())
+  categoryId String @map("category_id")
+  title      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category InsuranceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  leads    Lead[]
+
+  @@unique([categoryId, title])
+  @@index([categoryId])
+  @@map("insurance_subcategories")
+}
+
+/// A lead collected by the Telegram bot's conversational flow.
+model Lead {
+  id String @id @default(cuid())
+
+  telegramUserId    String  @map("telegram_user_id")
+  telegramUsername  String? @map("telegram_username")
+  telegramFirstName String? @map("telegram_first_name")
+
+  categoryId    String @map("category_id")
+  subcategoryId String @map("subcategory_id")
+
+  fullName             String  @map("full_name")
+  phoneNumber          String  @map("phone_number")
+  // Deterministic hash of the normalized phone number, for fast lookup/dedupe
+  // without needing to decrypt every row (see note on User.emailHash).
+  phoneNumberHash       String? @map("phone_number_hash")
+  city                  String
+  preferredContactTime  String  @map("preferred_contact_time")
+  notes                 String?
+
+  status LeadStatus @default(NEW)
+
+  // Row-level ownership: null means the lead sits in the unassigned pool.
+  // ADMIN principals only see/act on leads assigned to them or unassigned;
+  // SUPER_ADMIN sees/acts on all leads regardless of this field.
+  assignedToId String? @map("assigned_to_id")
+  assignedTo   User?   @relation("LeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category    InsuranceCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory InsuranceSubcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([phoneNumberHash])
+  @@index([assignedToId])
+  @@map("leads")
+}

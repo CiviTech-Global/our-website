@@ -1,0 +1,22 @@
+{
+  "name": "civitechglobal-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CiviTech Global monorepo root",
+  "scripts": {
+    "prepare": "husky",
+    "dev:server": "cd civitechglobal-server && npm run dev",
+    "dev:bot": "cd civitechglobal-server && npm run dev:bot",
+    "dev:web": "cd civitechglobal-web && npm run dev",
+    "lint:server": "cd civitechglobal-server && npm run lint",
+    "lint:web": "cd civitechglobal-web && npm run lint",
+    "test:server": "cd civitechglobal-server && npm run test",
+    "test:web": "cd civitechglobal-web && npm run test",
+    "build:server": "cd civitechglobal-server && npm run build",
+    "build:web": "cd civitechglobal-web && npm run build"
+  },
+  "devDependencies": {
+    "husky": "^9.1.0",
+    "lint-staged": "^15.2.0"
+  }
+}

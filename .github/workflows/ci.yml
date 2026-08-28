@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  server:
+    name: Server (audit, lint, typecheck, test, build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: civitechglobal-server/package-lock.json
+
+      - name: Install server dependencies
+        working-directory: civitechglobal-server
+        run: npm ci
+
+      - name: Audit dependencies
+        working-directory: civitechglobal-server
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint:server
+
+      - name: Typecheck
+        working-directory: civitechglobal-server
+        run: npx tsc -p tsconfig.json --noEmit
+
+      - name: Test
+        run: npm run test:server
+
+      - name: Build
+        run: npm run build:server
+
+  web:
+    name: Web (audit, lint, typecheck, test, build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: civitechglobal-web/package-lock.json
+
+      - name: Install web dependencies
+        working-directory: civitechglobal-web
+        run: npm ci
+
+      - name: Audit dependencies
+        working-directory: civitechglobal-web
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint:web
+
+      - name: Typecheck
+        working-directory: civitechglobal-web
+        run: npx tsc -b --noEmit
+
+      - name: Test
+        run: npm run test:web
+
+      - name: Build
+        run: npm run build:web
+
+  docker:
+    name: Docker (build + scan${{ github.ref == 'refs/heads/main' && ' + push' || '' }})
+    needs: [server, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: api
+            context: ./civitechglobal-server
+            dockerfile: Dockerfile
+            image: civitechglobal-api
+          - name: bot
+            context: ./civitechglobal-server
+            dockerfile: Dockerfile.bot
+            image: civitechglobal-bot
+          - name: web
+            context: ./civitechglobal-web
+            dockerfile: Dockerfile
+            image: civitechglobal-web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (${{ matrix.name }})
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
+          push: false
+          load: true
+          tags: ${{ matrix.image }}:ci
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ matrix.image }}:ci
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ github.sha }}

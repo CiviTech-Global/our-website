@@ -1,0 +1,38 @@
+# --- Build stage ---
+FROM node:22-alpine AS build
+WORKDIR /app
+
+COPY package*.json ./
+COPY prisma ./prisma
+RUN npm install
+
+COPY tsconfig.json ./
+COPY src ./src
+RUN npx prisma generate
+RUN npm run build
+
+# --- Production dependencies stage ---
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma
+RUN npm install --omit=dev
+RUN npx prisma generate
+
+# --- Runtime stage ---
+FROM node:22-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+RUN addgroup -S app && adduser -S app -G app
+
+COPY --from=deps --chown=app:app /app/node_modules ./node_modules
+COPY --from=deps --chown=app:app /app/prisma ./prisma
+COPY --from=build --chown=app:app /app/dist ./dist
+COPY --chown=app:app package*.json ./
+
+USER app
+
+EXPOSE 5000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/health/ready || exit 1
+CMD ["node", "dist/index.js"]

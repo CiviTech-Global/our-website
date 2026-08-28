@@ -1,0 +1,107 @@
+{
+  "project": {
+    "name": "CiviTech Global Platform",
+    "description": "Persian-first civic technology platform with an insurance lead generation Telegram bot, an Express/Fastify API, and a React 19 admin/dashboard frontend.",
+    "repository_root": "C:\\Workspace\\civitechglobal\\civitechglobalwebapplication",
+    "locale": "fa-IR",
+    "primary_language": "Persian (Farsi)",
+    "rtl": true
+  },
+  "services": {
+    "api": {
+      "path": "civitechglobal-server",
+      "framework": "Express.js 5",
+      "port": 5000,
+      "language": "TypeScript 5.8",
+      "module_system": "ESM",
+      "runtime": "Node.js",
+      "entry": "src/index.ts",
+      "build": "tsc",
+      "test": "vitest"
+    },
+    "bot": {
+      "path": "civitechglobal-server/src/bot",
+      "framework": "Fastify 5 + grammY 1.44",
+      "port": 4000,
+      "entry": "src/bot/index.ts",
+      "conversation_library": "@grammyjs/conversations",
+      "flow": "/start → Category → Subcategory → Full Name → Phone → City → Contact Time → Notes → Confirm → Lead Created"
+    },
+    "web": {
+      "path": "civitechglobal-web",
+      "framework": "React 19 + Vite 8",
+      "port": 5173,
+      "language": "TypeScript 6",
+      "module_system": "ESM",
+      "styling": "Tailwind CSS 4",
+      "fonts": "Vazir (Persian)",
+      "state": "React Query / React Context",
+      "forms": "React Hook Form + Zod",
+      "i18n": "en.ts / fa.ts",
+      "router": "React Router 7"
+    },
+    "database": {
+      "engine": "PostgreSQL",
+      "orm": "Prisma 6.9",
+      "schema": "civitechglobal-server/prisma/schema.prisma",
+      "migrations": "civitechglobal-server/prisma/migrations"
+    }
+  },
+  "domain_model": {
+    "core_entities": [
+      "User",
+      "AdminRole",
+      "RefreshToken",
+      "InsuranceCategory",
+      "InsuranceSubcategory",
+      "Lead",
+      "Product",
+      "Service",
+      "Order",
+      "OrderItem",
+      "Opportunity",
+      "OpportunityApplication",
+      "Ticket",
+      "TicketMessage",
+      "SiteContent"
+    ],
+    "primary_flow": "Telegram bot captures insurance leads (category, subcategory, contact info) which admins manage via /admin/leads in the React web app.",
+    "user_roles": ["USER", "ADMIN", "SUPER_ADMIN"]
+  },
+  "engineering_conventions": {
+    "validation": "Zod schemas in src/validators/*.schema.ts",
+    "controllers": "Express controllers in src/controllers",
+    "services": "Business logic in src/services",
+    "routes": "Route definitions in src/routes",
+    "repositories": "Prisma repository pattern in src/database/prisma/repositories",
+    "middleware": "authenticate, authorize, requirePermission, validate, rateLimit, errorHandler",
+    "frontend_components": "components/ui, components/layout, components/three, pages/admin, pages/dashboard, pages/public",
+    "api_client": "src/config/api.ts using axios",
+    "utils": "src/lib/utils.ts (clsx + tailwind-merge)"
+  },
+  "quality_gates": {
+    "lint": "ESLint (server + web)",
+    "format": "Prettier",
+    "type_check": "tsc --noEmit",
+    "tests": "Vitest",
+    "pre_commit": "husky + lint-staged",
+    "docker": "docker-compose.yml orchestrates API, bot, web, Postgres"
+  },
+  "critical_rules": [
+    "All user input must be validated with Zod before reaching controllers or services.",
+    "All database changes require Prisma migrations and seed updates when applicable.",
+    "All Persian-facing UI must support RTL, Vazir font, and localized copy from i18n/fa.ts.",
+    "Telegram bot copy and keyboards must be Persian-first and use persian-digits utilities.",
+    "Authentication uses JWT access tokens + refresh tokens with token versioning and soft-delete aware lookups.",
+    "PII (phone numbers, names, Telegram IDs) must be handled with least-privilege and never logged in plain text.",
+    "Every code change must pass lint, type-check, and relevant tests before being marked complete."
+  ],
+  "roadmap_themes": [
+    "Lead lifecycle automation and notifications",
+    "Admin analytics dashboard and conversion tracking",
+    "Mobile-first public experience improvements",
+    "Multi-insurance-provider integrations",
+    "Advanced RBAC and audit logging",
+    "Performance optimization and observability"
+  ]
+}

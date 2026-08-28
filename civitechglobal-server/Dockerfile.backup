@@ -1,0 +1,12 @@
+# Scheduled Postgres backup sidecar. Uses the postgres:16-alpine image
+# directly so `pg_dump` always matches the server's major version (see
+# scripts/backup-postgres.sh header comment).
+FROM postgres:16-alpine
+
+RUN apk add --no-cache bash
+
+WORKDIR /app
+COPY scripts ./scripts
+RUN chmod +x scripts/backup-postgres.sh scripts/backup-loop.sh
+
+ENTRYPOINT ["bash", "scripts/backup-loop.sh"]
