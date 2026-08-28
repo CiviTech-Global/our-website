@@ -1,5 +1,5 @@
 # --- Build stage ---
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
@@ -12,7 +12,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # --- Production dependencies stage ---
-FROM node:22-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
@@ -20,7 +20,7 @@ RUN npm install --omit=dev
 RUN npx prisma generate
 
 # --- Runtime stage ---
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup -S app && adduser -S app -G app
