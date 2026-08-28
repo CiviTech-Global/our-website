@@ -27,7 +27,7 @@
   "dependencies": {
     "@grammyjs/conversations": "^2.1.1",
     "@grammyjs/storage-redis": "^2.6.0",
-    "@prisma/client": "^6.9.0",
+    "@prisma/client": "^7.9.1",
     "@sentry/node": "^10.70.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
