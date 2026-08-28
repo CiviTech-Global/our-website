@@ -23,7 +23,18 @@ npm run dev:bot      # Telegram bot on :4000
 npm run dev:web      # Web on :5173
 ```
 
-See `guides/telegram-bot-setup-guide.md` (to be added) for Telegram bot token/webhook setup.
+## Guides
+
+Step-by-step documentation lives in [`guides/`](./guides/):
+
+- [`guides/ansible-getting-started.md`](./guides/ansible-getting-started.md) —
+  deploying this stack to a Linux server with Ansible, written for someone who
+  has never used it.
+- [`guides/ansible-semaphore-ui.md`](./guides/ansible-semaphore-ui.md) —
+  putting Semaphore UI in front of that playbook for one-click, scheduled,
+  audited deploys.
+- `guides/telegram-bot-setup-guide.md` — Telegram bot token/webhook setup
+  *(to be added)*.
 
 ## Default admin login
 
