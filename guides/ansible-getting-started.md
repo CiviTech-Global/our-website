@@ -1445,7 +1445,7 @@ To                         Action      From
 
     - name: Wait for the API to answer
       ansible.builtin.uri:
-        url: "http://127.0.0.1:{{ api_port }}/health"
+        url: "http://127.0.0.1:{{ api_port }}/api/health/ready"
         status_code: 200
       retries: 12
       delay: 5
@@ -1586,10 +1586,11 @@ Points worth understanding:
     -a 'chdir=/opt/civitech docker compose exec -T api npm run prisma:seed' -b
   ```
 
-- The health check assumes the API exposes `/health`. **Verify the actual route
-  in `civitechglobal-server/src/` and adjust the path** — if there is no health
-  endpoint, either add one to the API or replace this task with a
-  `docker compose ps` check.
+- The health check hits `/api/health/ready`, which `src/app.ts` defines: it
+  probes Postgres with `SELECT 1` and pings Redis, returning 503 unless both
+  answer. That is exactly the right thing to gate a deploy on — the process
+  being up is not the same as the process being able to serve. There is also
+  `/api/health/live` if you only want a liveness signal.
 - `docker-compose.yml` binds postgres and redis to `127.0.0.1` only, which is
   correct. The `api` (5000), `bot` (4000), and `web` (5173) services publish on
   all interfaces, so put nginx or Caddy in front terminating TLS on 443 rather
