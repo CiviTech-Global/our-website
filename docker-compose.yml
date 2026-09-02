@@ -27,6 +27,25 @@ services:
       timeout: 5s
       retries: 10
 
+  # One-shot migration job. Runs to completion before api and bot start, so a
+  # release can never boot against a schema older than its code. Uses the same
+  # image as the api service (the `prisma` CLI is a production dependency for
+  # exactly this reason — see civitechglobal-server/package.json).
+  #
+  # `migrate deploy`, never `migrate dev`: it applies committed migrations and
+  # never generates, prompts, or resets.
+  migrate:
+    build:
+      context: ./civitechglobal-server
+      dockerfile: Dockerfile
+    entrypoint: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-civitech}:${POSTGRES_PASSWORD:-civitech}@postgres:5432/${POSTGRES_DB:-civitechglobal}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api:
     build:
       context: ./civitechglobal-server
@@ -38,12 +57,17 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-civitech}:${POSTGRES_PASSWORD:-civitech}@postgres:5432/${POSTGRES_DB:-civitechglobal}
       REDIS_URL: redis://redis:6379
     ports:
-      - "5000:5000"
+      # Loopback only. nginx (the web service, or a host nginx in production)
+      # is the single public listener; an API reachable on 0.0.0.0 lets a
+      # caller bypass every header, CSP and edge rate limit that proxy applies.
+      - "127.0.0.1:5000:5000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   bot:
     build:
@@ -56,12 +80,17 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-civitech}:${POSTGRES_PASSWORD:-civitech}@postgres:5432/${POSTGRES_DB:-civitechglobal}
       REDIS_URL: redis://redis:6379
     ports:
-      - "4000:4000"
+      # Loopback only, for the same reason as the api service above. In
+      # webhook mode Telegram reaches the bot through the public proxy, not
+      # through this port.
+      - "127.0.0.1:4000:4000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   web:
     build:
@@ -69,7 +98,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "5173:80"
+      - "127.0.0.1:5173:80"
     depends_on:
       - api
 
@@ -88,8 +117,16 @@ services:
       BACKUP_DIR: /backups
       BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
       BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      # rclone destination for the off-host copy, e.g.
+      # "civitech-backups:civitech". Empty means every dump lives on the same
+      # host — and usually the same disk — as the database it protects, so one
+      # host loss takes the data and all of its backups together. The backup
+      # loop warns on every cycle while this is unset.
+      BACKUP_REMOTE: ${BACKUP_REMOTE:-}
     volumes:
       - postgres_backups:/backups
+      # Mount an rclone config here to enable BACKUP_REMOTE:
+      # - ./rclone.conf:/config/rclone/rclone.conf:ro
     depends_on:
       postgres:
         condition: service_healthy

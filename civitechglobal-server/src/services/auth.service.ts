@@ -1,5 +1,6 @@
 import { sha256Hex } from '../utils/hash.js';
 import { redis } from '../config/redis.js';
+import { logger } from '../config/logger.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
 import { refreshTokenRepository } from '../database/prisma/repositories/refresh-token.repository.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
@@ -196,7 +197,27 @@ export async function refreshTokens(oldRefreshToken: string) {
 
   const storedToken = await refreshTokenRepository.findUnique({ where: { token: tokenHash } });
   if (!storedToken) throw new AppError('Invalid refresh token', 401);
-  if (storedToken.revokedAt) throw new AppError('Refresh token has already been used or revoked', 401);
+
+  if (storedToken.revokedAt) {
+    // REUSE DETECTION. Refresh tokens are rotated single-use: the row is
+    // revoked at the moment its replacement is issued. So a revoked token
+    // being presented again means one of two things — a client raced itself,
+    // or someone is replaying a token they should not have. We cannot tell
+    // which from here, and only one of them is safe to ignore.
+    //
+    // The safe response to both is to assume the whole chain is compromised
+    // and burn it: revoke every outstanding refresh token for this user and
+    // bump tokenVersion, which also invalidates every access token already
+    // issued (see middleware/authenticate.ts). The legitimate user logs in
+    // again; the attacker's stolen token is now worth nothing.
+    logger.warn(
+      { userId: storedToken.userId, event: 'refresh_token_reuse' },
+      'Revoked refresh token replayed — revoking all sessions for this user',
+    );
+    await revokeAllUserRefreshTokens(storedToken.userId);
+    throw new AppError('Refresh token has already been used or revoked', 401);
+  }
+
   if (storedToken.expiresAt < new Date()) throw new AppError('Refresh token expired', 401);
 
   const user = await userRepository.findUnique({ where: { id: payload.userId } });

@@ -54,7 +54,12 @@ const mocks = vi.hoisted(() => {
     }),
     update: vi.fn(async ({ where, data }: any) => {
       const user = usersById.get(where.id);
-      Object.assign(user, data);
+      // Mirror Prisma's atomic-number syntax, e.g. { tokenVersion: { increment: 1 } }.
+      for (const [key, value] of Object.entries<any>(data)) {
+        user[key] = value && typeof value === 'object' && 'increment' in value
+          ? (user[key] ?? 0) + value.increment
+          : value;
+      }
       return user;
     }),
     updateMany: vi.fn(async () => ({ count: 0 })),
@@ -75,7 +80,16 @@ const mocks = vi.hoisted(() => {
       Object.assign(row, data);
       return row;
     }),
-    updateMany: vi.fn(async () => ({ count: 0 })),
+    updateMany: vi.fn(async ({ where, data }: any) => {
+      const matched = refreshTokens.filter(
+        (t) =>
+          (where.userId === undefined || t.userId === where.userId) &&
+          (where.token === undefined || t.token === where.token),
+      );
+      matched.forEach((row) => Object.assign(row, data));
+      return { count: matched.length };
+    }),
+    all: () => refreshTokens,
   };
 
   function reset() {
@@ -103,7 +117,11 @@ vi.mock('../config/env.js', () => ({
   },
 }));
 
-const { register, login } = await import('./auth.service.js');
+vi.mock('../config/logger.js', () => ({
+  logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+const { register, login, refreshTokens: rotateRefreshToken } = await import('./auth.service.js');
 
 const STRONG_PASSWORD = 'Correct-Horse9!';
 
@@ -169,6 +187,47 @@ describe('auth.service', () => {
       await expect(login({ email: 'lockout@example.com', password: STRONG_PASSWORD })).rejects.toThrow(
         'Account locked',
       );
+    });
+  });
+
+  describe('refreshTokens', () => {
+    async function registeredUser(email: string) {
+      return register({ email, password: STRONG_PASSWORD, firstName: 'A', lastName: 'B' });
+    }
+
+    it('rotates the pair and single-uses the old token', async () => {
+      const { refreshToken } = await registeredUser('rotate@example.com');
+
+      const rotated = await rotateRefreshToken(refreshToken);
+
+      expect(rotated.refreshToken).not.toBe(refreshToken);
+      expect(mocks.refreshTokenRepository.all().filter((t: any) => t.revokedAt)).toHaveLength(1);
+    });
+
+    it('revokes every session when a revoked token is replayed', async () => {
+      const { refreshToken } = await registeredUser('replay@example.com');
+      const rotated = await rotateRefreshToken(refreshToken);
+
+      // The attacker replays the token the legitimate client already spent.
+      await expect(rotateRefreshToken(refreshToken)).rejects.toThrow('already been used or revoked');
+
+      // Every outstanding token is dead, including the one the legitimate
+      // client is holding — it has to log in again, and so does the attacker.
+      expect(mocks.refreshTokenRepository.all().every((t: any) => t.revokedAt)).toBe(true);
+      await expect(rotateRefreshToken(rotated.refreshToken)).rejects.toThrow();
+    });
+
+    it('bumps tokenVersion on reuse so outstanding access tokens stop being trusted', async () => {
+      const { user, refreshToken } = await registeredUser('bump@example.com');
+      await rotateRefreshToken(refreshToken);
+
+      await expect(rotateRefreshToken(refreshToken)).rejects.toThrow();
+
+      const after = await mocks.userRepository.findUnique({
+        where: { id: user.id },
+        select: { tokenVersion: true },
+      });
+      expect(after.tokenVersion).toBeGreaterThan(0);
     });
   });
 });

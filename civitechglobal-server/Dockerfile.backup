@@ -3,7 +3,9 @@
 # scripts/backup-postgres.sh header comment).
 FROM postgres:16-alpine
 
-RUN apk add --no-cache bash
+# rclone pushes each dump off the host. A backup stored on the same disk as
+# the database it protects does not survive the event it exists for.
+RUN apk add --no-cache bash rclone
 
 WORKDIR /app
 COPY scripts ./scripts
