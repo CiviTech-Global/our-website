@@ -1,0 +1,119 @@
+---
+# Base system: packages, the unprivileged application user, the firewall,
+# hardened SSH and fail2ban.
+#
+# Order matters at the end: the firewall must allow 22 and the SSH drop-in
+# must be validated BEFORE sshd is reloaded, or a syntax error locks everyone
+# out of a machine that is otherwise fine.
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - git
+      - gnupg
+      - ufw
+      - fail2ban
+      - unattended-upgrades
+      - rsync
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Enable unattended security upgrades
+  # Security patches land without anyone remembering to apply them. This does
+  # not reboot the machine, so a kernel update sits pending until you do.
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: "0644"
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+- name: Create the application group
+  ansible.builtin.group:
+    name: "{{ app_group }}"
+    state: present
+
+- name: Create the application user
+  # Owns {{ app_root }} and the rendered .env. Containers run as their own
+  # non-root users; this account exists so the files on the host are not
+  # owned by root and readable by everyone.
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+# ---------------------------------------------------------------------------
+# Firewall
+# ---------------------------------------------------------------------------
+
+- name: Allow the permitted TCP ports
+  # Runs before the default-deny policy below, so enabling the firewall can
+  # never cut the SSH connection this play is running over.
+  community.general.ufw:
+    rule: allow
+    port: "{{ item | string }}"
+    proto: tcp
+  loop: "{{ firewall_allowed_tcp_ports }}"
+  when: firewall_enabled | bool
+
+- name: Enable the firewall with a default-deny policy
+  # Semaphore (8888), the API (5000), the bot (4000) and the web container
+  # (8080) are deliberately absent from the allow list. They bind to loopback
+  # and are reached through nginx or an SSH tunnel.
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+  when: firewall_enabled | bool
+
+# ---------------------------------------------------------------------------
+# SSH hardening
+# ---------------------------------------------------------------------------
+
+- name: Harden SSH
+  # A drop-in rather than an edit to sshd_config, so a distribution upgrade
+  # replacing that file does not silently revert this.
+  #
+  # If ssh_permit_password_auth is false and your key is not working, this is
+  # the task that locks you out. bootstrap.yml exists to prove the key works
+  # first; run it before this playbook.
+  ansible.builtin.template:
+    src: sshd-civitech.conf.j2
+    dest: /etc/ssh/sshd_config.d/60-civitech.conf
+    mode: "0644"
+    # Validate the WHOLE resulting config, not just this fragment. A drop-in
+    # that is valid alone can still conflict with what is already there.
+    validate: /usr/sbin/sshd -t -f %s
+  when: ssh_hardening_enabled | bool
+  notify: Reload sshd
+
+- name: Apply the SSH configuration now
+  # Flushed here rather than at the end of the play so that if the reload
+  # breaks connectivity, it breaks during provisioning — while you are
+  # watching — and not three tasks into some later run.
+  ansible.builtin.meta: flush_handlers
+
+# ---------------------------------------------------------------------------
+# fail2ban
+# ---------------------------------------------------------------------------
+
+- name: Configure the sshd jail
+  # Installing fail2ban is not the same as running it: the packaged default
+  # enables no jail. This is what makes port 22 survivable, and it is the
+  # compensating control if ssh_permit_password_auth is ever set true.
+  ansible.builtin.template:
+    src: jail-civitech.local.j2
+    dest: /etc/fail2ban/jail.d/civitech.local
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Ensure fail2ban is running and enabled at boot
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: true

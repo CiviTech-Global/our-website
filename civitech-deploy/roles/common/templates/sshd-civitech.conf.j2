@@ -1,0 +1,33 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/common/templates/sshd-civitech.conf.j2.
+# Edits here are overwritten on the next provision.yml run — change
+# group_vars/all/main.yml instead.
+
+# Key-only when ssh_permit_password_auth is false. Port 22 is exposed to the
+# internet and every bot on it will try root; a password is only as strong as
+# the person who chose it, and this one may have been shared over chat.
+PasswordAuthentication {{ 'yes' if ssh_permit_password_auth | bool else 'no' }}
+KbdInteractiveAuthentication {{ 'yes' if ssh_permit_password_auth | bool else 'no' }}
+PubkeyAuthentication yes
+
+{% if not ssh_permit_password_auth | bool %}
+# Root over a key is fine and is how these playbooks connect. Root over a
+# password is the account every scanner on the internet already knows to try.
+PermitRootLogin prohibit-password
+{% else %}
+PermitRootLogin yes
+{% endif %}
+
+# Slows a credential-stuffing run and makes fail2ban's counter meaningful.
+MaxAuthTries {{ ssh_max_auth_tries }}
+MaxSessions 10
+
+# Nothing here needs a display or a tunnel.
+X11Forwarding no
+AllowAgentForwarding no
+PermitEmptyPasswords no
+
+# Drop a client that has gone silent, so a dead laptop does not hold a
+# session open indefinitely.
+ClientAliveInterval 300
+ClientAliveCountMax 2

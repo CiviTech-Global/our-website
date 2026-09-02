@@ -1,0 +1,26 @@
+---
+# Install (or re-install) the nightly backup job, and optionally take a dump
+# right now.
+#
+#   ansible-playbook backup.yml
+#   ansible-playbook backup.yml -e run_now=true
+
+- name: Configure backups for CiviTech
+  hosts: civitech_prod
+  become: true
+
+  roles:
+    - backup
+
+  tasks:
+    - name: Take a backup now
+      ansible.builtin.command:
+        cmd: /usr/local/bin/civitech-backup.sh
+      changed_when: true
+      register: backup_run
+      when: run_now | default(false) | bool
+
+    - name: Show the backup output
+      ansible.builtin.debug:
+        var: backup_run.stdout_lines
+      when: run_now | default(false) | bool

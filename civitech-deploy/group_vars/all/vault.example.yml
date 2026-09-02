@@ -1,0 +1,44 @@
+---
+# cp vault.example.yml vault.yml, replace every value, then encrypt it:
+#
+#   ansible-vault encrypt group_vars/all/vault.yml
+#
+# Generate each secret with:  openssl rand -hex 32
+#
+# deploy.yml asserts that none of these are missing or still REPLACE_ME, and
+# that the two JWT secrets are at least 32 characters and differ from each
+# other — the server's own config/env.ts throws on a short secret at startup,
+# but failing here means it never gets that far.
+
+vault_postgres_password: "REPLACE_ME"
+
+# Must differ from each other. A single secret signing both token types means
+# a stolen 15-minute access token can be presented as a 7-day refresh token.
+vault_jwt_secret: "REPLACE_ME_64_HEX_CHARS"
+vault_jwt_refresh_secret: "REPLACE_ME_A_DIFFERENT_64_HEX_CHARS"
+
+# From @BotFather.
+vault_telegram_bot_token: "REPLACE_ME"
+# Telegram sends this back in X-Telegram-Bot-Api-Secret-Token on every update,
+# which is what stops anyone else POSTing fake updates to the webhook.
+vault_telegram_webhook_secret: "REPLACE_ME"
+
+# Empty leaves Sentry a no-op in both processes — see config/sentry.ts.
+vault_sentry_dsn: ""
+
+# Used once by `prisma/seed.ts`, which only creates a SUPER_ADMIN when none
+# exists. Change the password from the admin UI after the first login.
+vault_seed_admin_email: "admin@civitechglobal.com"
+vault_seed_admin_password: "REPLACE_ME"
+
+# Semaphore's own admin login.
+vault_semaphore_admin_password: "REPLACE_ME"
+
+# GitHub PAT with read:packages, needed only while the GHCR packages are
+# private. Leave empty for public packages.
+vault_ghcr_token: ""
+
+# Health alerts. Both empty means the timer logs to disk and nothing else —
+# a record, not a monitor.
+vault_telegram_alert_bot_token: ""
+vault_telegram_alert_chat_id: ""

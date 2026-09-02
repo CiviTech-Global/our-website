@@ -1,0 +1,157 @@
+---
+# The single public listener: TLS termination, edge rate limiting,
+# compression, and a maintenance page for when the stack is down.
+
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the static directory for the maintenance page
+  ansible.builtin.file:
+    path: /var/www/civitech-static
+    state: directory
+    mode: "0755"
+
+- name: Render the maintenance page
+  # Served on 502/503/504. Without it a visitor sees a bare nginx error during
+  # a deploy or an outage, which reads as "the company is gone" rather than
+  # "back shortly".
+  ansible.builtin.template:
+    src: maintenance.html.j2
+    dest: /var/www/civitech-static/maintenance.html
+    mode: "0644"
+
+- name: Render the shared security headers include
+  # An include rather than inline directives, because nginx inherits
+  # `add_header` into a location ONLY when that location declares none of its
+  # own. A block that sets Cache-Control therefore silently serves no security
+  # headers at all — the repository's own civitechglobal-web/nginx.conf
+  # documents having hit exactly this.
+  ansible.builtin.template:
+    src: civitech_security_headers.j2
+    dest: /etc/nginx/civitech_security_headers
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Render the shared proxy params include
+  ansible.builtin.template:
+    src: civitech_proxy_params.j2
+    dest: /etc/nginx/civitech_proxy_params
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Render the site configuration
+  ansible.builtin.template:
+    src: civitech.conf.j2
+    dest: /etc/nginx/sites-available/civitech
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable the site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/civitech
+    dest: /etc/nginx/sites-enabled/civitech
+    state: link
+  notify: Reload nginx
+
+- name: Disable the default site
+  # It also claims default_server on port 80. Two default servers is a config
+  # error, and whichever wins is not the one you wrote.
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Validate the nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Apply the configuration before certbot runs
+  # certbot --nginx edits the live config in place; it needs the vhost it is
+  # editing to already be loaded.
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure nginx is running and enabled at boot
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true
+
+# ---------------------------------------------------------------------------
+# TLS
+# ---------------------------------------------------------------------------
+
+- name: Install certbot
+  ansible.builtin.apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+  when: enable_ssl | bool
+
+- name: Obtain or renew the certificate
+  # certbot edits sites-available/civitech in place to add the 443 listener
+  # and the HTTP->HTTPS redirect. Re-running this role rewrites that file and
+  # certbot re-applies its changes on the next run, so the two stay
+  # compatible.
+  #
+  # If this fails with "DNS problem", the domain does not resolve to this
+  # server yet. Re-run with -e enable_ssl=false, get the site up on HTTP, and
+  # come back once DNS has propagated.
+  ansible.builtin.command:
+    cmd: >-
+      certbot --nginx
+      -d {{ domain_name }}
+      {% if domain_alias %}-d {{ domain_alias }}{% endif %}
+      --non-interactive --agree-tos --email {{ certbot_email }} --redirect
+  register: certbot_result
+  changed_when: "'Successfully received certificate' in certbot_result.stdout"
+  when: enable_ssl | bool
+
+- name: Enable HTTP/2 on the TLS listener
+  # certbot writes `listen 443 ssl;` and stops there. HTTP/2 is the single
+  # largest latency win available to an audience far from the server, and it
+  # is one directive.
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/sites-available/civitech
+    regexp: '^\s*http2\s'
+    insertafter: 'listen 443 ssl'
+    line: "    http2 on;"
+    state: present
+  when: enable_ssl | bool
+  notify: Reload nginx
+
+- name: Confirm the renewal timer is active
+  # The Ubuntu certbot package installs its own systemd timer. A certificate
+  # that silently stops renewing takes the site down 90 days from now, on a
+  # day nobody is expecting it.
+  ansible.builtin.command: systemctl is-active certbot.timer
+  register: certbot_timer
+  changed_when: false
+  failed_when: false
+  when: enable_ssl | bool
+
+- name: Warn when nothing is scheduled to renew the certificate
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: certbot.timer is not active ({{ certbot_timer.stdout | default('unknown') }}).
+      Nothing will renew this certificate. Check with
+      `systemctl list-timers | grep certbot` and test with
+      `certbot renew --dry-run`.
+  when:
+    - enable_ssl | bool
+    - certbot_timer.stdout | default('') != 'active'
+
+- name: Validate the final configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Report
+  ansible.builtin.debug:
+    msg: >-
+      nginx is serving {{ domain_name }} on
+      {{ 'https (HTTP/2, TLS 1.2+)' if enable_ssl | bool else 'http only — no TLS' }}.
+      Edge limits: {{ nginx_api_rate }} on /api/, {{ nginx_auth_rate }} on /api/auth/.

@@ -1,0 +1,68 @@
+---
+# Put a previous build back.
+#
+#   ansible-playbook rollback.yml -e app_version=<previous sha> \
+#     --vault-password-file ~/.civitech-vault-pass
+#
+# WHAT THIS UNDOES AND WHAT IT DOES NOT
+#
+# It swaps the images back. It does NOT undo database migrations — Prisma
+# migrations are forward-only and there is no `migrate down`.
+#
+#   - If the release you are rolling back FROM only ADDED a column, the old
+#     code ignores it and everything is fine.
+#   - If it DROPPED or RENAMED one, the old code will fail against the new
+#     schema and a code rollback is not enough: restore the dump deploy.yml
+#     took immediately before it migrated.
+#
+# This is why the deploy takes that backup, and why destructive migrations
+# should ship in two releases — add the new shape, move the reads, drop the
+# old shape in a later deploy.
+#
+# Note that the `migrate` step still runs on the way back through roles/app.
+# `prisma migrate deploy` applies pending migrations and is a no-op when there
+# are none, so rolling back to an older image against an already-migrated
+# database changes nothing. It cannot un-apply anything.
+
+- name: Roll back to a previous build
+  hosts: civitech_prod
+  become: true
+
+  pre_tasks:
+    - name: Require an explicit target
+      ansible.builtin.assert:
+        that:
+          - app_version is defined
+          - app_version != 'latest'
+        fail_msg: >-
+          Pass the tag to roll back to: -e app_version=<sha>. The currently
+          deployed one is in {{ app_root }}/DEPLOYED_VERSION.
+
+    - name: Read what is currently deployed
+      ansible.builtin.slurp:
+        src: "{{ app_root }}/DEPLOYED_VERSION"
+      register: current_version
+      failed_when: false
+
+    - name: Confirm the rollback target is not what is already running
+      ansible.builtin.assert:
+        that:
+          - (current_version.content | default('') | b64decode).split('\n')[0] != app_version
+        fail_msg: >-
+          {{ app_version }} is already the deployed version. Nothing to do.
+      when: current_version.content is defined
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Rolling back from
+          {{ (current_version.content | default('') | b64decode).split('\n')[0] | default('unknown', true) }}
+          to {{ app_version }}
+
+  roles:
+    - role: app
+      vars:
+        # Nothing new is being migrated, so there is nothing to protect
+        # against. The dump taken before the deploy that broke things is the
+        # one that matters, and it already exists.
+        pre_deploy_backup: false

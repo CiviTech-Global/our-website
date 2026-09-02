@@ -1,0 +1,7 @@
+---
+- name: Reload nginx
+  # `reload`, not `restart`: reload re-reads the config and swaps workers
+  # without dropping in-flight connections.
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded

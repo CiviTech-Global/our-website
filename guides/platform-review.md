@@ -216,6 +216,11 @@ serves the built SPA from nginx with a hand-tuned config. `depends_on` uses
 > `guides/ansible-getting-started.md` describes a playbook in detail; that
 > playbook does not exist on disk. **Nothing in this repository can deploy it.**
 
+> **Since addressed.** `civitech-deploy/` now holds ten playbooks and seven
+> roles — see [`production-deployment.md`](./production-deployment.md) and the
+> P1 status table at the end of this document. The findings below are left as
+> written, describing the reviewed commit.
+
 | Sev | Finding |
 |---|---|
 | **Critical** | The deploy playbook is an empty file (above). The guide is excellent and the implementation is absent. |
@@ -674,17 +679,26 @@ resolve a different dependency tree than CI tested.
 
 ### P1 — This month
 
-| # | Action | Layer |
-|---|---|---|
-| 8 | **Write the Ansible playbooks** — see [`production-deployment.md`](./production-deployment.md) | 5, 6 |
-| 9 | TLS via certbot, with an `enable_ssl` flag for the DNS-not-ready case | 5, 8, 10 |
-| 10 | `docker-compose.prod.yml` pinning `ghcr.io/...:${sha}` — rollback becomes one line | 5, 13 |
-| 11 | nginx `limit_req_zone` at the edge (general + auth), plus an `upstream` block with keepalive | 9, 11 |
-| 12 | Uptime monitoring with alerts (systemd timer → Telegram) | 12, 13 |
-| 13 | Password reset + email verification | 4 |
-| 14 | Front-end error boundary + browser Sentry | 1, 12 |
-| 15 | CD: a GitHub Actions job that triggers the deploy on `main`, behind an environment approval | 7 |
-| 16 | Convert fonts to WOFF2 and subset them | 1, 10 |
+Items 8–12 are implemented in `civitech-deploy/` on the same branch. They are
+**written and validated, not yet run against a server** — every playbook
+passes `ansible-playbook --syntax-check`, every Jinja template renders under
+`StrictUndefined`, both generated shell scripts pass `bash -n`, and the
+rendered production override merges correctly under the real `docker compose
+config`. None of that is the same as having deployed. The first real run is
+still ahead.
+
+| # | Action | Layer | Status |
+|---|---|---|---|
+| 8 | **Write the Ansible playbooks** | 5, 6 | **done** — 10 playbooks, 7 roles, Vault, placeholder guards, bootstrap-before-hardening |
+| 9 | TLS via certbot, with an `enable_ssl` flag for the DNS-not-ready case | 5, 8, 10 | **done** — plus HTTP/2, a renewal-timer check and a maintenance page |
+| 10 | Pin `ghcr.io/…:<sha>` so rollback is one line | 5, 13 | **done** — `rollback.yml`, and `DEPLOYED_VERSION` on the server answers "what is live" |
+| 11 | nginx edge `limit_req_zone`, plus `upstream` with keepalive | 9, 11 | **done** — two zones, health checks exempt from both layers |
+| 12 | Uptime monitoring with alerts | 12, 13 | **done** — systemd timer → Telegram, edge-triggered, with the scope limit stated |
+| — | *Also:* firewall, hardened SSH, fail2ban, off-host backups, resource limits | 6, 8, 13 | **done** — `roles/common`, `roles/backup` |
+| 13 | Password reset + email verification | 4 | open |
+| 14 | Front-end error boundary + browser Sentry | 1, 12 | open |
+| 15 | CD: deploy `${{ github.sha }}` behind an environment approval | 7 | **specified**, not wired — the job is in the guide; it needs the three GitHub secrets and a protected environment |
+| 16 | Convert fonts to WOFF2 and subset them | 1, 10 | open |
 
 ### P2 — This quarter
 

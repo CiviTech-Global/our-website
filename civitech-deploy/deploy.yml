@@ -1,0 +1,89 @@
+---
+# Build and release the application. Safe to run repeatedly.
+#
+#   ansible-playbook deploy.yml -e app_version=<git sha> \
+#     --vault-password-file ~/.civitech-vault-pass
+#
+# Find the SHA under Packages on the GitHub repo, or from the CI run for the
+# commit — .github/workflows/ci.yml pushes ghcr.io/<owner>/civitechglobal-*
+# tagged with both `latest` and the commit SHA once lint, typecheck, tests,
+# build and a Trivy scan at CRITICAL/HIGH have all passed.
+#
+# See what would change without touching the server:
+#   ansible-playbook deploy.yml --check --diff
+
+- name: Deploy CiviTech Global
+  hosts: civitech_prod
+  become: true
+  # One host at a time. With a second server this is what keeps the other one
+  # serving while this one restarts.
+  serial: 1
+
+  pre_tasks:
+    - name: Refuse to deploy with placeholder secrets
+      # A shipped placeholder JWT secret means anyone who reads this
+      # repository can mint an admin token. The server's config/env.ts already
+      # throws on a short secret at startup; failing here means it never gets
+      # that far, and the running release keeps serving.
+      ansible.builtin.assert:
+        that:
+          - vault_jwt_secret is defined
+          - not (vault_jwt_secret | string).startswith('REPLACE_ME')
+          - (vault_jwt_secret | length) >= 32
+          - vault_jwt_refresh_secret is defined
+          - not (vault_jwt_refresh_secret | string).startswith('REPLACE_ME')
+          - (vault_jwt_refresh_secret | length) >= 32
+          # Two token types signed with one secret means a stolen 15-minute
+          # access token can be replayed as a 7-day refresh token.
+          - vault_jwt_refresh_secret != vault_jwt_secret
+          - vault_postgres_password is defined
+          - not (vault_postgres_password | string).startswith('REPLACE_ME')
+          - vault_telegram_bot_token is defined
+          - not (vault_telegram_bot_token | string).startswith('REPLACE_ME')
+        fail_msg: >-
+          group_vars/all/vault.yml still contains template values, or the two
+          JWT secrets are identical. Generate real ones:
+          openssl rand -hex 32
+      no_log: true
+
+    - name: Refuse to deploy an unpinned build
+      # `latest` deploys whatever CI pushed most recently, which makes
+      # rollback impossible and "which commit is live" unanswerable. Override
+      # with -e allow_latest=true only when you genuinely mean it.
+      ansible.builtin.assert:
+        that:
+          - app_version != 'latest'
+        fail_msg: >-
+          Pass an immutable tag: -e app_version=<git sha>. Find it under
+          Packages on the GitHub repo, or from the CI run for that commit.
+      when: not (allow_latest | default(false) | bool)
+
+    - name: Refuse to deploy with an unconfigured domain
+      ansible.builtin.assert:
+        that:
+          - domain_name is defined
+          - not (domain_name | string).startswith('REPLACE_ME')
+        fail_msg: >-
+          domain_name is still a placeholder. Set it in inventory.ini — it is
+          baked into CORS_ORIGIN and the Telegram webhook URL, so a wrong
+          value here means an API that rejects its own front end.
+
+    - name: Check whether a stack is already deployed
+      ansible.builtin.stat:
+        path: "{{ app_root }}/docker-compose.yml"
+      register: existing_release
+
+    - name: Back up before migrating
+      # Prisma migrations are forward-only — there is no `migrate down`.
+      # rollback.yml can put the old image back, but nothing can put the data
+      # back except this dump. Skipped on the first deploy, when there is
+      # nothing to lose yet.
+      ansible.builtin.command:
+        cmd: /usr/local/bin/civitech-backup.sh
+      changed_when: true
+      when:
+        - existing_release.stat.exists
+        - pre_deploy_backup | default(true) | bool
+
+  roles:
+    - app

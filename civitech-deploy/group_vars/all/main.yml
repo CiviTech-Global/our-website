@@ -1,0 +1,164 @@
+---
+# ============================================================================
+# Non-secret configuration shared by every host in the [civitech_prod] group.
+# Secrets live in vault.yml (Ansible Vault) — see vault.example.yml.
+#
+# Variables here outrank variables written into inventory.ini, so anything
+# with an entry below must be changed HERE. domain_name, domain_alias and
+# certbot_email deliberately have no entry, which makes the inventory the
+# right place for those.
+# ============================================================================
+
+# ---- Where the stack lives -------------------------------------------------
+app_name: civitech
+app_root: /opt/civitech
+app_user: civitech
+app_group: civitech
+
+# ---- Images ----------------------------------------------------------------
+# .github/workflows/ci.yml lints, typechecks, tests, builds, scans with Trivy
+# at CRITICAL/HIGH, and pushes three images to GHCR tagged with both `latest`
+# and the commit SHA. We deploy those, rather than building on the server:
+#
+#   - the server never needs the ~1.5 GB a Vite build peaks at
+#   - a deploy is a pull, not a build
+#   - rollback is one variable
+#   - what ships is exactly what CI tested and Trivy scanned
+#
+# Deploy a SHA, never `latest`. deploy.yml refuses `latest` unless you pass
+# -e allow_latest=true, because an unpinned tag makes rollback impossible and
+# "which commit is live" unanswerable.
+#
+#   ansible-playbook deploy.yml -e app_version=<git sha>
+registry: ghcr.io
+registry_owner: civitech-global
+app_version: latest
+image_api: "{{ registry }}/{{ registry_owner }}/civitechglobal-api:{{ app_version }}"
+image_bot: "{{ registry }}/{{ registry_owner }}/civitechglobal-bot:{{ app_version }}"
+image_web: "{{ registry }}/{{ registry_owner }}/civitechglobal-web:{{ app_version }}"
+# Only needed while the GHCR packages are private. The token is in vault.
+ghcr_username: ""
+
+# ---- Ports -----------------------------------------------------------------
+# Every application port binds to loopback; nginx is the only public listener.
+# docker-compose.yml already binds these to 127.0.0.1 — the prod override
+# rendered by roles/app restates it so the two cannot drift apart.
+api_port: 5000
+bot_port: 4000
+web_port: 8080
+
+# ---- Application environment ----------------------------------------------
+node_env: production
+log_level: info
+postgres_user: civitech
+postgres_db: civitechglobal
+# Prisma reads pool settings straight off the connection string. Its default
+# is cores*2+1 PER PROCESS, so this bound matters the moment there is more
+# than one API container.
+db_connection_limit: 10
+db_pool_timeout: 20
+
+# "webhook" in production: polling needs an outbound long-poll held open and
+# gives Telegram nowhere to push. "polling" is right for a box with no public
+# URL yet.
+telegram_bot_mode: webhook
+# Comma-separated numeric Telegram user IDs that receive new-lead alerts.
+telegram_admin_user_ids: ""
+
+# ---- nginx / TLS -----------------------------------------------------------
+# Set to false for the first run if DNS has not propagated: Let's Encrypt
+# cannot issue a certificate for a bare IP, and certbot fails when the domain
+# does not resolve to this server. Re-run nginx.yml without the flag after DNS
+# is live.
+enable_ssl: true
+# Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
+# request with a 413 before Node ever sees it.
+nginx_client_max_body_size: 2M
+
+# Edge rate limits. The application's own limiter is Redis-backed and correct,
+# but every request it rejects has already been accepted, parsed, run through
+# optionalAuth (a database read whenever a token is present) and round-tripped
+# to Redis. nginx drops a flood before any of that happens.
+nginx_api_rate: 20r/s
+nginx_auth_rate: 1r/s
+nginx_api_burst: 40
+nginx_auth_burst: 5
+
+# ---- Backups ---------------------------------------------------------------
+backup_dir: /var/backups/civitech
+backup_retention_days: 14
+backup_cron_hour: 3
+backup_cron_minute: 30
+# rclone remote for the off-host copy, e.g. "civitech-backups:civitech".
+#
+# EMPTY MEANS BACKUPS LIVE ON THE MACHINE THEY PROTECT. A host loss, a disk
+# loss or a stray `docker volume prune` takes the database and all
+# {{ backup_retention_days }} days of its dumps together. roles/backup prints
+# a loud warning while this is unset, and so does the backup container on
+# every cycle.
+backup_remote: ""
+# Path to an rclone config on the CONTROL machine, copied to the server when
+# backup_remote is set. Contains cloud credentials, so it is copied 0600 and
+# never committed.
+rclone_config_src: "~/.config/rclone/rclone.conf"
+
+# ---- Firewall / SSH --------------------------------------------------------
+firewall_enabled: true
+firewall_allowed_tcp_ports: [22, 80, 443]
+
+ssh_hardening_enabled: true
+# Key-only. Run bootstrap.yml FIRST — it installs your key and proves key auth
+# works before this setting can lock you out. Setting this true is a decision
+# to accept every bot on the internet trying root over port 22; fail2ban below
+# is the compensating control if you make it.
+ssh_permit_password_auth: false
+ssh_max_auth_tries: 3
+
+# Installing fail2ban is not the same as running it — the packaged default
+# enables no jail. roles/common configures the sshd jail explicitly.
+fail2ban_max_retry: 5
+fail2ban_find_time: 10m
+fail2ban_ban_time: 1h
+# Addresses fail2ban will never ban. Add your office or home IP so three
+# fat-fingered passwords cannot lock you out of your own server.
+fail2ban_ignore_ips: []
+
+# ---- Health monitoring -----------------------------------------------------
+# Installed by roles/monitoring as a systemd timer.
+#
+# SCOPE, so this is not mistaken for more than it is: a checker running on the
+# server catches the APPLICATION dying. It cannot tell you the machine is gone
+# — it would be gone too. Run the same script from a laptop, or point a free
+# uptime service at https://<domain>/api/health/live, for that half.
+#
+# Both URLs are checked and they fail for different reasons: the first goes
+# through nginx, so it also catches a broken vhost or a stopped nginx; the
+# second hits the API container directly, so a failure there is unambiguously
+# the app. /api/health/ready probes Postgres AND Redis and returns 503 when
+# either is down, so a 200 means genuinely serving rather than merely
+# listening.
+health_check_urls:
+  - "http://127.0.0.1/api/health/ready"
+  - "http://127.0.0.1:{{ api_port }}/api/health/ready"
+health_check_interval: 2min
+health_check_timeout: 10
+# Consecutive failures before alerting. 1 would page on a single dropped
+# packet; 2 at a 2-minute interval reports a real outage within ~4 minutes.
+health_failure_threshold: 2
+health_log_file: /var/log/civitech/health.log
+
+# ---- Semaphore UI ----------------------------------------------------------
+semaphore_dir: /opt/semaphore
+semaphore_image: "semaphoreui/semaphore:v2.10.34"
+semaphore_port: 8888
+semaphore_admin_user: admin
+# Local account identifier only — Semaphore never sends mail from this box.
+# A .local address keeps a real mailbox out of a config file on the server.
+semaphore_admin_email: "admin@civitech.local"
+semaphore_admin_name: "CiviTech Admin"
+
+# ---- Deploy behaviour ------------------------------------------------------
+# deploy.yml takes a database dump before running migrations, because Prisma
+# migrations are forward-only: rollback.yml can put the old image back, but
+# only that dump can put the data back.
+pre_deploy_backup: true

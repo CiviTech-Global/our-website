@@ -1,0 +1,47 @@
+---
+# Smoke test: proves Ansible can reach the server and escalate to root.
+# Run this first, before anything that changes state.
+#
+#   ansible-playbook ping.yml
+
+- name: Verify connectivity to the CiviTech server
+  hosts: civitech_prod
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:
+
+    - name: Report what we are talking to
+      ansible.builtin.debug:
+        msg: >-
+          {{ inventory_hostname }} ({{ ansible_host }}) —
+          {{ ansible_distribution }} {{ ansible_distribution_version }},
+          {{ ansible_processor_vcpus }} vCPU,
+          {{ (ansible_memtotal_mb / 1024) | round(1) }} GB RAM,
+          {{ (ansible_mounts | selectattr('mount', 'equalto', '/') | first).size_available
+             // 1073741824 }} GB free on /
+
+    - name: Warn on a server too small for this stack
+      # Six containers including a Postgres, plus headroom for a pg_dump that
+      # runs while everything else is still serving. We deploy pre-built
+      # images, so the ~1.5 GB an on-server Vite build would peak at does not
+      # apply here — but 1 GB leaves nothing for the backup.
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: only {{ (ansible_memtotal_mb / 1024) | round(1) }} GB RAM.
+          Six containers plus a nightly pg_dump want 2 GB. Add swap, or move
+          Postgres off the box.
+      when: ansible_memtotal_mb < 1900
+
+    - name: Warn on a distribution these roles were not written for
+      # The roles use apt, ufw and the Docker apt repository throughout. They
+      # are not multi-distro; saying so is cheaper than a confusing failure
+      # three tasks into provision.yml.
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: {{ ansible_distribution }} detected. These roles target
+          Debian/Ubuntu (apt, ufw, the Docker apt repo) and will fail
+          elsewhere.
+      when: ansible_os_family != 'Debian'

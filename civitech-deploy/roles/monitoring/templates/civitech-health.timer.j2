@@ -1,0 +1,18 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/monitoring/templates/civitech-health.timer.j2.
+
+[Unit]
+Description=Run the CiviTech health check every {{ health_check_interval }}
+
+[Timer]
+# First run shortly after boot, then on a fixed interval. OnBootSec gives the
+# stack time to come up so a reboot does not immediately alert.
+OnBootSec=3min
+OnUnitActiveSec={{ health_check_interval }}
+AccuracySec=15s
+# Survives the checker being stopped and restarted mid-cycle.
+Persistent=true
+Unit=civitech-health.service
+
+[Install]
+WantedBy=timers.target

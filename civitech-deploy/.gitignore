@@ -1,0 +1,8 @@
+# The customer's IP and SSH user never land in source control.
+inventory.ini
+
+# group_vars/all/vault.yml is deliberately NOT ignored: it is encrypted with
+# Ansible Vault, and committing it is how Semaphore and your teammates get
+# the secrets. Committing it UNENCRYPTED is what the gitleaks workflow exists
+# to catch — if `head -1 group_vars/all/vault.yml` does not start with
+# $ANSIBLE_VAULT, do not commit.

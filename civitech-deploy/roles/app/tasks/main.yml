@@ -1,0 +1,163 @@
+---
+# Releases a pinned set of GHCR images.
+#
+# Ordering here is deliberate:
+#   pull first, migrate second, start last.
+#
+# A typo'd tag or an unreachable registry must fail while the OLD containers
+# are still serving. A failed migration must fail before anything restarts.
+# Only once both have succeeded does the running stack change.
+
+- name: Create the deploy directory
+  ansible.builtin.file:
+    path: "{{ app_root }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0750"
+
+- name: Log in to GHCR
+  community.docker.docker_login:
+    registry_url: "{{ registry }}"
+    username: "{{ ghcr_username }}"
+    password: "{{ vault_ghcr_token }}"
+  when: ghcr_username | length > 0
+  no_log: true
+
+- name: Copy the base compose file from the repository
+  # The repo's docker-compose.yml is the source of truth for the shape of the
+  # stack — services, health checks, dependency ordering, the one-shot
+  # `migrate` job. The prod override below changes only what production needs
+  # to differ on, so the two cannot drift apart.
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../docker-compose.yml"
+    dest: "{{ app_root }}/docker-compose.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+
+- name: Render the production compose override
+  ansible.builtin.template:
+    src: docker-compose.prod.yml.j2
+    dest: "{{ app_root }}/docker-compose.prod.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+  no_log: true
+
+- name: Render the compose environment file
+  # Consumed by compose's own ${VAR} interpolation in the base file (the
+  # POSTGRES_* values and the backup settings). Application secrets go
+  # straight into the override's `environment:` blocks instead, so they never
+  # sit in a file the base compose also reads.
+  ansible.builtin.template:
+    src: compose.env.j2
+    dest: "{{ app_root }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  no_log: true
+
+- name: Pull the pinned images
+  # Before anything touches the database. A wrong tag fails here, and the
+  # release that is currently live keeps serving.
+  ansible.builtin.command:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+    chdir: "{{ app_root }}"
+  changed_when: true
+
+- name: Start the data services
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      up -d postgres redis
+    chdir: "{{ app_root }}"
+  changed_when: true
+
+- name: Wait for Postgres to accept connections
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      exec -T postgres pg_isready -U {{ postgres_user }}
+    chdir: "{{ app_root }}"
+  register: pg_ready
+  until: pg_ready.rc == 0
+  retries: 30
+  delay: 2
+  changed_when: false
+
+- name: Apply database migrations
+  # docker-compose.yml defines a one-shot `migrate` service running
+  # `prisma migrate deploy` against the same image as the api, and api/bot
+  # declare depends_on: migrate: service_completed_successfully.
+  #
+  # Running it explicitly here — rather than letting the `up` below trigger it
+  # — means a failed migration aborts this play while the old containers are
+  # still up, instead of failing halfway through a stack restart.
+  #
+  # `migrate deploy`, never `migrate dev`: it applies committed migrations and
+  # never generates, prompts, or resets.
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      run --rm migrate
+    chdir: "{{ app_root }}"
+  changed_when: true
+
+- name: Start the whole stack
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      up -d --remove-orphans
+    chdir: "{{ app_root }}"
+  changed_when: true
+
+- name: Wait for the API readiness probe
+  # /api/health/ready checks Postgres AND Redis and returns 503 when either is
+  # down, so a 200 means the stack is genuinely serving — not merely that a
+  # process is listening.
+  #
+  # If this fails, the new release is live and unhealthy. Read
+  # `docker compose logs api` first: the probe reports which dependency
+  # failed, which is usually the whole answer. Otherwise recover with:
+  #   ansible-playbook rollback.yml -e app_version=<previous sha>
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ api_port }}/api/health/ready"
+    status_code: 200
+  register: api_health
+  until: api_health.status == 200
+  retries: 20
+  delay: 3
+
+- name: Wait for the bot readiness probe
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ bot_port }}/health/ready"
+    status_code: 200
+  register: bot_health
+  until: bot_health.status == 200
+  retries: 20
+  delay: 3
+
+- name: Record the deployed version
+  # So "which commit is live" has an answer that does not require guessing,
+  # and so rollback.yml can tell you what it is rolling back from.
+  ansible.builtin.copy:
+    dest: "{{ app_root }}/DEPLOYED_VERSION"
+    content: |
+      {{ app_version }}
+      {{ ansible_date_time.iso8601 }}
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0644"
+
+- name: Prune dangling images
+  # Keeps the previous release's images (they are tagged, not dangling) so a
+  # rollback does not have to re-pull over the network.
+  ansible.builtin.command: docker image prune -f
+  changed_when: false
+
+- name: Report
+  ansible.builtin.debug:
+    msg: >-
+      Deployed {{ app_version[:12] }} —
+      {{ 'https' if enable_ssl | bool else 'http' }}://{{ domain_name }}

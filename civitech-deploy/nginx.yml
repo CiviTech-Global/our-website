@@ -1,0 +1,19 @@
+---
+# Reverse proxy, compression, edge rate limiting and TLS.
+#
+#   ansible-playbook nginx.yml
+#
+# Run without TLS first if DNS has not propagated — certbot fails when the
+# domain does not resolve to this server, and Let's Encrypt cannot issue a
+# certificate for a bare IP address:
+#
+#   ansible-playbook nginx.yml -e enable_ssl=false
+#
+# Then re-run without the flag once DNS is live.
+
+- name: Configure nginx and TLS for CiviTech
+  hosts: civitech_prod
+  become: true
+
+  roles:
+    - nginx

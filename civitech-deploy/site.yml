@@ -1,0 +1,18 @@
+---
+# Everything, in the order a fresh server needs it.
+#
+#   ansible-playbook site.yml -e app_version=<sha> \
+#     --vault-password-file ~/.civitech-vault-pass
+#
+# Equivalent to provision.yml, deploy.yml and nginx.yml in sequence. Semaphore
+# is deliberately not included — install it once, separately, with
+# semaphore.yml.
+
+- name: Provision the server
+  ansible.builtin.import_playbook: provision.yml
+
+- name: Deploy the application
+  ansible.builtin.import_playbook: deploy.yml
+
+- name: Configure nginx and TLS
+  ansible.builtin.import_playbook: nginx.yml

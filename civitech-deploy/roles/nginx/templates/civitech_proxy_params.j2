@@ -1,0 +1,21 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/nginx/templates/civitech_proxy_params.j2.
+
+# HTTP/1.1 with an empty Connection header is what lets the upstream keepalive
+# pool actually be reused; without both, every proxied request opens a new
+# connection to Node and the `keepalive` directive does nothing.
+proxy_http_version 1.1;
+proxy_set_header Connection "";
+
+proxy_set_header Host              $host;
+proxy_set_header X-Real-IP         $remote_addr;
+proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+# The API sets `trust proxy: 1`, so it reads the client address from this
+# chain. Without X-Forwarded-Proto the app cannot tell an HTTPS request from
+# an HTTP one, and Secure-cookie decisions go wrong.
+proxy_set_header X-Forwarded-Proto $scheme;
+
+# The API generates a request id when this is absent and echoes it back on the
+# response. Passing one through means a single request is traceable across the
+# proxy and the application log with one grep.
+proxy_set_header X-Request-Id      $request_id;

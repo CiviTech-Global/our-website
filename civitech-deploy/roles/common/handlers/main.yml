@@ -1,0 +1,12 @@
+---
+- name: Reload sshd
+  # `reload`, never `restart`: reload re-reads the config without dropping
+  # established connections, including the one Ansible is running over.
+  ansible.builtin.systemd:
+    name: ssh
+    state: reloaded
+
+- name: Restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted

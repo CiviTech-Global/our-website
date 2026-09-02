@@ -1,0 +1,16 @@
+---
+# Install Semaphore UI so deployments can be run from a browser.
+#
+#   ansible-playbook semaphore.yml --vault-password-file ~/.civitech-vault-pass
+#
+# Semaphore binds to 127.0.0.1 only and is NOT opened in the firewall. It
+# holds the SSH key to this server and the Ansible Vault password, which makes
+# its login form the softest target on the box. Reach it over an SSH tunnel —
+# see guides/production-deployment.md section 10.
+
+- name: Install Semaphore UI
+  hosts: semaphore
+  become: true
+
+  roles:
+    - semaphore
