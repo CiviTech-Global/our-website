@@ -21,6 +21,26 @@ enum LeadStatus {
   CANCELLED
 }
 
+/// How a product is sold. SELF_SERVE products publish a real field list and get
+/// a full form; CALLBACK products are priced by hand, so their form collects a
+/// structured brief and a call is scheduled instead.
+enum IntakeMode {
+  SELF_SERVE
+  CALLBACK
+}
+
+enum ProductAudience {
+  INDIVIDUAL
+  CORPORATE
+}
+
+/// Which channel a request arrived through. Both are first-class: the website
+/// carries the full per-product form, the bot carries a short one.
+enum RequestSource {
+  WEB
+  TELEGRAM
+}
+
 /// Named bundle of permission strings that can be assigned to a User in
 /// addition to (or instead of) ad-hoc permissions on the user itself.
 model AdminRole {
@@ -38,14 +58,14 @@ model AdminRole {
 }
 
 model User {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   // NOTE: email is stored in plaintext for this pass. `emailHash` is a
   // deterministic (non-reversible) lookup key so uniqueness/queries never
   // need to scan-and-compare plaintext. If field-level encryption at rest is
   // added later, `email` becomes ciphertext and every read path already goes
   // through emailHash, so no query code needs to change.
   email     String
-  emailHash String  @unique @map("email_hash")
+  emailHash String @unique @map("email_hash")
 
   username String? @unique
 
@@ -71,8 +91,8 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  refreshTokens  RefreshToken[]
-  assignedLeads  Lead[]         @relation("LeadAssignee")
+  refreshTokens    RefreshToken[]
+  assignedRequests InsuranceRequest[] @relation("LeadAssignee")
 
   @@index([role])
   @@index([createdAt])
@@ -99,19 +119,81 @@ model RefreshToken {
 }
 
 model InsuranceCategory {
-  id    String  @id @default(cuid())
-  title String  @unique
-  emoji String?
+  id      String  @id @default(cuid())
+  /// Stable identity and URL segment. `title` is display text and may change.
+  slug    String  @unique
+  title   String  @unique
+  titleEn String  @map("title_en")
+  emoji   String?
+  icon    String?
+
+  displayOrder Int @default(0) @map("display_order")
+
+  /// Pre-refactor categories are kept for the legacy requests that reference
+  /// them, but set inactive so they never appear in the public catalog.
+  active Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  products      InsuranceProduct[]
   subcategories InsuranceSubcategory[]
-  leads         Lead[]
+  requests      InsuranceRequest[]
 
   @@map("insurance_categories")
 }
 
+/// One row per catalog product, seeded from `src/insurance/catalog`.
+///
+/// The database is a read model here, not the source of truth: `prisma/seed.ts`
+/// writes these rows from the typed catalog on every deploy. Editing a row by
+/// hand will be overwritten on the next seed — change the catalog instead.
+/// `formSchema` is the resolved field list (product questions plus the shared
+/// contact block) that the web app renders and the API validates against.
+model InsuranceProduct {
+  id         String @id @default(cuid())
+  slug       String @unique
+  categoryId String @map("category_id")
+
+  title         String
+  titleEn       String @map("title_en")
+  summary       String
+  summaryEn     String @map("summary_en")
+  description   String
+  descriptionEn String @map("description_en")
+
+  coverages         String[] @default([])
+  optionalCoverages String[] @default([]) @map("optional_coverages")
+  notes             String[] @default([])
+
+  /// Where the product facts were researched. Shown in admin, never public.
+  sourceUrl String? @map("source_url")
+
+  intakeMode IntakeMode      @default(SELF_SERVE) @map("intake_mode")
+  audience   ProductAudience @default(INDIVIDUAL)
+
+  icon         String?
+  displayOrder Int     @default(0) @map("display_order")
+  active       Boolean @default(true)
+
+  formSchema     Json @map("form_schema")
+  catalogVersion Int  @default(1) @map("catalog_version")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category InsuranceCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  requests InsuranceRequest[]
+
+  @@index([categoryId])
+  @@index([active])
+  @@map("insurance_products")
+}
+
+/// DEPRECATED — retained only so pre-refactor rows in `insurance_requests`
+/// keep a readable category label. Nothing writes to this table any more; new
+/// requests point at `InsuranceProduct` instead. Drop it once the legacy rows
+/// have been closed out.
 model InsuranceSubcategory {
   id         String @id @default(cuid())
   categoryId String @map("category_id")
@@ -120,33 +202,73 @@ model InsuranceSubcategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category InsuranceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  leads    Lead[]
+  category InsuranceCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  requests InsuranceRequest[]
 
   @@unique([categoryId, title])
   @@index([categoryId])
   @@map("insurance_subcategories")
 }
 
-/// A lead collected by the Telegram bot's conversational flow.
-model Lead {
+/// An insurance enquiry, however it arrived.
+///
+/// Was `Lead`, and shaped entirely around the Telegram bot: every row required
+/// a `telegramUserId`, a category and a subcategory. Since the website now
+/// carries a distinct form per product, the fixed columns cannot describe a
+/// submission on their own — `productId` says which form was filled and
+/// `answers` holds what was answered, validated against that product's schema
+/// at `catalogVersion`.
+///
+/// The Telegram columns stay nullable rather than being dropped: rows collected
+/// before the refactor are real enquiries that people are still owed a call
+/// about, and the bot continues to write here with `source = TELEGRAM`.
+model InsuranceRequest {
   id String @id @default(cuid())
 
-  telegramUserId    String  @map("telegram_user_id")
+  /// Short human-quotable reference, given to the applicant on submission so
+  /// they can check progress without an account. Not a secret — status lookup
+  /// by this code returns state only, never personal data.
+  trackingCode String @unique @map("tracking_code")
+
+  source RequestSource @default(WEB)
+
+  telegramUserId    String? @map("telegram_user_id")
   telegramUsername  String? @map("telegram_username")
   telegramFirstName String? @map("telegram_first_name")
 
-  categoryId    String @map("category_id")
-  subcategoryId String @map("subcategory_id")
+  productId String? @map("product_id")
 
-  fullName             String  @map("full_name")
-  phoneNumber          String  @map("phone_number")
+  /// Legacy taxonomy. Populated on pre-refactor rows and by the bot's short
+  /// flow; null on a website submission, which resolves its category through
+  /// the product.
+  categoryId    String? @map("category_id")
+  subcategoryId String? @map("subcategory_id")
+
+  /// The answers to `product.formSchema`, keyed by field name.
+  answers        Json?
+  /// Which catalog version the form was filled under, so the admin panel can
+  /// flag answers whose questions have since changed.
+  catalogVersion Int?  @map("catalog_version")
+
+  fullName        String  @map("full_name")
+  phoneNumber     String  @map("phone_number")
   // Deterministic hash of the normalized phone number, for fast lookup/dedupe
   // without needing to decrypt every row (see note on User.emailHash).
-  phoneNumberHash       String? @map("phone_number_hash")
-  city                  String
-  preferredContactTime  String  @map("preferred_contact_time")
-  notes                 String?
+  phoneNumberHash String? @map("phone_number_hash")
+  /// True when the number was proved reachable by one-time code before the
+  /// request was accepted. Always false for bot-sourced rows.
+  phoneVerified   Boolean @default(false) @map("phone_verified")
+
+  email            String?
+  organizationName String? @map("organization_name")
+
+  province             String?
+  city                 String
+  preferredContactTime String  @map("preferred_contact_time")
+  notes                String?
+
+  /// When a specialist has agreed to call back.
+  callbackScheduledAt DateTime? @map("callback_scheduled_at")
 
   status LeadStatus @default(NEW)
 
@@ -159,12 +281,15 @@ model Lead {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category    InsuranceCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  subcategory InsuranceSubcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+  product     InsuranceProduct?     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  category    InsuranceCategory?    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory InsuranceSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
 
   @@index([status])
   @@index([createdAt])
   @@index([phoneNumberHash])
   @@index([assignedToId])
-  @@map("leads")
+  @@index([productId])
+  @@index([source])
+  @@map("insurance_requests")
 }

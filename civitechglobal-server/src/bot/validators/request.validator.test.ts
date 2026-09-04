@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseFullName, parsePhoneNumber, parseCity, parsePreferredContactTime, parseNotes } from './lead.validator.js';
+import { parseFullName, parsePhoneNumber, parseCity, parsePreferredContactTime, parseNotes } from './request.validator.js';
 
 describe('parseFullName', () => {
   it('accepts a valid name and trims whitespace', () => {
@@ -28,8 +28,19 @@ describe('parsePhoneNumber', () => {
     expect(parsePhoneNumber('٠٩١٢١٢٣٤٥٦٧')).toBe('09121234567');
   });
 
-  it('rejects a number that does not start with 09', () => {
-    expect(() => parsePhoneNumber('9121234567')).toThrow();
+  it('adds the missing leading zero rather than rejecting the number', () => {
+    // People routinely type their mobile without it. The old validator refused
+    // these; normalising is strictly better than making someone retype.
+    expect(parsePhoneNumber('9121234567')).toBe('09121234567');
+  });
+
+  it('accepts international forms and normalises them', () => {
+    expect(parsePhoneNumber('+989121234567')).toBe('09121234567');
+    expect(parsePhoneNumber('00989121234567')).toBe('09121234567');
+  });
+
+  it('rejects a landline', () => {
+    expect(() => parsePhoneNumber('02112345678')).toThrow();
   });
 
   it('rejects a number with the wrong length', () => {
@@ -52,7 +63,7 @@ describe('parseCity', () => {
 });
 
 describe('parsePreferredContactTime', () => {
-  it.each(['صبح', 'ظهر', 'عصر'])('accepts %s', (value) => {
+  it.each(['morning', 'noon', 'evening', 'any'])('accepts %s', (value) => {
     expect(parsePreferredContactTime(value)).toBe(value);
   });
 

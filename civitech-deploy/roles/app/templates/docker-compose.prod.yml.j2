@@ -65,6 +65,16 @@ services:
       SENTRY_DSN: "{{ vault_sentry_dsn }}"
       SEED_ADMIN_EMAIL: "{{ vault_seed_admin_email }}"
       SEED_ADMIN_PASSWORD: "{{ vault_seed_admin_password }}"
+      # One-time codes for insurance requests. config/env.ts refuses to start
+      # on SMS_PROVIDER=console in production; deploy.yml asserts it earlier so
+      # the failure lands on the playbook, not on a crash-looping container.
+      SMS_PROVIDER: "{{ sms_provider }}"
+      SMS_API_KEY: "{{ vault_sms_api_key }}"
+      SMS_OTP_TEMPLATE: "{{ vault_sms_otp_template }}"
+      OTP_TTL_SECONDS: "{{ otp_ttl_seconds }}"
+      OTP_RESEND_COOLDOWN_SECONDS: "{{ otp_resend_cooldown_seconds }}"
+      OTP_MAX_ATTEMPTS: "{{ otp_max_attempts }}"
+      PHONE_TOKEN_TTL_SECONDS: "{{ phone_token_ttl_seconds }}"
     deploy:
       resources:
         limits:

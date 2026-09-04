@@ -14,12 +14,18 @@ import LoginPage from '@/pages/public/LoginPage';
 import RegisterPage from '@/pages/public/RegisterPage';
 import NotFoundPage from '@/pages/public/NotFoundPage';
 
+// Route-split: the insurance section carries the catalog, the dynamic form and
+// the OTP step, none of which the landing page needs in its bundle.
+const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
+const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
+const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
+
 const UserDashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/DashboardPage'));
-const LeadsPage = lazy(() => import('@/pages/admin/LeadsPage'));
-const LeadDetailPage = lazy(() => import('@/pages/admin/LeadDetailPage'));
+const RequestsPage = lazy(() => import('@/pages/admin/RequestsPage'));
+const RequestDetailPage = lazy(() => import('@/pages/admin/RequestDetailPage'));
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
 
@@ -38,6 +44,30 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route
+          path="/insurance"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <InsurancePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/insurance/:slug"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <InsuranceProductPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/track"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <TrackRequestPage />
+            </Suspense>
+          }
+        />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -87,18 +117,18 @@ export default function App() {
           }
         />
         <Route
-          path="leads"
+          path="requests"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <LeadsPage />
+              <RequestsPage />
             </Suspense>
           }
         />
         <Route
-          path="leads/:id"
+          path="requests/:id"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <LeadDetailPage />
+              <RequestDetailPage />
             </Suspense>
           }
         />

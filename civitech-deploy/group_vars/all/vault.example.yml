@@ -26,6 +26,17 @@ vault_telegram_webhook_secret: "REPLACE_ME"
 # Empty leaves Sentry a no-op in both processes — see config/sentry.ts.
 vault_sentry_dsn: ""
 
+# SMS gateway for the one-time codes that verify a phone number before an
+# insurance request is accepted. `sms_provider` in main.yml picks the vendor;
+# this is the credential for it.
+#
+# The API REFUSES TO START in production when sms_provider is left as
+# "console", because printing codes to the log while nobody receives a text
+# looks like a working system right up until the first applicant complains.
+vault_sms_api_key: "REPLACE_ME"
+# Kavenegar: the approved template name. SMS.ir: the numeric template id.
+vault_sms_otp_template: "REPLACE_ME"
+
 # Used once by `prisma/seed.ts`, which only creates a SUPER_ADMIN when none
 # exists. Change the password from the admin UI after the first login.
 vault_seed_admin_email: "admin@civitechglobal.com"

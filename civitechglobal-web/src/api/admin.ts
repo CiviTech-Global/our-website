@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/config/api';
-import type { AdminDashboardStats } from '@/types/leads';
+import type { AdminDashboardStats } from '@/types/requests';
 import type { AdminRole, AdminUserListItem } from '@/types/admin';
-import type { PaginatedResponse } from '@/types/leads';
+import type { PaginatedResponse } from '@/types/requests';
 
 export function useAdminDashboard() {
   return useQuery({

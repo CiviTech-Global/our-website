@@ -1,5 +1,5 @@
 import type fa from '@/i18n/fa';
-import type { LeadStatus } from '@/types/leads';
+import type { LeadStatus } from '@/types/requests';
 import type { BadgeVariant } from '@/components/ui/Badge';
 
 export const LEAD_STATUSES: LeadStatus[] = ['NEW', 'CONTACTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];

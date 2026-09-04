@@ -51,6 +51,38 @@ export const refreshRateLimiter = rateLimit({
   passOnStoreError: true,
 });
 
+/**
+ * One-time code requests.
+ *
+ * Every send costs real money and lands on someone's phone, so this is the one
+ * limiter where being noisy matters more than being permissive: an unthrottled
+ * endpoint here is both an SMS bill and a way to harass a phone number. The
+ * per-number cooldown in otp.service is the other half — this bounds a single
+ * source hitting many numbers, that bounds many sources hitting one number.
+ */
+export const otpRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: { success: false, message: 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد تلاش کنید.' },
+  store: createStore('rl:otp:'),
+  passOnStoreError: true,
+});
+
+/** Public, unauthenticated form submission. */
+export const insuranceSubmitRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: { success: false, message: 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد تلاش کنید.' },
+  store: createStore('rl:insurance:'),
+  passOnStoreError: true,
+});
+
 export const generalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,

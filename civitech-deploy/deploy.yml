@@ -46,6 +46,27 @@
           openssl rand -hex 32
       no_log: true
 
+    - name: Refuse to deploy without a working SMS gateway
+      # Phone verification gates every insurance request. With the console
+      # provider the API refuses to start in production — but a missing API key
+      # or template would let it start and then fail on the first applicant,
+      # silently, one send at a time. Catch both here instead.
+      ansible.builtin.assert:
+        that:
+          - sms_provider in ['kavenegar', 'smsir']
+          - vault_sms_api_key is defined
+          - (vault_sms_api_key | length) > 0
+          - not (vault_sms_api_key | string).startswith('REPLACE_ME')
+          - vault_sms_otp_template is defined
+          - (vault_sms_otp_template | length) > 0
+          - not (vault_sms_otp_template | string).startswith('REPLACE_ME')
+        fail_msg: >-
+          Insurance requests verify the applicant's phone by SMS. Set
+          sms_provider to kavenegar or smsir in group_vars/all/main.yml, and
+          put the gateway credentials in vault.yml. Deploying without them
+          leaves every applicant unable to submit.
+      no_log: true
+
     - name: Refuse to deploy an unpinned build
       # `latest` deploys whatever CI pushed most recently, which makes
       # rollback impossible and "which commit is live" unanswerable. Override

@@ -1,17 +1,17 @@
-import { leadRepository } from '../database/prisma/repositories/lead.repository.js';
+import { insuranceRequestRepository } from '../database/prisma/repositories/insurance-request.repository.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
 
 export async function getAdminDashboard() {
   const [totalUsers, totalLeads, newLeads, contacted, inProgress, completed, cancelled, recentLeads] =
     await Promise.all([
       userRepository.count({ where: { deletedAt: null } }),
-      leadRepository.count(),
-      leadRepository.count({ where: { status: 'NEW' } }),
-      leadRepository.count({ where: { status: 'CONTACTED' } }),
-      leadRepository.count({ where: { status: 'IN_PROGRESS' } }),
-      leadRepository.count({ where: { status: 'COMPLETED' } }),
-      leadRepository.count({ where: { status: 'CANCELLED' } }),
-      leadRepository.findManyWithRelations({ take: 5 }),
+      insuranceRequestRepository.count(),
+      insuranceRequestRepository.count({ where: { status: 'NEW' } }),
+      insuranceRequestRepository.count({ where: { status: 'CONTACTED' } }),
+      insuranceRequestRepository.count({ where: { status: 'IN_PROGRESS' } }),
+      insuranceRequestRepository.count({ where: { status: 'COMPLETED' } }),
+      insuranceRequestRepository.count({ where: { status: 'CANCELLED' } }),
+      insuranceRequestRepository.findManyWithRelations({ take: 5 }),
     ]);
 
   return {

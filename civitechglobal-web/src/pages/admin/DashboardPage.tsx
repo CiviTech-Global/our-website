@@ -6,7 +6,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { StatusDonut } from '@/components/admin/StatusDonut';
 import { leadStatusLabel } from '@/lib/leadStatus';
-import type { LeadStatus } from '@/types/leads';
+import type { LeadStatus } from '@/types/requests';
 
 export default function AdminDashboardPage() {
   const { t } = useLocale();

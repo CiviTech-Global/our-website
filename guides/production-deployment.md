@@ -69,6 +69,14 @@ tasks into `provision.yml`.
 **DNS.** `civitechglobal.com` and `www` pointing at that IP. Not propagated
 yet is fine — §5 has the HTTP-only path.
 
+**An SMS account.** Kavenegar or SMS.ir, with an approved OTP template. Every
+insurance request submitted from the website proves its phone number with a
+one-time code before it is accepted — that number is what a specialist rings
+back, and an unverified public form fills the queue with typos and worse. There
+is no way to turn this off in production: `config/env.ts` refuses to start on
+the console provider when `NODE_ENV=production`, and `deploy.yml` refuses to
+deploy without credentials. Get the account before the deploy, not during it.
+
 **Collections.**
 
 ```bash
@@ -148,7 +156,15 @@ Read it top to bottom once. The ones you will actually change:
 - `backup_remote` — an rclone destination. **Empty means backups live on the
   machine they protect**, and both the role and the nightly job say so loudly
   every time they run.
-- `telegram_admin_user_ids` — who gets new-lead alerts.
+- `telegram_admin_user_ids` — who gets new-request alerts. The bot relays
+  website submissions here too, over a Redis channel; the API is deliberately
+  given no Telegram credentials of its own.
+- `sms_provider` — `kavenegar` or `smsir`. See the prerequisite above.
+- `otp_ttl_seconds`, `otp_resend_cooldown_seconds`, `otp_max_attempts`,
+  `phone_token_ttl_seconds` — the defaults (5 min, 60 s, 5 tries, 15 min) are
+  sensible; the last one is how long a verified number stays usable to submit
+  the form behind it, so raising it lengthens a long form's grace period and
+  the window a stolen token is worth stealing in equal measure.
 - `fail2ban_ignore_ips` — add your own address so three fat-fingered
   passwords cannot lock you out of your own server.
 
@@ -175,6 +191,13 @@ from each other — one secret signing both token types means a stolen
 15-minute access token can be replayed as a 7-day refresh token. The failure
 message tells you how to generate real ones, and `no_log: true` keeps the
 values out of the output.
+
+A second assertion covers the SMS gateway: `sms_provider` must be a real
+provider, and `vault_sms_api_key` and `vault_sms_otp_template` must be set to
+something other than their placeholders. A missing key would not stop the API
+from starting — it would fail on the first applicant, one send at a time,
+quietly. Catching it in the playbook means the running release keeps serving
+instead.
 
 ---
 
@@ -457,8 +480,10 @@ curl -s  https://civitechglobal.com/api/health/ready | jq
 # {"success":true,"message":"API is ready","checks":{"database":true,"redis":true}}
 ```
 
-Seed the first admin — the script only creates a `SUPER_ADMIN` when none
-exists, so this is safe to run twice:
+Seed the first admin and the insurance catalog. The same script does both.
+It only creates a `SUPER_ADMIN` when none exists, and it upserts the nine
+categories and thirty-four products by slug — so it is safe to run twice, and
+running it after every deploy is how a catalog change reaches production:
 
 ```bash
 ssh root@<ip> 'cd /opt/civitech && docker compose \
@@ -468,6 +493,16 @@ ssh root@<ip> 'cd /opt/civitech && docker compose \
 
 Log in at `/admin` with the vault's `SEED_ADMIN_*` values, then change the
 password.
+
+The seed never deletes: a product dropped from the catalog is marked inactive
+instead, because submitted requests reference it and an admin still has to be
+able to read what someone asked for.
+
+Then check the catalog actually landed, from your laptop:
+
+```bash
+curl -s https://civitechglobal.com/api/insurance/catalog | jq '[.data[] | {slug, products: (.products | length)}]'
+```
 
 ### Dry runs
 

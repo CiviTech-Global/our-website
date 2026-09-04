@@ -10,7 +10,7 @@ export function AdminLayout() {
 
   const items: SidebarItem[] = [
     { to: '/admin', label: t.admin.dashboard, icon: <LayoutDashboard className="size-4" />, end: true },
-    { to: '/admin/leads', label: t.admin.leads, icon: <ClipboardList className="size-4" /> },
+    { to: '/admin/requests', label: t.admin.requests, icon: <ClipboardList className="size-4" /> },
     { to: '/admin/users', label: t.admin.users, icon: <Users className="size-4" /> },
     // Role management is restricted to SUPER_ADMIN in the old app's convention; keep it
     // visible to both ADMIN/SUPER_ADMIN here since permissions are backend-enforced anyway.

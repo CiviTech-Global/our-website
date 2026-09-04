@@ -54,6 +54,26 @@ export const env = {
 
   // Optional: when unset/empty, Sentry initialization is a no-op.
   SENTRY_DSN: optional('SENTRY_DSN', ''),
+
+  // --- Phone verification (one-time codes on insurance requests) ----------
+  //
+  // 'console' logs the code instead of sending it — the development default,
+  // and the only provider that needs no account. Production must name a real
+  // one; see `services/sms/index.ts` for the guard that enforces that.
+  SMS_PROVIDER: optional('SMS_PROVIDER', 'console'),
+  SMS_API_KEY: optional('SMS_API_KEY', ''),
+  /** Sender line or template identifier, depending on the provider. */
+  SMS_SENDER: optional('SMS_SENDER', ''),
+  /** Kavenegar/SMS.ir verify-lookup template name. */
+  SMS_OTP_TEMPLATE: optional('SMS_OTP_TEMPLATE', ''),
+
+  OTP_TTL_SECONDS: parseInt(optional('OTP_TTL_SECONDS', '300'), 10),
+  /** Seconds a caller must wait between requesting codes for one number. */
+  OTP_RESEND_COOLDOWN_SECONDS: parseInt(optional('OTP_RESEND_COOLDOWN_SECONDS', '60'), 10),
+  /** Wrong guesses allowed before the code is burned. */
+  OTP_MAX_ATTEMPTS: parseInt(optional('OTP_MAX_ATTEMPTS', '5'), 10),
+  /** How long a verified-phone token stays usable to submit a request. */
+  PHONE_TOKEN_TTL_SECONDS: parseInt(optional('PHONE_TOKEN_TTL_SECONDS', '900'), 10),
 };
 
 assertNotWeak('JWT_SECRET', env.JWT_SECRET, isProduction);

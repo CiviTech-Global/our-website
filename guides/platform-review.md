@@ -10,6 +10,16 @@ Reviewed at commit `3d0b3c5` on `main`, 2026-09-02.
 Companion document: [`production-deployment.md`](./production-deployment.md)
 — the complete deployment guide this review concludes you need.
 
+> **Read this as a dated snapshot.** The insurance module has since been
+> rebuilt around a typed product catalog: `Lead` is now `InsuranceRequest`,
+> intake happens on the website through per-product forms with SMS-verified
+> phone numbers, and Telegram is one of two channels rather than the only one.
+> Wherever this review says *lead*, the table is now `insurance_requests` and
+> the service is `services/request.service.ts`; the row-level scoping, the
+> referential actions and every finding below still hold. See
+> [`insurance-catalog-research.md`](./insurance-catalog-research.md) for the
+> product research the rebuild was based on.
+
 ---
 
 ## Scorecard

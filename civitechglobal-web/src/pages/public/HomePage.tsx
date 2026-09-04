@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Code2, ShieldCheck, MessageCircle, LineChart, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useInsuranceCategories } from '@/api/insurance';
+import { useInsuranceCatalog } from '@/api/insurance';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
@@ -12,7 +12,7 @@ const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_BOT_URL ?? 'https://t.me/';
 
 export default function HomePage() {
   const { t, locale } = useLocale();
-  const { data: categories, isLoading, isError } = useInsuranceCategories();
+  const { data: categories, isLoading, isError } = useInsuranceCatalog();
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   const features = [

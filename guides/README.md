@@ -13,6 +13,16 @@ otherwise starts from zero.
   of how the sibling `verifywise` and `jolfa-retail-gateway` projects solve
   deployment with Ansible and Semaphore UI, and a prioritized roadmap.
 
+## Product
+
+- [`insurance-catalog-research.md`](./insurance-catalog-research.md) — what
+  each insurance product actually is, and what a customer has to be asked
+  before anyone can quote one: thirty source pages covering the thirty-four
+  products in the catalog. It is also the reason the catalog splits into seventeen products a
+  customer can complete alone and seventeen that an underwriter has to price
+  over the phone. This is the document `src/insurance/catalog/` was written
+  from; change the catalog and change this too.
+
 ## Deployment & operations
 
 - [`production-deployment.md`](./production-deployment.md) — the complete

@@ -11,6 +11,8 @@ import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
 
 const NAV_ITEMS = [
   { to: '/', key: 'home' as const },
+  { to: '/insurance', key: 'insurance' as const },
+  { to: '/track', key: 'track' as const },
   { to: '/about', key: 'about' as const },
   { to: '/services', key: 'services' as const },
   { to: '/contact', key: 'contact' as const },

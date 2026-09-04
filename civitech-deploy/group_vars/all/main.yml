@@ -63,7 +63,27 @@ db_pool_timeout: 20
 # URL yet.
 telegram_bot_mode: webhook
 # Comma-separated numeric Telegram user IDs that receive new-lead alerts.
+# The bot also relays website submissions here, over a Redis channel — the API
+# is deliberately given no Telegram credentials of its own.
 telegram_admin_user_ids: ""
+
+# ---- Phone verification (insurance requests) -------------------------------
+# Website submissions are open to anyone, so the phone number is proved by a
+# one-time code before the request is accepted: it is the number a specialist
+# rings back, and an unverified public form fills the queue with typos.
+#
+# "kavenegar" or "smsir" in production. "console" logs the code instead of
+# sending it and is refused at startup when NODE_ENV=production — deploy.yml
+# asserts the same thing so the failure surfaces before the container starts.
+sms_provider: kavenegar
+
+otp_ttl_seconds: 300
+# Per-number cooldown. The API also rate-limits per caller; this bounds many
+# sources hitting one number, that bounds one source hitting many numbers.
+otp_resend_cooldown_seconds: 60
+otp_max_attempts: 5
+# How long a verified-phone token stays usable to submit the form behind it.
+phone_token_ttl_seconds: 900
 
 # ---- nginx / TLS -----------------------------------------------------------
 # Set to false for the first run if DNS has not propagated: Let's Encrypt

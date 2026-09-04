@@ -1,0 +1,200 @@
+import type { ProductDef } from '../types.js';
+import {
+  claimHistory,
+  currencyField,
+  coverageCeiling,
+  nationalId,
+  noClaimYears,
+  paymentMethod,
+  plate,
+  previousInsurer,
+  vehicleModel,
+  buildYear,
+} from '../fields.js';
+
+/** سقف تعهدات مالی — the property-damage limits an applicant picks between. */
+const PROPERTY_LIMITS = [
+  { value: '80', label: '۸۰ میلیون تومان (حداقل قانونی)', labelEn: '800m IRR (legal minimum)' },
+  { value: '160', label: '۱۶۰ میلیون تومان', labelEn: '1.6b IRR' },
+  { value: '240', label: '۲۴۰ میلیون تومان', labelEn: '2.4b IRR' },
+  { value: '400', label: '۴۰۰ میلیون تومان', labelEn: '4b IRR' },
+];
+
+export const autoProducts: ProductDef[] = [
+  {
+    slug: 'third-party-auto',
+    categorySlug: 'auto',
+    title: 'بیمه شخص ثالث خودرو',
+    titleEn: 'Third-party motor insurance',
+    summary: 'اجباری برای همه خودروها — جبران خسارت جانی و مالی اشخاص ثالث',
+    summaryEn: 'Compulsory for every vehicle — covers injury and damage to third parties',
+    description:
+      'بیمه شخص ثالث برای تمام وسایل نقلیه اجباری است و خسارت‌های جانی و مالی واردشده به اشخاص ثالث در حوادث رانندگی را جبران می‌کند. پوشش حوادث راننده مقصر نیز در همین بیمه‌نامه گنجانده شده است. نرخ پایه را بیمه مرکزی تعیین می‌کند و در تمام شرکت‌ها یکسان است؛ بنابراین آنچه تفاوت ایجاد می‌کند سرعت صدور و کیفیت پیگیری خسارت است.',
+    descriptionEn:
+      'Third-party motor cover is compulsory for every vehicle in Iran and pays for bodily injury and property damage caused to third parties, plus injury to the at-fault driver. The base rate is set by the Central Insurance regulator and is identical at every insurer — what differs is issuance speed and how a claim is handled.',
+    coverages: [
+      'خسارت مالی به اموال اشخاص ثالث',
+      'خسارت جانی به اشخاص ثالث (دیه، درمان، فوت، نقص عضو)',
+      'حوادث راننده مقصر (غرامت فوت، هزینه درمان، ازکارافتادگی)',
+      'افت قیمت برای خودروهای کمتر از ۱۰ سال',
+    ],
+    notes: [
+      'تخفیف عدم خسارت تنها به بستگان درجه یک قابل انتقال است.',
+      'جریمه دیرکرد روزانه محاسبه می‌شود و تا سقف ۳۶۵ روز ادامه دارد.',
+      'بیمه‌نامه صادرشده در سامانه بیمه مرکزی ثبت می‌گردد.',
+    ],
+    sourceUrl: 'https://www.azki.com/car-insurance/third-party-insurance',
+    intake: 'SELF_SERVE',
+    audience: 'INDIVIDUAL',
+    icon: 'Car',
+    order: 1,
+    fields: [
+      plate(),
+      nationalId(),
+      vehicleModel(),
+      buildYear(),
+      coverageCeiling(PROPERTY_LIMITS, {
+        label: 'سقف تعهدات مالی',
+        labelEn: 'Property damage limit',
+        help: 'حداقل قانونی ۸۰ میلیون تومان است؛ سقف بالاتر حق بیمه را افزایش می‌دهد.',
+        helpEn: 'The legal minimum is the lowest option; a higher limit raises the premium.',
+      }),
+      noClaimYears(),
+      {
+        name: 'ownershipChanged',
+        label: 'مالکیت خودرو در سال گذشته تغییر کرده است',
+        labelEn: 'Ownership changed in the last year',
+        type: 'bool',
+        help: 'تغییر مالکیت بر انتقال تخفیف عدم خسارت اثر می‌گذارد.',
+        helpEn: 'A change of owner affects whether the no-claims discount transfers.',
+      },
+      paymentMethod(),
+    ],
+  },
+
+  {
+    slug: 'auto-body',
+    categorySlug: 'auto',
+    title: 'بیمه بدنه خودرو',
+    titleEn: 'Motor own-damage (comprehensive)',
+    summary: 'اختیاری — جبران خسارت خودروی خودتان، حتی وقتی مقصر نیستید',
+    summaryEn: 'Optional — repairs your own car, whether or not you were at fault',
+    description:
+      'بیمه بدنه اختیاری است و خسارت واردشده به خودروی خودتان را در حوادثی مانند تصادف، سرقت و آتش‌سوزی جبران می‌کند — حتی اگر مقصر حادثه نباشید. علاوه بر پوشش‌های اصلی، مجموعه‌ای از پوشش‌های فرعی وجود دارد که بسته به نیاز و ارزش خودرو انتخاب می‌شوند.',
+    descriptionEn:
+      'Own-damage cover is optional and pays to repair your own vehicle after a collision, theft or fire, regardless of fault. Beyond the core perils, a set of optional extensions can be added depending on the value of the car and how it is used.',
+    coverages: [
+      'تصادف و برخورد',
+      'سقوط و واژگونی',
+      'آتش‌سوزی و صاعقه',
+      'سرقت کلی خودرو',
+      'هزینه‌های نجات و انتقال',
+    ],
+    optionalCoverages: [
+      'نوسانات قیمت',
+      'سرقت قطعات',
+      'شکست شیشه',
+      'بلایای طبیعی',
+      'خسارت ناشی از جنگ',
+      'ایاب و ذهاب',
+      'کشیدن میخ',
+      'رنگ و مواد شیمیایی',
+    ],
+    notes: [
+      'بازدید خودرو الزامی است، مگر در تمدید بدون خسارت.',
+      'خرید اقساطی بدون چک و سفته امکان‌پذیر است.',
+    ],
+    sourceUrl: 'https://www.azki.com/car-insurance/car-body-insurance',
+    intake: 'SELF_SERVE',
+    audience: 'INDIVIDUAL',
+    icon: 'ShieldCheck',
+    order: 2,
+    fields: [
+      plate(),
+      nationalId(),
+      vehicleModel(),
+      buildYear(),
+      currencyField('vehicleValue', 'ارزش روز خودرو', 'Current market value', {
+        min: 10_000_000,
+        help: 'ارزش روز بازار — مبنای محاسبه حق بیمه و سقف خسارت.',
+        helpEn: 'Market value today — the basis for both premium and claim ceiling.',
+      }),
+      {
+        name: 'extraCoverages',
+        label: 'پوشش‌های اختیاری',
+        labelEn: 'Optional extensions',
+        type: 'multiselect',
+        required: false,
+        options: [
+          { value: 'price-fluctuation', label: 'نوسانات قیمت', labelEn: 'Price fluctuation' },
+          { value: 'parts-theft', label: 'سرقت قطعات', labelEn: 'Parts theft' },
+          { value: 'glass', label: 'شکست شیشه', labelEn: 'Glass breakage' },
+          { value: 'natural-disaster', label: 'بلایای طبیعی', labelEn: 'Natural disasters' },
+          { value: 'war', label: 'خسارت ناشی از جنگ', labelEn: 'War damage' },
+          { value: 'transport', label: 'ایاب و ذهاب', labelEn: 'Courtesy transport' },
+          { value: 'nail', label: 'کشیدن میخ', labelEn: 'Keying / scratching' },
+          { value: 'chemical', label: 'رنگ و مواد شیمیایی', labelEn: 'Paint and chemicals' },
+        ],
+      },
+      {
+        name: 'inspectionMethod',
+        label: 'روش بازدید خودرو',
+        labelEn: 'Inspection method',
+        type: 'select',
+        required: true,
+        options: [
+          { value: 'in-person', label: 'حضوری در مرکز بازدید', labelEn: 'In person at a centre' },
+          { value: 'on-site', label: 'بازدید در محل شما', labelEn: 'At your location' },
+          { value: 'app', label: 'بازدید آنلاین (اپلیکیشن)', labelEn: 'Online / app-based' },
+          { value: 'renewal-exempt', label: 'تمدید بدون خسارت — نیازی به بازدید نیست', labelEn: 'Claim-free renewal — exempt' },
+        ],
+      },
+      noClaimYears(),
+      paymentMethod(),
+    ],
+  },
+
+  {
+    slug: 'motorcycle',
+    categorySlug: 'auto',
+    title: 'بیمه شخص ثالث موتورسیکلت',
+    titleEn: 'Motorcycle third-party insurance',
+    summary: 'اجباری برای موتورسیکلت — صدور در همان روز',
+    summaryEn: 'Compulsory for motorcycles — same-day issue',
+    description:
+      'بیمه شخص ثالث موتورسیکلت مانند خودرو اجباری است و خسارت جانی و مالی واردشده به اشخاص ثالث را پوشش می‌دهد. پوشش حوادث راننده مقصر نیز شامل آن است. سفارش‌های ثبت‌شده پیش از ساعت ۲۱ معمولاً در همان روز صادر می‌شوند.',
+    descriptionEn:
+      'Third-party cover for motorcycles is compulsory in the same way as for cars, paying for injury and property damage to third parties and covering injury to the at-fault rider. Orders placed before 21:00 are usually issued the same day.',
+    coverages: [
+      'خسارت جانی اشخاص ثالث',
+      'خسارت مالی اشخاص ثالث',
+      'خسارت جانی راننده مقصر',
+      'افت قیمت وسیله نقلیه آسیب‌دیده',
+    ],
+    notes: [
+      'ارائه کارت ملی، کارت موتور و گواهینامه معتبر الزامی است.',
+      'امکان پرداخت اقساطی ۳ تا ۱۱ ماهه وجود دارد.',
+    ],
+    sourceUrl: 'https://www.azki.com/motorcycle-insurance',
+    intake: 'SELF_SERVE',
+    audience: 'INDIVIDUAL',
+    icon: 'Bike',
+    order: 3,
+    fields: [
+      plate({ label: 'شماره پلاک موتورسیکلت', labelEn: 'Motorcycle plate number', help: undefined, helpEn: undefined }),
+      nationalId({ help: 'کد ملی صاحب پلاک', helpEn: 'National ID of the plate holder' }),
+      previousInsurer(),
+      {
+        name: 'previousPolicyEnd',
+        label: 'تاریخ پایان بیمه قبلی',
+        labelEn: 'Previous policy end date',
+        type: 'date',
+        required: false,
+        help: 'برای محاسبه جریمه دیرکرد و تخفیف عدم خسارت.',
+        helpEn: 'Used to work out any late penalty and the no-claims discount.',
+      },
+      claimHistory(),
+      paymentMethod(),
+    ],
+  },
+];
