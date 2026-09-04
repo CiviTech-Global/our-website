@@ -1,4 +1,13 @@
-import { Code2, Smartphone, Landmark, BarChart3, UserCheck, Bot, Activity, Headset } from 'lucide-react';
+import {
+  Activity,
+  BarChart3,
+  ClipboardList,
+  Code2,
+  Headset,
+  Landmark,
+  Smartphone,
+  UserCheck,
+} from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
@@ -15,7 +24,7 @@ export default function ServicesPage() {
 
   const insuranceServices = [
     { icon: UserCheck, title: t.services.service1Title, desc: t.services.service1Desc, glow: 'green' as const },
-    { icon: Bot, title: t.services.service2Title, desc: t.services.service2Desc, glow: 'amber' as const },
+    { icon: ClipboardList, title: t.services.service2Title, desc: t.services.service2Desc, glow: 'amber' as const },
     { icon: Activity, title: t.services.service3Title, desc: t.services.service3Desc, glow: 'red' as const },
     { icon: Headset, title: t.services.service4Title, desc: t.services.service4Desc, glow: 'green' as const },
   ];

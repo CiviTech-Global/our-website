@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { Code2, ShieldCheck, MessageCircle, LineChart, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Code2, ShieldCheck, ClipboardList, LineChart, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useInsuranceCatalog } from '@/api/insurance';
 import { GlowCard } from '@/components/ui/GlowCard';
@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Spinner } from '@/components/ui/Spinner';
 import { HeroMotif } from '@/components/home/HeroMotif';
-
-const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_BOT_URL ?? 'https://t.me/';
 
 export default function HomePage() {
   const { t, locale } = useLocale();
@@ -18,7 +16,7 @@ export default function HomePage() {
   const features = [
     { icon: Code2, title: t.home.feature0Title, desc: t.home.feature0Desc, glow: 'red' as const },
     { icon: ShieldCheck, title: t.home.feature1Title, desc: t.home.feature1Desc, glow: 'green' as const },
-    { icon: MessageCircle, title: t.home.feature2Title, desc: t.home.feature2Desc, glow: 'amber' as const },
+    { icon: ClipboardList, title: t.home.feature2Title, desc: t.home.feature2Desc, glow: 'amber' as const },
     { icon: LineChart, title: t.home.feature3Title, desc: t.home.feature3Desc, glow: 'red' as const },
   ];
 
@@ -35,12 +33,12 @@ export default function HomePage() {
           </h1>
           <p className="mt-4 max-w-lg text-lg text-text-secondary">{t.home.heroSubtitle}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
+            <Link to="/insurance">
               <Button size="lg">
                 {t.home.heroCtaPrimary}
                 <ArrowIcon className="size-4" aria-hidden="true" />
               </Button>
-            </a>
+            </Link>
             <Link to="/contact">
               <Button size="lg" variant="outline">
                 {t.home.heroCtaSecondary}
@@ -111,9 +109,9 @@ export default function HomePage() {
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{t.home.ctaTitle}</h2>
           <p className="mx-auto mt-2 max-w-md text-text-secondary">{t.home.ctaSubtitle}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
+            <Link to="/insurance">
               <Button size="lg">{t.home.heroCtaPrimary}</Button>
-            </a>
+            </Link>
             <Link to="/contact">
               <Button size="lg" variant="outline">
                 {t.home.heroCtaSecondary}

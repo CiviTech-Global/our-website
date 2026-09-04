@@ -12,7 +12,6 @@ import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
-const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_BOT_URL ?? 'https://t.me/';
 const CONTACT_EMAIL = 'info@civitechglobal.com';
 
 /**
@@ -107,18 +106,6 @@ export default function ContactPage() {
                 <div>
                   <p className="text-text-muted">{t.contact.infoEmail}</p>
                   <p className="font-medium text-text-primary ltr text-start">{CONTACT_EMAIL}</p>
-                </div>
-              </a>
-              <a
-                href={TELEGRAM_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-3 rounded-lg border border-border-default p-3 transition-colors hover:border-brand-green-500/40"
-              >
-                <Send className="size-5 text-brand-green-500" aria-hidden="true" />
-                <div>
-                  <p className="text-text-muted">{t.contact.infoTelegram}</p>
-                  <p className="font-medium text-text-primary">@civitechglobal_bot</p>
                 </div>
               </a>
             </div>
