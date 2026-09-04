@@ -24,7 +24,9 @@ export function FuturisticFooter() {
                 <span className="gradient-text">{t.common.brand}</span>
               </div>
               <p className="text-sm text-text-secondary">{t.footer.tagline}</p>
-              <p className="mt-1 text-xs text-text-muted">{t.common.legalName}</p>
+              {!t.common.brand.includes(t.common.legalName) && (
+                <p className="mt-1 text-xs text-text-muted">{t.common.legalName}</p>
+              )}
               <div className="mt-4 flex items-center gap-3">
                 <SocialLink href={TELEGRAM_URL} label="Telegram">
                   <TelegramIcon />
@@ -70,7 +72,11 @@ export function FuturisticFooter() {
           </div>
 
           <div className="mt-8 border-t border-border-subtle pt-4 text-center text-xs text-text-muted">
-            © {year} {t.common.brand} ({t.common.legalName}). {t.footer.rights}
+            © {year}{' '}
+            {t.common.brand.includes(t.common.legalName)
+              ? t.common.brand
+              : `${t.common.brand} (${t.common.legalName})`}
+            . {t.footer.rights}
           </div>
         </div>
       </div>

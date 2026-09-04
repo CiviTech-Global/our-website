@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 /**
  * Lightweight abstract hero visual inspired by Persian girih (geometric star)
@@ -9,6 +10,7 @@ import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
  */
 export function HeroMotif() {
   const shouldReduceMotion = useReducedMotion();
+  const { t } = useLocale();
 
   return (
     <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-full">
@@ -54,7 +56,7 @@ export function HeroMotif() {
         transition={shouldReduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       >
         <div className="flex size-44 items-center justify-center rounded-full bg-brand-green-500/90 p-3 shadow-soft-lg">
-          <img src={logoSrc} alt="CiviTech Global" className="size-full object-contain" />
+          <img src={logoSrc} alt={t.common.brand} className="size-full object-contain" />
         </div>
       </motion.div>
     </div>

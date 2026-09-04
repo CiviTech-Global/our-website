@@ -2,7 +2,7 @@ import type fa from './fa';
 
 const en: typeof fa = {
   common: {
-    brand: 'CiviTech Global',
+    brand: 'Rayan Tamaddon Jahan Gostar | CiviTech Global',
     legalName: 'Rayan Tamaddon Jahan Gostar',
     loading: 'Loading...',
     error: 'Something went wrong',
