@@ -107,8 +107,15 @@ export function validateField(field: FieldDef, value: AnswerValue): string | nul
     case 'bool':
       return typeof value === 'boolean' ? null : 'مقدار نامعتبر است';
 
-    case 'nationalId':
-      return isValidNationalId(String(value)) ? null : 'کد ملی نامعتبر است';
+    case 'nationalId': {
+      // The same two-message split as the server, so the field explains
+      // itself beside the input instead of after a failed submit.
+      const digits = normalizePersianDigits(String(value)).replace(/\D/g, '');
+      if (digits.length !== 10) return 'کد ملی باید دقیقاً ۱۰ رقم باشد';
+      return isValidNationalId(digits)
+        ? null
+        : 'رقم کنترلی کد ملی هم‌خوانی ندارد؛ کد ملی واقعی را وارد کنید';
+    }
 
     case 'phone':
       return normalizeIranMobile(String(value)) ? null : 'شماره تماس باید به فرمت ۰۹xxxxxxxxx باشد';

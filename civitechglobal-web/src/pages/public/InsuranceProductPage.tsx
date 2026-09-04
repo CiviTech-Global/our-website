@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { CheckCircle2, ChevronLeft, Copy, Info, PhoneCall, Plus, ShieldCheck, Zap } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChevronLeft,
+  Copy,
+  FileText,
+  HelpCircle,
+  Info,
+  PhoneCall,
+  Plus,
+  ShieldCheck,
+  SlidersHorizontal,
+  XCircle,
+  Zap,
+} from 'lucide-react';
 import { useInsuranceProduct } from '@/api/insurance';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -171,6 +184,82 @@ export default function InsuranceProductPage() {
                     </li>
                   ))}
                 </ul>
+              </Card>
+            )}
+
+            {product.exclusions.length > 0 && (
+              <Card>
+                <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <XCircle className="size-4 text-brand-red-500" aria-hidden="true" />
+                  {t.insurance.exclusions}
+                </h2>
+                <p className="mb-3 text-xs text-text-muted">{t.insurance.exclusionsHint}</p>
+                <ul className="flex flex-col gap-2">
+                  {product.exclusions.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-text-secondary">
+                      <XCircle
+                        className="mt-0.5 size-4 shrink-0 text-brand-red-500/70"
+                        aria-hidden="true"
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {product.requiredDocuments.length > 0 && (
+              <Card>
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <FileText className="size-4 text-brand-green-500" aria-hidden="true" />
+                  {t.insurance.requiredDocuments}
+                </h2>
+                <ul className="flex flex-col gap-2">
+                  {product.requiredDocuments.map((item) => (
+                    <li key={item} className="text-sm leading-6 text-text-secondary">
+                      • {item}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {product.premiumFactors.length > 0 && (
+              <Card>
+                <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <SlidersHorizontal className="size-4 text-brand-amber-500" aria-hidden="true" />
+                  {t.insurance.premiumFactors}
+                </h2>
+                <p className="mb-3 text-xs text-text-muted">{t.insurance.premiumFactorsHint}</p>
+                <ul className="flex flex-wrap gap-2">
+                  {product.premiumFactors.map((item) => (
+                    <li
+                      key={item}
+                      className="rounded-full border border-border-default px-3 py-1 text-xs text-text-secondary"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {product.faq.length > 0 && (
+              <Card>
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <HelpCircle className="size-4 text-brand-green-500" aria-hidden="true" />
+                  {t.insurance.faq}
+                </h2>
+                <div className="flex flex-col divide-y divide-border-default">
+                  {product.faq.map((entry) => (
+                    <details key={entry.question} className="group py-2 first:pt-0 last:pb-0">
+                      <summary className="cursor-pointer list-none text-sm font-medium text-text-primary marker:content-none">
+                        {entry.question}
+                      </summary>
+                      <p className="mt-2 text-sm leading-6 text-text-secondary">{entry.answer}</p>
+                    </details>
+                  ))}
+                </div>
               </Card>
             )}
 

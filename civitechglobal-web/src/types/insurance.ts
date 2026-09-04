@@ -86,6 +86,10 @@ export interface ProductDetail extends ProductSummary {
   coverages: string[];
   optionalCoverages: string[];
   notes: string[];
+  exclusions: string[];
+  requiredDocuments: string[];
+  premiumFactors: string[];
+  faq: { question: string; answer: string }[];
   formSchema: FieldDef[];
   catalogVersion: number;
   category: {

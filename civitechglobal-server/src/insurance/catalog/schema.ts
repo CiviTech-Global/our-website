@@ -130,7 +130,14 @@ function coerceField(field: FieldDef, raw: unknown): { value: unknown } | { erro
     case 'nationalId': {
       if (typeof raw !== 'string') return { error: 'کد ملی نامعتبر است' };
       const digits = normalizePersianDigits(raw).replace(/\D/g, '');
-      if (!isValidNationalId(digits)) return { error: 'کد ملی نامعتبر است' };
+      // Two different mistakes deserve two different messages. A bare
+      // «invalid» leaves someone who typed nine digits hunting through the
+      // ten they believe they typed, and leaves someone who invented a
+      // number convinced the field itself is broken.
+      if (digits.length !== 10) return { error: 'کد ملی باید دقیقاً ۱۰ رقم باشد' };
+      if (!isValidNationalId(digits)) {
+        return { error: 'رقم کنترلی کد ملی با بقیهٔ ارقام هم‌خوانی ندارد؛ کد ملی واقعی را وارد کنید' };
+      }
       return { value: digits };
     }
 

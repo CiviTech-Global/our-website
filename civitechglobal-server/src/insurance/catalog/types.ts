@@ -129,6 +129,22 @@ export interface ProductDef {
   optionalCoverages?: string[];
   /** Conditions worth stating before someone fills the form. */
   notes?: string[];
+  /**
+   * What the policy does NOT pay for. Stated as plainly as the coverages,
+   * because the difference between the two lists is where disappointment
+   * lives — someone who learns about an exclusion at claim time learns it in
+   * the worst possible circumstances.
+   */
+  exclusions?: string[];
+  /** Documents an applicant should have to hand before the call. */
+  requiredDocuments?: string[];
+  /**
+   * What moves the premium. We quote nothing on this site, so this is the
+   * honest substitute for a price: the variables a specialist will ask about.
+   */
+  premiumFactors?: string[];
+  /** Questions worth answering before someone has to ask them. */
+  faq?: { question: string; answer: string }[];
   intake: IntakeMode;
   audience: Audience;
   /** lucide-react icon name. */

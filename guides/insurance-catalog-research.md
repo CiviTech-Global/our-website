@@ -395,18 +395,23 @@ One claim per annual policy.
 underwriter without a phone call first. These get a full multi-step form:
 `third-party-auto`, `auto-body`, `motorcycle`, `fire-residential`,
 `earthquake-residential`, `elevator`, `health-supplementary-individual`,
-`life-investment`, `liability-medical`, `travel-outbound`, `travel-domestic`,
-`travel-pilgrimage`, `travel-inbound`, `accident-individual`, `accident-group`,
-`mobile-device`. (16)
+**Self-serve (17)** — the source publishes real intake fields, so the product
+gets a full multi-step form: `third-party-auto`, `auto-body`, `motorcycle`,
+`fire-residential`, `earthquake-residential`, `elevator`,
+`health-supplementary-individual`, `life-investment`, `accident-individual`,
+`accident-group`, `travel-outbound`, `travel-domestic`, `travel-pilgrimage`,
+`travel-inbound`, `liability-medical`, `liability-building-manager`,
+`mobile-device`.
 
-*Callback-first* products publish none, because in reality an underwriter has to
-price them by hand. Forcing a fake 12-field form onto these would collect data
-nobody uses and lose the user halfway. They get contact details, organisation, a
-structured brief, and a scheduled call: the corporate hub products, plus
+**Callback-first (17)** — the source publishes no intake fields, because in
+reality an underwriter prices these by hand. Forcing a fake twelve-field form
+onto them would collect data nobody uses and lose the applicant halfway. They
+get contact details, organisation, a short structured brief and a scheduled
+call: `cargo-import`, `cargo-export`, `cargo-bank`, `engineering-all-risk`,
+`life-group`, `life-credit`, `life-project`, `life-shuka`, `liability-other`,
 `health-supplementary-corporate`, `fire-commercial`, `fire-industrial`,
 `employer-liability-construction`, `employer-liability-general`,
-`liability-building-manager`, `liability-supervising-engineer`,
-`accident-pension`, `life-shuka`, `home-comprehensive`. (the rest)
+`liability-supervising-engineer`, `accident-pension`, `home-comprehensive`.
 
 The distinction is not cosmetic — it is the main thing the data model has to
 express, and it is why a single `Lead` table with fixed columns cannot survive
@@ -415,3 +420,48 @@ this refactor.
 **Recurring fields across products** (define once, reuse): کد ملی، شماره تماس،
 نام و نام خانوادگی، تاریخ تولد، استان و شهر، متراژ، ارزش، تعداد نفرات،
 مدت (روز/سال)، سقف تعهدات، درصد فرانشیز، سوابق بیمه‌ای.
+
+
+---
+
+## Second pass — 2026-09-04
+
+Every source page was fetched again, asking for far more than the first pass
+took: exclusions, required documents, what moves the premium, and the questions
+people actually ask. Four new fields carry it — `exclusions`,
+`requiredDocuments`, `premiumFactors` and `faq` — and the product page renders
+each as its own section.
+
+The exclusion list earns its place more than any of the others. Coverages
+describe only the good half of a policy; the exclusions are where
+disappointment lives, and someone who meets one at claim time meets it in the
+worst possible circumstances. Putting both lists on the same page, in the same
+weight of type, is the honest way to present a product we are asking people to
+apply for.
+
+`premiumFactors` is the substitute for a price. We quote nothing on this site,
+so rather than leave the money question unanswered, each product lists the
+variables a specialist will actually ask about.
+
+**24 of 34 products** carry the new detail. The other ten do not, and that is a
+finding rather than an omission:
+
+- `life-shuka` — the source page now returns 404. The product's existing
+  description stands; nothing was invented to replace what is gone.
+- `cargo-import`, `cargo-export`, `cargo-bank`, `engineering-all-risk`,
+  `life-group`, `life-credit`, `life-project`, `liability-other` — all eight
+  live behind one corporate hub page that is a bare list of product names with
+  no coverage, exclusion or documentation detail on it at all.
+- `accident-pension` — the page carries two sentences of substance.
+
+For these, a specialist on the call is genuinely the source of truth, which is
+also why every one of them is `CALLBACK`. If detail is wanted on the page, it
+has to come from the underwriter, not from a fetch.
+
+**A note on sourcing.** These pages are where the product facts were checked,
+and nothing more. No wording, framing or branding from them appears in the
+catalog: the Persian copy is written from the facts, names no insurer or
+comparison site, and the `sourceUrl` column that once carried these links was
+dropped from the database (migration
+`20260904080000_drop_product_source_url`). Provenance lives here, in an
+internal document, which is the right place for it.

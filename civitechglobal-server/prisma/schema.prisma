@@ -165,6 +165,12 @@ model InsuranceProduct {
   coverages         String[] @default([])
   optionalCoverages String[] @default([]) @map("optional_coverages")
   notes             String[] @default([])
+  exclusions        String[] @default([])
+  requiredDocuments String[] @default([]) @map("required_documents")
+  premiumFactors    String[] @default([]) @map("premium_factors")
+
+  /// [{ question, answer }] — shape enforced by the catalog, not the database.
+  faq Json?
 
   intakeMode IntakeMode      @default(SELF_SERVE) @map("intake_mode")
   audience   ProductAudience @default(INDIVIDUAL)

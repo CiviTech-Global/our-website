@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { AxiosError } from 'axios';
-import { CheckCircle2, Phone, ShieldCheck } from 'lucide-react';
+import { Check, CheckCircle2, Copy, Phone, ShieldCheck } from 'lucide-react';
 import { useSendOtp, useVerifyOtp } from '@/api/insurance';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import { normalizeIranMobile, normalizePersianDigits } from '@/lib/persian';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -37,6 +38,10 @@ export function PhoneVerification({ onVerified, verifiedPhone }: PhoneVerificati
   const [sent, setSent] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  // TEMPORARY — remove together with `devCode` in otp.service.ts once an SMS
+  // gateway is bought. Until then the code has nowhere to go but the screen.
+  const [devCode, setDevCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const codeInputRef = useRef<HTMLInputElement>(null);
 
   const sendOtp = useSendOtp();
@@ -72,10 +77,16 @@ export function PhoneVerification({ onVerified, verifiedPhone }: PhoneVerificati
       const result = await sendOtp.mutateAsync(normalized);
       setSent(true);
       setSecondsLeft(60);
-      // Development convenience: the console SMS provider returns the code, so
-      // nobody has to read it out of the server log to test the flow.
-      if (result.devCode) setCode(result.devCode);
-      window.setTimeout(() => codeInputRef.current?.focus(), 50);
+      // TEMPORARY. With no SMS gateway connected the API returns the code in
+      // the response (outside production only). Showing it in a dialog keeps
+      // the rest of the flow honest — it still has to be typed or pasted into
+      // the field, exactly as a texted code would be.
+      if (result.devCode) {
+        setDevCode(result.devCode);
+        setCopied(false);
+      } else {
+        window.setTimeout(() => codeInputRef.current?.focus(), 50);
+      }
     } catch (err) {
       setError(messageFrom(err, t.insurance.otpSendFailed));
     }
@@ -95,6 +106,23 @@ export function PhoneVerification({ onVerified, verifiedPhone }: PhoneVerificati
     } catch (err) {
       setError(messageFrom(err, t.insurance.otpVerifyFailed));
     }
+  }
+
+  async function copyDevCode() {
+    if (!devCode) return;
+    try {
+      await navigator.clipboard.writeText(devCode);
+      setCopied(true);
+    } catch {
+      // Clipboard access can be refused (insecure origin, denied permission).
+      // The code is on screen either way, so this is not worth an error.
+      setCopied(false);
+    }
+  }
+
+  function closeDevCode() {
+    setDevCode(null);
+    window.setTimeout(() => codeInputRef.current?.focus(), 50);
   }
 
   return (
@@ -170,6 +198,28 @@ export function PhoneVerification({ onVerified, verifiedPhone }: PhoneVerificati
           {error}
         </p>
       )}
+
+      {/* TEMPORARY: stands in for an SMS until a gateway is configured. */}
+      <Modal isOpen={devCode !== null} onClose={closeDevCode} title={t.insurance.devCodeTitle}>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-text-secondary">{t.insurance.devCodeHint}</p>
+          <p
+            dir="ltr"
+            className="ltr rounded-xl border border-border-default bg-surface-100 py-4 text-center text-3xl font-semibold tracking-[0.5em] text-text-primary"
+          >
+            {devCode}
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" variant="secondary" onClick={copyDevCode} className="flex-1">
+              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+              {copied ? t.insurance.devCodeCopied : t.insurance.devCodeCopy}
+            </Button>
+            <Button type="button" onClick={closeDevCode} className="flex-1">
+              {t.insurance.devCodeClose}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <button
         type="button"

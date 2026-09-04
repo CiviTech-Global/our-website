@@ -63,10 +63,18 @@ describe('validateField', () => {
     expect(validateField(contentsValue, '۱۲۳۴۵۶')).toBeNull();
   });
 
-  it('rejects a national ID with a bad check digit', () => {
+  it('tells a short national ID apart from a wrong one', () => {
+    // Two different mistakes, two different messages. A single «invalid»
+    // leaves someone who typed nine digits searching the ten they think they
+    // typed, and leaves someone who invented a number believing the field is
+    // broken rather than that the number is.
     const nid: FieldDef = { name: 'n', label: 'n', labelEn: 'n', type: 'nationalId', required: true };
     expect(validateField(nid, '0084575948')).toBeNull();
-    expect(validateField(nid, '0084575949')).toBe('کد ملی نامعتبر است');
+    expect(validateField(nid, '۰۰۸۴۵۷۵۹۴۸')).toBeNull();
+    expect(validateField(nid, '008457594')).toBe('کد ملی باید دقیقاً ۱۰ رقم باشد');
+    expect(validateField(nid, '0084575949')).toBe(
+      'رقم کنترلی کد ملی هم‌خوانی ندارد؛ کد ملی واقعی را وارد کنید',
+    );
   });
 
   it('enforces numeric bounds', () => {
