@@ -130,7 +130,6 @@ async function seedCatalog(): Promise<void> {
       coverages: product.coverages,
       optionalCoverages: product.optionalCoverages ?? [],
       notes: product.notes ?? [],
-      sourceUrl: product.sourceUrl,
       intakeMode: product.intake,
       audience: product.audience,
       icon: product.icon,

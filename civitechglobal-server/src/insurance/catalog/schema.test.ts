@@ -15,7 +15,6 @@ function fixture(fields: ResolvedProduct['allFields']): ResolvedProduct {
     description: 'd',
     descriptionEn: 'd',
     coverages: [],
-    sourceUrl: '',
     intake: 'SELF_SERVE',
     audience: 'INDIVIDUAL',
     icon: 'Car',

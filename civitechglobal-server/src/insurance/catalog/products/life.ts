@@ -38,7 +38,6 @@ export const lifeProducts: ProductDef[] = [
       'مدت قرارداد ۵ تا ۳۰ سال؛ مجموع سن و مدت قرارداد نباید از ۷۰ بیشتر شود.',
       'برخی پوشش‌ها مانند بیماری‌های خاص دوره انتظار ۳ تا ۶ ماهه دارند.',
     ],
-    sourceUrl: 'https://www.azki.com/personal-insurance/life-insurance',
     intake: 'SELF_SERVE',
     audience: 'INDIVIDUAL',
     icon: 'Sprout',
@@ -100,7 +99,6 @@ export const lifeProducts: ProductDef[] = [
       'Shuka is a family of life-and-pension plans that focus on providing periodic income in retirement rather than a lump sum. The structure is set by entry age, contribution period and the target pension. Because each plan is shaped around individual circumstances, a specialist reviews the options with you first.',
     coverages: ['مستمری دوره‌ای بازنشستگی', 'پوشش فوت', 'اندوخته سرمایه‌گذاری'],
     notes: ['ساختار طرح بر اساس سن ورود و مستمری هدف تنظیم می‌شود.'],
-    sourceUrl: 'https://www.azki.com/nano-product/life-insurance-shuka',
     intake: 'CALLBACK',
     audience: 'INDIVIDUAL',
     icon: 'PiggyBank',
@@ -129,7 +127,6 @@ export const lifeProducts: ProductDef[] = [
       'Aimed at people in hazardous occupations or anyone concerned about leaving dependants without income. If death results from an accident, survivors receive a monthly pension for five years, sized directly by the monthly premium paid.',
     coverages: ['مستمری ماهانه بازماندگان به مدت ۵ سال'],
     optionalCoverages: ['نقص عضو', 'هزینه‌های پزشکی ناشی از حادثه'],
-    sourceUrl: 'https://www.azki.com/nano-product/accident-pension-insurance',
     intake: 'CALLBACK',
     audience: 'INDIVIDUAL',
     icon: 'Umbrella',
@@ -175,7 +172,6 @@ export const lifeProducts: ProductDef[] = [
     descriptionEn:
       'Group life provides death and disability cover for a company workforce under a single contract, at a fraction of what individual policies would cost. The sum insured is usually set as a multiple of salary or a flat figure for everyone. The final rate depends on the age mix, occupational classes and headcount.',
     coverages: ['غرامت فوت', 'ازکارافتادگی دائم', 'امکان افزودن پوشش بیماری‌های خاص'],
-    sourceUrl: 'https://www.azki.com/corporate-insurance',
     intake: 'CALLBACK',
     audience: 'CORPORATE',
     icon: 'Users',
@@ -217,7 +213,6 @@ export const lifeProducts: ProductDef[] = [
     descriptionEn:
       'Credit life is written against a bank facility: if the borrower dies during the repayment period, the insurer settles the outstanding balance with the bank and the family is not left with the debt. The sum insured falls as the loan amortises, which is why it costs less than ordinary life cover. Banks frequently require it as a condition of long-term lending.',
     coverages: ['تسویه مانده تسهیلات در صورت فوت', 'امکان افزودن پوشش ازکارافتادگی'],
-    sourceUrl: 'https://www.azki.com/corporate-insurance',
     intake: 'CALLBACK',
     audience: 'CORPORATE',
     icon: 'Landmark',
@@ -259,7 +254,6 @@ export const lifeProducts: ProductDef[] = [
     descriptionEn:
       'On contracting projects the workforce is engaged for a fixed period, and buying annual life cover for them makes little sense. Project-based life limits the cover to the project window and prices it for that period. It is usually bought alongside employer liability cover.',
     coverages: ['غرامت فوت در طول پروژه', 'ازکارافتادگی دائم'],
-    sourceUrl: 'https://www.azki.com/corporate-insurance',
     intake: 'CALLBACK',
     audience: 'CORPORATE',
     icon: 'HardHat',

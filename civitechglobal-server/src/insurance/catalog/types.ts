@@ -129,8 +129,6 @@ export interface ProductDef {
   optionalCoverages?: string[];
   /** Conditions worth stating before someone fills the form. */
   notes?: string[];
-  /** Where the product facts were researched from. Shown in admin, not public. */
-  sourceUrl: string;
   intake: IntakeMode;
   audience: Audience;
   /** lucide-react icon name. */

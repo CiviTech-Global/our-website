@@ -26,7 +26,6 @@ export const deviceProducts: ProductDef[] = [
       'فرانشیز بسته به نوع خسارت ۲۰ تا ۴۰ درصد است.',
       'بیمه‌نامه یک‌ساله است و تنها یک بار قابل استفاده است.',
     ],
-    sourceUrl: 'https://www.azki.com/mobile-insurance',
     intake: 'SELF_SERVE',
     audience: 'INDIVIDUAL',
     icon: 'Smartphone',

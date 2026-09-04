@@ -166,9 +166,6 @@ model InsuranceProduct {
   optionalCoverages String[] @default([]) @map("optional_coverages")
   notes             String[] @default([])
 
-  /// Where the product facts were researched. Shown in admin, never public.
-  sourceUrl String? @map("source_url")
-
   intakeMode IntakeMode      @default(SELF_SERVE) @map("intake_mode")
   audience   ProductAudience @default(INDIVIDUAL)
 
