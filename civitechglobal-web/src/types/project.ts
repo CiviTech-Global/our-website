@@ -123,3 +123,119 @@ export interface ProjectTrackResult {
   updatedAt: string;
   proposal: PublicProposal | null;
 }
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+export interface AdminProjectSummary {
+  id: string;
+  trackingCode: string;
+  title: string;
+  contactName: string;
+  organizationName: string | null;
+  projectType: ProjectType;
+  urgency: ProjectUrgency;
+  status: ProjectRequestStatus;
+  budgetMin: string | null;
+  budgetMax: string | null;
+  budgetUnknown: boolean;
+  currency: string;
+  createdAt: string;
+  _count: { attachments: number; proposals: number };
+}
+
+export interface ProjectAttachment {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  checksum: string;
+  createdAt: string;
+}
+
+/** A proposal as staff see it — including the notes the client never gets. */
+export interface AdminProposal extends Omit<PublicProposal, 'expired'> {
+  id: string;
+  requestId: string;
+  internalNotes: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminProjectDetail {
+  id: string;
+  trackingCode: string;
+  status: ProjectRequestStatus;
+  contactName: string;
+  contactRole: string | null;
+  organizationName: string | null;
+  website: string | null;
+  email: string;
+  phone: string;
+  title: string;
+  summary: string;
+  projectType: ProjectType;
+  platforms: Platform[];
+  goals: string | null;
+  targetUsers: string | null;
+  existingSystems: string | null;
+  constraints: string | null;
+  outOfScope: string | null;
+  urgency: ProjectUrgency;
+  desiredStartAt: string | null;
+  deadlineAt: string | null;
+  deadlineReason: string | null;
+  budgetMin: string | null;
+  budgetMax: string | null;
+  suggestedPrice: string | null;
+  budgetUnknown: boolean;
+  currency: string;
+  engagementModel: EngagementModel;
+  ndaRequired: boolean;
+  clientNotes: string | null;
+  internalNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  attachments: ProjectAttachment[];
+  proposals: AdminProposal[];
+  assignedTo: { id: string; firstName: string; lastName: string } | null;
+  /**
+   * The (email, phone) binding this request came in under. `requestCount` is
+   * how many briefs this identity has ever filed — the quickest signal of a
+   * repeat client, or of someone probing the form.
+   */
+  identity: {
+    id: string;
+    requestCount: number;
+    trusted: boolean;
+    blocked: boolean;
+    createdAt: string;
+  };
+}
+
+/** What the proposal composer sends. Matches the server's `proposalSchema`. */
+export interface ProposalPayload {
+  scopeSummary: string;
+  deliverables: string[];
+  assumptions: string[];
+  exclusions: string[];
+  milestones?: Milestone[];
+  engagementModel: EngagementModel;
+  optimisticHours?: number;
+  likelyHours?: number;
+  pessimisticHours?: number;
+  priceMin?: string;
+  priceLikely?: string;
+  priceMax?: string;
+  currency?: string;
+  hourlyRate?: string;
+  discoveryRequired?: boolean;
+  discoveryPrice?: string;
+  discoveryDays?: number;
+  timelineWeeksMin?: number;
+  timelineWeeksMax?: number;
+  message?: string;
+  internalNotes?: string;
+  validUntil?: string;
+}
