@@ -5,10 +5,12 @@ import {
   CalendarClock,
   CheckCircle2,
   Compass,
+  FileText,
   ListChecks,
   Scale,
   XCircle,
 } from 'lucide-react';
+import { Link } from 'react-router';
 import { useRespondToProposal } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
@@ -89,6 +91,13 @@ export function ProposalView({
             <Badge variant="info">{t.proposal.awaiting}</Badge>
           )}
         </div>
+
+        <Link to={`/proposal/${trackingCode}`} className="mb-4 inline-block">
+          <Button type="button" variant="secondary">
+            <FileText className="size-4" />
+            {t.proposal.openDocument}
+          </Button>
+        </Link>
 
         {proposal.message && (
           <p className="mb-4 rounded-lg border border-border-default bg-surface-50 p-3 text-sm leading-6 text-text-secondary">

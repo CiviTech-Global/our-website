@@ -20,6 +20,7 @@ const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
 // The main service line, and a heavy form: split out so the home page does
 // not carry it.
 const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
+const ProposalDocumentPage = lazy(() => import('@/pages/public/ProposalDocumentPage'));
 const ProjectsPage = lazy(() => import('@/pages/admin/ProjectsPage'));
 const ProjectDetailPage = lazy(() => import('@/pages/admin/ProjectDetailPage'));
 const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
@@ -45,6 +46,15 @@ function RouteLoadingFallback() {
 export default function App() {
   return (
     <Routes>
+      <Route
+        path="/proposal/:code"
+        element={
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <ProposalDocumentPage />
+          </Suspense>
+        }
+      />
+
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />

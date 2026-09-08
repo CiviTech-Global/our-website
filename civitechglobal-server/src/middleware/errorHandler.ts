@@ -39,9 +39,18 @@ function shouldReportToSentry(err: Error): boolean {
 }
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
-  logger.error(
-    { type: err.name, message: err.message, statusCode: (err as MaybeHttpError).statusCode },
-    'Unhandled error',
+  const statusCode = (err as MaybeHttpError).statusCode;
+
+  // Level by severity, for the same reason Sentry filters by it: a 404 on a
+  // mistyped tracking code and a 429 on a rate limit are the system working,
+  // not incidents. Logging them at error level buries the 500s that matter and
+  // costs real money in log volume once traffic is non-trivial. Anything
+  // without a statusCode never passed through AppError, so it is an unhandled
+  // throw and stays at error.
+  const level = typeof statusCode === "number" && statusCode < 500 ? "warn" : "error";
+  logger[level](
+    { type: err.name, message: err.message, statusCode },
+    level === "warn" ? "Request rejected" : "Unhandled error",
   );
 
   // Capture the exception object only — never req/user/PII fields — before

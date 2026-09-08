@@ -245,6 +245,15 @@ const en: typeof fa = {
   },
   proposal: {
     title: 'Our proposal',
+    savePdf: 'Save as PDF',
+    docHint: 'Click the button, then choose "Save as PDF" as the destination in the print dialog.',
+    docSubtitle: 'Technical and commercial proposal',
+    docVersion: 'Version',
+    docIssued: 'Issued',
+    docFooter:
+      'This document is a proposal, not a contract. The figures hold until the validity date, after which they need review.',
+    docNotFound: 'No proposal found for that tracking code.',
+    openDocument: 'Open and save as PDF',
     project: 'Project',
     notYet: 'We are reviewing your request. The proposal will appear here as soon as it is ready.',
 

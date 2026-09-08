@@ -269,3 +269,80 @@ input::placeholder,
 textarea::placeholder {
   text-align: start;
 }
+
+/* ===========================================================================
+   Print
+   ===========================================================================
+   Used by the proposal document at /proposal/:code, whose "Save as PDF" is the
+   browser's own print-to-PDF. That is the right tool for this app rather than a
+   compromise: the browser already shapes and orders Persian correctly, which
+   server-side PDF libraries do not, and it produces selectable vector text.
+
+   The rules below turn a web page into a document: paper geometry, ink-cheap
+   colours, and page breaks that never split a section from its heading. */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
+
+  /* Force the light palette regardless of the viewer's theme. A dark-mode PDF
+     is unreadable on paper and pours ink into a solid background. */
+  :root,
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --color-surface-50: #ffffff;
+    --color-surface-100: #ffffff;
+    --color-surface-200: #ffffff;
+    --color-text-primary: #111827;
+    --color-text-secondary: #374151;
+    --color-text-muted: #6b7280;
+    --color-border-default: #d1d5db;
+    --color-border-subtle: #e5e7eb;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Anything that only makes sense on screen: toolbars, buttons, the app
+     chrome around a document opened from inside the site. */
+  .no-print,
+  nav,
+  footer.site-footer,
+  button {
+    display: none !important;
+  }
+
+  .proposal-doc {
+    box-shadow: none !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* A heading stranded at the foot of a page, or an exclusion list split
+     across two, is exactly the sort of thing people then miss. */
+  .doc-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Underlines and link colours cost ink and say nothing on paper. */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
