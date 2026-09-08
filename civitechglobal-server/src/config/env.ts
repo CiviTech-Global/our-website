@@ -74,6 +74,13 @@ export const env = {
   OTP_MAX_ATTEMPTS: parseInt(optional('OTP_MAX_ATTEMPTS', '5'), 10),
   /** How long a verified-phone token stays usable to submit a request. */
   PHONE_TOKEN_TTL_SECONDS: parseInt(optional('PHONE_TOKEN_TTL_SECONDS', '900'), 10),
+
+  // Where client-supplied project attachments are written. MUST be outside
+  // any directory a web server serves: nothing here is ever executed or
+  // linked to directly, and the files are handed back only through an
+  // authenticated download route. On the server this is a bind-mounted volume
+  // so uploads survive a container rebuild and get picked up by the backup job.
+  UPLOAD_DIR: optional('UPLOAD_DIR', './storage/project-attachments'),
 };
 
 assertNotWeak('JWT_SECRET', env.JWT_SECRET, isProduction);

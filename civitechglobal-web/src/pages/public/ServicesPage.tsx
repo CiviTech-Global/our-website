@@ -8,7 +8,9 @@ import {
   Smartphone,
   UserCheck,
 } from 'lucide-react';
+import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { Button } from '@/components/ui/Button';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
@@ -43,6 +45,9 @@ export default function ServicesPage() {
             {t.services.groupSoftwareTitle}
           </h2>
           <p className="mt-1 text-text-secondary">{t.services.groupSoftwareSubtitle}</p>
+          <Link to="/start-project" className="mt-4 inline-block">
+            <Button>{t.nav.startProject}</Button>
+          </Link>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

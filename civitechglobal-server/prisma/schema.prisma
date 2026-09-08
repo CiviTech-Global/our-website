@@ -94,6 +94,9 @@ model User {
   refreshTokens    RefreshToken[]
   assignedRequests InsuranceRequest[] @relation("LeadAssignee")
 
+  assignedProjectRequests ProjectRequest[]  @relation("AssignedProjectRequests")
+  authoredProposals       ProjectProposal[] @relation("AuthoredProposals")
+
   @@index([role])
   @@index([createdAt])
   @@index([deletedAt])
@@ -300,4 +303,314 @@ model InsuranceRequest {
   @@index([productId])
   @@index([source])
   @@map("insurance_requests")
+}
+
+// ===========================================================================
+// Software project enquiries
+//
+// The shape of this follows ordinary agency practice rather than anything
+// invented here: a client submits a brief, we triage it, ask for whatever the
+// brief left ambiguous, and answer with a proposal. The proposal is where the
+// money question gets answered honestly — see the note on ProjectProposal.
+// ===========================================================================
+
+enum ProjectRequestStatus {
+  /// Received, nobody has looked at it yet.
+  SUBMITTED
+  /// Being read and costed.
+  IN_REVIEW
+  /// We have asked the client something and are waiting on them.
+  NEEDS_CLARIFICATION
+  /// A proposal has been sent; the ball is with the client.
+  PROPOSAL_SENT
+  /// Client accepted a proposal. The engagement starts here.
+  ACCEPTED
+  /// We declined it, or the client went elsewhere.
+  DECLINED
+  /// The client pulled the request.
+  WITHDRAWN
+  /// No answer before the proposal's validity date passed.
+  EXPIRED
+}
+
+enum ProjectType {
+  NEW_BUILD
+  REBUILD
+  INTEGRATION
+  MOBILE_APP
+  WEB_APP
+  DATA_PLATFORM
+  AUTOMATION
+  MAINTENANCE
+  CONSULTING
+  OTHER
+}
+
+/// How the client would like to be billed. `NOT_SURE` is a real and common
+/// answer, and pretending otherwise just produces a guess in the data.
+enum EngagementModel {
+  FIXED_PRICE
+  TIME_AND_MATERIALS
+  RETAINER
+  NOT_SURE
+}
+
+enum ProjectUrgency {
+  EXPLORING
+  NEXT_QUARTER
+  NEXT_MONTH
+  URGENT
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  /// Past `validUntil` with no answer. Set by whoever reads it next, not by a
+  /// background job — the date on the row is the source of truth either way.
+  EXPIRED
+  /// Superseded by a later version, or pulled by us.
+  WITHDRAWN
+}
+
+/// A client, identified by the pair (email, phone).
+///
+/// There is no account and no verification code on this flow, so this record
+/// is what stands in for an identity. Both hashes are unique, which is what
+/// enforces the pairing rule: an email that has been seen with one phone
+/// number cannot later be used with a different one, and vice versa. The
+/// effect is that abuse costs a fresh email AND a fresh phone number rather
+/// than a fresh browser session.
+///
+/// It also carries the rate-limit state. Counting rows on ProjectRequest would
+/// work too, but this keeps the check to a single indexed read.
+model ClientIdentity {
+  id String @id @default(cuid())
+
+  email     String
+  emailHash String @unique @map("email_hash")
+
+  /// Normalised to 09xxxxxxxxx before hashing, so formatting differences
+  /// cannot be used to slip past the pairing rule.
+  phone     String
+  phoneHash String @unique @map("phone_hash")
+
+  /// Denormalised rate-limit state. `requestCount` is lifetime, not windowed;
+  /// the windowed check reads ProjectRequest.createdAt.
+  requestCount  Int       @default(0) @map("request_count")
+  lastRequestAt DateTime? @map("last_request_at")
+
+  /// Set by hand to let a known client past the daily cap.
+  trusted Boolean @default(false)
+  /// Set by hand to refuse a bad actor without deleting their history.
+  blocked Boolean @default(false)
+
+  requests ProjectRequest[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@map("client_identities")
+}
+
+model ProjectRequest {
+  id String @id @default(cuid())
+
+  /// Quotable reference. Also how the client reads their proposal back without
+  /// an account, so it is generated from the same ambiguity-free alphabet as
+  /// the insurance tracking code.
+  trackingCode String @unique @map("tracking_code")
+
+  identityId String         @map("identity_id")
+  identity   ClientIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+
+  // ---- Who is asking -----------------------------------------------------
+  contactName      String  @map("contact_name")
+  contactRole      String? @map("contact_role")
+  organizationName String? @map("organization_name")
+  website          String?
+  /// Copied from the identity at submission time. Denormalised on purpose: a
+  /// request should still read correctly if the identity row is ever merged.
+  email            String
+  phone            String
+
+  // ---- What they want ----------------------------------------------------
+  title           String
+  /// The problem in their words. This is the field that actually matters.
+  summary         String
+  projectType     ProjectType @default(OTHER) @map("project_type")
+  /// web, ios, android, desktop, api …
+  platforms       String[]    @default([])
+  /// What success looks like to them.
+  goals           String?
+  targetUsers     String?     @map("target_users")
+  /// Systems this has to talk to, and anything already built.
+  existingSystems String?     @map("existing_systems")
+  constraints     String?
+  /// Anything they consider out of scope up front.
+  outOfScope      String?     @map("out_of_scope")
+
+  // ---- When --------------------------------------------------------------
+  urgency        ProjectUrgency @default(EXPLORING)
+  desiredStartAt DateTime?      @map("desired_start_at")
+  deadlineAt     DateTime?      @map("deadline_at")
+  deadlineReason String?        @map("deadline_reason")
+
+  // ---- Money -------------------------------------------------------------
+  //
+  // Asked as a range, not a number. An early-stage software estimate carries
+  // roughly -25%/+75% accuracy, so a single figure from either side is a
+  // fiction; a range is the honest question and the honest answer.
+  //
+  // Amounts are stored in whole IRR toman as BigInt. Not Float: money in a
+  // binary float is a rounding bug waiting for a large number, and Iranian
+  // amounts get large.
+  budgetMin       BigInt?         @map("budget_min")
+  budgetMax       BigInt?         @map("budget_max")
+  /// What the client thinks the job is worth, if they offered a figure.
+  suggestedPrice  BigInt?         @map("suggested_price")
+  currency        String          @default("IRT")
+  /// True when the client says they have no idea what this should cost, which
+  /// is a legitimate answer and changes how the first reply is written.
+  budgetUnknown   Boolean         @default(false) @map("budget_unknown")
+  engagementModel EngagementModel @default(NOT_SURE) @map("engagement_model")
+
+  // ---- Handling ----------------------------------------------------------
+  status        ProjectRequestStatus @default(SUBMITTED)
+  ndaRequired   Boolean              @default(false) @map("nda_required")
+  /// Free text from the client, and separately our own notes on the row.
+  clientNotes   String?              @map("client_notes")
+  internalNotes String?              @map("internal_notes")
+
+  assignedToId String? @map("assigned_to_id")
+  assignedTo   User?   @relation("AssignedProjectRequests", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  attachments ProjectAttachment[]
+  proposals   ProjectProposal[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([identityId])
+  @@index([assignedToId])
+  @@map("project_requests")
+}
+
+/// An uploaded file.
+///
+/// The bytes never live in the database and never live under the web root.
+/// `storedName` is a generated name; `originalName` is only ever echoed back
+/// as text, never used to build a path.
+model ProjectAttachment {
+  id String @id @default(cuid())
+
+  requestId String         @map("request_id")
+  request   ProjectRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  /// As the client named it. Display only.
+  originalName String @map("original_name")
+  /// Random name on disk, with an extension we chose from the sniffed type.
+  storedName   String @unique @map("stored_name")
+  /// The type we detected from the file's own bytes, not from the request.
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  /// SHA-256 of the content, for de-duplication and for proving a file has not
+  /// been swapped on disk.
+  checksum     String
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([requestId])
+  @@map("project_attachments")
+}
+
+/// Our answer.
+///
+/// The point of this record is to be more honest than a single number. It
+/// restates the scope as we understood it, says what is NOT included, and
+/// prices a RANGE rather than a point:
+///
+///   - Vague scope with no stated exclusions is the single biggest cause of
+///     fixed-price disputes, so `exclusions` is as prominent as `deliverables`.
+///   - A three-point estimate (optimistic / likely / pessimistic) is the
+///     standard way to express an early estimate. `pertHours` stores the
+///     PERT weighting (O + 4M + P) / 6 so the headline figure and the range
+///     it came from cannot drift apart.
+///   - `validUntil` exists because a price with no expiry is a promise with
+///     no end. Thirty days is the usual default.
+model ProjectProposal {
+  id String @id @default(cuid())
+
+  requestId String         @map("request_id")
+  request   ProjectRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  /// 1, 2, 3 … A revised offer is a new version, not an edit, so what the
+  /// client was shown at the time stays on the record.
+  version Int @default(1)
+
+  status ProposalStatus @default(DRAFT)
+
+  /// Scope as WE understood it, in our words. If this is wrong, everything
+  /// after it is wrong, which is why it is the first thing the client reads.
+  scopeSummary String @map("scope_summary")
+
+  deliverables String[] @default([])
+  assumptions  String[] @default([])
+  /// Stated explicitly, always. See the note above.
+  exclusions   String[] @default([])
+  /// [{ title, description, durationDays, price }]
+  milestones   Json?
+
+  engagementModel EngagementModel @default(FIXED_PRICE) @map("engagement_model")
+
+  // ---- Effort ------------------------------------------------------------
+  optimisticHours  Int? @map("optimistic_hours")
+  likelyHours      Int? @map("likely_hours")
+  pessimisticHours Int? @map("pessimistic_hours")
+  /// (O + 4M + P) / 6, rounded. Computed on write, stored so that reports and
+  /// the client's view agree without recomputing.
+  pertHours        Int? @map("pert_hours")
+
+  // ---- Price -------------------------------------------------------------
+  priceMin    BigInt? @map("price_min")
+  priceLikely BigInt? @map("price_likely")
+  priceMax    BigInt? @map("price_max")
+  currency    String  @default("IRT")
+  /// Rate used when the model is time-and-materials.
+  hourlyRate  BigInt? @map("hourly_rate")
+
+  // ---- Discovery ---------------------------------------------------------
+  //
+  // For anything non-trivial the professional answer to "what will this cost"
+  // is a short paid discovery, not a number pulled off a form. These fields
+  // let a proposal say exactly that.
+  discoveryRequired Boolean @default(false) @map("discovery_required")
+  discoveryPrice    BigInt? @map("discovery_price")
+  discoveryDays     Int?    @map("discovery_days")
+
+  timelineWeeksMin Int? @map("timeline_weeks_min")
+  timelineWeeksMax Int? @map("timeline_weeks_max")
+
+  /// Written to the client. Rendered on the tracking page.
+  message       String?
+  /// Never leaves the admin panel.
+  internalNotes String? @map("internal_notes")
+
+  validUntil DateTime? @map("valid_until")
+  sentAt     DateTime? @map("sent_at")
+  decidedAt  DateTime? @map("decided_at")
+
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("AuthoredProposals", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@unique([requestId, version])
+  @@index([requestId])
+  @@index([status])
+  @@map("project_proposals")
 }

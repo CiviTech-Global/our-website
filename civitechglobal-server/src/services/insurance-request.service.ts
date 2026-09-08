@@ -20,7 +20,7 @@ import { publishNewRequest } from './notify.service.js';
 const CODE_ALPHABET = '2346789ABCDEFGHJKMNPQRTVWXYZ'; // 28 symbols
 const CODE_LENGTH = 10;
 
-function generateTrackingCode(): string {
+export function generateTrackingCode(): string {
   let code = '';
   for (let i = 0; i < CODE_LENGTH; i += 1) {
     code += CODE_ALPHABET[randomInt(0, CODE_ALPHABET.length)];
@@ -29,7 +29,7 @@ function generateTrackingCode(): string {
 }
 
 /** Prisma's unique-constraint violation. */
-function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): boolean {
   return typeof error === 'object' && error !== null && (error as { code?: string }).code === 'P2002';
 }
 
@@ -206,4 +206,3 @@ export async function trackRequest(trackingCode: string): Promise<TrackedRequest
   };
 }
 
-export { generateTrackingCode };

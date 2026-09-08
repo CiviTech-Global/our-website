@@ -135,8 +135,8 @@ export default function HomePage() {
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{t.home.ctaTitle}</h2>
           <p className="mx-auto mt-2 max-w-md text-text-secondary">{t.home.ctaSubtitle}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/services">
-              <Button size="lg">{t.home.heroCtaPrimary}</Button>
+            <Link to="/start-project">
+              <Button size="lg">{t.nav.startProject}</Button>
             </Link>
             <Link to="/contact">
               <Button size="lg" variant="outline">

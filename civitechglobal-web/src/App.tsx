@@ -17,6 +17,9 @@ import NotFoundPage from '@/pages/public/NotFoundPage';
 // Route-split: the insurance section carries the catalog, the dynamic form and
 // the OTP step, none of which the landing page needs in its bundle.
 const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
+// The main service line, and a heavy form: split out so the home page does
+// not carry it.
+const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
 const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
 const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
 
@@ -44,6 +47,14 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route
+          path="/start-project"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <StartProjectPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/insurance"
           element={

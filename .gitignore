@@ -16,3 +16,7 @@ prisma/generated/
 *.tsbuildinfo
 .turbo/
 docker-compose.override.yml
+
+# Client-uploaded project attachments. Real documents, often under NDA, and
+# the server writes them here in development (UPLOAD_DIR). Never committed.
+civitechglobal-server/storage/
