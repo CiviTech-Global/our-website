@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, setAccessToken } from '@/config/api';
+import { api, refreshAccessToken, setAccessToken } from '@/config/api';
 import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload, UpdateProfilePayload } from '@/types/auth';
 
 interface AuthContextValue {
@@ -26,8 +26,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function bootstrap() {
       try {
-        const refreshRes = await api.post<{ accessToken: string }>('/auth/refresh');
-        setAccessToken(refreshRes.data.accessToken);
+        // Through the shared single-flight refresh, never the endpoint
+        // directly. Calling POST /auth/refresh here was its own request, so it
+        // could run at the same time as one started by a 401 — or simply twice,
+        // since React invokes mount effects twice in development. The server
+        // ROTATES the refresh token on every call, so two concurrent refreshes
+        // minted two tokens and the second overwrote the first's cookie,
+        // orphaning a token that had just been issued.
+        await refreshAccessToken();
         const meRes = await api.get<{ user: AuthUser }>('/auth/me');
         if (!cancelled) setUser(meRes.data.user);
       } catch {

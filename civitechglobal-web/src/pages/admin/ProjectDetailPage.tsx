@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { ApiError } from '@/config/api';
 import { Link, useParams } from 'react-router';
-import { AxiosError } from 'axios';
 import { ChevronLeft, Download, Paperclip, Send, ShieldAlert } from 'lucide-react';
 import {
   downloadAttachment,
@@ -306,7 +306,7 @@ export default function ProjectDetailPage() {
 }
 
 function messageOf(error: unknown, fallback: string): string {
-  if (error instanceof AxiosError) {
+  if (error instanceof ApiError) {
     const data = error.response?.data as { message?: string; errors?: { message: string }[] } | undefined;
     return data?.errors?.[0]?.message ?? data?.message ?? fallback;
   }

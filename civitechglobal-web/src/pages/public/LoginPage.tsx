@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { isAxiosError } from 'axios';
+import { isApiError } from '@/config/api';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -36,7 +36,7 @@ export default function LoginPage() {
       const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
       navigate(from ?? (isAdmin ? '/admin' : '/dashboard'), { replace: true });
     } catch (error) {
-      const message = isAxiosError(error) && error.response?.status === 401 ? t.auth.loginError : t.common.error;
+      const message = isApiError(error) && error.response?.status === 401 ? t.auth.loginError : t.common.error;
       setServerError(message);
       showToast(message, 'error');
     }

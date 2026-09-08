@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AxiosError } from 'axios';
+import { ApiError } from '@/config/api';
 import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import { useSubmitInsuranceRequest } from '@/api/insurance';
 import { Button } from '@/components/ui/Button';
@@ -118,7 +118,7 @@ export function InsuranceForm({ product, onSubmitted }: InsuranceFormProps) {
       });
       onSubmitted(result);
     } catch (error) {
-      if (error instanceof AxiosError) {
+      if (error instanceof ApiError) {
         const data = error.response?.data as
           | { message?: string; errors?: ServerFieldError[] }
           | undefined;

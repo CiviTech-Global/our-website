@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { isAxiosError } from 'axios';
+import { isApiError } from '@/config/api';
 import { Users as UsersIcon } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
@@ -23,7 +23,7 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useAdminUsers(page, PAGE_SIZE);
 
-  const endpointMissing = isAxiosError(error) && [404, 501].includes(error.response?.status ?? 0);
+  const endpointMissing = isApiError(error) && [404, 501].includes(error.response?.status ?? 0);
 
   const columns: TableColumn<AdminUserListItem>[] = [
     { key: 'name', header: t.admin.fullName, render: (row) => `${row.firstName} ${row.lastName}` },

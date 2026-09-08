@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { ApiError } from '@/config/api';
 import { Link } from 'react-router';
-import { AxiosError } from 'axios';
 import { CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
 import { useSubmitProjectRequest } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -197,7 +197,7 @@ export default function StartProjectPage() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       const message =
-        error instanceof AxiosError
+        error instanceof ApiError
           ? ((error.response?.data as { message?: string } | undefined)?.message ??
             t.project.errSubmit)
           : t.project.errSubmit;

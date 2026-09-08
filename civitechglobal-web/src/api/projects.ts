@@ -149,8 +149,6 @@ export function useSendProposal() {
 export async function downloadAttachment(attachmentId: string, filename: string): Promise<void> {
   const res = await api.get(`/projects/admin/attachments/${attachmentId}`, {
     responseType: 'blob',
-    // This one returns a file, not the usual { success, data } envelope.
-    transformResponse: (d) => d,
   });
   const url = URL.createObjectURL(res.data as Blob);
   const link = document.createElement('a');

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AxiosError } from 'axios';
+import { ApiError } from '@/config/api';
 import { Check, CheckCircle2, Copy, Phone, ShieldCheck } from 'lucide-react';
 import { useSendOtp, useVerifyOtp } from '@/api/insurance';
 import { Button } from '@/components/ui/Button';
@@ -16,7 +16,7 @@ interface PhoneVerificationProps {
 }
 
 function messageFrom(error: unknown, fallback: string): string {
-  if (error instanceof AxiosError) {
+  if (error instanceof ApiError) {
     const data = error.response?.data as { message?: string } | undefined;
     if (data?.message) return data.message;
   }

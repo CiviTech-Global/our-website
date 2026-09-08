@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AxiosError } from 'axios';
+import { ApiError } from '@/config/api';
 import {
   AlertTriangle,
   CalendarClock,
@@ -64,7 +64,7 @@ export function ProposalView({
       onResponded();
     } catch (err) {
       setError(
-        err instanceof AxiosError
+        err instanceof ApiError
           ? ((err.response?.data as { message?: string } | undefined)?.message ?? t.proposal.errSend)
           : t.proposal.errSend
       );

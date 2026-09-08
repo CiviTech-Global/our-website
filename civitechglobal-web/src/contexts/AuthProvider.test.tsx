@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AuthProvider, useAuth } from './AuthProvider';
-import { api } from '@/config/api';
+import { api, refreshAccessToken } from '@/config/api';
 
 vi.mock('@/config/api', () => ({
   api: {
@@ -12,9 +12,14 @@ vi.mock('@/config/api', () => ({
   },
   setAccessToken: vi.fn(),
   getAccessToken: vi.fn(),
+  // Bootstrap goes through the shared single-flight refresh now, not a bare
+  // POST /auth/refresh — which is what stops two concurrent refreshes from
+  // each rotating the token.
+  refreshAccessToken: vi.fn(),
 }));
 
 const mockedApi = vi.mocked(api, true);
+const mockedRefresh = vi.mocked(refreshAccessToken);
 
 function Probe() {
   const { user, isLoading, isAuthenticated, login, logout } = useAuth();
@@ -39,7 +44,7 @@ describe('AuthProvider / useAuth', () => {
   });
 
   it('starts unauthenticated when the silent refresh fails (no session cookie)', async () => {
-    mockedApi.post.mockRejectedValueOnce(new Error('no refresh cookie'));
+    mockedRefresh.mockRejectedValueOnce(new Error('no refresh cookie'));
 
     render(
       <AuthProvider>
@@ -55,7 +60,7 @@ describe('AuthProvider / useAuth', () => {
   });
 
   it('becomes authenticated after a successful login', async () => {
-    mockedApi.post.mockRejectedValueOnce(new Error('no refresh cookie')); // bootstrap refresh fails
+    mockedRefresh.mockRejectedValueOnce(new Error('no refresh cookie')); // bootstrap refresh fails
     render(
       <AuthProvider>
         <Probe />
