@@ -69,28 +69,20 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  bot:
-    build:
-      context: ./civitechglobal-server
-      dockerfile: Dockerfile.bot
-    restart: unless-stopped
-    env_file:
-      - ./civitechglobal-server/.env
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-civitech}:${POSTGRES_PASSWORD:-civitech}@postgres:5432/${POSTGRES_DB:-civitechglobal}
-      REDIS_URL: redis://redis:6379
-    ports:
-      # Loopback only, for the same reason as the api service above. In
-      # webhook mode Telegram reaches the bot through the public proxy, not
-      # through this port.
-      - "127.0.0.1:4000:4000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
+  # The Telegram bot is NOT part of the stack.
+  #
+  # Insurance intake happens on the website; the company offers nothing
+  # Telegram-based. The bot's source is still in
+  # civitechglobal-server/src/bot/ and it still builds, but nothing starts it
+  # here, in the Ansible deploy, or in CI — so it cannot reach production by
+  # accident. Deleting it outright was deliberately not done: pre-refactor
+  # requests in the database are labelled source=TELEGRAM, and keeping the code
+  # that produced them makes those rows readable rather than mysterious.
+  #
+  # To bring it back you would restore a service block here (build context
+  # ./civitechglobal-server, dockerfile Dockerfile.bot, port 4000), re-add the
+  # TELEGRAM_* variables, and re-add the bot image to CI and to the Ansible
+  # compose template.
 
   web:
     build:

@@ -17,12 +17,6 @@ vault_postgres_password: "REPLACE_ME"
 vault_jwt_secret: "REPLACE_ME_64_HEX_CHARS"
 vault_jwt_refresh_secret: "REPLACE_ME_A_DIFFERENT_64_HEX_CHARS"
 
-# From @BotFather.
-vault_telegram_bot_token: "REPLACE_ME"
-# Telegram sends this back in X-Telegram-Bot-Api-Secret-Token on every update,
-# which is what stops anyone else POSTing fake updates to the webhook.
-vault_telegram_webhook_secret: "REPLACE_ME"
-
 # Empty leaves Sentry a no-op in both processes — see config/sentry.ts.
 vault_sentry_dsn: ""
 

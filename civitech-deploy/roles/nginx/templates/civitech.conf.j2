@@ -30,11 +30,6 @@ upstream civitech_web {
     keepalive 16;
 }
 
-upstream civitech_bot {
-    server 127.0.0.1:{{ bot_port }};
-    keepalive 8;
-}
-
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -108,16 +103,6 @@ server {
         proxy_pass http://civitech_api;
         include /etc/nginx/civitech_proxy_params;
         proxy_read_timeout 60s;
-    }
-
-    # ---- Telegram webhook --------------------------------------------------
-    # Separated from /api/ and given its own budget: Telegram retries on
-    # failure, and the bot verifies the secret header itself, so throttling it
-    # to the API's rate would drop legitimate lead traffic.
-    location /telegram/ {
-        limit_req zone=civitech_api burst=60 nodelay;
-        proxy_pass http://civitech_bot;
-        include /etc/nginx/civitech_proxy_params;
     }
 
     # ---- Everything else ---------------------------------------------------

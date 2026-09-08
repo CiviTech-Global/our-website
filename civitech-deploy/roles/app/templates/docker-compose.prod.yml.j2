@@ -80,30 +80,8 @@ services:
         limits:
           memory: 512M
 
-  bot:
-    build: !reset null
-    image: {{ image_bot }}
-    ports: !override
-      - "127.0.0.1:{{ bot_port }}:4000"
-    env_file: !reset []
-    environment:
-      NODE_ENV: "{{ node_env }}"
-      BOT_PORT: "4000"
-      DATABASE_URL: "postgresql://{{ postgres_user }}:{{ vault_postgres_password }}@postgres:5432/{{ postgres_db }}?connection_limit={{ db_connection_limit }}&pool_timeout={{ db_pool_timeout }}"
-      REDIS_URL: "redis://redis:6379"
-      TELEGRAM_BOT_TOKEN: "{{ vault_telegram_bot_token }}"
-      TELEGRAM_BOT_MODE: "{{ telegram_bot_mode }}"
-      # Telegram echoes this in X-Telegram-Bot-Api-Secret-Token on every
-      # update, which is what stops anyone else POSTing fabricated leads.
-      TELEGRAM_WEBHOOK_SECRET: "{{ vault_telegram_webhook_secret }}"
-      TELEGRAM_WEBHOOK_URL: "{{ 'https' if enable_ssl | bool else 'http' }}://{{ domain_name }}/telegram/webhook"
-      TELEGRAM_ADMIN_USER_IDS: "{{ telegram_admin_user_ids }}"
-      LOG_LEVEL: "{{ log_level }}"
-      SENTRY_DSN: "{{ vault_sentry_dsn }}"
-    deploy:
-      resources:
-        limits:
-          memory: 384M
+  # No bot service. The base compose file does not define one either; see the
+  # note there. Nothing Telegram-based is deployed.
 
   web:
     build: !reset null

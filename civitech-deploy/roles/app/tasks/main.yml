@@ -129,15 +129,6 @@
   retries: 20
   delay: 3
 
-- name: Wait for the bot readiness probe
-  ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ bot_port }}/health/ready"
-    status_code: 200
-  register: bot_health
-  until: bot_health.status == 200
-  retries: 20
-  delay: 3
-
 - name: Record the deployed version
   # So "which commit is live" has an answer that does not require guessing,
   # and so rollback.yml can tell you what it is rolling back from.

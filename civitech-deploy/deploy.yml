@@ -38,8 +38,6 @@
           - vault_jwt_refresh_secret != vault_jwt_secret
           - vault_postgres_password is defined
           - not (vault_postgres_password | string).startswith('REPLACE_ME')
-          - vault_telegram_bot_token is defined
-          - not (vault_telegram_bot_token | string).startswith('REPLACE_ME')
         fail_msg: >-
           group_vars/all/vault.yml still contains template values, or the two
           JWT secrets are identical. Generate real ones:
@@ -86,8 +84,8 @@
           - not (domain_name | string).startswith('REPLACE_ME')
         fail_msg: >-
           domain_name is still a placeholder. Set it in inventory.ini — it is
-          baked into CORS_ORIGIN and the Telegram webhook URL, so a wrong
-          value here means an API that rejects its own front end.
+          baked into CORS_ORIGIN and into the certificate, so a wrong value
+          here means an API that rejects its own front end.
 
     - name: Check whether a stack is already deployed
       ansible.builtin.stat:

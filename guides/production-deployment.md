@@ -28,12 +28,11 @@ health gates, the `enable_ssl` flag).
 **Do not build on the server. Deploy the images CI already built.**
 
 `.github/workflows/ci.yml` lints, typechecks, tests, builds, scans with Trivy
-at CRITICAL/HIGH with `exit-code: 1`, and pushes three images to GHCR tagged
+at CRITICAL/HIGH with `exit-code: 1`, and pushes two images to GHCR tagged
 with both `latest` and the commit SHA:
 
 ```
 ghcr.io/civitech-global/civitechglobal-api:<sha>
-ghcr.io/civitech-global/civitechglobal-bot:<sha>
 ghcr.io/civitech-global/civitechglobal-web:<sha>
 ```
 
@@ -51,6 +50,15 @@ Those immutable SHA tags are the release mechanism. Deploying them means:
 Everything below assumes this.
 
 ---
+
+> **No Telegram bot is deployed.** The company offers nothing Telegram-based,
+> so the bot is not built by CI, not defined in either compose file and not
+> started by these playbooks. Its source stays in
+> `civitechglobal-server/src/bot/` — see the note in `docker-compose.yml` for
+> what bringing it back would involve. The one Telegram left in this tree is
+> the optional health-alert channel in `roles/monitoring`, which is internal
+> operations tooling rather than a customer-facing service, and is a no-op
+> while `vault_telegram_alert_*` stay empty.
 
 ## 1. Prerequisites
 
@@ -156,9 +164,6 @@ Read it top to bottom once. The ones you will actually change:
 - `backup_remote` — an rclone destination. **Empty means backups live on the
   machine they protect**, and both the role and the nightly job say so loudly
   every time they run.
-- `telegram_admin_user_ids` — who gets new-request alerts. The bot relays
-  website submissions here too, over a Redis channel; the API is deliberately
-  given no Telegram credentials of its own.
 - `sms_provider` — `kavenegar` or `smsir`. See the prerequisite above.
 - `otp_ttl_seconds`, `otp_resend_cooldown_seconds`, `otp_max_attempts`,
   `phone_token_ttl_seconds` — the defaults (5 min, 60 s, 5 tries, 15 min) are
@@ -222,7 +227,7 @@ loudly if it does not. Run it first, or accept the risk knowingly.
 
 **The migration runs as its own compose service.** `docker-compose.yml`
 defines a one-shot `migrate` service running `prisma migrate deploy` from the
-same image as the API, and `api`/`bot` declare
+same image as the API, and `api` declares
 `depends_on: migrate: condition: service_completed_successfully`. `roles/app`
 runs it explicitly anyway — letting `up` trigger it would mean a failed
 migration aborts halfway through a stack restart instead of before one.

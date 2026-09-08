@@ -94,10 +94,6 @@ jobs:
             context: ./civitechglobal-server
             dockerfile: Dockerfile
             image: civitechglobal-api
-          - name: bot
-            context: ./civitechglobal-server
-            dockerfile: Dockerfile.bot
-            image: civitechglobal-bot
           - name: web
             context: ./civitechglobal-web
             dockerfile: Dockerfile

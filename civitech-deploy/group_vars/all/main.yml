@@ -17,7 +17,7 @@ app_group: civitech
 
 # ---- Images ----------------------------------------------------------------
 # .github/workflows/ci.yml lints, typechecks, tests, builds, scans with Trivy
-# at CRITICAL/HIGH, and pushes three images to GHCR tagged with both `latest`
+# at CRITICAL/HIGH, and pushes two images to GHCR tagged with both `latest`
 # and the commit SHA. We deploy those, rather than building on the server:
 #
 #   - the server never needs the ~1.5 GB a Vite build peaks at
@@ -34,7 +34,6 @@ registry: ghcr.io
 registry_owner: civitech-global
 app_version: latest
 image_api: "{{ registry }}/{{ registry_owner }}/civitechglobal-api:{{ app_version }}"
-image_bot: "{{ registry }}/{{ registry_owner }}/civitechglobal-bot:{{ app_version }}"
 image_web: "{{ registry }}/{{ registry_owner }}/civitechglobal-web:{{ app_version }}"
 # Only needed while the GHCR packages are private. The token is in vault.
 ghcr_username: ""
@@ -44,7 +43,6 @@ ghcr_username: ""
 # docker-compose.yml already binds these to 127.0.0.1 — the prod override
 # rendered by roles/app restates it so the two cannot drift apart.
 api_port: 5000
-bot_port: 4000
 web_port: 8080
 
 # ---- Application environment ----------------------------------------------
@@ -58,14 +56,10 @@ postgres_db: civitechglobal
 db_connection_limit: 10
 db_pool_timeout: 20
 
-# "webhook" in production: polling needs an outbound long-poll held open and
-# gives Telegram nowhere to push. "polling" is right for a box with no public
-# URL yet.
-telegram_bot_mode: webhook
-# Comma-separated numeric Telegram user IDs that receive new-lead alerts.
-# The bot also relays website submissions here, over a Redis channel — the API
-# is deliberately given no Telegram credentials of its own.
-telegram_admin_user_ids: ""
+# NOTE: there is no Telegram bot in this deployment. The company offers
+# nothing Telegram-based, so the bot is not built by CI, not defined in the
+# compose files and not started here. Its source remains in the repository
+# under civitechglobal-server/src/bot/ — see the note in docker-compose.yml.
 
 # ---- Phone verification (insurance requests) -------------------------------
 # Website submissions are open to anyone, so the phone number is proved by a
