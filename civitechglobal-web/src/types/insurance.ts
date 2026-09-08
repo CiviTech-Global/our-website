@@ -90,6 +90,8 @@ export interface ProductDetail extends ProductSummary {
   requiredDocuments: string[];
   premiumFactors: string[];
   faq: { question: string; answer: string }[];
+  keyFacts: { label: string; value: string }[];
+  claimSteps: string[];
   formSchema: FieldDef[];
   catalogVersion: number;
   category: {

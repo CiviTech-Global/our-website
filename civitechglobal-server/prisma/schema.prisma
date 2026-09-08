@@ -172,6 +172,11 @@ model InsuranceProduct {
   /// [{ question, answer }] — shape enforced by the catalog, not the database.
   faq Json?
 
+  /// [{ label, value }] — the spec strip at the top of the product page.
+  keyFacts Json? @map("key_facts")
+
+  claimSteps String[] @default([]) @map("claim_steps")
+
   intakeMode IntakeMode      @default(SELF_SERVE) @map("intake_mode")
   audience   ProductAudience @default(INDIVIDUAL)
 

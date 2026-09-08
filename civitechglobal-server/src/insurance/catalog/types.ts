@@ -145,6 +145,19 @@ export interface ProductDef {
   premiumFactors?: string[];
   /** Questions worth answering before someone has to ask them. */
   faq?: { question: string; answer: string }[];
+  /**
+   * The handful of numbers someone scans for before reading anything else:
+   * is it compulsory, how long does it run, is there a waiting period, what is
+   * the excess, how long do I have to report a claim. Rendered as a spec strip
+   * at the top of the product page rather than buried in prose.
+   */
+  keyFacts?: { label: string; value: string }[];
+  /**
+   * What to do after something goes wrong, in order. A policy is bought once
+   * and claimed on under stress; the steps belong on the page, not in a PDF
+   * nobody opens until the worst day.
+   */
+  claimSteps?: string[];
   intake: IntakeMode;
   audience: Audience;
   /** lucide-react icon name. */

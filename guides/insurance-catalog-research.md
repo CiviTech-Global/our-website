@@ -465,3 +465,31 @@ comparison site, and the `sourceUrl` column that once carried these links was
 dropped from the database (migration
 `20260904080000_drop_product_source_url`). Provenance lives here, in an
 internal document, which is the right place for it.
+
+
+## Third pass — key facts and the claim procedure
+
+Two more fields, aimed at the two moments that matter either side of a policy.
+
+`keyFacts` is the spec strip at the top of the product page: compulsory or
+not, policy term, waiting period, excess, how long you have to report a claim,
+age range. These are the numbers people scan for before reading a word of
+prose, and in a paragraph they get missed. 24 products carry one.
+
+`claimSteps` is what to do after something goes wrong, in order. A policy is
+bought once and claimed on under stress; putting the procedure on the product
+page means it is not in a PDF nobody opens until the worst day. 20 products
+carry one — the four without are those whose source described a product but
+never a claim process (`fire-commercial`, `travel-domestic`,
+`health-supplementary-corporate`, `home-comprehensive`).
+
+Where a source gave no figure, the row is simply absent. A spec table that
+guesses is worse than a short spec table, because it is read as fact.
+
+**The ten thin products did not improve, and now we know why.** The source has
+no dedicated pages for them at all: its own corporate hub links out to third
+party, own-damage, motorcycle, health, fire, travel, life and medical liability
+— and nothing else. Cargo, engineering all-risk, group life and credit life are
+named on that page and nowhere linked. There is no deeper source to fetch, so
+those products stay on the underwriter, which is exactly what `CALLBACK`
+already encodes.

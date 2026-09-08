@@ -203,6 +203,8 @@ const en: typeof fa = {
     phoneLabel: 'Mobile number',
     phoneInvalid: 'That is not a valid Iranian mobile number.',
     sendCode: 'Send code',
+    keyFacts: 'At a glance',
+    claimSteps: 'If you need to claim',
     exclusions: 'What is not covered',
     exclusionsHint: 'Read before buying — this list matters as much as the coverage list.',
     requiredDocuments: 'Documents you will need',

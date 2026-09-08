@@ -201,6 +201,8 @@ const fa = {
     phoneLabel: 'شماره موبایل',
     phoneInvalid: 'شماره موبایل معتبر نیست.',
     sendCode: 'ارسال کد',
+    keyFacts: 'یک نگاه',
+    claimSteps: 'اگر خسارتی رخ دهد',
     exclusions: 'موارد تحت پوشش نیست',
     exclusionsHint: 'پیش از خرید بخوانید؛ این فهرست به اندازهٔ فهرست پوشش‌ها مهم است.',
     requiredDocuments: 'مدارک لازم',

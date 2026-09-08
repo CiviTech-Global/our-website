@@ -9,6 +9,7 @@ import {
   Info,
   PhoneCall,
   Plus,
+  ListChecks,
   ShieldCheck,
   SlidersHorizontal,
   XCircle,
@@ -140,6 +141,17 @@ export default function InsuranceProductPage() {
             </>
           )}
         </span>
+
+        {product.keyFacts.length > 0 && (
+          <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-3 rounded-xl border border-border-default bg-surface-50 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {product.keyFacts.map((fact) => (
+              <div key={fact.label}>
+                <dt className="text-xs text-text-muted">{fact.label}</dt>
+                <dd className="text-sm font-medium text-text-primary">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </AnimatedSection>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
@@ -205,6 +217,28 @@ export default function InsuranceProductPage() {
                     </li>
                   ))}
                 </ul>
+              </Card>
+            )}
+
+            {product.claimSteps.length > 0 && (
+              <Card>
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <ListChecks className="size-4 text-brand-green-500" aria-hidden="true" />
+                  {t.insurance.claimSteps}
+                </h2>
+                <ol className="flex flex-col gap-3">
+                  {product.claimSteps.map((step, index) => (
+                    <li key={step} className="flex items-start gap-3 text-sm leading-6 text-text-secondary">
+                      <span
+                        className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-brand-green-500/10 text-xs font-medium text-brand-green-600 dark:text-brand-green-400"
+                        aria-hidden="true"
+                      >
+                        {index + 1}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
               </Card>
             )}
 

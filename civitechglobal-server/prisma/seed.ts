@@ -132,6 +132,8 @@ async function seedCatalog(): Promise<void> {
       requiredDocuments: product.requiredDocuments ?? [],
       premiumFactors: product.premiumFactors ?? [],
       faq: (product.faq ?? []) as unknown as Prisma.InputJsonValue,
+      keyFacts: (product.keyFacts ?? []) as unknown as Prisma.InputJsonValue,
+      claimSteps: product.claimSteps ?? [],
       optionalCoverages: product.optionalCoverages ?? [],
       notes: product.notes ?? [],
       intakeMode: product.intake,
