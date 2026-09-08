@@ -1,4 +1,3 @@
-import { motion, useReducedMotion } from 'framer-motion';
 import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -9,7 +8,6 @@ import { useLocale } from '@/i18n/LocaleProvider';
  * anchors the center in place of a placeholder badge.
  */
 export function HeroMotif() {
-  const shouldReduceMotion = useReducedMotion();
   const { t } = useLocale();
 
   return (
@@ -22,13 +20,14 @@ export function HeroMotif() {
         }}
         aria-hidden="true"
       />
-      <motion.svg
+      {/* Rotation and pulse are CSS keyframes now: they run on the
+          compositor and stop honouring nothing — the global reduced-motion
+          rule in index.css covers them. */}
+      <svg
         viewBox="0 0 400 400"
-        className="relative size-full"
+        className="ct-spin-slow relative size-full"
         role="img"
         aria-label="Abstract geometric star pattern"
-        animate={shouldReduceMotion ? undefined : { rotate: 360 }}
-        transition={shouldReduceMotion ? undefined : { duration: 90, repeat: Infinity, ease: 'linear' }}
       >
         <defs>
           <linearGradient id="motif-stroke" x1="0" y1="0" x2="1" y2="1">
@@ -49,16 +48,12 @@ export function HeroMotif() {
         ))}
         <circle cx="200" cy="200" r="130" fill="none" stroke="url(#motif-stroke)" strokeWidth="1" opacity="0.4" />
         <circle cx="200" cy="200" r="90" fill="none" stroke="url(#motif-stroke)" strokeWidth="1" opacity="0.5" />
-      </motion.svg>
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        animate={shouldReduceMotion ? undefined : { scale: [1, 1.05, 1] }}
-        transition={shouldReduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-      >
+      </svg>
+      <div className="ct-pulse-soft absolute inset-0 flex items-center justify-center">
         <div className="flex size-44 items-center justify-center rounded-full bg-brand-green-500/90 p-3 shadow-soft-lg">
           <img src={logoSrc} alt={t.common.brand} className="size-full object-contain" />
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

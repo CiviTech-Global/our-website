@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router';
-import { motion } from 'framer-motion';
 import { Menu, X, Sun, Moon, Languages, LayoutDashboard, ShieldCheck, LogOut } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useTheme } from '@/contexts/ThemeProvider';
@@ -110,10 +109,8 @@ export function FuturisticNavbar() {
       </nav>
 
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass mx-auto mt-2 max-w-6xl rounded-2xl p-4 shadow-soft md:hidden"
+        <div
+          className="ct-drop-in glass mx-auto mt-2 max-w-6xl rounded-2xl p-4 shadow-soft md:hidden"
         >
           <ul className="flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
@@ -164,7 +161,7 @@ export function FuturisticNavbar() {
               </>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
     </header>
   );

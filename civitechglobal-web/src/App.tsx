@@ -6,13 +6,20 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { Spinner } from '@/components/ui/Spinner';
 
+// HomePage stays eager: it is the landing route, and lazy-loading the first
+// thing a visitor sees would trade bundle size for a blank frame and an extra
+// round trip on the one page where speed is most visible.
 import HomePage from '@/pages/public/HomePage';
-import AboutPage from '@/pages/public/AboutPage';
-import ServicesPage from '@/pages/public/ServicesPage';
-import ContactPage from '@/pages/public/ContactPage';
-import LoginPage from '@/pages/public/LoginPage';
-import RegisterPage from '@/pages/public/RegisterPage';
-import NotFoundPage from '@/pages/public/NotFoundPage';
+
+// Everything else is reached by a click, which is ample time to fetch a few
+// kilobytes. Keeping these eager put all of them — plus their forms and
+// validation — into the chunk the landing page had to download first.
+const AboutPage = lazy(() => import('@/pages/public/AboutPage'));
+const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'));
+const ContactPage = lazy(() => import('@/pages/public/ContactPage'));
+const LoginPage = lazy(() => import('@/pages/public/LoginPage'));
+const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'));
+const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 
 // Route-split: the insurance section carries the catalog, the dynamic form and
 // the OTP step, none of which the landing page needs in its bundle.
@@ -45,7 +52,11 @@ function RouteLoadingFallback() {
 
 export default function App() {
   return (
-    <Routes>
+    // One boundary around the whole tree, so a lazy route does not need its own
+    // wrapper to be safe. The per-route boundaries below stay because they keep
+    // an already-rendered layout on screen while only the panel swaps.
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Routes>
       <Route
         path="/proposal/:code"
         element={
@@ -188,6 +199,7 @@ export default function App() {
           }
         />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
