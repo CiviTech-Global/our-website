@@ -5,6 +5,7 @@ import dashboardRoutes from './dashboard.routes.js';
 import insuranceRoutes from './insurance.routes.js';
 import adminRoutes from './admin.routes.js';
 import projectRoutes from './project.routes.js';
+import contactRoutes from './contact.routes.js';
 
 const router = Router();
 
@@ -21,5 +22,7 @@ router.use('/insurance', insuranceRoutes);
 // proposals. The main service line, so it sits alongside insurance rather
 // than under it.
 router.use('/projects', projectRoutes);
+// Public contact form, and the inbox behind it.
+router.use('/contact', contactRoutes);
 
 export default router;

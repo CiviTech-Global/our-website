@@ -614,3 +614,35 @@ model ProjectProposal {
   @@index([status])
   @@map("project_proposals")
 }
+
+/// A message from the public contact form.
+///
+/// Previously this form opened a `mailto:` link and stored nothing, so an
+/// enquiry existed only if the visitor's machine had a mail client configured
+/// and they went through with sending it. Anything else was lost silently,
+/// which is the worst way to lose a customer.
+model ContactMessage {
+  id String @id @default(cuid())
+
+  name      String
+  email     String
+  /// Deterministic hash for lookup and abuse checks without scanning
+  /// plaintext, matching the convention on User.emailHash.
+  emailHash String  @map("email_hash")
+  subject   String?
+  message   String
+
+  /// Read/handled state. No enum: two booleans answer the only two questions
+  /// anyone asks of an inbox, and adding a workflow later should be a
+  /// deliberate act rather than something an enum invited.
+  readAt        DateTime? @map("read_at")
+  handledAt     DateTime? @map("handled_at")
+  internalNotes String?   @map("internal_notes")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([createdAt])
+  @@index([emailHash])
+  @@map("contact_messages")
+}

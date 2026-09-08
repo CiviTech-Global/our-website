@@ -706,9 +706,9 @@ still ahead.
 | 12 | Uptime monitoring with alerts | 12, 13 | **done** — systemd timer → Telegram, edge-triggered, with the scope limit stated |
 | — | *Also:* firewall, hardened SSH, fail2ban, off-host backups, resource limits | 6, 8, 13 | **done** — `roles/common`, `roles/backup` |
 | 13 | Password reset + email verification | 4 | open |
-| 14 | Front-end error boundary + browser Sentry | 1, 12 | open |
+| 14 | Front-end error boundary + browser Sentry | 1, 12 | **half** — the boundary is in (a render error no longer blanks the app). Browser Sentry is deliberately NOT wired: its bundle costs more than everything the animation-library removal saved, so it should be a priced decision. `ErrorBoundary.componentDidCatch` is the seam. |
 | 15 | CD: deploy `${{ github.sha }}` behind an environment approval | 7 | **specified**, not wired — the job is in the guide; it needs the three GitHub secrets and a protected environment |
-| 16 | Convert fonts to WOFF2 and subset them | 1, 10 | open |
+| 16 | Convert fonts to WOFF2 and subset them | 1, 10 | **done** — 472 kB of TTF across five faces became 131 kB of WOFF2 across three; two weights were referenced by nothing at all |
 
 ### P2 — This quarter
 

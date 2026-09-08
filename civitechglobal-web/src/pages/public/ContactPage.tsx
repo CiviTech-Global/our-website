@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, Mail, Send } from 'lucide-react';
+import { api, isApiError } from '@/config/api';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
@@ -37,10 +38,12 @@ const contactSchema = z.object({
 type ContactFormValues = z.infer<typeof contactSchema>;
 
 /**
- * SIMPLIFICATION: since a Tickets/support data model is out of scope for this pass,
- * this form does not persist to the backend. Submitting opens a pre-filled mailto:
- * link to the support inbox, and confirms via toast — a reasonable stand-in until a
- * real contact/ticket endpoint exists.
+ * The contact form.
+ *
+ * It posts to the API and the message is stored. It used to open a `mailto:`
+ * link instead, which meant an enquiry survived only if the visitor had a mail
+ * client configured AND went through with sending it — anything else was lost
+ * silently, on both sides.
  */
 export default function ContactPage() {
   const { t } = useLocale();
@@ -53,12 +56,14 @@ export default function ContactPage() {
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>({ resolver: zodResolver(contactSchema) });
 
-  function onSubmit(values: ContactFormValues) {
-    const subject = encodeURIComponent(`Contact from ${values.name}`);
-    const body = encodeURIComponent(`${values.message}\n\n— ${values.name} (${values.email})`);
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-    showToast(t.contact.formSuccess, 'success');
-    reset();
+  async function onSubmit(values: ContactFormValues) {
+    try {
+      await api.post('/contact', values);
+      showToast(t.contact.formSuccess, 'success');
+      reset();
+    } catch (error) {
+      showToast(isApiError(error) ? error.message : t.common.error, 'error');
+    }
   }
 
   return (

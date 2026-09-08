@@ -29,6 +29,7 @@ const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
 const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
 const ProposalDocumentPage = lazy(() => import('@/pages/public/ProposalDocumentPage'));
 const ProjectsPage = lazy(() => import('@/pages/admin/ProjectsPage'));
+const MessagesPage = lazy(() => import('@/pages/admin/MessagesPage'));
 const ProjectDetailPage = lazy(() => import('@/pages/admin/ProjectDetailPage'));
 const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
 const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
@@ -163,6 +164,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <ProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="messages"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MessagesPage />
             </Suspense>
           }
         />
