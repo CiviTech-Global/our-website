@@ -1,14 +1,10 @@
 /**
  * Talent intake types, mirroring the server's Prisma models and zod schema.
  *
- * Money crosses the wire as a decimal string, for the same reason it does
- * everywhere else here: an Iranian salary in toman outgrows the range a JSON
- * number can carry without losing its low digits.
+ * Deliberately thin: the CV itself carries the experience, the skills and the
+ * links, so asking for them again on the form was duplicated effort for the
+ * applicant and a second, staler copy for us.
  */
-
-export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP' | 'VOLUNTEER';
-
-export type WorkArrangement = 'ONSITE' | 'HYBRID' | 'REMOTE' | 'ANY';
 
 export type ResumeStatus =
   | 'RECEIVED'
@@ -26,19 +22,6 @@ export interface ResumePayload {
   city?: string;
   province?: string;
   birthYear?: number;
-
-  headline?: string;
-  yearsOfExperience?: number;
-  skills: string[];
-  desiredRole?: string;
-  employmentType?: EmploymentType;
-  workArrangement?: WorkArrangement;
-  expectedSalary?: string;
-  availableFrom?: string;
-
-  linkedinUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
   coverNote?: string;
 }
 
@@ -62,10 +45,6 @@ export interface AdminResumeSummary {
   id: string;
   trackingCode: string;
   fullName: string;
-  headline: string | null;
-  desiredRole: string | null;
-  yearsOfExperience: number | null;
-  skills: string[];
   city: string | null;
   status: ResumeStatus;
   matchedRole: string | null;

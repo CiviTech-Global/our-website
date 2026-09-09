@@ -28,7 +28,6 @@ export interface TrackedResume {
   kind: 'resume';
   trackingCode: string;
   status: ResumeStatus;
-  desiredRole: string | null;
   submittedAt: string;
   updatedAt: string;
 }

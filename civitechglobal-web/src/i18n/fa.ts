@@ -385,21 +385,6 @@ const fa = {
     city: 'شهر',
     birthYear: 'سال تولد (میلادی)',
 
-    sectionWork: 'سوابق و مهارت‌ها',
-    headline: 'عنوان شغلی',
-    headlineHint: 'مثلاً «مهندس بک‌اند» یا «طراح رابط کاربری».',
-    desiredRole: 'موقعیت مورد نظر',
-    years: 'سال‌های تجربه',
-    employment: 'نوع همکاری',
-    arrangement: 'نحوهٔ حضور',
-    expectedSalary: 'حقوق مورد انتظار (ماهانه)',
-    currency: 'تومان',
-    optional: 'اختیاری',
-    notSpecified: 'مشخص نشده',
-    skills: 'مهارت‌ها',
-    skillsHint: 'با ویرگول یا خط جدید از هم جدا کنید.',
-    portfolio: 'نمونه‌کار',
-
     sectionResume: 'فایل رزومه',
     resumeHint: 'فایل رزومه الزامی است.',
     chooseFile: 'انتخاب فایل رزومه',
@@ -427,19 +412,6 @@ const fa = {
     goTrack: 'پیگیری وضعیت',
     goHome: 'بازگشت به خانه',
 
-    employmentTypes: {
-      FULL_TIME: 'تمام‌وقت',
-      PART_TIME: 'پاره‌وقت',
-      CONTRACT: 'قراردادی / پروژه‌ای',
-      INTERNSHIP: 'کارآموزی',
-      VOLUNTEER: 'داوطلبانه',
-    },
-    arrangements: {
-      ANY: 'فرقی نمی‌کند',
-      ONSITE: 'حضوری',
-      HYBRID: 'ترکیبی',
-      REMOTE: 'دورکاری',
-    },
     statuses: {
       RECEIVED: 'دریافت شد',
       IN_REVIEW: 'در حال بررسی',
@@ -609,6 +581,8 @@ const fa = {
   },
   admin: {
     dashboard: 'داشبورد مدیریت',
+    groupIntake: 'درخواست‌های دریافتی',
+    groupAdministration: 'مدیریت سامانه',
     requests: 'درخواست‌های بیمه',
     source: 'کانال',
     sourceWeb: 'وب‌سایت',

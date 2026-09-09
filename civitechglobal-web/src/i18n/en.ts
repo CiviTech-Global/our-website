@@ -387,21 +387,6 @@ const en: typeof fa = {
     city: 'City',
     birthYear: 'Year of birth',
 
-    sectionWork: 'Experience and skills',
-    headline: 'Job title',
-    headlineHint: 'For example "Backend engineer" or "UI designer".',
-    desiredRole: 'Role you want',
-    years: 'Years of experience',
-    employment: 'Employment type',
-    arrangement: 'Work arrangement',
-    expectedSalary: 'Expected monthly pay',
-    currency: 'IRT',
-    optional: 'Optional',
-    notSpecified: 'Not specified',
-    skills: 'Skills',
-    skillsHint: 'Separate with commas or new lines.',
-    portfolio: 'Portfolio',
-
     sectionResume: 'Your CV',
     resumeHint: 'A CV file is required.',
     chooseFile: 'Choose your CV',
@@ -429,19 +414,6 @@ const en: typeof fa = {
     goTrack: 'Track status',
     goHome: 'Back home',
 
-    employmentTypes: {
-      FULL_TIME: 'Full time',
-      PART_TIME: 'Part time',
-      CONTRACT: 'Contract / project',
-      INTERNSHIP: 'Internship',
-      VOLUNTEER: 'Volunteer',
-    },
-    arrangements: {
-      ANY: 'No preference',
-      ONSITE: 'On site',
-      HYBRID: 'Hybrid',
-      REMOTE: 'Remote',
-    },
     statuses: {
       RECEIVED: 'Received',
       IN_REVIEW: 'In review',
@@ -611,6 +583,8 @@ const en: typeof fa = {
   },
   admin: {
     dashboard: 'Admin dashboard',
+    groupIntake: 'Incoming',
+    groupAdministration: 'Administration',
     requests: 'Insurance requests',
     source: 'Channel',
     sourceWeb: 'Website',

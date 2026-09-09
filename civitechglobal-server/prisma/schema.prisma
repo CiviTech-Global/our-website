@@ -671,21 +671,6 @@ enum ResumeStatus {
   WITHDRAWN
 }
 
-enum EmploymentType {
-  FULL_TIME
-  PART_TIME
-  CONTRACT
-  INTERNSHIP
-  VOLUNTEER
-}
-
-enum WorkArrangement {
-  ONSITE
-  HYBRID
-  REMOTE
-  ANY
-}
-
 model ResumeSubmission {
   id String @id @default(cuid())
 
@@ -709,24 +694,8 @@ model ResumeSubmission {
   /// and asking for less of somebody's identity is the better default.
   birthYear Int?    @map("birth_year")
 
-  // ---- What they do ------------------------------------------------------
-  /// «مهندس بک‌اند ارشد» — how they describe themselves in one line.
-  headline          String?
-  yearsOfExperience Int?             @map("years_of_experience")
-  skills            String[]         @default([])
-  desiredRole       String?          @map("desired_role")
-  employmentType    EmploymentType?  @map("employment_type")
-  workArrangement   WorkArrangement? @map("work_arrangement")
-  /// Expected monthly pay in whole toman. BigInt for the same reason the
-  /// project budgets are: Iranian amounts outgrow a float's integer range.
-  expectedSalary    BigInt?          @map("expected_salary")
-  availableFrom     DateTime?        @map("available_from")
-
-  linkedinUrl  String? @map("linkedin_url")
-  githubUrl    String? @map("github_url")
-  portfolioUrl String? @map("portfolio_url")
   /// Anything they want to say that the CV does not.
-  coverNote    String? @map("cover_note")
+  coverNote String? @map("cover_note")
 
   // ---- The file ----------------------------------------------------------
   //

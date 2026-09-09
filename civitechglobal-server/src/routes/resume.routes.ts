@@ -74,15 +74,7 @@ router.post(
         ? [{ originalName: file.originalname, buffer: file.buffer }]
         : [];
 
-      const result = await resumeService.submitResume(
-        {
-          ...input,
-          linkedinUrl: input.linkedinUrl || undefined,
-          githubUrl: input.githubUrl || undefined,
-          portfolioUrl: input.portfolioUrl || undefined,
-        },
-        files
-      );
+      const result = await resumeService.submitResume(input, files);
 
       successResponse(
         res,
@@ -148,10 +140,6 @@ router.get('/admin', async (req, res, next) => {
           id: true,
           trackingCode: true,
           fullName: true,
-          headline: true,
-          desiredRole: true,
-          yearsOfExperience: true,
-          skills: true,
           city: true,
           status: true,
           matchedRole: true,

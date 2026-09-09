@@ -11,27 +11,6 @@ const trimmed = (max: number) => z.string().trim().max(max);
 const required = (min: number, max: number, message: string) =>
   z.string().trim().min(min, message).max(max);
 
-/** Optional URL that also tolerates an empty string from an untouched input. */
-const optionalUrl = (message: string) =>
-  z.union([z.literal(''), z.string().trim().url(message)]).optional();
-
-const money = z
-  .string()
-  .trim()
-  .regex(/^\d{1,15}$/, 'مبلغ باید عددی صحیح باشد')
-  .transform((value) => BigInt(value))
-  .optional();
-
-export const EMPLOYMENT_TYPES = [
-  'FULL_TIME',
-  'PART_TIME',
-  'CONTRACT',
-  'INTERNSHIP',
-  'VOLUNTEER',
-] as const;
-
-export const WORK_ARRANGEMENTS = ['ONSITE', 'HYBRID', 'REMOTE', 'ANY'] as const;
-
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const resumeSubmissionSchema = z.object({
@@ -52,23 +31,6 @@ export const resumeSubmissionSchema = z.object({
     .max(CURRENT_YEAR - 14, 'سال تولد معتبر نیست')
     .optional(),
 
-  headline: trimmed(160).optional(),
-  yearsOfExperience: z.number().int().min(0).max(60).optional(),
-  skills: z.array(z.string().trim().min(1).max(60)).max(30).default([]),
-  desiredRole: trimmed(160).optional(),
-  employmentType: z.enum(EMPLOYMENT_TYPES).optional(),
-  workArrangement: z.enum(WORK_ARRANGEMENTS).optional(),
-  expectedSalary: money,
-  availableFrom: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .transform((value) => new Date(value))
-    .refine((d) => !Number.isNaN(d.getTime()), 'تاریخ نامعتبر است')
-    .optional(),
-
-  linkedinUrl: optionalUrl('نشانی لینکدین معتبر نیست'),
-  githubUrl: optionalUrl('نشانی گیت‌هاب معتبر نیست'),
-  portfolioUrl: optionalUrl('نشانی نمونه‌کار معتبر نیست'),
   coverNote: trimmed(3000).optional(),
 });
 

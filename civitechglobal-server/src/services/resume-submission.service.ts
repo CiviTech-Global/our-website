@@ -1,4 +1,3 @@
-import type { EmploymentType, WorkArrangement } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import {
@@ -31,19 +30,6 @@ export interface ResumeInput {
   city?: string;
   province?: string;
   birthYear?: number;
-
-  headline?: string;
-  yearsOfExperience?: number;
-  skills: string[];
-  desiredRole?: string;
-  employmentType?: EmploymentType;
-  workArrangement?: WorkArrangement;
-  expectedSalary?: bigint;
-  availableFrom?: Date;
-
-  linkedinUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
   coverNote?: string;
 }
 
@@ -123,17 +109,6 @@ async function createWithUniqueTrackingCode(
           city: input.city,
           province: input.province,
           birthYear: input.birthYear,
-          headline: input.headline,
-          yearsOfExperience: input.yearsOfExperience,
-          skills: input.skills,
-          desiredRole: input.desiredRole,
-          employmentType: input.employmentType,
-          workArrangement: input.workArrangement,
-          expectedSalary: input.expectedSalary,
-          availableFrom: input.availableFrom,
-          linkedinUrl: input.linkedinUrl,
-          githubUrl: input.githubUrl,
-          portfolioUrl: input.portfolioUrl,
           coverNote: input.coverNote,
           resumeOriginalName: stored.originalName,
           resumeStoredName: stored.storedName,
@@ -164,7 +139,6 @@ export async function trackResume(trackingCode: string) {
       status: true,
       createdAt: true,
       updatedAt: true,
-      desiredRole: true,
     },
   });
 
@@ -173,7 +147,6 @@ export async function trackResume(trackingCode: string) {
   return {
     trackingCode: row.trackingCode,
     status: row.status,
-    desiredRole: row.desiredRole,
     submittedAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

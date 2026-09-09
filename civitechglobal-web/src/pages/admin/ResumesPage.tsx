@@ -97,40 +97,15 @@ export default function ResumesPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">
-                    {cv.fullName}
-                    {cv.headline && (
-                      <span className="text-sm font-normal text-text-secondary"> · {cv.headline}</span>
-                    )}
-                  </p>
+                  <p className="font-medium text-text-primary">{cv.fullName}</p>
                   <p className="mt-0.5 text-xs text-text-muted">
                     <span className="ltr font-mono">{cv.trackingCode}</span>
                     {cv.city && ` · ${cv.city}`}
-                    {cv.yearsOfExperience !== null && ` · ${cv.yearsOfExperience} ${t.join.years}`}
                     {` · ${formatDate(cv.createdAt, locale)}`}
                   </p>
                 </div>
                 <Badge variant={statusVariant(cv.status)}>{t.join.statuses[cv.status]}</Badge>
               </div>
-
-              {cv.desiredRole && (
-                <p className="mt-2 text-sm text-text-secondary">
-                  {t.join.desiredRole}: {cv.desiredRole}
-                </p>
-              )}
-
-              {cv.skills.length > 0 && (
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {cv.skills.map((skill) => (
-                    <li
-                      key={skill}
-                      className="rounded-full border border-border-default px-2.5 py-0.5 text-xs text-text-secondary"
-                    >
-                      {skill}
-                    </li>
-                  ))}
-                </ul>
-              )}
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <Button

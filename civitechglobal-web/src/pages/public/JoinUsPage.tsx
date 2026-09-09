@@ -9,27 +9,12 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
-import { formatThousands, normalizePersianDigits } from '@/lib/persian';
-import type {
-  EmploymentType,
-  ResumeAllowance,
-  ResumePayload,
-  WorkArrangement,
-} from '@/types/resume';
+import { normalizePersianDigits } from '@/lib/persian';
+import type { ResumeAllowance, ResumePayload } from '@/types/resume';
 
 const ACCEPT = '.pdf,.docx,.tex';
 const MAX_MB = 10;
-
-const EMPLOYMENT: EmploymentType[] = [
-  'FULL_TIME',
-  'PART_TIME',
-  'CONTRACT',
-  'INTERNSHIP',
-  'VOLUNTEER',
-];
-const ARRANGEMENTS: WorkArrangement[] = ['ANY', 'ONSITE', 'HYBRID', 'REMOTE'];
 
 type Errors = Record<string, string>;
 
@@ -46,17 +31,6 @@ export default function JoinUsPage() {
     city: '',
     province: '',
     birthYear: '',
-    headline: '',
-    yearsOfExperience: '',
-    skills: '',
-    desiredRole: '',
-    employmentType: '' as EmploymentType | '',
-    workArrangement: 'ANY' as WorkArrangement,
-    expectedSalary: '',
-    availableFrom: '',
-    linkedinUrl: '',
-    githubUrl: '',
-    portfolioUrl: '',
     coverNote: '',
   });
   const [resume, setResume] = useState<File | null>(null);
@@ -128,22 +102,6 @@ export default function JoinUsPage() {
       city: form.city.trim() || undefined,
       province: form.province.trim() || undefined,
       birthYear: num(form.birthYear),
-      headline: form.headline.trim() || undefined,
-      yearsOfExperience: num(form.yearsOfExperience),
-      // Comma or newline separated, whichever the person reaches for.
-      skills: form.skills
-        .split(/[,\n،]/)
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .slice(0, 30),
-      desiredRole: form.desiredRole.trim() || undefined,
-      employmentType: form.employmentType || undefined,
-      workArrangement: form.workArrangement,
-      expectedSalary: form.expectedSalary || undefined,
-      availableFrom: form.availableFrom || undefined,
-      linkedinUrl: form.linkedinUrl.trim() || undefined,
-      githubUrl: form.githubUrl.trim() || undefined,
-      portfolioUrl: form.portfolioUrl.trim() || undefined,
       coverNote: form.coverNote.trim() || undefined,
     };
 
@@ -303,122 +261,6 @@ export default function JoinUsPage() {
                 className="ltr text-start"
                 value={form.birthYear}
                 onChange={(e) => set('birthYear', digitsOnly(e.target.value).slice(0, 4))}
-              />
-            </FormField>
-          </div>
-        </Section>
-
-        <Section title={t.join.sectionWork}>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField label={t.join.headline} htmlFor="headline" hint={t.join.headlineHint}>
-              <Input
-                id="headline"
-                value={form.headline}
-                onChange={(e) => set('headline', e.target.value)}
-              />
-            </FormField>
-            <FormField label={t.join.desiredRole} htmlFor="desiredRole">
-              <Input
-                id="desiredRole"
-                value={form.desiredRole}
-                onChange={(e) => set('desiredRole', e.target.value)}
-              />
-            </FormField>
-            <FormField label={t.join.years} htmlFor="yearsOfExperience">
-              <Input
-                id="yearsOfExperience"
-                inputMode="numeric"
-                className="ltr text-start"
-                value={form.yearsOfExperience}
-                onChange={(e) => set('yearsOfExperience', digitsOnly(e.target.value).slice(0, 2))}
-              />
-            </FormField>
-            <FormField label={t.join.employment} htmlFor="employmentType">
-              <Select
-                id="employmentType"
-                value={form.employmentType}
-                onChange={(e) => set('employmentType', e.target.value as EmploymentType | '')}
-              >
-                <option value="">{t.join.notSpecified}</option>
-                {EMPLOYMENT.map((value) => (
-                  <option key={value} value={value}>
-                    {t.join.employmentTypes[value]}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label={t.join.arrangement} htmlFor="workArrangement">
-              <Select
-                id="workArrangement"
-                value={form.workArrangement}
-                onChange={(e) => set('workArrangement', e.target.value as WorkArrangement)}
-              >
-                {ARRANGEMENTS.map((value) => (
-                  <option key={value} value={value}>
-                    {t.join.arrangements[value]}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField
-              label={t.join.expectedSalary}
-              htmlFor="expectedSalary"
-              hint={t.join.optional}
-            >
-              <div className="relative">
-                <Input
-                  id="expectedSalary"
-                  inputMode="numeric"
-                  dir="ltr"
-                  className="ltr text-start pe-14"
-                  value={formatThousands(form.expectedSalary)}
-                  onChange={(e) => set('expectedSalary', digitsOnly(e.target.value))}
-                />
-                <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-xs text-text-muted">
-                  {t.join.currency}
-                </span>
-              </div>
-            </FormField>
-          </div>
-
-          <FormField label={t.join.skills} htmlFor="skills" hint={t.join.skillsHint}>
-            <TextArea
-              id="skills"
-              rows={2}
-              value={form.skills}
-              onChange={(e) => set('skills', e.target.value)}
-            />
-          </FormField>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <FormField label="LinkedIn" htmlFor="linkedinUrl">
-              <Input
-                id="linkedinUrl"
-                dir="ltr"
-                placeholder="https://"
-                className="ltr text-start"
-                value={form.linkedinUrl}
-                onChange={(e) => set('linkedinUrl', e.target.value)}
-              />
-            </FormField>
-            <FormField label="GitHub" htmlFor="githubUrl">
-              <Input
-                id="githubUrl"
-                dir="ltr"
-                placeholder="https://"
-                className="ltr text-start"
-                value={form.githubUrl}
-                onChange={(e) => set('githubUrl', e.target.value)}
-              />
-            </FormField>
-            <FormField label={t.join.portfolio} htmlFor="portfolioUrl">
-              <Input
-                id="portfolioUrl"
-                dir="ltr"
-                placeholder="https://"
-                className="ltr text-start"
-                value={form.portfolioUrl}
-                onChange={(e) => set('portfolioUrl', e.target.value)}
               />
             </FormField>
           </div>

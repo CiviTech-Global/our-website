@@ -131,12 +131,6 @@ export default function TrackRequestPage() {
             </div>
 
             <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {resumeData.desiredRole && (
-                <div>
-                  <dt className="text-xs text-text-muted">{t.join.desiredRole}</dt>
-                  <dd className="mt-1 text-sm text-text-primary">{resumeData.desiredRole}</dd>
-                </div>
-              )}
               <div>
                 <dt className="text-xs text-text-muted">{t.insurance.submittedAt}</dt>
                 <dd className="mt-1 text-sm text-text-primary">
