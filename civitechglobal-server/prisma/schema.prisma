@@ -94,8 +94,9 @@ model User {
   refreshTokens    RefreshToken[]
   assignedRequests InsuranceRequest[] @relation("LeadAssignee")
 
-  assignedProjectRequests ProjectRequest[]  @relation("AssignedProjectRequests")
-  authoredProposals       ProjectProposal[] @relation("AuthoredProposals")
+  assignedProjectRequests ProjectRequest[]   @relation("AssignedProjectRequests")
+  authoredProposals       ProjectProposal[]  @relation("AuthoredProposals")
+  assignedResumes         ResumeSubmission[] @relation("AssignedResumes")
 
   @@index([role])
   @@index([createdAt])
@@ -407,6 +408,7 @@ model ClientIdentity {
   blocked Boolean @default(false)
 
   requests ProjectRequest[]
+  resumes  ResumeSubmission[]
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
@@ -645,4 +647,114 @@ model ContactMessage {
   @@index([createdAt])
   @@index([emailHash])
   @@map("contact_messages")
+}
+
+// ===========================================================================
+// Talent intake
+//
+// A person sends a CV; we read it and get in touch if something fits. There is
+// no job board yet and no application-to-vacancy link — that is the next step,
+// not this one — so a submission stands on its own.
+// ===========================================================================
+
+enum ResumeStatus {
+  /// Received, nobody has read it yet.
+  RECEIVED
+  IN_REVIEW
+  /// Worth keeping in front of us.
+  SHORTLISTED
+  /// Matched to something and in conversation.
+  MATCHED
+  /// Nothing right now, but worth revisiting.
+  ON_HOLD
+  DECLINED
+  WITHDRAWN
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  VOLUNTEER
+}
+
+enum WorkArrangement {
+  ONSITE
+  HYBRID
+  REMOTE
+  ANY
+}
+
+model ResumeSubmission {
+  id String @id @default(cuid())
+
+  /// Quotable reference, from the same ambiguity-free alphabet as the other
+  /// intakes — it gets read down a phone line too.
+  trackingCode String @unique @map("tracking_code")
+
+  /// The SAME identity record the project intake uses. One person who both
+  /// commissions work and applies for a job is one identity, and the (email,
+  /// phone) pairing rule is therefore enforced once, in one place, for both.
+  identityId String         @map("identity_id")
+  identity   ClientIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+
+  // ---- Who ---------------------------------------------------------------
+  fullName  String  @map("full_name")
+  email     String
+  phone     String
+  city      String?
+  province  String?
+  /// Year of birth, Gregorian. Not a full date: nothing here needs a birthday,
+  /// and asking for less of somebody's identity is the better default.
+  birthYear Int?    @map("birth_year")
+
+  // ---- What they do ------------------------------------------------------
+  /// «مهندس بک‌اند ارشد» — how they describe themselves in one line.
+  headline          String?
+  yearsOfExperience Int?             @map("years_of_experience")
+  skills            String[]         @default([])
+  desiredRole       String?          @map("desired_role")
+  employmentType    EmploymentType?  @map("employment_type")
+  workArrangement   WorkArrangement? @map("work_arrangement")
+  /// Expected monthly pay in whole toman. BigInt for the same reason the
+  /// project budgets are: Iranian amounts outgrow a float's integer range.
+  expectedSalary    BigInt?          @map("expected_salary")
+  availableFrom     DateTime?        @map("available_from")
+
+  linkedinUrl  String? @map("linkedin_url")
+  githubUrl    String? @map("github_url")
+  portfolioUrl String? @map("portfolio_url")
+  /// Anything they want to say that the CV does not.
+  coverNote    String? @map("cover_note")
+
+  // ---- The file ----------------------------------------------------------
+  //
+  // Exactly one, stored the same way project attachments are: outside any
+  // served directory, under a generated name, with the type decided by the
+  // file's own bytes.
+  resumeOriginalName String @map("resume_original_name")
+  resumeStoredName   String @unique @map("resume_stored_name")
+  resumeMimeType     String @map("resume_mime_type")
+  resumeSizeBytes    Int    @map("resume_size_bytes")
+  resumeChecksum     String @map("resume_checksum")
+
+  // ---- Handling ----------------------------------------------------------
+  status        ResumeStatus @default(RECEIVED)
+  internalNotes String?      @map("internal_notes")
+  /// Free-text for now. A relation to a vacancy belongs to the job board that
+  /// does not exist yet, and inventing the table early would guess its shape.
+  matchedRole   String?      @map("matched_role")
+
+  assignedToId String? @map("assigned_to_id")
+  assignedTo   User?   @relation("AssignedResumes", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([identityId])
+  @@index([assignedToId])
+  @@map("resume_submissions")
 }

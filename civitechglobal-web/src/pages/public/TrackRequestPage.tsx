@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { PackageSearch, Search } from 'lucide-react';
-import { useTrackRequest } from '@/api/insurance';
-import { useProjectTracking } from '@/api/projects';
+import { useTracking } from '@/api/tracking';
 import { ProposalView } from '@/components/project/ProposalView';
 import { projectStatusBadgeVariant, projectStatusLabel } from '@/lib/projectStatus';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -24,14 +23,13 @@ export default function TrackRequestPage() {
   const [input, setInput] = useState(params.get('code') ?? '');
 
   const code = params.get('code') ?? undefined;
-  const insurance = useTrackRequest(code);
-  const project = useProjectTracking(code ?? null);
-
-  const data = insurance.data;
-  const projectData = project.data;
-  const isFetching = insurance.isFetching || project.isFetching;
-  // Only a genuine miss when NEITHER lookup found it.
-  const isError = Boolean(code) && !isFetching && !data && !projectData;
+  // One request, whatever kind of code it is. The server resolves it across
+  // all three intakes on a single connection; the browser used to fire one
+  // request per intake and throw away the losers.
+  const tracking = useTracking(code);
+  const { result, insurance: data, project: projectData, resume: resumeData } = tracking;
+  const isFetching = tracking.isFetching;
+  const isError = Boolean(code) && !isFetching && !result;
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -113,9 +111,42 @@ export default function TrackRequestPage() {
             <ProposalView
               proposal={projectData.proposal}
               trackingCode={projectData.trackingCode}
-              onResponded={() => project.refetch()}
+              onResponded={() => tracking.refetch()}
             />
           )}
+        </AnimatedSection>
+      )}
+
+      {resumeData && !isFetching && (
+        <AnimatedSection className="mt-8">
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-text-muted">{t.insurance.trackingCode}</p>
+                <p className="ltr font-mono text-base font-semibold tracking-widest text-text-primary">
+                  {resumeData.trackingCode}
+                </p>
+              </div>
+              <Badge variant="info">{t.join.statuses[resumeData.status]}</Badge>
+            </div>
+
+            <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {resumeData.desiredRole && (
+                <div>
+                  <dt className="text-xs text-text-muted">{t.join.desiredRole}</dt>
+                  <dd className="mt-1 text-sm text-text-primary">{resumeData.desiredRole}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-xs text-text-muted">{t.insurance.submittedAt}</dt>
+                <dd className="mt-1 text-sm text-text-primary">
+                  {formatDate(resumeData.submittedAt, locale)}
+                </dd>
+              </div>
+            </dl>
+
+            <p className="mt-6 text-sm text-text-secondary">{t.join.successBody}</p>
+          </Card>
         </AnimatedSection>
       )}
 
@@ -125,7 +156,7 @@ export default function TrackRequestPage() {
         </div>
       )}
 
-      {data && !projectData && !isFetching && (
+      {data && !isFetching && (
         <AnimatedSection className="mt-8">
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-3">

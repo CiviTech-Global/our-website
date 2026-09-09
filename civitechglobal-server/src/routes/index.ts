@@ -6,6 +6,8 @@ import insuranceRoutes from './insurance.routes.js';
 import adminRoutes from './admin.routes.js';
 import projectRoutes from './project.routes.js';
 import contactRoutes from './contact.routes.js';
+import resumeRoutes from './resume.routes.js';
+import trackRoutes from './track.routes.js';
 
 const router = Router();
 
@@ -24,5 +26,9 @@ router.use('/insurance', insuranceRoutes);
 router.use('/projects', projectRoutes);
 // Public contact form, and the inbox behind it.
 router.use('/contact', contactRoutes);
+// Talent intake: CV in, tracking code out, and the pile behind it.
+router.use('/resumes', resumeRoutes);
+// One box for any tracking code, whichever intake issued it.
+router.use('/track', trackRoutes);
 
 export default router;

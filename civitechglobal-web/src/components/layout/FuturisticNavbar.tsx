@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/', key: 'home' as const },
   { to: '/services', key: 'services' as const },
   { to: '/start-project', key: 'startProject' as const },
+  { to: '/join', key: 'joinUs' as const },
   { to: '/about', key: 'about' as const },
   { to: '/insurance', key: 'insurance' as const },
   { to: '/track', key: 'track' as const },

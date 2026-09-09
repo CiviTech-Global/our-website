@@ -8,7 +8,6 @@ import type {
   ProductDetail,
   ProductSummary,
   SubmitResult,
-  TrackedRequest,
 } from '@/types/insurance';
 
 /** The catalog changes a few times a year; there is no reason to refetch it. */
@@ -82,14 +81,3 @@ export function useSubmitInsuranceRequest() {
   });
 }
 
-export function useTrackRequest(code: string | undefined) {
-  return useQuery({
-    queryKey: ['insurance', 'track', code],
-    queryFn: async () => {
-      const res = await api.get<TrackedRequest>(`/insurance/requests/track/${code}`);
-      return res.data;
-    },
-    enabled: Boolean(code),
-    retry: false,
-  });
-}

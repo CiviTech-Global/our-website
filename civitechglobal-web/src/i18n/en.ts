@@ -34,6 +34,7 @@ const en: typeof fa = {
     about: 'About',
     services: 'Services',
     startProject: 'Start a project',
+    joinUs: 'Send your CV',
     contact: 'Contact',
     login: 'Login',
     register: 'Register',
@@ -363,6 +364,106 @@ const en: typeof fa = {
       EXPIRED: 'Expired',
       WITHDRAWN: 'Withdrawn',
     },
+  },
+  join: {
+    title: 'Send us your CV',
+    subtitle:
+      'Send us your CV. We read it, and get in touch as soon as something opens up that fits your experience.',
+
+    processTitle: 'What happens next',
+    step1: 'You fill in the form and attach your CV.',
+    step2: 'You get a tracking code and can check the status any time.',
+    step3: 'We read it, and contact you when it matches an opening.',
+    limitNote:
+      'Each person may send at most twice a day, an hour apart, and on two days only. Your email and phone together identify you.',
+    exhausted:
+      'You have already sent us your CV and cannot send another. It is on file, and we will contact you if it matches an opening.',
+
+    sectionYou: 'About you',
+    fullName: 'Full name',
+    email: 'Email',
+    phone: 'Phone',
+    identityHint: 'Your email and phone together identify you — use the same pair for any later request.',
+    city: 'City',
+    birthYear: 'Year of birth',
+
+    sectionWork: 'Experience and skills',
+    headline: 'Job title',
+    headlineHint: 'For example "Backend engineer" or "UI designer".',
+    desiredRole: 'Role you want',
+    years: 'Years of experience',
+    employment: 'Employment type',
+    arrangement: 'Work arrangement',
+    expectedSalary: 'Expected monthly pay',
+    currency: 'IRT',
+    optional: 'Optional',
+    notSpecified: 'Not specified',
+    skills: 'Skills',
+    skillsHint: 'Separate with commas or new lines.',
+    portfolio: 'Portfolio',
+
+    sectionResume: 'Your CV',
+    resumeHint: 'A CV file is required.',
+    chooseFile: 'Choose your CV',
+    fileRules: 'PDF, DOCX or LaTeX — up to 10 MB',
+    removeFile: 'Remove file',
+    coverNote: 'A short note (optional)',
+
+    submit: 'Send CV',
+    submitHint: 'You will get a tracking code once it is sent.',
+
+    errRequired: 'This field is required',
+    errEmail: 'Enter a valid email address',
+    errPhone: 'Enter a valid phone number',
+    errFileRequired: 'A CV file is required',
+    errFileType: 'Only PDF, DOCX or LaTeX files are accepted',
+    errFileBig: 'This file is larger than 10 MB',
+    errSubmit: 'Could not send your CV. Please try again.',
+
+    successTitle: 'CV received',
+    successBody:
+      'We will read it and get in touch as soon as it matches an opening. Keep your tracking code.',
+    trackingCode: 'Tracking code',
+    copy: 'Copy code',
+    copied: 'Copied',
+    goTrack: 'Track status',
+    goHome: 'Back home',
+
+    employmentTypes: {
+      FULL_TIME: 'Full time',
+      PART_TIME: 'Part time',
+      CONTRACT: 'Contract / project',
+      INTERNSHIP: 'Internship',
+      VOLUNTEER: 'Volunteer',
+    },
+    arrangements: {
+      ANY: 'No preference',
+      ONSITE: 'On site',
+      HYBRID: 'Hybrid',
+      REMOTE: 'Remote',
+    },
+    statuses: {
+      RECEIVED: 'Received',
+      IN_REVIEW: 'In review',
+      SHORTLISTED: 'Shortlisted',
+      MATCHED: 'Matched',
+      ON_HOLD: 'On hold',
+      DECLINED: 'Nothing right now',
+      WITHDRAWN: 'Withdrawn',
+    },
+
+    // Landing page
+    homeTitle: 'Join the team',
+    homeBody:
+      'We are looking for engineers, designers and product people who want to build software that matters. Send us your CV.',
+    homeCta: 'Send your CV',
+
+    // Admin
+    adminTitle: 'CVs',
+    adminSubtitle: 'Applications received through the CV form',
+    adminEmpty: 'No CVs yet.',
+    download: 'Download CV',
+    matchedRole: 'Matched role',
   },
   contact: {
     title: 'Contact us',

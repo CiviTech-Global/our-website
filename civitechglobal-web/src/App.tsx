@@ -28,7 +28,9 @@ const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
 // not carry it.
 const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
 const ProposalDocumentPage = lazy(() => import('@/pages/public/ProposalDocumentPage'));
+const JoinUsPage = lazy(() => import('@/pages/public/JoinUsPage'));
 const ProjectsPage = lazy(() => import('@/pages/admin/ProjectsPage'));
+const AdminResumesPage = lazy(() => import('@/pages/admin/ResumesPage'));
 const MessagesPage = lazy(() => import('@/pages/admin/MessagesPage'));
 const ProjectDetailPage = lazy(() => import('@/pages/admin/ProjectDetailPage'));
 const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
@@ -71,6 +73,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/join" element={<JoinUsPage />} />
         <Route
           path="/start-project"
           element={
@@ -164,6 +167,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <ProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="resumes"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AdminResumesPage />
             </Suspense>
           }
         />

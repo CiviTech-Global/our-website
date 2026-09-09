@@ -8,6 +8,7 @@ import {
   Landmark,
   ShieldCheck,
   Smartphone,
+  UserPlus,
   Sprout,
   Users,
 } from 'lucide-react';
@@ -122,6 +123,24 @@ export default function HomePage() {
             <Link to="/insurance" className="shrink-0">
               <Button variant="outline">
                 {t.home.alsoInsuranceCta}
+                <ArrowIcon className="size-4" aria-hidden="true" />
+              </Button>
+            </Link>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.12}>
+          <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-border-default bg-surface-50 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <UserPlus className="mt-0.5 size-6 shrink-0 text-brand-green-500" aria-hidden="true" />
+              <div>
+                <h3 className="text-lg font-semibold text-text-primary">{t.join.homeTitle}</h3>
+                <p className="mt-1 max-w-xl text-sm text-text-secondary">{t.join.homeBody}</p>
+              </div>
+            </div>
+            <Link to="/join" className="shrink-0">
+              <Button variant="outline">
+                {t.join.homeCta}
                 <ArrowIcon className="size-4" aria-hidden="true" />
               </Button>
             </Link>

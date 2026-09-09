@@ -102,9 +102,20 @@ const ALLOWED: AllowedType[] = [
   { ext: 'txt', mime: 'text/plain', sniff: (b, ext) => ext === 'txt' && looksLikeUtf8Text(b) },
   { ext: 'md', mime: 'text/markdown', sniff: (b, ext) => ext === 'md' && looksLikeUtf8Text(b) },
   { ext: 'csv', mime: 'text/csv', sniff: (b, ext) => ext === 'csv' && looksLikeUtf8Text(b) },
+  // A LaTeX source file is plain text, so the same UTF-8 check that guards a
+  // .txt guards this: a binary payload wearing a .tex extension is rejected.
+  { ext: 'tex', mime: 'text/x-tex', sniff: (b, ext) => ext === 'tex' && looksLikeUtf8Text(b) },
 ];
 
 export const ACCEPTED_EXTENSIONS = ALLOWED.map((a) => a.ext);
+
+/**
+ * What a resume may be. Narrower than the full list on purpose: an intake that
+ * accepts a spreadsheet or a PNG because the general allowlist happens to
+ * include them is an intake nobody chose the rules for.
+ */
+export const RESUME_EXTENSIONS = ['pdf', 'docx', 'tex'] as const;
+export const RESUME_ACCEPT_ATTRIBUTE = RESUME_EXTENSIONS.map((e) => `.${e}`).join(',');
 
 /** The `accept` attribute for the file input, so the browser filters too. */
 export const ACCEPT_ATTRIBUTE = ACCEPTED_EXTENSIONS.map((e) => `.${e}`).join(',');
@@ -139,12 +150,18 @@ export function safeDisplayName(originalName: string): string {
   return (cleaned || 'file').slice(0, 200);
 }
 
-export function identifyType(buffer: Buffer, originalName: string): AllowedType {
+export function identifyType(
+  buffer: Buffer,
+  originalName: string,
+  allowed: readonly string[] = ACCEPTED_EXTENSIONS
+): AllowedType {
   const declared = declaredExtension(originalName);
-  const match = ALLOWED.find((candidate) => candidate.sniff(buffer, declared));
+  const match = ALLOWED.find(
+    (candidate) => allowed.includes(candidate.ext) && candidate.sniff(buffer, declared)
+  );
   if (!match) {
     throw new AppError(
-      `نوع فایل «${safeDisplayName(originalName)}» پشتیبانی نمی‌شود یا محتوای آن با پسوندش هم‌خوانی ندارد. فرمت‌های مجاز: ${ACCEPTED_EXTENSIONS.join('، ')}`,
+      `نوع فایل «${safeDisplayName(originalName)}» پشتیبانی نمی‌شود یا محتوای آن با پسوندش هم‌خوانی ندارد. فرمت‌های مجاز: ${allowed.join('، ')}`,
       415
     );
   }
@@ -200,11 +217,17 @@ export function resolveStoredPath(storedName: string): string {
  * leave seven orphans on disk; if a write then fails part-way, the ones already
  * written are removed.
  */
-export async function storeFiles(files: IncomingFile[]): Promise<StoredFile[]> {
+export async function storeFiles(
+  files: IncomingFile[],
+  allowed: readonly string[] = ACCEPTED_EXTENSIONS
+): Promise<StoredFile[]> {
   if (files.length === 0) return [];
 
   assertWithinLimits(files);
-  const typed = files.map((file) => ({ file, type: identifyType(file.buffer, file.originalName) }));
+  const typed = files.map((file) => ({
+    file,
+    type: identifyType(file.buffer, file.originalName, allowed),
+  }));
 
   const root = storageRoot();
   await mkdir(root, { recursive: true });

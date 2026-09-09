@@ -29,6 +29,120 @@ export const DAILY_LIMIT = 3;
 export const COOLDOWN_MS = 60 * 60 * 1000; // one hour
 export const WINDOW_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * The rules one intake applies to one identity.
+ *
+ * Kept as data rather than hard-coded per service, because the two intakes want
+ * genuinely different numbers: a project brief is a considered thing somebody
+ * files a few of, while a CV is sent once and then, at most, corrected.
+ */
+export interface RateRules {
+  /** Most submissions allowed inside `windowMs`. */
+  perWindow: number;
+  windowMs: number;
+  /** Minimum gap between two consecutive submissions. */
+  cooldownMs: number;
+  /**
+   * Most DISTINCT calendar days an identity may ever submit on. Absent means
+   * no lifetime cap. When it is reached the door is closed for good, so the
+   * message has to say so rather than name a time to come back.
+   */
+  maxDistinctDays?: number;
+  /** Shown when `maxDistinctDays` is spent. */
+  exhaustedMessage?: string;
+}
+
+/**
+ * Calendar days are counted in Iran's timezone, not UTC.
+ *
+ * UTC would roll over at 03:30 local, so an application sent at midnight and
+ * another at 04:00 the same night would look like two different days to the
+ * limiter and one night to the person — and the argument that follows is one we
+ * would lose.
+ */
+const DAY_TZ = 'Asia/Tehran';
+const dayFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: DAY_TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** 'YYYY-MM-DD' as lived in Tehran. */
+export function localDayKey(date: Date): string {
+  return dayFormatter.format(date);
+}
+
+/**
+ * The rate decision, as a pure function over timestamps.
+ *
+ * No database, no identity, no clock of its own — which is what makes every
+ * rule below testable without either. Callers pass every submission this
+ * identity has ever made, newest first; the window is applied here.
+ */
+export function assertRate(history: Date[], rules: RateRules, now: Date = new Date()): void {
+  if (rules.maxDistinctDays !== undefined) {
+    const days = new Set(history.map(localDayKey));
+    // Already spent the allowance, and today is not one of the days already
+    // used. A third day never opens, so this is terminal.
+    if (days.size >= rules.maxDistinctDays && !days.has(localDayKey(now))) {
+      throw new AppError(
+        rules.exhaustedMessage ??
+          'تعداد دفعات مجاز ارسال به پایان رسیده است. تیم ما در صورت تطابق با شما تماس می‌گیرد.',
+        429
+      );
+    }
+  }
+
+  const windowStart = now.getTime() - rules.windowMs;
+  const recent = history
+    .filter((d) => d.getTime() >= windowStart)
+    .sort((a, b) => b.getTime() - a.getTime());
+
+  if (recent.length >= rules.perWindow) {
+    // The cap lifts when the OLDEST entry in the window ages out, not
+    // `windowMs` from now — otherwise every rejected attempt would extend the
+    // penalty, and a person retrying could never get back in.
+    const oldest = recent[recent.length - 1]!;
+    throw new AppError(
+      `در هر شبانه‌روز حداکثر ${rules.perWindow} بار می‌توانید ارسال کنید. ${describeWait(new Date(oldest.getTime() + rules.windowMs), now)}`,
+      429
+    );
+  }
+
+  const last = recent[0];
+  if (last) {
+    const readyAt = new Date(last.getTime() + rules.cooldownMs);
+    if (readyAt > now) {
+      throw new AppError(
+        `بین دو ارسال باید یک ساعت فاصله باشد. ${describeWait(readyAt, now)}`,
+        429
+      );
+    }
+  }
+}
+
+/** The project intake's numbers. */
+export const PROJECT_RULES: RateRules = {
+  perWindow: DAILY_LIMIT,
+  windowMs: WINDOW_MS,
+  cooldownMs: COOLDOWN_MS,
+};
+
+/**
+ * The resume intake's numbers: twice a day, an hour apart, on at most two days
+ * ever. A CV does not improve by being sent a fifth time, and the cap is what
+ * stops the queue filling with the same person.
+ */
+export const RESUME_RULES: RateRules = {
+  perWindow: 2,
+  windowMs: WINDOW_MS,
+  cooldownMs: COOLDOWN_MS,
+  maxDistinctDays: 2,
+  exhaustedMessage:
+    'شما پیش‌تر رزومهٔ خود را ارسال کرده‌اید و امکان ارسال دوباره وجود ندارد. تیم ما رزومهٔ شما را بررسی می‌کند و در صورت تطابق با موقعیت شغلی مناسب با شما تماس می‌گیرد.',
+};
+
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
@@ -133,36 +247,18 @@ export async function assertWithinRateLimits(
     return { recentCount: 0, retryAt: null };
   }
 
-  const windowStart = new Date(now.getTime() - WINDOW_MS);
-  const recent = await tx.projectRequest.findMany({
-    where: { identityId: identity.id, createdAt: { gte: windowStart } },
+  const history = await tx.projectRequest.findMany({
+    where: { identityId: identity.id, createdAt: { gte: new Date(now.getTime() - WINDOW_MS) } },
     select: { createdAt: true },
-    orderBy: { createdAt: 'desc' },
   });
 
-  if (recent.length >= DAILY_LIMIT) {
-    // The cap lifts when the OLDEST request in the window ages out, not 24h
-    // from now — otherwise every rejected attempt would extend the penalty.
-    const oldest = recent[recent.length - 1]!.createdAt;
-    const retryAt = new Date(oldest.getTime() + WINDOW_MS);
-    throw new AppError(
-      `در هر شبانه‌روز حداکثر ${DAILY_LIMIT} درخواست می‌توانید ثبت کنید. ${describeWait(retryAt, now)}`,
-      429
-    );
-  }
+  assertRate(
+    history.map((row) => row.createdAt),
+    PROJECT_RULES,
+    now
+  );
 
-  const last = recent[0]?.createdAt ?? null;
-  if (last) {
-    const readyAt = new Date(last.getTime() + COOLDOWN_MS);
-    if (readyAt > now) {
-      throw new AppError(
-        `بین دو درخواست باید یک ساعت فاصله باشد. ${describeWait(readyAt, now)}`,
-        429
-      );
-    }
-  }
-
-  return { recentCount: recent.length, retryAt: null };
+  return { recentCount: history.length, retryAt: null };
 }
 
 /** «۳۴ دقیقهٔ دیگر تلاش کنید.» — a wait a person can act on. */
