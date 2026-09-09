@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } f
 import { ApiError } from '@/config/api';
 import { checkResumeAllowance, useSubmitResume } from '@/api/resumes';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -22,6 +23,7 @@ const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/
 
 export default function JoinUsPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.join.title);
   const submit = useSubmitResume();
 
   const [form, setForm] = useState({

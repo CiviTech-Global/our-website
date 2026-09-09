@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCheck, Mail, MailOpen } from 'lucide-react';
 import { api } from '@/config/api';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -41,6 +42,7 @@ const PAGE_SIZE = 20;
  */
 export default function MessagesPage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.contact.inboxTitle);
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [unreadOnly, setUnreadOnly] = useState(false);

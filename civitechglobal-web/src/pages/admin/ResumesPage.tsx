@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { downloadResume, useAdminResumes, useUpdateResumeStatus } from '@/api/resumes';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
 import { Badge } from '@/components/ui/Badge';
@@ -51,6 +52,7 @@ function statusVariant(status: ResumeStatus): BadgeVariant {
  */
 export default function ResumesPage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.join.adminTitle);
   const { showToast } = useToast();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<ResumeStatus | 'ALL'>('ALL');

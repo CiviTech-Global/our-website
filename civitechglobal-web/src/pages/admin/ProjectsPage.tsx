@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { Paperclip } from 'lucide-react';
 import { useAdminProjects } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -17,6 +18,7 @@ const PAGE_SIZE = 15;
 
 export default function ProjectsPage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.proposal.adminTitle);
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<ProjectRequestStatus | 'ALL'>('ALL');

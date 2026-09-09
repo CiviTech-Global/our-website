@@ -9,7 +9,7 @@ import { corsOptions } from './config/cors.js';
 import { logger } from './config/logger.js';
 import { prisma } from './config/database.js';
 import { pingRedis } from './config/redis.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { generalRateLimiter } from './middleware/rateLimit.js';
 import { optionalAuth } from './middleware/authenticate.js';
 import routes from './routes/index.js';
@@ -79,6 +79,8 @@ export function createApp(): Express {
   });
 
   app.use('/api', generalRateLimiter, routes);
+
+  app.use('/api', notFoundHandler);
 
   app.use(errorHandler);
 

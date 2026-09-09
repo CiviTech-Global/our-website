@@ -13,6 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
@@ -20,6 +21,7 @@ import { HeroMotif } from '@/components/home/HeroMotif';
 
 export default function HomePage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(undefined);
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   const features = [

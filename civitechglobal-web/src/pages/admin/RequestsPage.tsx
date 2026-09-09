@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Globe, Send } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { useRequests } from '@/api/requests';
 import { Table, type TableColumn } from '@/components/ui/Table';
@@ -17,6 +18,7 @@ const PAGE_SIZE = 10;
 
 export default function RequestsPage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.admin.requests);
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<LeadStatus | 'ALL'>('ALL');

@@ -38,6 +38,17 @@ function shouldReportToSentry(err: Error): boolean {
   return true;
 }
 
+/**
+ * Anything under /api that matched no route.
+ *
+ * Without this, Express answers with its own HTML error page — which breaks the
+ * { success, message } envelope every other response keeps, and hands an API
+ * client a block of markup to parse when it asked for JSON.
+ */
+export function notFoundHandler(req: Request, _res: Response, next: NextFunction) {
+  next(new AppError(`Cannot ${req.method} ${req.originalUrl}`, 404));
+}
+
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
   const statusCode = (err as MaybeHttpError).statusCode;
 

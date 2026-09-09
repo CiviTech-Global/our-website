@@ -10,12 +10,14 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { Button } from '@/components/ui/Button';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function ServicesPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.services);
 
   const softwareServices = [
     { icon: Code2, title: t.services.software1Title, desc: t.services.software1Desc, glow: 'green' as const },

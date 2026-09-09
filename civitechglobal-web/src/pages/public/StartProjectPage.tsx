@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
 import { useSubmitProjectRequest } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -53,6 +54,7 @@ const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/
 
 export default function StartProjectPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.startProject);
   const submit = useSubmitProjectRequest();
 
   const [form, setForm] = useState({

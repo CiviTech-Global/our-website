@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { isApiError } from '@/config/api';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -15,6 +16,7 @@ import { AuthCard } from './AuthCard';
 
 export default function LoginPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.login);
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();

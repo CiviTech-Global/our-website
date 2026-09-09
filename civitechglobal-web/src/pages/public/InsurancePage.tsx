@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { PhoneCall, Search, Zap } from 'lucide-react';
 import { useInsuranceCatalog } from '@/api/insurance';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Input } from '@/components/ui/Input';
@@ -20,6 +21,7 @@ function matches(query: string, ...haystack: string[]): boolean {
 
 export default function InsurancePage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.nav.insurance);
   const { data: catalog, isLoading, isError } = useInsuranceCatalog();
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);

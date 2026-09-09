@@ -1,5 +1,15 @@
-import { CheckCircle2, CircleUserRound, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  CircleUserRound,
+  Code2,
+  PackageSearch,
+  ShieldCheck,
+  UserPlus,
+} from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { useAuth } from '@/contexts/AuthProvider';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -7,6 +17,7 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function DashboardPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
 
   const hasPhone = Boolean(user?.phone);
@@ -57,6 +68,44 @@ export default function DashboardPage() {
           </Card>
         </AnimatedSection>
       </div>
+
+      {/* Submissions are tracked by code, not tied to an account, so there is no
+          list of "your requests" to show here. Links to the things an account
+          holder actually came to do are more use than an empty table. */}
+      <AnimatedSection delay={0.2} className="mt-8">
+        <h2 className="text-lg font-semibold text-text-primary">{t.dashboard.quickActions}</h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <QuickAction
+            to="/start-project"
+            icon={<Code2 className="size-5" aria-hidden="true" />}
+            label={t.nav.startProject}
+          />
+          <QuickAction
+            to="/join"
+            icon={<UserPlus className="size-5" aria-hidden="true" />}
+            label={t.join.title}
+          />
+          <QuickAction
+            to="/track"
+            icon={<PackageSearch className="size-5" aria-hidden="true" />}
+            label={t.nav.track}
+          />
+        </div>
+      </AnimatedSection>
     </div>
+  );
+}
+
+function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
+  return (
+    <Link to={to} className="block rounded-2xl transition-transform hover:-translate-y-0.5">
+      <Card className="flex h-full items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-green-500/10 text-brand-green-600 dark:text-brand-green-400">
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">{label}</span>
+        <ArrowLeft className="size-4 shrink-0 text-text-muted ltr:rotate-180" aria-hidden="true" />
+      </Card>
+    </Link>
   );
 }

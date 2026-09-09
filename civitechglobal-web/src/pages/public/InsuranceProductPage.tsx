@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useInsuranceProduct } from '@/api/insurance';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { useToast } from '@/contexts/ToastContext';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
@@ -83,6 +84,12 @@ export default function InsuranceProductPage() {
   const { t, locale } = useLocale();
   const { data: product, isLoading, isError } = useInsuranceProduct(slug);
   const [result, setResult] = useState<SubmitResult | null>(null);
+
+  // Named after the product once it loads, so a shared link says what it is
+  // rather than "Insurance" for every one of them.
+  useDocumentTitle(
+    product ? (locale === 'fa' ? product.title : product.titleEn) : t.nav.insurance
+  );
 
   if (isLoading) {
     return (

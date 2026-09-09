@@ -5,6 +5,7 @@ import { useTracking } from '@/api/tracking';
 import { ProposalView } from '@/components/project/ProposalView';
 import { projectStatusBadgeVariant, projectStatusLabel } from '@/lib/projectStatus';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
@@ -19,6 +20,7 @@ import type { LeadStatus } from '@/types/requests';
 
 export default function TrackRequestPage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.insurance.trackTitle);
   const [params, setParams] = useSearchParams();
   const [input, setInput] = useState(params.get('code') ?? '');
 

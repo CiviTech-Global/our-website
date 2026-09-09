@@ -97,9 +97,21 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+/** A queue's size, and how much of it is still waiting on us. */
+export interface IntakeCount {
+  total: number;
+  open: number;
+}
+
 export interface AdminDashboardStats {
   totalUsers: number;
   totalLeads: number;
+  intake: {
+    projects: IntakeCount;
+    resumes: IntakeCount;
+    insurance: IntakeCount;
+    messages: IntakeCount;
+  };
   leadsByStatus: Record<string, number>;
   recentLeads: InsuranceRequest[];
 }

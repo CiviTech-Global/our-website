@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Building2, Mail, Send } from 'lucide-react';
 import { api, isApiError } from '@/config/api';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
 import { Card } from '@/components/ui/Card';
@@ -47,6 +48,7 @@ type ContactFormValues = z.infer<typeof contactSchema>;
  */
 export default function ContactPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.contact);
   const { showToast } = useToast();
 
   const {

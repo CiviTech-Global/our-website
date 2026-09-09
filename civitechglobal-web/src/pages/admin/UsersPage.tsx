@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { isApiError } from '@/config/api';
 import { Users as UsersIcon } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { useAdminUsers } from '@/api/admin';
 import { Table, type TableColumn } from '@/components/ui/Table';
@@ -20,6 +21,7 @@ const PAGE_SIZE = 10;
  */
 export default function UsersPage() {
   const { t, locale } = useLocale();
+  useDocumentTitle(t.admin.users);
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useAdminUsers(page, PAGE_SIZE);
 

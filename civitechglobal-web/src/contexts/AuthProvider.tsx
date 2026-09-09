@@ -9,6 +9,8 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<AuthUser>;
   register: (payload: RegisterPayload) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  /** Revokes every session for this account, on every device. */
+  logoutEverywhere: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
 }
@@ -73,6 +75,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // The server bumps tokenVersion, which invalidates every outstanding access
+  // and refresh token at once — this is what someone reaches for after losing a
+  // laptop or sharing a password, so it must not fail quietly.
+  const logoutEverywhere = useCallback(async () => {
+    try {
+      await api.post('/auth/logout-all');
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
+  }, []);
+
   const refreshUser = useCallback(async () => {
     const res = await api.get<{ user: AuthUser }>('/auth/me');
     setUser(res.data.user);
@@ -93,10 +107,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      logoutEverywhere,
       refreshUser,
       updateProfile,
     }),
-    [user, isLoading, login, register, logout, refreshUser, updateProfile]
+    [user, isLoading, login, register, logout, logoutEverywhere, refreshUser, updateProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
