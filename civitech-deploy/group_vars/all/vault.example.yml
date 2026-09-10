@@ -12,6 +12,18 @@
 
 vault_postgres_password: "REPLACE_ME"
 
+# Password for the least-privilege application role (civitech_app). Used only
+# once db_use_least_privilege_role is true; the deploy sets it on the role.
+vault_db_app_password: "REPLACE_ME"
+
+# S3-compatible object storage for uploaded attachments and CVs. Leave empty
+# while storage_driver is "local".
+vault_storage_access_key: ""
+vault_storage_secret_key: ""
+
+# Transactional email — password reset and address verification links.
+vault_email_api_key: "REPLACE_ME"
+
 # Must differ from each other. A single secret signing both token types means
 # a stolen 15-minute access token can be presented as a 7-day refresh token.
 vault_jwt_secret: "REPLACE_ME_64_HEX_CHARS"

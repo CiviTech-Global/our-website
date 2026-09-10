@@ -51,7 +51,11 @@ services:
       # Prisma reads pool settings straight off the connection string. Its
       # default is cores*2+1 PER PROCESS, which stops being safe the moment
       # there is more than one API container.
-      DATABASE_URL: "postgresql://{{ postgres_user }}:{{ vault_postgres_password }}@postgres:5432/{{ postgres_db }}?connection_limit={{ db_connection_limit }}&pool_timeout={{ db_pool_timeout }}"
+      # The application connects as the least-privilege role once the cutover
+      # variable is set — DML only, no DDL, cannot disable row-level security.
+      # The `migrate` service above still connects as the owner, because
+      # migrations have to own the schema they change.
+      DATABASE_URL: "postgresql://{{ db_app_user if db_use_least_privilege_role | bool else postgres_user }}:{{ vault_db_app_password if db_use_least_privilege_role | bool else vault_postgres_password }}@postgres:5432/{{ postgres_db }}?connection_limit={{ db_connection_limit }}&pool_timeout={{ db_pool_timeout }}"
       REDIS_URL: "redis://redis:6379"
       JWT_SECRET: "{{ vault_jwt_secret }}"
       JWT_REFRESH_SECRET: "{{ vault_jwt_refresh_secret }}"
@@ -80,6 +84,13 @@ services:
       EMAIL_API_KEY: "{{ vault_email_api_key | default('') }}"
       EMAIL_FROM: "{{ email_from }}"
       EMAIL_DOMAIN: "{{ email_domain | default('') }}"
+      # Uploads are scanned before they are written, and the scanner fails
+      # CLOSED — an unreachable clamd refuses the upload rather than accepting
+      # it unscanned. Leaving MALWARE_SCANNER=none in production requires
+      # saying so explicitly, which is the point.
+      MALWARE_SCANNER: "{{ malware_scanner }}"
+      MALWARE_SCANNER_ALLOW_NONE: "{{ 'true' if malware_scanner == 'none' else 'false' }}"
+      CLAMAV_HOST: "clamav"
       SENTRY_DSN: "{{ vault_sentry_dsn }}"
       SEED_ADMIN_EMAIL: "{{ vault_seed_admin_email }}"
       SEED_ADMIN_PASSWORD: "{{ vault_seed_admin_password }}"

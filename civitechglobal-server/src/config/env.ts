@@ -55,6 +55,17 @@ export const env = {
   // Optional: when unset/empty, Sentry initialization is a no-op.
   SENTRY_DSN: optional('SENTRY_DSN', ''),
 
+  // --- Malware scanning ----------------------------------------------------
+  //
+  // 'none' accepts everything; 'clamav' streams each upload to clamd. Same
+  // arrangement as the SMS and email providers: production refuses the
+  // do-nothing option unless it is waived on purpose.
+  MALWARE_SCANNER: optional('MALWARE_SCANNER', 'none'),
+  MALWARE_SCANNER_ALLOW_NONE: optional('MALWARE_SCANNER_ALLOW_NONE', '') === 'true',
+  CLAMAV_HOST: optional('CLAMAV_HOST', 'clamav'),
+  CLAMAV_PORT: parseInt(optional('CLAMAV_PORT', '3310'), 10),
+  CLAMAV_TIMEOUT_MS: parseInt(optional('CLAMAV_TIMEOUT_MS', '30000'), 10),
+
   // --- Uploaded file storage ----------------------------------------------
   //
   // 'local' writes to UPLOAD_DIR; 's3' talks to any S3-compatible endpoint

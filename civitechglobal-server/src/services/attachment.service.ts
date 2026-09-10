@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import path from 'node:path';
 import { AppError } from '../middleware/errorHandler.js';
 import { storage, type StoredObject } from './storage/index.js';
+import { malwareScanner } from './malware/index.js';
 
 /**
  * Storage and validation for client-supplied files.
@@ -28,10 +29,9 @@ import { storage, type StoredObject } from './storage/index.js';
  * this module decides whether a file is acceptable and what it is called, and
  * the driver decides whether that means a disk or a bucket.
  *
- * What this does NOT do is scan for malware. That needs a scanner
- * (ClamAV/MetaDefender) and is worth adding before these files are opened
- * routinely; until then, treat every attachment as untrusted and open it
- * somewhere that does not matter.
+ * Contents are scanned by `services/malware` before anything is written, so
+ * a hostile file never reaches storage at all. That scanner fails CLOSED: if
+ * it cannot answer, the upload is refused rather than quietly accepted.
  */
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -224,6 +224,14 @@ export async function storeFiles(
     file,
     type: identifyType(file.buffer, file.originalName, allowed),
   }));
+
+  // Scan before writing anything. Storing first and scanning after would mean
+  // a hostile file exists on disk for as long as the scan takes, and would
+  // leave it there if the process died in between.
+  const scanner = malwareScanner();
+  for (const { file } of typed) {
+    await scanner.assertClean(file.buffer, file.originalName);
+  }
 
   const written: StoredFile[] = [];
   try {

@@ -56,6 +56,20 @@ postgres_db: civitechglobal
 db_connection_limit: 10
 db_pool_timeout: 20
 
+# Which role the API connects as.
+#
+# Migrations always run as {{ postgres_user }}, because they need to own the
+# schema. The application does not: the 20260910180000 migration creates
+# civitech_app with DML only — no DDL, no TRUNCATE, no ownership, and no
+# ability to disable row-level security.
+#
+# Leave this false for the first deploy after that migration, confirm the
+# api container is healthy, then set it true and deploy again. Splitting the
+# cutover from the migration means a privilege mistake shows up as one failed
+# deploy you can roll back, not as a migration you cannot.
+db_use_least_privilege_role: false
+db_app_user: civitech_app
+
 # NOTE: there is no Telegram bot in this deployment. The company offers
 # nothing Telegram-based, so the bot is not built by CI, not defined in the
 # compose files and not started here. Its source remains in the repository
@@ -121,6 +135,18 @@ storage_region: us-east-1
 email_provider: resend
 email_from: no-reply@{{ domain_name }}
 email_domain: ""
+
+# ---- Malware scanning --------------------------------------------------------
+#
+# "none" accepts uploads unscanned; "clamav" streams each one to a clamd
+# container before it is stored. clamav costs roughly 1 GB of RAM for its
+# signature database, so on a 2 GB host it is a real decision rather than a
+# free win — which is why it is off until somebody chooses it, and why the API
+# makes you say so explicitly in production.
+#
+# Turning it on also means starting the container:
+#   docker compose --profile scanning up -d clamav
+malware_scanner: none
 
 # ---- Backups ---------------------------------------------------------------
 backup_dir: /var/backups/civitech
