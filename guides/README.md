@@ -6,12 +6,17 @@ otherwise starts from zero.
 
 ## Review
 
-- [`platform-review.md`](./platform-review.md) — a layer-by-layer evaluation
-  of this repository against thirteen production concerns (front end, API,
+- [`platform-review-2026-09-11.md`](./platform-review-2026-09-11.md) — the
+  current evaluation against thirteen production concerns (front end, API,
   database, auth, hosting, cloud, CI/CD, security & row-level security, rate
-  limiting, caching/CDN, scaling, observability, recovery), plus an analysis
-  of how the sibling `verifywise` and `jolfa-retail-gateway` projects solve
-  deployment with Ansible and Semaphore UI, and a prioritized roadmap.
+  limiting, caching/CDN, scaling, observability, recovery), scored out of 10, with
+  what changed since the first pass, the five bugs the remediation surfaced,
+  and what each remaining item actually needs. **Start here.**
+- [`platform-review.md`](./platform-review.md) — the original 2026-09-02
+  evaluation, letter-graded, plus an analysis of how the sibling `verifywise`
+  and `jolfa-retail-gateway` projects solve deployment with Ansible and
+  Semaphore UI. Superseded on the platform layers, still worth reading for the
+  reasoning behind them.
 
 ## Product
 

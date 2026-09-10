@@ -10,6 +10,12 @@ Reviewed at commit `3d0b3c5` on `main`, 2026-09-02.
 Companion document: [`production-deployment.md`](./production-deployment.md)
 — the complete deployment guide this review concludes you need.
 
+> **Superseded by [`platform-review-2026-09-11.md`](./platform-review-2026-09-11.md).**
+> Layers 5, 6, 11, 12 and 13 in particular describe a platform that no longer
+> exists — `deploy.yml` was an empty file when this was written, and the
+> Ansible estate has since been built out. Read this one for the reasoning; read
+> the newer one for the state.
+
 > **Read this as a dated snapshot.** The insurance module has since been
 > rebuilt around a typed product catalog: `Lead` is now `InsuranceRequest`,
 > intake happens on the website through per-product forms with SMS-verified
