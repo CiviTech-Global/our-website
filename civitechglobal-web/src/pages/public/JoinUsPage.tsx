@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { AlertTriangle, CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
-import { ApiError } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import { checkResumeAllowance, useSubmitResume } from '@/api/resumes';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
@@ -112,9 +112,7 @@ export default function JoinUsPage() {
       setResult(res);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      setErrors({
-        submit: error instanceof ApiError ? error.message : t.join.errSubmit,
-      });
+      setErrors({ submit: apiMessage(error, t.join.errSubmit) });
     }
   }
 

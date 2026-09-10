@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ApiError } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import {
   AlertTriangle,
   CalendarClock,
@@ -63,11 +63,7 @@ export function ProposalView({
       setDecision(choice);
       onResponded();
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? ((err.response?.data as { message?: string } | undefined)?.message ?? t.proposal.errSend)
-          : t.proposal.errSend
-      );
+      setError(apiMessage(err, t.proposal.errSend));
     }
   }
 

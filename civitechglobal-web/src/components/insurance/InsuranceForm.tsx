@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ApiError } from '@/config/api';
+import { apiErrorBody } from '@/lib/apiMessage';
 import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import { useSubmitInsuranceRequest } from '@/api/insurance';
 import { Button } from '@/components/ui/Button';
@@ -19,11 +19,6 @@ import type { Answers, AnswerValue, ProductDetail, SubmitResult } from '@/types/
 interface InsuranceFormProps {
   product: ProductDetail;
   onSubmitted: (result: SubmitResult) => void;
-}
-
-interface ServerFieldError {
-  path: string;
-  message: string;
 }
 
 /**
@@ -118,25 +113,22 @@ export function InsuranceForm({ product, onSubmitted }: InsuranceFormProps) {
       });
       onSubmitted(result);
     } catch (error) {
-      if (error instanceof ApiError) {
-        const data = error.response?.data as
-          | { message?: string; errors?: ServerFieldError[] }
-          | undefined;
+      const data = apiErrorBody(error);
 
-        // The server validates the same field list; surfacing its per-field
-        // messages beats a generic banner when the two disagree about an edge
-        // case, which is exactly when the user needs to know which input.
-        if (data?.errors?.length) {
-          setErrors(Object.fromEntries(data.errors.map((e) => [e.path, e.message])));
-          const firstBadStep = steps.findIndex((s) =>
-            s.fields.some((f) => data.errors!.some((e) => e.path === f.name)),
-          );
-          if (firstBadStep >= 0 && firstBadStep !== stepIndex) setStepIndex(firstBadStep);
-        }
-        setSubmitError(data?.message ?? t.insurance.submitFailed);
-        return;
+      // The server validates the same field list; surfacing its per-field
+      // messages beats a generic banner when the two disagree about an edge
+      // case, which is exactly when the user needs to know which input.
+      if (data?.errors?.length) {
+        setErrors(Object.fromEntries(data.errors.map((e) => [e.path, e.message])));
+        const firstBadStep = steps.findIndex((s) =>
+          s.fields.some((f) => data.errors!.some((e) => e.path === f.name)),
+        );
+        if (firstBadStep >= 0 && firstBadStep !== stepIndex) setStepIndex(firstBadStep);
       }
-      setSubmitError(t.insurance.submitFailed);
+
+      // The banner stays the general message on purpose: a field error is
+      // already shown against the field it belongs to.
+      setSubmitError(data?.message ?? t.insurance.submitFailed);
     }
   }
 

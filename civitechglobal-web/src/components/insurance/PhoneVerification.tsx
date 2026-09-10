@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ApiError } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import { Check, CheckCircle2, Copy, Phone, ShieldCheck } from 'lucide-react';
 import { useSendOtp, useVerifyOtp } from '@/api/insurance';
 import { Button } from '@/components/ui/Button';
@@ -13,14 +13,6 @@ interface PhoneVerificationProps {
   /** Called once the number is proved; the token is what authorises submission. */
   onVerified: (phone: string, phoneToken: string) => void;
   verifiedPhone: string | null;
-}
-
-function messageFrom(error: unknown, fallback: string): string {
-  if (error instanceof ApiError) {
-    const data = error.response?.data as { message?: string } | undefined;
-    if (data?.message) return data.message;
-  }
-  return fallback;
 }
 
 /**
@@ -88,7 +80,7 @@ export function PhoneVerification({ onVerified, verifiedPhone }: PhoneVerificati
         window.setTimeout(() => codeInputRef.current?.focus(), 50);
       }
     } catch (err) {
-      setError(messageFrom(err, t.insurance.otpSendFailed));
+      setError(apiMessage(err, t.insurance.otpSendFailed));
     }
   }
 
@@ -104,7 +96,7 @@ export function PhoneVerification({ onVerified, verifiedPhone }: PhoneVerificati
       const result = await verifyOtp.mutateAsync({ phone: normalized, code });
       onVerified(normalized, result.phoneToken);
     } catch (err) {
-      setError(messageFrom(err, t.insurance.otpVerifyFailed));
+      setError(apiMessage(err, t.insurance.otpVerifyFailed));
     }
   }
 

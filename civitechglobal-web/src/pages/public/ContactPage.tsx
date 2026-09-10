@@ -2,7 +2,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, Mail, Send } from 'lucide-react';
-import { api, isApiError } from '@/config/api';
+import { api } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
@@ -64,7 +65,7 @@ export default function ContactPage() {
       showToast(t.contact.formSuccess, 'success');
       reset();
     } catch (error) {
-      showToast(isApiError(error) ? error.message : t.common.error, 'error');
+      showToast(apiMessage(error, t.common.error), 'error');
     }
   }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ApiError } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import { Link } from 'react-router';
 import { CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
 import { useSubmitProjectRequest } from '@/api/projects';
@@ -198,12 +198,7 @@ export default function StartProjectPage() {
       setResult(res);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? ((error.response?.data as { message?: string } | undefined)?.message ??
-            t.project.errSubmit)
-          : t.project.errSubmit;
-      setErrors({ submit: message });
+      setErrors({ submit: apiMessage(error, t.project.errSubmit) });
     }
   }
 
