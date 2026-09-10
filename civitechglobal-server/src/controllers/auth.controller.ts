@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/auth.service.js';
 import * as recoveryService from '../services/account-recovery.service.js';
+import * as mfaService from '../services/mfa.service.js';
+import { AppError } from '../middleware/errorHandler.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { env } from '../config/env.js';
 
@@ -27,8 +29,85 @@ export async function register(req: Request, res: Response, next: NextFunction):
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const result = await authService.login(req.body);
+
+    // Password accepted. If the account carries a second factor, no session is
+    // issued yet — the caller gets a challenge to exchange, and the refresh
+    // cookie is deliberately not set, so a half-finished sign-in leaves nothing
+    // behind that could be used.
+    if (await mfaService.isEnabled(result.user.id)) {
+      const challengeToken = await authService.issueMfaChallenge(result.user.id);
+      successResponse(res, { mfaRequired: true, challengeToken }, 'Second factor required');
+      return;
+    }
+
     res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
     successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Login successful');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** Second step of sign-in: exchange a challenge plus a code for a session. */
+export async function verifyMfa(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const challengeToken = req.body.challengeToken as string;
+    const userId = await authService.peekMfaChallenge(challengeToken);
+    // One message whether the challenge expired, was already spent, or never
+    // existed. Telling them apart says which half of the guess was right.
+    if (!userId) throw new AppError('این درخواست معتبر نیست. دوباره وارد شوید.', 401);
+
+    try {
+      await mfaService.verifyChallenge(userId, req.body.code as string);
+    } catch (error) {
+      // A wrong code costs an attempt, not the whole sign-in. After five the
+      // challenge is destroyed and the password has to be entered again.
+      await authService.recordMfaFailure(challengeToken);
+      throw error;
+    }
+
+    // Spent only now, so it cannot be replayed — and only after success, so a
+    // typo does not cost somebody their session.
+    await authService.spendMfaChallenge(challengeToken);
+
+    const result = await authService.issueSessionFor(userId);
+    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
+    successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Login successful');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function mfaStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    successResponse(res, await mfaService.status(req.user!.userId));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function mfaBegin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    successResponse(res, await mfaService.beginEnrolment(req.user!.userId));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function mfaConfirm(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const recoveryCodes = await mfaService.confirmEnrolment(req.user!.userId, req.body.code as string);
+    // Shown once and never again — they are stored hashed. The UI has to make
+    // that unmissable.
+    successResponse(res, { recoveryCodes }, 'ورود دومرحله‌ای فعال شد.');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function mfaDisable(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await mfaService.disable(req.user!.userId, req.body.code as string);
+    successResponse(res, null, 'ورود دومرحله‌ای غیرفعال شد.');
   } catch (error) {
     next(error);
   }

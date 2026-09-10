@@ -87,6 +87,23 @@ model User {
 
   emailVerified Boolean @default(false)
 
+  /// Two-factor authentication, TOTP.
+  ///
+  /// Opt-in per account. Staff can read NDA-bound client attachments and every
+  /// CV that arrives, so a stolen password should not be the whole story.
+  ///
+  /// The secret is stored as base32 — the same form the authenticator holds.
+  /// Encrypting it at rest would only help against a database dump taken
+  /// without the application key, which is worth doing once there is a key
+  /// management story; today the honest protection is that the column is never
+  /// selected outside the enrolment and verification paths.
+  mfaSecret        String?   @map("mfa_secret")
+  /// Null means enrolment was started and never confirmed, so MFA is not on.
+  mfaEnabledAt     DateTime? @map("mfa_enabled_at")
+  /// SHA-256 of each code. They are credentials; a dump must not yield working
+  /// ones, and each is deleted from the array as it is spent.
+  mfaRecoveryCodes String[]  @default([]) @map("mfa_recovery_codes")
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?

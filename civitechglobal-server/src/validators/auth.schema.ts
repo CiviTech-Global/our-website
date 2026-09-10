@@ -48,6 +48,16 @@ export const resetPasswordSchema = z.object({
   password: passwordSchema,
 });
 
+/** Six digits from an app, or a grouped recovery code. Both are short. */
+const mfaCode = z.string().trim().min(6).max(20);
+
+export const mfaCodeSchema = z.object({ code: mfaCode });
+
+export const mfaVerifySchema = z.object({
+  challengeToken: z.string().trim().min(1),
+  code: mfaCode,
+});
+
 export const verifyEmailSchema = z.object({
   token: z.string().trim().min(1, 'پیوند نامعتبر است'),
 });

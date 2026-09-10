@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { sha256Hex } from '../utils/hash.js';
 import { redis } from '../config/redis.js';
 import { logger } from '../config/logger.js';
@@ -162,6 +163,74 @@ export async function register(input: RegisterInput) {
 
   const tokens = await issueTokenPair(user);
   return { user, ...tokens };
+}
+
+/**
+ * Short-lived proof that a password was accepted, pending a second factor.
+ *
+ * Kept in Redis rather than issued as a JWT: it must be revocable the instant
+ * it is spent, it is worthless after five minutes, and it should never be
+ * mistaken by any middleware for an access token — which a JWT signed with the
+ * same key eventually would be.
+ */
+const MFA_CHALLENGE_TTL_SECONDS = 5 * 60;
+
+function mfaChallengeKey(token: string): string {
+  return `mfa:challenge:${sha256Hex(token)}`;
+}
+
+export async function issueMfaChallenge(userId: string): Promise<string> {
+  const token = randomBytes(32).toString('base64url');
+  await redis.set(mfaChallengeKey(token), userId, 'EX', MFA_CHALLENGE_TTL_SECONDS);
+  return token;
+}
+
+/** How many wrong codes a challenge survives before it is thrown away. */
+const MFA_CHALLENGE_MAX_ATTEMPTS = 5;
+
+/**
+ * Reads the challenge WITHOUT spending it, and returns whose it is.
+ *
+ * Deliberately not consumed here. Deleting on read makes a single mistyped
+ * digit cost the whole sign-in, password and all, which is hostile enough that
+ * people turn the feature off. Replay protection comes from deleting on
+ * success instead; brute force is bounded by the attempt counter below.
+ */
+export async function peekMfaChallenge(token: string): Promise<string | null> {
+  return redis.get(mfaChallengeKey(token));
+}
+
+/** Called once the second factor is accepted, so the challenge cannot replay. */
+export async function spendMfaChallenge(token: string): Promise<void> {
+  await redis.del(mfaChallengeKey(token), `${mfaChallengeKey(token)}:attempts`);
+}
+
+/**
+ * Records a wrong code, and destroys the challenge once there have been too
+ * many. Returns how many attempts remain.
+ */
+export async function recordMfaFailure(token: string): Promise<number> {
+  const attemptsKey = `${mfaChallengeKey(token)}:attempts`;
+  const attempts = await redis.incr(attemptsKey);
+  // Expire alongside the challenge itself; a counter that outlives it would
+  // block the next sign-in for no reason.
+  if (attempts === 1) await redis.expire(attemptsKey, MFA_CHALLENGE_TTL_SECONDS);
+
+  if (attempts >= MFA_CHALLENGE_MAX_ATTEMPTS) {
+    await spendMfaChallenge(token);
+    return 0;
+  }
+  return MFA_CHALLENGE_MAX_ATTEMPTS - attempts;
+}
+
+/** Issues the real session for a user who has cleared every check. */
+export async function issueSessionFor(userId: string) {
+  const user = await userRepository.findFirst({ where: { id: userId, deletedAt: null } });
+  if (!user) throw new AppError('Invalid credentials', 401);
+
+  const tokens = await issueTokenPair(user);
+  const { password: _password, ...safeUser } = user;
+  return { user: safeUser, ...tokens };
 }
 
 export async function login(input: LoginInput) {

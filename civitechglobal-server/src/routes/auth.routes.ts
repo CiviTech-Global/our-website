@@ -13,6 +13,8 @@ import {
   registerSchema,
   resetPasswordSchema,
   updateProfileSchema,
+  mfaCodeSchema,
+  mfaVerifySchema,
   verifyEmailSchema,
 } from '../validators/auth.schema.js';
 
@@ -48,6 +50,33 @@ router.post(
   authenticate,
   accountEmailRateLimiter,
   authController.sendVerificationEmail
+);
+
+// Second step of sign-in. Rate limited like a credential, because that is
+// what a six-digit code is.
+router.post(
+  '/mfa/verify',
+  credentialRateLimiter,
+  validate(mfaVerifySchema),
+  authController.verifyMfa
+);
+
+// Enrolment and removal, all requiring a live session.
+router.get('/mfa', authenticate, authController.mfaStatus);
+router.post('/mfa/begin', authenticate, authController.mfaBegin);
+router.post(
+  '/mfa/confirm',
+  authenticate,
+  credentialRateLimiter,
+  validate(mfaCodeSchema),
+  authController.mfaConfirm
+);
+router.post(
+  '/mfa/disable',
+  authenticate,
+  credentialRateLimiter,
+  validate(mfaCodeSchema),
+  authController.mfaDisable
 );
 
 router.get('/me', authenticate, authController.getMe);
