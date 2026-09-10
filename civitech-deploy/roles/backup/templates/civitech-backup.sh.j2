@@ -65,12 +65,37 @@ chmod 0600 "$output_file"
 
 echo "[$(date -u +%FT%TZ)] backup: wrote ${output_file} ($(du -h "$output_file" | cut -f1))"
 
+# Uploaded files: client attachments and CVs.
+#
+# The rows referencing these are in the dump above; the bytes are not. Nothing
+# captured them at all until this was added, so a restore would have produced a
+# database full of rows pointing at files that no longer existed. Skipped when
+# STORAGE_DRIVER=s3, because the object store holds them then.
+if [ "${STORAGE_DRIVER:-local}" = "local" ]; then
+  uploads_file="${BACKUP_DIR}/uploads_${timestamp}.tar.gz"
+  uploads_tmp="${uploads_file}.partial"
+
+  # Read straight out of the running container, so this works wherever Docker
+  # put the volume and needs no root on the host.
+  if $COMPOSE exec -T api tar -cf - -C "${UPLOAD_DIR:-/app/storage/project-attachments}" . 2>/dev/null | gzip > "$uploads_tmp"; then
+    mv "$uploads_tmp" "$uploads_file"
+    chmod 0600 "$uploads_file"
+    echo "[$(date -u +%FT%TZ)] backup: wrote ${uploads_file} ($(du -h "$uploads_file" | cut -f1))"
+  else
+    rm -f "$uploads_tmp"
+    # Loud but not fatal: the database dump is the more critical artefact and
+    # has already succeeded. Failing the whole run now would discard it.
+    echo "[$(date -u +%FT%TZ)] backup: ERROR uploads archive failed" >&2
+  fi
+fi
+
 if [ -n "$BACKUP_REMOTE" ]; then
   # --max-age covers the whole retention window rather than just this dump, so
   # a remote that was unreachable on an earlier night catches up tonight
   # instead of leaving a permanent hole.
   if rclone copy "$BACKUP_DIR" "$BACKUP_REMOTE" \
        --include 'civitechglobal_*.sql.gz' \
+       --include 'uploads_*.tar.gz' \
        --max-age "${RETENTION_DAYS}d" \
        --transfers 2 --retries 3; then
     echo "[$(date -u +%FT%TZ)] backup: off-host copy complete -> ${BACKUP_REMOTE}"
@@ -87,6 +112,7 @@ fi
 # Prune AFTER the off-host copy, never before — otherwise a failed sync plus a
 # successful prune loses data that was never copied anywhere.
 find "$BACKUP_DIR" -name 'civitechglobal_*.sql.gz' -mtime "+${RETENTION_DAYS}" -delete || true
-find "$BACKUP_DIR" -name 'civitechglobal_*.sql.gz.partial' -mtime +1 -delete || true
+find "$BACKUP_DIR" -name 'uploads_*.tar.gz' -mtime "+${RETENTION_DAYS}" -delete || true
+find "$BACKUP_DIR" -name '*.partial' -mtime +1 -delete || true
 
 echo "[$(date -u +%FT%TZ)] backup: done"

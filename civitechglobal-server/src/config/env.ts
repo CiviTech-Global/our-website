@@ -55,6 +55,22 @@ export const env = {
   // Optional: when unset/empty, Sentry initialization is a no-op.
   SENTRY_DSN: optional('SENTRY_DSN', ''),
 
+  // --- Uploaded file storage ----------------------------------------------
+  //
+  // 'local' writes to UPLOAD_DIR; 's3' talks to any S3-compatible endpoint
+  // (ArvanCloud, MinIO, Backblaze, AWS). Production refuses 'local' unless
+  // STORAGE_ALLOW_LOCAL_IN_PRODUCTION says the directory is a durable,
+  // backed-up volume — see services/storage/index.ts for why.
+  STORAGE_DRIVER: optional('STORAGE_DRIVER', 'local'),
+  STORAGE_ALLOW_LOCAL_IN_PRODUCTION: optional('STORAGE_ALLOW_LOCAL_IN_PRODUCTION', '') === 'true',
+  STORAGE_ENDPOINT: optional('STORAGE_ENDPOINT', ''),
+  STORAGE_BUCKET: optional('STORAGE_BUCKET', ''),
+  STORAGE_REGION: optional('STORAGE_REGION', 'us-east-1'),
+  STORAGE_ACCESS_KEY: optional('STORAGE_ACCESS_KEY', ''),
+  STORAGE_SECRET_KEY: optional('STORAGE_SECRET_KEY', ''),
+  /** Most non-AWS providers want endpoint/bucket/key rather than a subdomain. */
+  STORAGE_FORCE_PATH_STYLE: optional('STORAGE_FORCE_PATH_STYLE', 'true') !== 'false',
+
   // --- Email (password reset, address verification) -----------------------
   //
   // Same arrangement as SMS below: 'console' logs the message instead of

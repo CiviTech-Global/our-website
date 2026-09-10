@@ -62,6 +62,24 @@ services:
       # but stating it keeps the intent visible in one place.
       COOKIE_SECURE: "true"
       LOG_LEVEL: "{{ log_level }}"
+      # Uploaded files. 'local' means the named `uploads` volume from the base
+      # compose file, which the nightly backup now also captures. Point
+      # STORAGE_DRIVER at s3 once object storage exists and the volume becomes
+      # dead weight rather than a single point of failure.
+      STORAGE_DRIVER: "{{ storage_driver }}"
+      STORAGE_ALLOW_LOCAL_IN_PRODUCTION: "{{ 'true' if storage_driver == 'local' else 'false' }}"
+      STORAGE_ENDPOINT: "{{ storage_endpoint }}"
+      STORAGE_BUCKET: "{{ storage_bucket }}"
+      STORAGE_REGION: "{{ storage_region }}"
+      STORAGE_ACCESS_KEY: "{{ vault_storage_access_key | default('') }}"
+      STORAGE_SECRET_KEY: "{{ vault_storage_secret_key | default('') }}"
+      # Links in reset and verification emails are built against this, never
+      # against the request's Host header.
+      APP_URL: "{{ 'https' if enable_ssl | bool else 'http' }}://{{ domain_name }}"
+      EMAIL_PROVIDER: "{{ email_provider }}"
+      EMAIL_API_KEY: "{{ vault_email_api_key | default('') }}"
+      EMAIL_FROM: "{{ email_from }}"
+      EMAIL_DOMAIN: "{{ email_domain | default('') }}"
       SENTRY_DSN: "{{ vault_sentry_dsn }}"
       SEED_ADMIN_EMAIL: "{{ vault_seed_admin_email }}"
       SEED_ADMIN_PASSWORD: "{{ vault_seed_admin_password }}"

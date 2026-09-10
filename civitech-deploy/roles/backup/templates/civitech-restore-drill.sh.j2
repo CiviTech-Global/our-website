@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+{{ ansible_managed | comment }}
+#
+# Restores the newest dump into a scratch database and checks it is real.
+#
+# A dump nobody has read back is a hypothesis. pg_dump can exit 0 and leave a
+# file that restores into an empty schema — a wrong PG_DB, a permissions change,
+# a partially-written gzip that happens to decompress. The only way to know a
+# backup works is to restore it, so this does, every week, and shouts through
+# the same alert path as the health check when it does not.
+#
+# It never touches the live database. Everything happens in a throwaway one
+# that is dropped on the way in and on the way out.
+
+set -uo pipefail
+
+BACKUP_DIR="{{ backup_dir }}"
+COMPOSE="docker compose -f {{ app_root }}/docker-compose.yml -f {{ app_root }}/docker-compose.prod.yml"
+PG_USER="{{ postgres_user }}"
+SCRATCH_DB="civitech_restore_drill"
+BOT_TOKEN="{{ vault_telegram_alert_bot_token | default('') }}"
+CHAT_ID="{{ vault_telegram_alert_chat_id | default('') }}"
+
+# A restored schema with no rows in it is a failed restore that looks like a
+# successful one, so the drill asserts on both.
+MIN_TABLES={{ restore_drill_min_tables | default(10) }}
+
+log() { echo "[$(date -u +%FT%TZ)] restore-drill: $*"; }
+
+alert() {
+  log "FAILED: $*"
+  if [ -n "$BOT_TOKEN" ] && [ -n "$CHAT_ID" ]; then
+    curl -fsS --max-time 10 \
+      --data-urlencode "chat_id=${CHAT_ID}" \
+      --data-urlencode "text=🔴 civitech restore drill FAILED: $*" \
+      "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" >/dev/null 2>&1 || true
+  fi
+  cleanup
+  exit 1
+}
+
+cleanup() {
+  $COMPOSE exec -T postgres psql -U "$PG_USER" -d postgres \
+    -c "DROP DATABASE IF EXISTS ${SCRATCH_DB};" >/dev/null 2>&1 || true
+}
+
+newest="$(find "$BACKUP_DIR" -name 'civitechglobal_*.sql.gz' -type f -printf '%T@ %p\n' 2>/dev/null \
+          | sort -rn | head -1 | cut -d' ' -f2-)"
+
+[ -n "$newest" ] || alert "no dump found in ${BACKUP_DIR}"
+log "restoring ${newest}"
+
+# A dump older than two nights means the nightly job has been failing quietly.
+age_days=$(( ( $(date +%s) - $(stat -c %Y "$newest") ) / 86400 ))
+[ "$age_days" -le 2 ] || alert "newest dump is ${age_days} days old — the nightly backup is not running"
+
+cleanup
+$COMPOSE exec -T postgres psql -U "$PG_USER" -d postgres \
+  -c "CREATE DATABASE ${SCRATCH_DB};" >/dev/null 2>&1 \
+  || alert "could not create the scratch database"
+
+if ! gunzip -c "$newest" | $COMPOSE exec -T postgres psql -U "$PG_USER" -d "$SCRATCH_DB" -v ON_ERROR_STOP=1 >/dev/null 2>&1; then
+  alert "psql refused the dump — it is not restorable"
+fi
+
+tables="$($COMPOSE exec -T postgres psql -U "$PG_USER" -d "$SCRATCH_DB" -tAc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" 2>/dev/null | tr -d '[:space:]')"
+[ "${tables:-0}" -ge "$MIN_TABLES" ] || alert "restored only ${tables:-0} tables, expected at least ${MIN_TABLES}"
+
+# users is the one table that is never legitimately empty — the seed always
+# creates a super admin — which makes it the honest canary for "restored, but
+# with no data in it".
+users="$($COMPOSE exec -T postgres psql -U "$PG_USER" -d "$SCRATCH_DB" -tAc \
+  "SELECT count(*) FROM users;" 2>/dev/null | tr -d '[:space:]')"
+[ "${users:-0}" -ge 1 ] || alert "restored schema contains no users — the dump is empty"
+
+log "OK: ${tables} tables, ${users} users, from $(basename "$newest")"
+cleanup

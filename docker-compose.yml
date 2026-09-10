@@ -61,6 +61,11 @@ services:
       # is the single public listener; an API reachable on 0.0.0.0 lets a
       # caller bypass every header, CSP and edge rate limit that proxy applies.
       - "127.0.0.1:5000:5000"
+    volumes:
+      # Client attachments and CVs. Without this they land in the container's
+      # writable layer and every redeploy destroys them — which is exactly what
+      # happened until it was caught. The path matches UPLOAD_DIR's default.
+      - uploads:/app/storage/project-attachments
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,3 +131,4 @@ services:
 volumes:
   postgres_data:
   postgres_backups:
+  uploads:

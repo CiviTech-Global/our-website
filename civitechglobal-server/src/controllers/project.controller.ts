@@ -1,10 +1,8 @@
-import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
 import type { NextFunction, Request, Response } from 'express';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { successResponse } from '../utils/apiResponse.js';
-import { resolveStoredPath, type IncomingFile } from '../services/attachment.service.js';
+import { openStoredFile, type IncomingFile } from '../services/attachment.service.js';
 import * as proposalService from '../services/project-proposal.service.js';
 import * as requestService from '../services/project-request.service.js';
 import type { z } from 'zod';
@@ -222,12 +220,10 @@ export async function downloadAttachment(
     });
     if (!attachment) throw new AppError('فایل پیدا نشد.', 404);
 
-    const fullPath = resolveStoredPath(attachment.storedName);
-    const stats = await stat(fullPath).catch(() => null);
-    if (!stats) throw new AppError('فایل روی سرور موجود نیست.', 410);
+    const object = await openStoredFile(attachment.storedName);
 
     res.setHeader('Content-Type', attachment.mimeType);
-    res.setHeader('Content-Length', String(stats.size));
+    res.setHeader('Content-Length', String(object.sizeBytes));
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
     // RFC 5987 encoding: the original name may be Persian, and a raw UTF-8
@@ -237,7 +233,7 @@ export async function downloadAttachment(
       `attachment; filename="download"; filename*=UTF-8''${encodeURIComponent(attachment.originalName)}`
     );
 
-    createReadStream(fullPath).pipe(res);
+    object.stream.pipe(res);
   } catch (error) {
     next(error);
   }

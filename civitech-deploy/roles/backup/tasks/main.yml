@@ -81,6 +81,44 @@
         copytruncate
       }
 
+- name: Install the restore drill
+  # The backup's counterpart. Taking dumps proves nothing on its own; this is
+  # what turns "we have backups" from a belief into a weekly measurement.
+  ansible.builtin.template:
+    src: civitech-restore-drill.sh.j2
+    dest: /usr/local/bin/civitech-restore-drill.sh
+    owner: root
+    group: root
+    mode: "0700"
+  when: restore_drill_enabled | bool
+
+- name: Schedule the restore drill
+  # Weekly rather than nightly: it restores the whole database, so it is the
+  # heaviest scheduled job on the box. Placed after the nightly backup hour so
+  # it always exercises a fresh dump.
+  ansible.builtin.cron:
+    name: civitech-restore-drill
+    weekday: "{{ restore_drill_weekday }}"
+    hour: "{{ restore_drill_hour }}"
+    minute: "0"
+    user: root
+    job: "/usr/local/bin/civitech-restore-drill.sh >> /var/log/civitech/restore-drill.log 2>&1"
+    state: "{{ 'present' if restore_drill_enabled | bool else 'absent' }}"
+
+- name: Rotate the restore drill log
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/civitech-restore-drill
+    mode: "0644"
+    content: |
+      /var/log/civitech/restore-drill.log {
+        monthly
+        rotate 6
+        compress
+        missingok
+        notifempty
+        copytruncate
+      }
+
 - name: Warn when backups never leave this machine
   # Not a failure — an explicit, unmissable decision. A host loss, a disk loss
   # or a stray `docker volume prune` takes the database and all

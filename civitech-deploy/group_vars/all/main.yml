@@ -98,11 +98,45 @@ nginx_auth_rate: 1r/s
 nginx_api_burst: 40
 nginx_auth_burst: 5
 
+# ---- Uploaded file storage --------------------------------------------------
+#
+# "local" keeps client attachments and CVs on the named `uploads` docker volume
+# and includes them in the nightly backup. It is durable, but it is on the same
+# disk as everything else and only one API container can see it.
+#
+# Switch to "s3" once object storage exists — any S3-compatible provider works
+# (ArvanCloud, MinIO, Backblaze, AWS). That is also the prerequisite for running
+# more than one API container, since two cannot share a volume.
+storage_driver: local
+storage_endpoint: ""
+storage_bucket: ""
+storage_region: us-east-1
+# Credentials belong in vault.yml as vault_storage_access_key / _secret_key.
+
+# ---- Email -------------------------------------------------------------------
+#
+# Password reset and address verification. config/env.ts refuses to start on
+# EMAIL_PROVIDER=console in production, for the same reason it refuses a console
+# SMS provider: links logged to stdout are live credentials sitting in a log.
+email_provider: resend
+email_from: no-reply@{{ domain_name }}
+email_domain: ""
+
 # ---- Backups ---------------------------------------------------------------
 backup_dir: /var/backups/civitech
 backup_retention_days: 14
 backup_cron_hour: 3
 backup_cron_minute: 30
+
+# Restore drill: weekly, restores the newest dump into a scratch database and
+# asserts it contains tables and rows.
+#
+# A dump nobody has ever read back is a hypothesis, not a backup. This is the
+# cheapest way to keep it a fact, and it fails loudly through the same alert
+# path as the health check.
+restore_drill_enabled: true
+restore_drill_weekday: Sun
+restore_drill_hour: 5
 # rclone remote for the off-host copy, e.g. "civitech-backups:civitech".
 #
 # EMPTY MEANS BACKUPS LIVE ON THE MACHINE THEY PROTECT. A host loss, a disk

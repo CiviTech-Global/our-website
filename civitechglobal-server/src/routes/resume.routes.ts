@@ -1,5 +1,3 @@
-import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import multer from 'multer';
 import type { z } from 'zod';
@@ -10,7 +8,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { projectRespondRateLimiter, projectSubmitRateLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
 import { successResponse } from '../utils/apiResponse.js';
-import { MAX_FILE_BYTES, resolveStoredPath, type IncomingFile } from '../services/attachment.service.js';
+import { MAX_FILE_BYTES, openStoredFile, type IncomingFile } from '../services/attachment.service.js';
 import * as resumeService from '../services/resume-submission.service.js';
 import {
   resumeAllowanceSchema,
@@ -203,12 +201,10 @@ router.get('/admin/:id/file', async (req, res, next) => {
     });
     if (!row) throw new AppError('رزومه پیدا نشد.', 404);
 
-    const fullPath = resolveStoredPath(row.resumeStoredName);
-    const stats = await stat(fullPath).catch(() => null);
-    if (!stats) throw new AppError('فایل روی سرور موجود نیست.', 410);
+    const object = await openStoredFile(row.resumeStoredName);
 
     res.setHeader('Content-Type', row.resumeMimeType);
-    res.setHeader('Content-Length', String(stats.size));
+    res.setHeader('Content-Length', String(object.sizeBytes));
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
     res.setHeader(
@@ -216,7 +212,7 @@ router.get('/admin/:id/file', async (req, res, next) => {
       `attachment; filename="resume"; filename*=UTF-8''${encodeURIComponent(row.resumeOriginalName)}`
     );
 
-    createReadStream(fullPath).pipe(res);
+    object.stream.pipe(res);
   } catch (error) {
     next(error);
   }
