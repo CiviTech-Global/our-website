@@ -58,6 +58,25 @@ export const accountEmailRateLimiter = rateLimit({
   passOnStoreError: true,
 });
 
+/**
+ * Browser error reports.
+ *
+ * Unauthenticated and write-only, so it needs a ceiling: one broken render in
+ * a loop could otherwise post thousands of times from a single tab. Generous
+ * enough that a genuinely broken page still tells us, tight enough that it
+ * cannot be used to fill the log.
+ */
+export const clientErrorRateLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: rateLimitMessage,
+  store: createStore('rl:clienterr:'),
+  passOnStoreError: true,
+});
+
 /** Token refresh is called on every app load; keep a higher bucket. */
 export const refreshRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

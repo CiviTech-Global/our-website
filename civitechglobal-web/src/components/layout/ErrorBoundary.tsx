@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { reportError } from '@/lib/errorReporter';
 
 interface Props {
   children: ReactNode;
@@ -21,10 +22,10 @@ interface State {
  * Deliberately a class: `componentDidCatch` and `getDerivedStateFromError` have
  * no hook equivalent, and this is the one place React still requires one.
  *
- * No error-reporting SDK is wired in here. The browser Sentry bundle costs
- * more than everything saved by removing the animation library, so if remote
- * reporting is wanted it should be a deliberate decision with that price in
- * view. `reportError` below is the single seam where it would go.
+ * Render failures are reported to our own API rather than to an SDK. The
+ * browser Sentry bundle costs more than everything saved by removing the
+ * animation library; `lib/errorReporter` sends the part that matters — that a
+ * page broke at all — for about a kilobyte.
  */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
@@ -34,9 +35,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // Console is the only sink today, and in production that means the user's
-    // own devtools. Enough to diagnose a report; not enough to notice one.
+    // Console for whoever has devtools open, and the API so we find out
+    // without being told. A blank page is the worst failure mode precisely
+    // because nobody reports it.
     console.error('Unhandled render error', error, info.componentStack);
+    reportError(error, 'boundary');
   }
 
   reset = (): void => {

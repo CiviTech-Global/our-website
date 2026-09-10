@@ -11,6 +11,7 @@ import { prisma } from './config/database.js';
 import { pingRedis } from './config/redis.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { generalRateLimiter } from './middleware/rateLimit.js';
+import { recordRequest } from './services/metrics.service.js';
 import { optionalAuth } from './middleware/authenticate.js';
 import routes from './routes/index.js';
 
@@ -45,6 +46,24 @@ export function createApp(): Express {
 
   app.use((req, res, next) => {
     res.setHeader('x-request-id', req.id as string);
+    next();
+  });
+
+  // Timed here rather than inside the router so the measurement includes body
+  // parsing, authentication and the rate limiters — everything the caller
+  // actually waited for, not just the handler.
+  app.use((req, res, next) => {
+    const startedAt = process.hrtime.bigint();
+    res.on('finish', () => {
+      const seconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
+      // originalUrl, not req.route.path: the latter is relative to whichever
+      // router matched, so it labels /api/insurance/catalog as "/catalog" and
+      // collides with every other router that has one. req.baseUrl would put
+      // the mount back, except Express restores it while unwinding the router
+      // stack, so by the time this listener runs it is empty again.
+      // recordRequest collapses ids and codes out of the path itself.
+      recordRequest(req.method, req.originalUrl, res.statusCode, seconds);
+    });
     next();
   });
 

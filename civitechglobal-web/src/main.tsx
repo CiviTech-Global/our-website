@@ -9,7 +9,12 @@ import { LocaleProvider } from '@/i18n/LocaleProvider';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastViewport } from '@/components/ui/Toast';
 import { AuthProvider } from '@/contexts/AuthProvider';
+import { installErrorReporter } from '@/lib/errorReporter';
 import './index.css';
+
+// Before anything renders, so an error thrown during the first paint is
+// caught too. Cheap: it registers two listeners and nothing else.
+installErrorReporter();
 
 const queryClient = new QueryClient({
   defaultOptions: {

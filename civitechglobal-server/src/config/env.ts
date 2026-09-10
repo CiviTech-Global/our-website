@@ -55,6 +55,12 @@ export const env = {
   // Optional: when unset/empty, Sentry initialization is a no-op.
   SENTRY_DSN: optional('SENTRY_DSN', ''),
 
+  // --- Telemetry -----------------------------------------------------------
+  //
+  // Bearer token for GET /api/metrics. Unset means the endpoint 404s rather
+  // than describing our traffic shape to anyone who asks.
+  METRICS_TOKEN: optional('METRICS_TOKEN', ''),
+
   // --- Malware scanning ----------------------------------------------------
   //
   // 'none' accepts everything; 'clamav' streams each upload to clamd. Same

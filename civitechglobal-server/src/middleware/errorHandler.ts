@@ -50,6 +50,11 @@ export function notFoundHandler(req: Request, _res: Response, next: NextFunction
 }
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
+  // Echoed on every failure so a user can quote it and it can be found in the
+  // logs. Set on the response rather than in the body: it belongs to the
+  // request, not to the error, and this way it is present on 500s too.
+  if (_req.id) res.setHeader('x-request-id', String(_req.id));
+
   const statusCode = (err as MaybeHttpError).statusCode;
 
   // Level by severity, for the same reason Sentry filters by it: a 404 on a
@@ -60,14 +65,16 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
   // throw and stays at error.
   const level = typeof statusCode === "number" && statusCode < 500 ? "warn" : "error";
   logger[level](
-    { type: err.name, message: err.message, statusCode },
+    { type: err.name, message: err.message, statusCode, requestId: _req.id },
     level === "warn" ? "Request rejected" : "Unhandled error",
   );
 
   // Capture the exception object only — never req/user/PII fields — before
   // responding to the client.
   if (shouldReportToSentry(err)) {
-    Sentry.captureException(err);
+    // The request id is the one thing that ties a Sentry event to the log
+    // lines around it, and to whatever the user quoted when they reported it.
+    Sentry.captureException(err, { tags: { request_id: String(_req.id ?? '') } });
   }
 
   if (err instanceof AppError) {
