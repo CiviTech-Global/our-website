@@ -1,12 +1,22 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, refreshAccessToken, setAccessToken } from '@/config/api';
-import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload, UpdateProfilePayload } from '@/types/auth';
+import type {
+  AuthResponse,
+  AuthUser,
+  LoginPayload,
+  LoginResult,
+  MfaChallenge,
+  RegisterPayload,
+  UpdateProfilePayload,
+} from '@/types/auth';
 
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (payload: LoginPayload) => Promise<AuthUser>;
+  login: (payload: LoginPayload) => Promise<LoginResult>;
+  /** Exchanges an MFA challenge plus a code for a real session. */
+  verifyMfa: (challengeToken: string, code: string) => Promise<AuthUser>;
   register: (payload: RegisterPayload) => Promise<AuthUser>;
   logout: () => Promise<void>;
   /** Revokes every session for this account, on every device. */
@@ -52,8 +62,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const res = await api.post<AuthResponse>('/auth/login', payload);
+  const login = useCallback(async (payload: LoginPayload): Promise<LoginResult> => {
+    const res = await api.post<AuthResponse | MfaChallenge>('/auth/login', payload);
+
+    // The password was right, but the account carries a second factor. Nothing
+    // is stored yet — the caller has to exchange the challenge, and until then
+    // there is no session and no refresh cookie.
+    if ('mfaRequired' in res.data && res.data.mfaRequired) {
+      return res.data;
+    }
+
+    const session = res.data as AuthResponse;
+    setAccessToken(session.accessToken);
+    setUser(session.user);
+    return { user: session.user };
+  }, []);
+
+  /** Second step of sign-in: a code from the app, or a recovery code. */
+  const verifyMfa = useCallback(async (challengeToken: string, code: string) => {
+    const res = await api.post<AuthResponse>('/auth/mfa/verify', { challengeToken, code });
     setAccessToken(res.data.accessToken);
     setUser(res.data.user);
     return res.data.user;
@@ -105,13 +132,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated: Boolean(user),
       login,
+      verifyMfa,
       register,
       logout,
       logoutEverywhere,
       refreshUser,
       updateProfile,
     }),
-    [user, isLoading, login, register, logout, logoutEverywhere, refreshUser, updateProfile]
+    [user, isLoading, login, verifyMfa, register, logout, logoutEverywhere, refreshUser, updateProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
