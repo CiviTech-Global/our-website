@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ApiError } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import { Link, useParams } from 'react-router';
 import { ChevronLeft, Download, FileText, Paperclip, Send, ShieldAlert } from 'lucide-react';
 import {
@@ -280,7 +280,7 @@ export default function ProjectDetailPage() {
                       showToast(t.proposal.sent, 'success');
                       refetch();
                     } catch (err) {
-                      showToast(messageOf(err, t.common.error), 'error');
+                      showToast(apiMessage(err, t.common.error), 'error');
                     }
                   }}
                   isLoading={sendProposal.isPending}
@@ -308,7 +308,7 @@ export default function ProjectDetailPage() {
                 setComposerOpen(false);
                 refetch();
               } catch (err) {
-                throw new Error(messageOf(err, t.common.error));
+                throw new Error(apiMessage(err, t.common.error));
               }
             }}
           />
@@ -316,14 +316,6 @@ export default function ProjectDetailPage() {
       </Card>
     </div>
   );
-}
-
-function messageOf(error: unknown, fallback: string): string {
-  if (error instanceof ApiError) {
-    const data = error.response?.data as { message?: string; errors?: { message: string }[] } | undefined;
-    return data?.errors?.[0]?.message ?? data?.message ?? fallback;
-  }
-  return error instanceof Error ? error.message : fallback;
 }
 
 function Field({ label, value, ltr }: { label: string; value: string | null; ltr?: boolean }) {

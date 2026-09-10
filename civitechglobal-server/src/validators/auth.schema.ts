@@ -36,3 +36,18 @@ export const updateProfileSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email('ایمیل معتبر نیست'),
+});
+
+export const resetPasswordSchema = z.object({
+  // Not `.uuid()` or a length check: the token format is ours to change, and a
+  // shape rule here would be a second place to keep in step for no benefit.
+  token: z.string().trim().min(1, 'پیوند نامعتبر است'),
+  password: passwordSchema,
+});
+
+export const verifyEmailSchema = z.object({
+  token: z.string().trim().min(1, 'پیوند نامعتبر است'),
+});

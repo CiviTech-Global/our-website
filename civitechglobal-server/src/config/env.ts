@@ -55,6 +55,33 @@ export const env = {
   // Optional: when unset/empty, Sentry initialization is a no-op.
   SENTRY_DSN: optional('SENTRY_DSN', ''),
 
+  // --- Email (password reset, address verification) -----------------------
+  //
+  // Same arrangement as SMS below: 'console' logs the message instead of
+  // sending it, which is the development default and the only provider that
+  // needs no account. Production must name a real one; see
+  // `services/email/index.ts` for the guard that enforces that.
+  EMAIL_PROVIDER: optional('EMAIL_PROVIDER', 'console'),
+  EMAIL_API_KEY: optional('EMAIL_API_KEY', ''),
+  /** The From line. Must be an address on a domain the provider has verified. */
+  EMAIL_FROM: optional('EMAIL_FROM', 'no-reply@civitechglobal.com'),
+  /** Mailgun only: the sending domain. */
+  EMAIL_DOMAIN: optional('EMAIL_DOMAIN', ''),
+
+  /**
+   * Where the links in those emails point.
+   *
+   * Never derived from the request's own Host header: an attacker who can set
+   * that could have a reset link built against their own domain and mailed to
+   * the victim by us.
+   */
+  APP_URL: optional('APP_URL', 'http://localhost:5173'),
+
+  /** A reset link is a live credential; it should not sit in an inbox for days. */
+  PASSWORD_RESET_TTL_MINUTES: parseInt(optional('PASSWORD_RESET_TTL_MINUTES', '60'), 10),
+  /** Verification is not a credential, so it can afford to be patient. */
+  EMAIL_VERIFICATION_TTL_HOURS: parseInt(optional('EMAIL_VERIFICATION_TTL_HOURS', '48'), 10),
+
   // --- Phone verification (one-time codes on insurance requests) ----------
   //
   // 'console' logs the code instead of sending it — the development default,

@@ -4,10 +4,14 @@ import {
   CheckCircle2,
   CircleUserRound,
   Code2,
+  MailWarning,
   PackageSearch,
   ShieldCheck,
   UserPlus,
 } from 'lucide-react';
+import { useSendVerificationEmail } from '@/api/accountRecovery';
+import { useToast } from '@/contexts/ToastContext';
+import { Button } from '@/components/ui/Button';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -17,6 +21,8 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function DashboardPage() {
   const { t } = useLocale();
+  const { showToast } = useToast();
+  const sendVerification = useSendVerificationEmail();
   useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
 
@@ -30,6 +36,38 @@ export default function DashboardPage() {
           {t.dashboard.welcome}, {user?.firstName}
         </h1>
       </AnimatedSection>
+
+      {/* Only while it matters. A banner that stays after the thing is done is
+          how people learn to stop reading banners. */}
+      {user?.emailVerified === false && (
+        <AnimatedSection delay={0.02} className="mt-6">
+          <Card className="flex flex-wrap items-center gap-3 border-brand-amber-500/40">
+            <MailWarning
+              className="size-5 shrink-0 text-brand-amber-500"
+              aria-hidden="true"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text-primary">{t.auth.verifyBannerTitle}</p>
+              <p className="mt-0.5 text-sm text-text-secondary">{t.auth.verifyBannerBody}</p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              isLoading={sendVerification.isPending}
+              onClick={async () => {
+                try {
+                  await sendVerification.mutateAsync();
+                  showToast(t.auth.verifyBannerSent, 'success');
+                } catch {
+                  showToast(t.common.error, 'error');
+                }
+              }}
+            >
+              {t.auth.verifyBannerAction}
+            </Button>
+          </Card>
+        </AnimatedSection>
+      )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatedSection delay={0.05}>

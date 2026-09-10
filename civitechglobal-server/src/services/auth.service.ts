@@ -20,7 +20,7 @@ function normalizeEmail(email: string): string {
  * comment on `User.emailHash` in prisma/schema.prisma: this keeps every
  * lookup path independent of whether `email` itself is later encrypted.
  */
-function emailLookupHash(email: string): string {
+export function emailLookupHash(email: string): string {
   return sha256Hex(normalizeEmail(email));
 }
 

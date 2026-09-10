@@ -8,6 +8,8 @@ export interface AuthUser {
   phone?: string | null;
   role: UserRole;
   permissions: string[];
+  /** Whether the address has been confirmed by following an emailed link. */
+  emailVerified?: boolean;
 }
 
 export interface AuthResponse {

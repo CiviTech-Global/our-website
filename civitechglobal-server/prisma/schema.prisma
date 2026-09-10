@@ -92,6 +92,7 @@ model User {
   deletedAt DateTime?
 
   refreshTokens    RefreshToken[]
+  tokens           UserToken[]
   assignedRequests InsuranceRequest[] @relation("LeadAssignee")
 
   assignedProjectRequests ProjectRequest[]   @relation("AssignedProjectRequests")
@@ -120,6 +121,42 @@ model RefreshToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+/// What a one-time link is for. One table rather than two: the lifecycle is
+/// identical — issue, hash, expire, spend once — and only the wording of the
+/// email and the action taken on redemption differ.
+enum UserTokenPurpose {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+/// A single-use link sent to an email address.
+///
+/// Only a SHA-256 hash of the token is stored, for the same reason refresh
+/// tokens are: the raw value exists in the recipient's inbox and nowhere else,
+/// so a database dump cannot be replayed as a working reset link.
+model UserToken {
+  id      String           @id @default(cuid())
+  userId  String           @map("user_id")
+  purpose UserTokenPurpose
+  /// SHA-256 of the token that was emailed. Unique so a collision is a
+  /// database error rather than two accounts sharing one link.
+  token   String           @unique
+
+  expiresAt DateTime  @map("expires_at")
+  /// Set the moment it is redeemed. A spent link is kept rather than deleted so
+  /// a second click can be told "already used" instead of "invalid", and so the
+  /// history is there if an account is ever disputed.
+  usedAt    DateTime? @map("used_at")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@map("user_tokens")
 }
 
 model InsuranceCategory {

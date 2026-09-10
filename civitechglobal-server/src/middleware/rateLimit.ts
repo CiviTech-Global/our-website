@@ -39,6 +39,25 @@ export const credentialRateLimiter = rateLimit({
   passOnStoreError: true,
 });
 
+/**
+ * Password-reset and verification emails.
+ *
+ * Tight, because each request sends mail to somebody. Unthrottled it is a way
+ * to use us to flood a third party's inbox, and `skipSuccessfulRequests` is
+ * deliberately off for the same reason — a successful send is exactly the
+ * thing being abused.
+ */
+export const accountEmailRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: rateLimitMessage,
+  store: createStore('rl:acctmail:'),
+  passOnStoreError: true,
+});
+
 /** Token refresh is called on every app load; keep a higher bucket. */
 export const refreshRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

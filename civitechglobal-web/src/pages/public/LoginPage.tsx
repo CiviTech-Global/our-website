@@ -66,6 +66,15 @@ export default function LoginPage() {
           </p>
         )}
 
+        <div className="text-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+          >
+            {t.auth.forgotLink}
+          </Link>
+        </div>
+
         <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
           {t.auth.loginSubmit}
         </Button>

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/auth.service.js';
+import * as recoveryService from '../services/account-recovery.service.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { env } from '../config/env.js';
 
@@ -87,6 +88,50 @@ export async function updateMe(req: Request, res: Response, next: NextFunction):
   try {
     const user = await authService.updateProfile(req.user!.userId, req.body);
     successResponse(res, { user }, 'Profile updated');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function forgotPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    await recoveryService.requestPasswordReset(req.body.email as string);
+  } catch (error) {
+    // Only a genuine fault reaches here — an unknown address returns normally.
+    return next(error);
+  }
+
+  // The same answer whether or not that address has an account. Anything else
+  // turns this endpoint into a way to ask us who our users are.
+  successResponse(
+    res,
+    null,
+    'اگر حسابی با این نشانی وجود داشته باشد، پیوند بازنشانی رمز عبور برایش ارسال شد.'
+  );
+}
+
+export async function resetPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    await recoveryService.resetPassword(req.body.token as string, req.body.password as string);
+    successResponse(res, null, 'رمز عبور شما تغییر کرد. اکنون می‌توانید وارد شوید.');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function sendVerificationEmail(req: Request, res: Response, next: NextFunction) {
+  try {
+    await recoveryService.sendVerificationEmail(req.user!.userId);
+    successResponse(res, null, 'پیوند تأیید برای شما ارسال شد.');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verifyEmail(req: Request, res: Response, next: NextFunction) {
+  try {
+    await recoveryService.verifyEmail(req.body.token as string);
+    successResponse(res, null, 'نشانی ایمیل شما تأیید شد.');
   } catch (error) {
     next(error);
   }

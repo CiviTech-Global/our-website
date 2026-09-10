@@ -19,6 +19,9 @@ const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'));
 const ContactPage = lazy(() => import('@/pages/public/ContactPage'));
 const LoginPage = lazy(() => import('@/pages/public/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/public/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/public/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/public/VerifyEmailPage'));
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 
 // Route-split: the insurance section carries the catalog, the dynamic form and
@@ -123,6 +126,12 @@ export default function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        {/* Both reached from a link in an email, and both read their token from
+            the query string rather than the path — a token in a path segment
+            ends up in referrer headers and server access logs. */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
