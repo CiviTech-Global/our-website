@@ -90,6 +90,19 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     return;
   }
 
+  // Anything else that already carries a 4xx — body-parser's 413 for an
+  // oversized payload, its 400 for malformed JSON, and friends. Without this
+  // they fall through to the 500 below, which tells the caller we broke when
+  // in fact they did, and makes a client mistake look like an outage in every
+  // dashboard built on status codes.
+  //
+  // The message is passed through only for these known-safe library errors:
+  // it says "request entity too large", not anything about our internals.
+  if (typeof httpErr.statusCode === 'number' && httpErr.statusCode >= 400 && httpErr.statusCode < 500) {
+    res.status(httpErr.statusCode).json({ success: false, message: err.message });
+    return;
+  }
+
   if (err.name === 'JsonWebTokenError') {
     res.status(401).json({ success: false, message: 'Invalid token' });
     return;

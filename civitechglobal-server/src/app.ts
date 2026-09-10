@@ -12,6 +12,7 @@ import { pingRedis } from './config/redis.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { generalRateLimiter } from './middleware/rateLimit.js';
 import { recordRequest } from './services/metrics.service.js';
+import { noStore } from './middleware/cacheControl.js';
 import { optionalAuth } from './middleware/authenticate.js';
 import routes from './routes/index.js';
 
@@ -70,11 +71,18 @@ export function createApp(): Express {
   // Populate req.user (when a valid token is present) before routes/rate-limits key off it.
   app.use(optionalAuth);
 
-  app.get('/api/health/live', (_req, res) => {
+  // Health probes must never be cached. A proxy holding a 200 for even a few
+  // seconds reports a dead service as healthy, which is the one answer these
+  // endpoints exist to prevent.
+  app.use(['/api/health', '/api/v1/health'], noStore);
+
+  // Registered on both mounts, like every other route, so a probe configured
+  // against the versioned base does not silently 404.
+  app.get(['/api/health/live', '/api/v1/health/live'], (_req, res) => {
     res.json({ success: true, message: 'CiviTech Global API is alive' });
   });
 
-  app.get('/api/health/ready', async (_req, res) => {
+  app.get(['/api/health/ready', '/api/v1/health/ready'], async (_req, res) => {
     const checks: Record<string, boolean> = {};
 
     try {
@@ -97,7 +105,20 @@ export function createApp(): Express {
     res.status(healthy ? 200 : 503).json({ success: healthy, message: healthy ? 'API is ready' : 'API is not ready', checks });
   });
 
-  app.use('/api', generalRateLimiter, routes);
+  // Uncacheable by default. Endpoints that are genuinely public and identical
+  // for everyone opt back in with publicCache(); anything that forgets stays
+  // safe, because a shared cache serving one person's response to another is
+  // worse than any latency it would have saved.
+  //
+  // Mounted twice. /api/v1 is the address to publish and the one a breaking
+  // change would leave behind by adding /api/v2 beside it. /api is the
+  // unversioned alias every existing client already uses, frozen at v1 — it
+  // stays because silently repointing live callers is not a migration.
+  //
+  // /api/v1 must be mounted first: app.use('/api') also matches /api/v1/x and
+  // would hand the router "/v1/x", which matches nothing.
+  app.use('/api/v1', noStore, generalRateLimiter, routes);
+  app.use('/api', noStore, generalRateLimiter, routes);
 
   app.use('/api', notFoundHandler);
 

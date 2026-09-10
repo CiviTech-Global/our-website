@@ -6,6 +6,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { clientErrorRateLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
 import { recordClientError, renderMetrics } from '../services/metrics.service.js';
+import { openApiDocument } from '../openapi.js';
 
 const router = Router();
 
@@ -75,6 +76,18 @@ router.get('/metrics', (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.send(renderMetrics());
+});
+
+/**
+ * The API description.
+ *
+ * Public on purpose: it documents only endpoints anyone can already call, and
+ * an interface people are meant to integrate against is not made safer by
+ * being hard to find. The admin surface is deliberately not in it.
+ */
+router.get('/openapi.json', (_req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.json(openApiDocument);
 });
 
 export default router;
