@@ -69,6 +69,20 @@ export default function App() {
         }
       />
 
+      {/* Staff preview of a proposal before it is sent. Outside AdminLayout for
+          the same reason the public one is outside PublicLayout: the page is
+          the document, and there is no chrome to strip when printing. */}
+      <Route
+        path="/proposal/preview/:proposalId"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'SUPER_ADMIN']}>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ProposalDocumentPage />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />

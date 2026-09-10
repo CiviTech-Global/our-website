@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ApiError } from '@/config/api';
 import { Link, useParams } from 'react-router';
-import { ChevronLeft, Download, Paperclip, Send, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, Download, FileText, Paperclip, Send, ShieldAlert } from 'lucide-react';
 import {
   downloadAttachment,
   useAdminProject,
@@ -258,6 +258,19 @@ export default function ProjectDetailPage() {
                 </span>
               )}
               <span className="flex-1" />
+              {/* Opens in a new tab: printing replaces what is on screen, and
+                  losing an unsaved composer to a print preview would be its own
+                  small disaster. */}
+              <a
+                href={`/proposal/preview/${proposal.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button type="button" variant="secondary">
+                  <FileText className="size-4" />
+                  {t.proposal.previewDocument}
+                </Button>
+              </a>
               {proposal.status === 'DRAFT' && (
                 <Button
                   type="button"

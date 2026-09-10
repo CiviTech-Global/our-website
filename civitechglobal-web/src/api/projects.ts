@@ -46,6 +46,27 @@ export function useProjectTracking(trackingCode: string | null) {
   });
 }
 
+/**
+ * The same document a client would see, addressed by proposal id.
+ *
+ * Staff-only, and the only way to look at a draft: the public tracking endpoint
+ * refuses to hand one out, which is right — but whoever wrote it still has to
+ * be able to read it as the client will before sending.
+ */
+export function useProposalDocument(proposalId: string | null) {
+  return useQuery({
+    queryKey: ['projects', 'proposal-document', proposalId],
+    queryFn: async () => {
+      const res = await api.get<ProjectTrackResult>(
+        `/projects/admin/proposals/${encodeURIComponent(proposalId!)}/document`
+      );
+      return res.data;
+    },
+    enabled: Boolean(proposalId),
+    retry: false,
+  });
+}
+
 export function useRespondToProposal() {
   return useMutation({
     mutationFn: async (input: {

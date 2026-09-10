@@ -242,3 +242,12 @@ export async function downloadAttachment(
     next(error);
   }
 }
+
+export async function proposalDocument(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await requestService.getProposalDocument(param(req, 'proposalId'));
+    successResponse(res, serialize(data));
+  } catch (error) {
+    next(error);
+  }
+}

@@ -245,6 +245,7 @@ const fa = {
     },
   },
   proposal: {
+    previewDocument: 'پیش‌نمایش سند',
     title: 'پیشنهاد ما',
     savePdf: 'دریافت PDF',
     docHint: 'برای ذخیره به‌صورت PDF، روی دکمه بزنید و در پنجرهٔ چاپ مقصد را «Save as PDF» انتخاب کنید.',

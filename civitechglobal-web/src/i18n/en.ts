@@ -247,6 +247,7 @@ const en: typeof fa = {
     },
   },
   proposal: {
+    previewDocument: 'Preview document',
     title: 'Our proposal',
     savePdf: 'Save as PDF',
     docHint: 'Click the button, then choose "Save as PDF" as the destination in the print dialog.',

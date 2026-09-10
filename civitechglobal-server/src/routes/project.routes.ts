@@ -82,6 +82,7 @@ router.patch(
   projectController.updateProposal
 );
 router.post('/admin/proposals/:proposalId/send', projectController.sendProposal);
+router.get('/admin/proposals/:proposalId/document', projectController.proposalDocument);
 
 router.get('/admin/attachments/:attachmentId', projectController.downloadAttachment);
 

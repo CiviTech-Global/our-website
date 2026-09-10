@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { Printer } from 'lucide-react';
-import { useProjectTracking } from '@/api/projects';
+import { useProjectTracking, useProposalDocument } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import { Button } from '@/components/ui/Button';
@@ -25,9 +25,14 @@ import { formatThousands } from '@/lib/persian';
  * The print rules live in index.css under `@media print`.
  */
 export default function ProposalDocumentPage() {
-  const { code } = useParams();
+  // Two ways in, one document. `code` is the client's tracking code and only
+  // ever resolves a sent proposal; `proposalId` is the staff preview, which is
+  // the only way to see a draft. Exactly one is present.
+  const { code, proposalId } = useParams();
   const { t, locale } = useLocale();
-  const { data, isLoading, isError } = useProjectTracking(code ?? null);
+  const tracked = useProjectTracking(proposalId ? null : (code ?? null));
+  const preview = useProposalDocument(proposalId ?? null);
+  const { data, isLoading, isError } = proposalId ? preview : tracked;
 
   if (isLoading) {
     return (

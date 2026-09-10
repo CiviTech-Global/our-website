@@ -240,6 +240,75 @@ export async function trackRequest(trackingCode: string) {
   };
 }
 
+/**
+ * The same document, for staff, before it is sent.
+ *
+ * `trackRequest` deliberately refuses to hand out a draft — the tracking code
+ * is quotable over the phone. But whoever is writing the proposal has to be
+ * able to read it as the client will, and printing it is how you check that a
+ * page of Persian actually breaks where you meant. Addressed by proposal id
+ * rather than tracking code, so nothing about this path is guessable, and
+ * behind the same staff authentication as the rest of /admin.
+ */
+export async function getProposalDocument(proposalId: string) {
+  const proposal = await prisma.projectProposal.findUnique({
+    where: { id: proposalId },
+    select: {
+      version: true,
+      status: true,
+      scopeSummary: true,
+      deliverables: true,
+      assumptions: true,
+      exclusions: true,
+      milestones: true,
+      engagementModel: true,
+      optimisticHours: true,
+      likelyHours: true,
+      pessimisticHours: true,
+      pertHours: true,
+      priceMin: true,
+      priceLikely: true,
+      priceMax: true,
+      currency: true,
+      hourlyRate: true,
+      discoveryRequired: true,
+      discoveryPrice: true,
+      discoveryDays: true,
+      timelineWeeksMin: true,
+      timelineWeeksMax: true,
+      message: true,
+      validUntil: true,
+      sentAt: true,
+      request: {
+        select: {
+          trackingCode: true,
+          title: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  if (!proposal) {
+    throw new AppError('پیش‌نهادی با این شناسه پیدا نشد.', 404);
+  }
+
+  const { request, ...rest } = proposal;
+
+  // Same shape trackRequest returns, so the document page renders it with no
+  // idea which of the two it is looking at.
+  return {
+    trackingCode: request.trackingCode,
+    title: request.title,
+    status: request.status,
+    submittedAt: request.createdAt,
+    updatedAt: request.updatedAt,
+    proposal: { ...rest, expired: isExpired(rest.validUntil, rest.status) },
+  };
+}
+
 /** A proposal past its date is expired whether or not anyone has said so. */
 export function isExpired(validUntil: Date | null, status: string): boolean {
   if (status === 'ACCEPTED' || status === 'DECLINED') return false;
