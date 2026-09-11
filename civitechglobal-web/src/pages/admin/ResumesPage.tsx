@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { Download } from 'lucide-react';
 import { downloadResume, useAdminResumes, useUpdateResumeStatus } from '@/api/resumes';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -99,7 +100,12 @@ export default function ResumesPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{cv.fullName}</p>
+                  <Link
+                    to={`/admin/resumes/${cv.id}`}
+                    className="font-medium text-text-primary hover:underline"
+                  >
+                    {cv.fullName}
+                  </Link>
                   <p className="mt-0.5 text-xs text-text-muted">
                     <span className="ltr font-mono">{cv.trackingCode}</span>
                     {cv.city && ` · ${cv.city}`}

@@ -13,6 +13,7 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
+import { IdentityStandingControl } from '@/components/admin/IdentityStandingControl';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -137,13 +138,19 @@ export default function ProjectDetailPage() {
 
         {/* How many briefs this (email, phone) pair has filed. A first-time
             enquiry and a tenth one deserve different reading. */}
-        <p className="mt-4 text-xs text-text-muted">
-          {t.proposal.identitySeen
-            .replace('{n}', String(data.identity.requestCount))
-            .replace('{date}', formatDate(data.identity.createdAt, locale))}
-          {data.identity.trusted && ` · ${t.proposal.identityTrusted}`}
-          {data.identity.blocked && ` · ${t.proposal.identityBlocked}`}
-        </p>
+        <div className="mt-4 border-t border-border-subtle pt-4">
+          <p className="mb-2 text-xs text-text-muted">
+            {t.proposal.identitySeen
+              .replace('{n}', String(data.identity.requestCount))
+              .replace('{date}', formatDate(data.identity.createdAt, locale))}
+          </p>
+          <IdentityStandingControl
+            identityId={data.identity.id}
+            standing={
+              data.identity.blocked ? 'blocked' : data.identity.trusted ? 'trusted' : 'normal'
+            }
+          />
+        </div>
       </Card>
 
       {/* The brief -------------------------------------------------------- */}

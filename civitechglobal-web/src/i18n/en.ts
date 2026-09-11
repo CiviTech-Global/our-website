@@ -368,7 +368,29 @@ const en: typeof fa = {
       WITHDRAWN: 'Withdrawn',
     },
   },
+  identity: {
+    title: 'Client identity',
+    requestCount: '{n} submissions so far',
+    changeStanding: 'Change standing',
+    standingUpdated: 'Standing updated.',
+    standings: {
+      normal: 'Normal',
+      trusted: 'Trusted',
+      blocked: 'Blocked',
+    },
+  },
+
   join: {
+    adminNotFound: 'This CV was not found.',
+    adminHandling: 'Handling',
+    assignedTo: 'Assigned to',
+    unassigned: 'Unassigned',
+    matchedRoleHint: 'If it matches an opening, name it here.',
+    internalNotes: 'Internal notes',
+    internalNotesHint: 'For the team only. The applicant never sees this.',
+    downloadFailed: 'Could not download the file.',
+    updatedAt: 'Last updated',
+
     title: 'Send us your CV',
     subtitle:
       'Send us your CV. We read it, and get in touch as soon as something opens up that fits your experience.',

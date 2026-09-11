@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type {
+  AdminResumeDetail,
   AdminResumeSummary,
   ResumeAllowance,
   ResumePayload,
@@ -57,10 +58,29 @@ export function useAdminResumes(params: { page: number; pageSize: number; status
   });
 }
 
+export function useAdminResume(id: string | undefined) {
+  return useQuery({
+    queryKey: ['resumes', 'admin', 'detail', id],
+    queryFn: async () => {
+      const res = await api.get<AdminResumeDetail>(`/resumes/admin/${id!}`);
+      return res.data;
+    },
+    enabled: Boolean(id),
+  });
+}
+
 export function useUpdateResumeStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; status: ResumeStatus; matchedRole?: string }) => {
+    mutationFn: async (input: {
+      id: string;
+      status: ResumeStatus;
+      matchedRole?: string;
+      internalNotes?: string;
+      // `undefined` leaves the assignee alone; explicit null hands it back to
+      // the pile. The two must not collapse into each other.
+      assignedToId?: string | null;
+    }) => {
       const { id, ...body } = input;
       await api.patch(`/resumes/admin/${id}`, body);
     },

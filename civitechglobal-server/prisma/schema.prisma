@@ -456,9 +456,16 @@ model ClientIdentity {
   requestCount  Int       @default(0) @map("request_count")
   lastRequestAt DateTime? @map("last_request_at")
 
-  /// Set by hand to let a known client past the daily cap.
+  /// Standing, set by staff through PATCH /api/admin/identities/:id.
+  ///
+  /// Mutually exclusive in practice — the endpoint takes one of
+  /// normal | trusted | blocked and writes both columns — because "trusted and
+  /// blocked" has no meaning and leaving it representable means somebody has to
+  /// decide which wins at the point it matters least.
+  ///
+  /// trusted lets a known client past the daily cap; blocked refuses every
+  /// submission without deleting their history.
   trusted Boolean @default(false)
-  /// Set by hand to refuse a bad actor without deleting their history.
   blocked Boolean @default(false)
 
   requests ProjectRequest[]

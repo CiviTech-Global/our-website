@@ -3,7 +3,12 @@ import * as adminController from '../controllers/admin.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { authorize } from '../middleware/authorize.js';
 import { validate } from '../middleware/validate.js';
-import { userListQuerySchema, updateUserRoleSchema, updateUserAdminRoleSchema } from '../validators/admin.schema.js';
+import {
+  identityStandingSchema,
+  updateUserAdminRoleSchema,
+  updateUserRoleSchema,
+  userListQuerySchema,
+} from '../validators/admin.schema.js';
 import { cuidParamSchema } from '../validators/common.schema.js';
 
 const router = Router();
@@ -32,6 +37,24 @@ router.patch(
   authorize('SUPER_ADMIN'),
   validate({ params: cuidParamSchema }),
   adminController.deactivateUser,
+);
+
+// Client identities — the (email, phone) pair shared by the project and CV
+// intakes. Reading one is ordinary admin work; changing its standing is not.
+router.get(
+  '/identities/:id',
+  validate({ params: cuidParamSchema }),
+  adminController.getIdentity,
+);
+
+// SUPER_ADMIN only, alongside the other decisions with lasting consequences.
+// Blocking stops somebody submitting anything at all, and trusting removes
+// every rate limit that keeps anonymous abuse expensive.
+router.patch(
+  '/identities/:id',
+  authorize('SUPER_ADMIN'),
+  validate({ params: cuidParamSchema, body: identityStandingSchema }),
+  adminController.setIdentityStanding,
 );
 
 export default router;

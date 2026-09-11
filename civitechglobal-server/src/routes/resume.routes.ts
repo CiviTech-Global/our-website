@@ -178,8 +178,12 @@ router.patch('/admin/:id', validate(updateResumeStatusSchema), async (req, res, 
         status: input.status,
         matchedRole: input.matchedRole,
         internalNotes: input.internalNotes,
+        // Prisma skips undefined, so an update that only sets the status does
+        // not silently unassign the person already working on it. Explicit
+        // null is the way to hand it back to the pile.
+        assignedToId: input.assignedToId,
       },
-      select: { id: true, status: true, matchedRole: true },
+      select: { id: true, status: true, matchedRole: true, assignedToId: true },
     });
     successResponse(res, updated, 'وضعیت به‌روزرسانی شد.');
   } catch (error) {

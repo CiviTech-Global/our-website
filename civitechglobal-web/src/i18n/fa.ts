@@ -366,7 +366,29 @@ const fa = {
       WITHDRAWN: 'باطل شد',
     },
   },
+  identity: {
+    title: 'شناسهٔ متقاضی',
+    requestCount: '{n} درخواست تاکنون',
+    changeStanding: 'تغییر وضعیت شناسه',
+    standingUpdated: 'وضعیت این شناسه به‌روزرسانی شد.',
+    standings: {
+      normal: 'عادی',
+      trusted: 'مورد اعتماد',
+      blocked: 'مسدود',
+    },
+  },
+
   join: {
+    adminNotFound: 'این رزومه پیدا نشد.',
+    adminHandling: 'بررسی و پیگیری',
+    assignedTo: 'مسئول بررسی',
+    unassigned: 'واگذار نشده',
+    matchedRoleHint: 'اگر با موقعیتی تطابق دارد، عنوانش را بنویسید.',
+    internalNotes: 'یادداشت داخلی',
+    internalNotesHint: 'فقط برای تیم؛ هرگز به متقاضی نشان داده نمی‌شود.',
+    downloadFailed: 'دریافت فایل ممکن نشد.',
+    updatedAt: 'آخرین به‌روزرسانی',
+
     title: 'ارسال رزومه',
     subtitle:
       'رزومهٔ خود را برای ما بفرستید. آن را بررسی می‌کنیم و به‌محض آنکه موقعیتی متناسب با تجربهٔ شما باز شود، تماس می‌گیریم.',

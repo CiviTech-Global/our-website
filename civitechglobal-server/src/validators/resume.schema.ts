@@ -52,4 +52,11 @@ export const updateResumeStatusSchema = z.object({
   ]),
   matchedRole: trimmed(160).optional(),
   internalNotes: trimmed(5000).optional(),
+  /**
+   * Who is dealing with this. Null hands it back to the pile.
+   *
+   * `undefined` means "leave it alone", which is what an update that only
+   * changes the status sends — so the two cannot be confused.
+   */
+  assignedToId: z.string().trim().min(1).nullable().optional(),
 });
