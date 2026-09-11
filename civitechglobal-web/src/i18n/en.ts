@@ -668,6 +668,12 @@ const en: typeof fa = {
     callbackScheduled: 'Call scheduled for',
   },
   admin: {
+    assignedTo: 'Assigned to',
+    unassigned: 'Unassigned',
+    assignUpdated: 'Assignee updated.',
+    callbackUpdated: 'Callback scheduled.',
+    callbackCleared: 'Callback cleared.',
+
     dashboard: 'Admin dashboard',
     groupIntake: 'Incoming',
     groupAdministration: 'Administration',

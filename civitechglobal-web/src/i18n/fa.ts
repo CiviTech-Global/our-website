@@ -668,6 +668,12 @@ const fa = {
     callbackScheduled: 'زمان تماس هماهنگ‌شده',
   },
   admin: {
+    assignedTo: 'مسئول پیگیری',
+    unassigned: 'واگذار نشده',
+    assignUpdated: 'مسئول پیگیری تغییر کرد.',
+    callbackUpdated: 'زمان تماس ثبت شد.',
+    callbackCleared: 'زمان تماس حذف شد.',
+
     dashboard: 'داشبورد مدیریت',
     groupIntake: 'درخواست‌های دریافتی',
     groupAdministration: 'مدیریت سامانه',

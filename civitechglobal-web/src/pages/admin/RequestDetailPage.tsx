@@ -3,10 +3,18 @@ import { useParams, useNavigate } from 'react-router';
 import { AlertTriangle, ArrowRight, ArrowLeft, Globe, Send } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
-import { useRequest, useUpdateRequestStatus } from '@/api/requests';
+import {
+  useAssignRequest,
+  useRequest,
+  useScheduleCallback,
+  useUpdateRequestStatus,
+} from '@/api/requests';
+import { useAdminUsers } from '@/api/admin';
+import { apiMessage } from '@/lib/apiMessage';
 import { useToast } from '@/contexts/ToastContext';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -21,6 +29,9 @@ export default function RequestDetailPage() {
   const { showToast } = useToast();
   const { data: detail, isLoading, isError } = useRequest(id);
   const updateStatus = useUpdateRequestStatus(id ?? '');
+  const assign = useAssignRequest(id ?? '');
+  const scheduleCallback = useScheduleCallback(id ?? '');
+  const { data: users } = useAdminUsers(1, 100);
   const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
   const BackIcon = locale === 'fa' ? ArrowRight : ArrowLeft;
 
@@ -49,6 +60,26 @@ export default function RequestDetailPage() {
       setPendingStatus(null);
     } catch {
       showToast(t.errors.networkError, 'error');
+    }
+  }
+
+  async function handleAssign(assignedToId: string | null) {
+    try {
+      await assign.mutateAsync(assignedToId);
+      showToast(t.admin.assignUpdated, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.errors.networkError), 'error');
+    }
+  }
+
+  async function handleCallback(value: string) {
+    try {
+      // The input is local time; the API takes an instant. Clearing the field
+      // cancels the callback rather than scheduling one at the epoch.
+      await scheduleCallback.mutateAsync(value ? new Date(value).toISOString() : null);
+      showToast(value ? t.admin.callbackUpdated : t.admin.callbackCleared, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.errors.networkError), 'error');
     }
   }
 
@@ -187,7 +218,53 @@ export default function RequestDetailPage() {
           )}
         </div>
 
-        <div className="mt-6 flex flex-wrap items-end gap-3 border-t border-border-subtle pt-6">
+        {/* Assignment and the callback time.
+            Both endpoints and both hooks existed and nothing called them, so
+            every enquiry stayed unassigned — which also made the per-user
+            scoping on the list a no-op, since it shows a non-super-admin what
+            is theirs OR unassigned. */}
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-border-subtle pt-6 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="assignee"
+              className="mb-1.5 block text-sm font-medium text-text-primary"
+            >
+              {t.admin.assignedTo}
+            </label>
+            <Select
+              id="assignee"
+              value={request.assignedToId ?? ''}
+              disabled={assign.isPending}
+              onChange={(e) => handleAssign(e.target.value || null)}
+            >
+              <option value="">{t.admin.unassigned}</option>
+              {users?.data.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.firstName} {member.lastName}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="callback"
+              className="mb-1.5 block text-sm font-medium text-text-primary"
+            >
+              {t.admin.callbackScheduled}
+            </label>
+            <Input
+              id="callback"
+              type="datetime-local"
+              className="ltr text-start"
+              disabled={scheduleCallback.isPending}
+              defaultValue={toLocalInput(request.callbackScheduledAt)}
+              onChange={(e) => handleCallback(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-end gap-3">
           <div className="w-56">
             <label htmlFor="status" className="mb-1.5 block text-sm font-medium text-text-primary">
               {t.admin.updateStatus}
@@ -215,6 +292,19 @@ export default function RequestDetailPage() {
       </Card>
     </div>
   );
+}
+
+/**
+ * An instant to what <input type="datetime-local"> wants.
+ *
+ * That control has no timezone: it reads and writes local wall-clock time, so
+ * the ISO string has to be shifted by the offset before slicing, or the value
+ * shown is the UTC one and every callback is booked hours out.
+ */
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const at = new Date(iso);
+  return new Date(at.getTime() - at.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 }
 
 /** Bot and web rows both store the option code; render the human label. */
