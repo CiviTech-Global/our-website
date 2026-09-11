@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import {
   ChevronDown,
@@ -82,6 +82,9 @@ export function FuturisticNavbar() {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const homeUrl = isAdmin ? '/admin' : '/dashboard';
 
+  // Stable, so the dismissal listener is not torn down and rebound every render.
+  const closeMenu = useCallback(() => setOpenMenu(null), []);
+
   // Navigating ends a menu, whether the click came from inside it or from the
   // browser's back button.
   useEffect(() => {
@@ -118,7 +121,7 @@ export function FuturisticNavbar() {
                   menu={entry}
                   open={openMenu === entry.id}
                   onToggle={() => setOpenMenu((prev) => (prev === entry.id ? null : entry.id))}
-                  onClose={() => setOpenMenu(null)}
+                  onClose={closeMenu}
                 />
               </li>
             ) : (
@@ -291,24 +294,94 @@ function NavMenuButton({
   const { t } = useLocale();
   const { pathname } = useLocation();
   const id = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const containsCurrent = menu.items.some(
     (item) => pathname === item.to || pathname.startsWith(`${item.to}/`)
   );
 
+  /**
+   * Dismissal is a click elsewhere, not the pointer leaving.
+   *
+   * This closed on mouseleave, which made the menu unusable. The panel is
+   * absolutely positioned, so the container's box is only the button; moving
+   * from the trigger towards the panel left that box and closed the menu
+   * before the pointer ever arrived. A menu opened with a click should stay
+   * open until it is dismissed.
+   *
+   * pointerdown rather than click, so it dismisses on press like every other
+   * overlay and covers touch without waiting for a synthetic click.
+   */
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) onClose();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [open, onClose]);
+
+  /** The panel's links in document order, for arrow-key movement. */
+  function items(): HTMLAnchorElement[] {
+    return Array.from(containerRef.current?.querySelectorAll('a') ?? []);
+  }
+
+  function focusItem(index: number) {
+    const all = items();
+    // Wraps, so ArrowUp from the first item lands on the last rather than
+    // nowhere at all.
+    if (all.length > 0) all[(index + all.length) % all.length]?.focus();
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+    if (event.key === 'Escape' && open) {
+      event.stopPropagation();
+      onClose();
+      // Focus would otherwise drop to <body>, stranding a keyboard user at the
+      // top of the document with no idea where they had been.
+      buttonRef.current?.focus();
+      return;
+    }
+
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+
+    // While closed, only ArrowDown means anything; the rest should still
+    // scroll the page.
+    if (!open) {
+      if (event.key !== 'ArrowDown') return;
+      event.preventDefault();
+      onToggle();
+      return;
+    }
+
+    event.preventDefault();
+    const all = items();
+    const at = all.indexOf(document.activeElement as HTMLAnchorElement);
+
+    if (event.key === 'Home') focusItem(0);
+    else if (event.key === 'End') focusItem(all.length - 1);
+    else if (event.key === 'ArrowDown') focusItem(at + 1);
+    else focusItem(at - 1);
+  }
+
   return (
     <div
+      ref={containerRef}
       className="relative"
-      // Closing when focus leaves the whole subtree covers tabbing away, which
-      // a click-outside listener never sees.
+      // Covers tabbing away, which a pointer listener never sees.
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) onClose();
       }}
-      onMouseLeave={onClose}
     >
       <button
+        ref={buttonRef}
         type="button"
         onClick={onToggle}
+        // On the button and the links rather than their container: keydown
+        // bubbles from whichever is focused, and both are natively focusable,
+        // so nothing here needs a synthetic role or tabIndex.
+        onKeyDown={onKeyDown}
         aria-expanded={open}
         aria-controls={id}
         className={cn(
@@ -328,30 +401,34 @@ function NavMenuButton({
         />
       </button>
 
+      {/* The offset is padding on an outer wrapper rather than a margin on the
+          panel, so it belongs to the subtree. The pointer travelling from the
+          trigger to the first item never crosses ground that is part of
+          neither — which is what made this menu impossible to use. */}
       {open && (
-        <div
-          id={id}
-          className="ct-drop-in glass absolute top-full z-50 mt-2 min-w-48 rounded-xl border border-border-subtle p-1.5 shadow-soft start-0"
-        >
-          <ul className="flex flex-col">
-            {menu.items.map((item) => (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'block whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-brand-green-500/10 text-brand-green-600 dark:text-brand-green-400'
-                        : 'text-text-secondary hover:bg-surface-200 hover:text-text-primary'
-                    )
-                  }
-                >
-                  {t.nav[item.key]}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        <div id={id} className="absolute top-full z-50 pt-2 start-0">
+          <div className="ct-drop-in glass min-w-48 rounded-xl border border-border-subtle p-1.5 shadow-soft">
+            <ul className="flex flex-col">
+              {menu.items.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    onKeyDown={onKeyDown}
+                    className={({ isActive }) =>
+                      cn(
+                        'block whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-brand-green-500/10 text-brand-green-600 dark:text-brand-green-400'
+                          : 'text-text-secondary hover:bg-surface-200 hover:text-text-primary'
+                      )
+                    }
+                  >
+                    {t.nav[item.key]}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </div>

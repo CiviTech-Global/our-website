@@ -85,6 +85,92 @@ describe('FuturisticNavbar', () => {
     expect(screen.getByRole('link', { name: 'Send your CV' })).toBeInTheDocument();
   });
 
+  it('stays open when the pointer leaves the trigger', async () => {
+    // The bug this replaces: the panel is absolutely positioned, so the
+    // container's box is only the button. Closing on mouseleave meant moving
+    // from the trigger towards the panel — the one thing anybody does — shut
+    // the menu before the pointer arrived.
+    const user = userEvent.setup();
+    renderAt();
+
+    await user.click(screen.getByRole('button', { name: /Services menu/ }));
+    await user.unhover(screen.getByRole('button', { name: /Services menu/ }));
+
+    expect(screen.getByRole('link', { name: 'Start a project' })).toBeInTheDocument();
+  });
+
+  it('stays open while the pointer moves across the page', async () => {
+    const user = userEvent.setup();
+    renderAt();
+
+    await user.click(screen.getByRole('button', { name: /Services menu/ }));
+    // Somewhere else entirely, without pressing anything.
+    await user.hover(screen.getByRole('link', { name: 'Track request' }));
+
+    expect(screen.getByRole('link', { name: 'Start a project' })).toBeInTheDocument();
+  });
+
+  it('closes when something else is clicked', async () => {
+    const user = userEvent.setup();
+    renderAt();
+
+    await user.click(screen.getByRole('button', { name: /Services menu/ }));
+    await user.click(screen.getByRole('link', { name: 'Track request' }));
+
+    expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
+  });
+
+  it('opens on ArrowDown and puts focus on the first item', async () => {
+    const user = userEvent.setup();
+    renderAt();
+
+    const trigger = screen.getByRole('button', { name: /Services menu/ });
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('link', { name: 'What we do' })).toHaveFocus();
+  });
+
+  it('moves through items with the arrow keys, and wraps', async () => {
+    const user = userEvent.setup();
+    renderAt();
+
+    const trigger = screen.getByRole('button', { name: /Services menu/ });
+    trigger.focus();
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(screen.getByRole('link', { name: 'What we do' })).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('link', { name: 'Start a project' })).toHaveFocus();
+
+    // Back past the top lands on the last item rather than nowhere.
+    await user.keyboard('{ArrowUp}{ArrowUp}');
+    expect(screen.getByRole('link', { name: 'Insurance' })).toHaveFocus();
+
+    await user.keyboard('{Home}');
+    expect(screen.getByRole('link', { name: 'What we do' })).toHaveFocus();
+
+    await user.keyboard('{End}');
+    expect(screen.getByRole('link', { name: 'Insurance' })).toHaveFocus();
+  });
+
+  it('returns focus to the trigger when Escape closes it', async () => {
+    // Otherwise focus drops to <body> and a keyboard user is stranded at the
+    // top of the document with no idea where they had been.
+    const user = userEvent.setup();
+    renderAt();
+
+    const trigger = screen.getByRole('button', { name: /Services menu/ });
+    await user.click(trigger);
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
   it('closes on Escape', async () => {
     const user = userEvent.setup();
     renderAt();
