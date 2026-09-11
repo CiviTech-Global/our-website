@@ -2,20 +2,6 @@ import axe, { type AxeResults, type RunOptions } from 'axe-core';
 import { expect } from 'vitest';
 
 /**
- * DEPENDENCY NOTE — axe-core is not declared in package.json.
- *
- * It resolves today only because eslint-plugin-jsx-a11y depends on it, which
- * works but is fragile: that plugin could drop or bump it and take this suite
- * with it. It should be a direct devDependency, and was not added because the
- * npm registry was unreachable from the machine this was written on. Run
- * `npm i -D axe-core` when there is registry access; nothing else changes.
- *
- * Declaring it in package.json without a matching lockfile entry would be
- * worse than the current state — `npm ci` refuses to run when the two are out
- * of step, so CI would fail on every push.
- */
-
-/**
  * Runs axe over a rendered tree and fails with something you can act on.
  *
  * ARIA in this codebase is applied by hand across forty-odd files and has
