@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as requestController from '../controllers/request.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { requirePermission } from '../middleware/requirePermission.js';
+import { PERMISSIONS } from '../auth/permissions.js';
 import { validate } from '../middleware/validate.js';
 import {
   updateRequestStatusSchema,
@@ -13,10 +14,7 @@ import { cuidParamSchema } from '../validators/common.schema.js';
 
 const router = Router();
 
-// The permission string stays 'leads'. It is stored on user rows and inside
-// AdminRole.permissions; renaming it would mean migrating that data to no
-// benefit, and everyone who has it already means "can work the enquiry queue".
-const canWorkRequests = [authenticate, requirePermission('leads')] as const;
+const canWorkRequests = [authenticate, requirePermission(PERMISSIONS.insurance)] as const;
 
 router.get('/stats', ...canWorkRequests, requestController.getRequestStats);
 

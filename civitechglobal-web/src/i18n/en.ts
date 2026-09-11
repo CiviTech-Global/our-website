@@ -667,6 +667,37 @@ const en: typeof fa = {
     lastUpdated: 'Last updated',
     callbackScheduled: 'Call scheduled for',
   },
+  access: {
+    pageSubtitle: 'Accounts, and which parts of the admin each one can reach.',
+    newAdmin: 'New admin',
+    newAdminHint:
+      'You create the account and choose its password. Grant modules now or later.',
+    createAdmin: 'Create admin',
+    adminCreated: 'Admin account created.',
+    modules: 'Module access',
+    noModulesNote:
+      'With nothing ticked the admin can sign in and will see an empty admin area until you grant something.',
+    permissionsSaved: 'Access saved. Their open sessions were ended.',
+    deactivate: 'Deactivate',
+    deactivated: 'Deactivated',
+    deactivatedDone: 'Account deactivated.',
+    superAdminNote: 'A super admin reaches everything, and that cannot be narrowed.',
+    customerNote: 'A customer. No access to the admin area.',
+    roles: {
+      SUPER_ADMIN: 'Super admin',
+      ADMIN: 'Admin',
+      USER: 'Customer',
+    },
+    modules_: {
+      projects: 'Software projects',
+      resumes: 'CVs',
+      insurance: 'Insurance requests',
+      messages: 'Messages',
+      users: 'Users and access',
+      analytics: 'Dashboard',
+    },
+  },
+
   admin: {
     assignedTo: 'Assigned to',
     unassigned: 'Unassigned',

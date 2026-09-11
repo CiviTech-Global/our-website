@@ -144,17 +144,27 @@ describe('metrics endpoint', () => {
 });
 
 describe('health probes', () => {
-  it('separates liveness from readiness', async () => {
-    // /live must not touch a dependency: it answers "is this process up",
-    // which is what an orchestrator restarts on.
+  it('answers liveness without touching a dependency', async () => {
+    // "Is this process up", which is what an orchestrator restarts on. It must
+    // answer the same whether or not Postgres is reachable.
     const live = await request(app).get('/api/health/live');
+
     expect(live.status).toBe(200);
     expect(live.body.success).toBe(true);
+  });
 
-    // /ready checks Postgres and Redis, so with neither running in this suite
-    // it must report 503 rather than a cheerful 200.
+  it('reports readiness as the conjunction of its checks', async () => {
+    // Asserting a fixed status here was wrong: it only held while the
+    // developer happened to have no datastores running, so starting the stack
+    // turned a real invariant into a failing test. What is actually true in
+    // both cases is that the status agrees with the checks it reports.
     const ready = await request(app).get('/api/health/ready');
-    expect(ready.status).toBe(503);
+
     expect(ready.body.checks).toHaveProperty('database');
+    expect(ready.body.checks).toHaveProperty('redis');
+
+    const allUp = Object.values(ready.body.checks).every(Boolean);
+    expect(ready.status).toBe(allUp ? 200 : 503);
+    expect(ready.body.success).toBe(allUp);
   });
 });

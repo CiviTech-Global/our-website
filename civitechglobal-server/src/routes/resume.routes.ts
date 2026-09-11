@@ -3,7 +3,8 @@ import multer from 'multer';
 import type { z } from 'zod';
 import { prisma } from '../config/database.js';
 import { authenticate } from '../middleware/authenticate.js';
-import { authorize } from '../middleware/authorize.js';
+import { requirePermission } from '../middleware/requirePermission.js';
+import { PERMISSIONS } from '../auth/permissions.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { projectRespondRateLimiter, projectSubmitRateLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
@@ -119,7 +120,7 @@ router.get('/track/:code', async (req, res, next) => {
 // Staff only. A CV is somebody's employment history, address and phone number
 // handed over in confidence; it is not browsable by anyone with a link.
 
-router.use(authenticate, authorize('ADMIN', 'SUPER_ADMIN'));
+router.use(authenticate, requirePermission(PERMISSIONS.resumes));
 
 router.get('/admin', async (req, res, next) => {
   try {

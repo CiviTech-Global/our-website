@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database.js';
 import { authenticate } from '../middleware/authenticate.js';
-import { authorize } from '../middleware/authorize.js';
+import { requirePermission } from '../middleware/requirePermission.js';
+import { PERMISSIONS } from '../auth/permissions.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { insuranceSubmitRateLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
@@ -54,7 +55,9 @@ router.post(
 
 // --- Inbox ---------------------------------------------------------------
 
-router.use(authenticate, authorize('ADMIN', 'SUPER_ADMIN'));
+// Per-module, not per-role: an admin reaches the inbox only if a super admin
+// granted it. SUPER_ADMIN bypasses the check inside requirePermission.
+router.use(authenticate, requirePermission(PERMISSIONS.messages));
 
 router.get('/', async (req, res, next) => {
   try {

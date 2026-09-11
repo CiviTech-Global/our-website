@@ -1,23 +1,28 @@
 import type { UserRole } from './auth';
 
-/**
- * Shape assumed for the not-yet-built `/api/admin/users` endpoint.
- * See src/pages/admin/UsersPage.tsx for the backend follow-up note.
- */
+/** A module an admin can be granted. The server owns the catalogue. */
+export type Permission = string;
+
 export interface AdminUserListItem {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  /** Empty for a customer, and ignored for a super admin, who holds everything. */
+  permissions: Permission[];
   createdAt: string;
   isActive?: boolean;
 }
 
-/**
- * Shape assumed for the not-yet-built `/api/admin/roles` endpoints.
- * See src/pages/admin/RolesPage.tsx for the backend follow-up note.
- */
+export interface CreateAdminInput {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  permissions: Permission[];
+}
+
 export interface AdminRole {
   id: string;
   name: string;

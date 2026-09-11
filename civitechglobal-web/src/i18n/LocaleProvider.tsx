@@ -6,6 +6,9 @@ export type Locale = 'fa' | 'en';
 
 type Dictionary = typeof fa;
 
+/** The shape every locale satisfies, for code that takes `t` as a parameter. */
+export type Translations = Dictionary;
+
 const DICTIONARIES: Record<Locale, Dictionary> = { fa, en };
 const DIRECTIONS: Record<Locale, 'rtl' | 'ltr'> = { fa: 'rtl', en: 'ltr' };
 const STORAGE_KEY = 'civitech-locale';

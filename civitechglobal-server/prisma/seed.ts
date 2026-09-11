@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { hashPassword } from '../src/utils/password.js';
 import { generateSecurePassword } from '../src/utils/passwordPolicy.js';
 import { CATALOG, CATALOG_VERSION, CATEGORIES } from '../src/insurance/catalog/index.js';
+import { ALL_PERMISSIONS } from '../src/auth/permissions.js';
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,6 @@ function emailHash(email: string): string {
 
 const SUPER_ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@civitechglobal.com';
 
-const ALL_PERMISSIONS = ['leads', 'users', 'analytics'];
 
 async function seedSuperAdmin(): Promise<void> {
   const existingSuperAdmin = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });

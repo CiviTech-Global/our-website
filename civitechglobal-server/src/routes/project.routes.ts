@@ -2,7 +2,8 @@ import { Router } from 'express';
 import multer from 'multer';
 import * as projectController from '../controllers/project.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
-import { authorize } from '../middleware/authorize.js';
+import { requirePermission } from '../middleware/requirePermission.js';
+import { PERMISSIONS } from '../auth/permissions.js';
 import { MAX_FILES, MAX_FILE_BYTES } from '../services/attachment.service.js';
 import { projectRespondRateLimiter, projectSubmitRateLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
@@ -61,7 +62,7 @@ router.post(
 
 // Everything below is staff-only. Attachments in particular: these are client
 // documents, often under NDA.
-router.use(authenticate, authorize('ADMIN', 'SUPER_ADMIN'));
+router.use(authenticate, requirePermission(PERMISSIONS.projects));
 
 router.get('/admin/requests', projectController.list);
 router.get('/admin/requests/:id', projectController.detail);
