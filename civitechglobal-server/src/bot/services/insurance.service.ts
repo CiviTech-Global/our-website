@@ -1,11 +1,9 @@
 // The bot re-uses the same repository layer as the REST API — a single
-// source of truth for how insurance categories/subcategories are fetched.
-import { insuranceCategoryRepository } from '../../database/prisma/repositories/insurance-category.repository.js';
-import { insuranceSubcategoryRepository } from '../../database/prisma/repositories/insurance-subcategory.repository.js';
+// source of truth for how the insurance catalog is fetched.
+import { insuranceProductRepository } from '../../database/prisma/repositories/insurance-product.repository.js';
 
 export const insuranceService = {
-  getAllCategories: () => insuranceCategoryRepository.findAll(),
-  getCategoryById: (id: string) => insuranceCategoryRepository.findById(id),
-  getSubcategoriesByCategoryId: (categoryId: string) => insuranceSubcategoryRepository.findByCategoryId(categoryId),
-  getSubcategoryById: (id: string) => insuranceSubcategoryRepository.findById(id),
+  /** Active categories, each with its active products, ordered for display. */
+  getCatalog: () => insuranceProductRepository.findCatalog(),
+  getProductBySlug: (slug: string) => insuranceProductRepository.findBySlug(slug),
 };

@@ -1,0 +1,22 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/common/templates/jail-civitech.local.j2.
+
+[DEFAULT]
+{% if fail2ban_ignore_ips %}
+# Never banned. Put your office or home address here so three fat-fingered
+# passwords in a row cannot lock you out of your own server.
+ignoreip = 127.0.0.1/8 ::1 {{ fail2ban_ignore_ips | join(' ') }}
+{% else %}
+ignoreip = 127.0.0.1/8 ::1
+{% endif %}
+
+[sshd]
+enabled  = true
+port     = ssh
+# systemd, not a log file: Ubuntu 24.04 ships no /var/log/auth.log by default,
+# and a jail pointed at a file that does not exist fails silently — which
+# looks exactly like a jail that is working.
+backend  = systemd
+maxretry = {{ fail2ban_max_retry }}
+findtime = {{ fail2ban_find_time }}
+bantime  = {{ fail2ban_ban_time }}

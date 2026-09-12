@@ -1,9 +1,11 @@
 import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { Button } from '@/components/ui/Button';
 
 export default function NotFoundPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.errors.notFoundTitle);
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
       <p className="gradient-text text-7xl font-bold">404</p>

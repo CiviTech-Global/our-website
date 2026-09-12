@@ -1,0 +1,13 @@
+# How to report a security problem with this site.
+#
+# Reports are read by the engineering team, not a ticket queue. If you have
+# found something, tell us before telling anyone else and we will work with
+# you on a disclosure timeline.
+
+Contact: mailto:security@civitechglobal.com
+Preferred-Languages: fa, en
+Canonical: https://civitechglobal.com/.well-known/security.txt
+
+# Update this before it lapses — an expired security.txt reads as an abandoned
+# one, and researchers skip those.
+Expires: 2027-09-10T00:00:00.000Z

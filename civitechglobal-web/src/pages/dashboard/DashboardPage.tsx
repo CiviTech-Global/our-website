@@ -1,5 +1,19 @@
-import { CheckCircle2, CircleUserRound, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  CircleUserRound,
+  Code2,
+  MailWarning,
+  PackageSearch,
+  ShieldCheck,
+  UserPlus,
+} from 'lucide-react';
+import { useSendVerificationEmail } from '@/api/accountRecovery';
+import { useToast } from '@/contexts/ToastContext';
+import { Button } from '@/components/ui/Button';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { useAuth } from '@/contexts/AuthProvider';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -7,6 +21,9 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function DashboardPage() {
   const { t } = useLocale();
+  const { showToast } = useToast();
+  const sendVerification = useSendVerificationEmail();
+  useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
 
   const hasPhone = Boolean(user?.phone);
@@ -19,6 +36,38 @@ export default function DashboardPage() {
           {t.dashboard.welcome}, {user?.firstName}
         </h1>
       </AnimatedSection>
+
+      {/* Only while it matters. A banner that stays after the thing is done is
+          how people learn to stop reading banners. */}
+      {user?.emailVerified === false && (
+        <AnimatedSection delay={0.02} className="mt-6">
+          <Card className="flex flex-wrap items-center gap-3 border-brand-amber-500/40">
+            <MailWarning
+              className="size-5 shrink-0 text-brand-amber-500"
+              aria-hidden="true"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text-primary">{t.auth.verifyBannerTitle}</p>
+              <p className="mt-0.5 text-sm text-text-secondary">{t.auth.verifyBannerBody}</p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              isLoading={sendVerification.isPending}
+              onClick={async () => {
+                try {
+                  await sendVerification.mutateAsync();
+                  showToast(t.auth.verifyBannerSent, 'success');
+                } catch {
+                  showToast(t.common.error, 'error');
+                }
+              }}
+            >
+              {t.auth.verifyBannerAction}
+            </Button>
+          </Card>
+        </AnimatedSection>
+      )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatedSection delay={0.05}>
@@ -57,6 +106,44 @@ export default function DashboardPage() {
           </Card>
         </AnimatedSection>
       </div>
+
+      {/* Submissions are tracked by code, not tied to an account, so there is no
+          list of "your requests" to show here. Links to the things an account
+          holder actually came to do are more use than an empty table. */}
+      <AnimatedSection delay={0.2} className="mt-8">
+        <h2 className="text-lg font-semibold text-text-primary">{t.dashboard.quickActions}</h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <QuickAction
+            to="/start-project"
+            icon={<Code2 className="size-5" aria-hidden="true" />}
+            label={t.nav.startProject}
+          />
+          <QuickAction
+            to="/join"
+            icon={<UserPlus className="size-5" aria-hidden="true" />}
+            label={t.join.title}
+          />
+          <QuickAction
+            to="/track"
+            icon={<PackageSearch className="size-5" aria-hidden="true" />}
+            label={t.nav.track}
+          />
+        </div>
+      </AnimatedSection>
     </div>
+  );
+}
+
+function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
+  return (
+    <Link to={to} className="block rounded-2xl transition-transform hover:-translate-y-0.5">
+      <Card className="flex h-full items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-green-500/10 text-brand-green-600 dark:text-brand-green-400">
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">{label}</span>
+        <ArrowLeft className="size-4 shrink-0 text-text-muted ltr:rotate-180" aria-hidden="true" />
+      </Card>
+    </Link>
   );
 }

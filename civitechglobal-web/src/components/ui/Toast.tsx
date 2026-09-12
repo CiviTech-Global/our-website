@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+
 import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
 import { useToast, type ToastVariant } from '@/contexts/ToastContext';
 import { cn } from '@/lib/utils';
@@ -26,17 +26,12 @@ export function ToastViewport() {
       role="region"
       aria-label="Notifications"
     >
-      <AnimatePresence>
         {toasts.map((toast) => {
           const Icon = ICONS[toast.variant];
           return (
-            <motion.div
+            <div
               key={toast.id}
               role="status"
-              initial={{ opacity: 0, y: -12, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.2 }}
               className={cn(
                 'glass shadow-soft-lg flex w-full max-w-sm items-start gap-3 rounded-xl border p-4',
                 VARIANT_CLASSES[toast.variant]
@@ -52,10 +47,9 @@ export function ToastViewport() {
               >
                 <X className="size-4" aria-hidden="true" />
               </button>
-            </motion.div>
+            </div>
           );
         })}
-      </AnimatePresence>
     </div>,
     document.body
   );

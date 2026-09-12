@@ -1,0 +1,124 @@
+---
+# First contact with a fresh server: authenticate with the hosting provider's
+# ONE-TIME root password, install your SSH public key, prove key auth works,
+# and rotate the root password to the one you chose.
+#
+#   ansible-playbook bootstrap.yml
+#
+# BEFORE RUNNING — paste two secrets into the gitignored files in .secrets/:
+#
+#   .secrets/one-time-root-password   the password the provider gave you
+#   .secrets/new-root-password        the root password you want from now on
+#
+# RUN THIS BEFORE provision.yml. roles/common sets PasswordAuthentication no;
+# if your key is not installed and working when that task runs, recovery means
+# the VPS provider's web console. This playbook exists so that cannot happen:
+# it pushes the key, then PROVES key auth works, and fails loudly if it does
+# not. Only after the proof does it rotate the password.
+#
+# Requires sshpass on the control machine for password auth:
+#   sudo apt install -y sshpass
+
+- name: Bootstrap the CiviTech server (key install + root password rotation)
+  hosts: civitech_prod
+  gather_facts: false
+
+  vars:
+    # Override with -e if your key lives elsewhere.
+    deploy_public_key_file: "~/.ssh/civitech_ed25519.pub"
+    # Gitignored one-time credentials. Paths are relative to civitech-deploy/.
+    one_time_password_file: ".secrets/one-time-root-password"
+    new_password_file: ".secrets/new-root-password"
+
+  tasks:
+    - name: Confirm the public key exists on the control machine
+      ansible.builtin.stat:
+        path: "{{ deploy_public_key_file | expanduser }}"
+      delegate_to: localhost
+      register: pubkey
+
+    - name: Fail with instructions when there is no key yet
+      ansible.builtin.assert:
+        that:
+          - pubkey.stat.exists
+        fail_msg: >-
+          No public key at {{ deploy_public_key_file }}. Generate one first:
+          ssh-keygen -t ed25519 -C civitech-deploy -f ~/.ssh/civitech_ed25519
+
+    - name: Read the one-time root password
+      ansible.builtin.slurp:
+        path: "{{ one_time_password_file }}"
+      delegate_to: localhost
+      register: one_time_secret
+      no_log: true
+
+    - name: Read the desired new root password
+      ansible.builtin.slurp:
+        path: "{{ new_password_file }}"
+      delegate_to: localhost
+      register: new_password_secret
+      no_log: true
+
+    - name: Validate the two password files
+      ansible.builtin.assert:
+        that:
+          - not one_time_plain.startswith('PASTE-')
+          - new_password_plain | length >= 12
+          - not new_password_plain.startswith('PASTE-')
+        fail_msg: >-
+          One of .secrets/one-time-root-password / .secrets/new-root-password
+          is still the placeholder. Paste the provider's one-time password in
+          the first, and your chosen new root password (12+ characters) in the
+          second. Both files are gitignored.
+      vars:
+        one_time_plain: "{{ one_time_secret.content | b64decode | trim }}"
+        new_password_plain: "{{ new_password_secret.content | b64decode | trim }}"
+      no_log: true
+
+    - name: Authenticate with the one-time password for this run only
+      # Connection variables are consulted per task, so this applies to every
+      # task below without touching inventory.ini. The key tasks that follow
+      # install the key that replaces this password path entirely.
+      ansible.builtin.set_fact:
+        ansible_ssh_pass: "{{ one_time_secret.content | b64decode | trim }}"
+      no_log: true
+
+    - name: Authorise the key
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        key: "{{ lookup('file', deploy_public_key_file | expanduser) }}"
+        state: present
+        exclusive: false
+
+    - name: Prove key authentication works
+      # Deliberately connects with the key and nothing else. If this task
+      # fails, STOP — do not run provision.yml.
+      ansible.builtin.command:
+        cmd: >-
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new
+          -o PasswordAuthentication=no
+          -i {{ (deploy_public_key_file | expanduser) | regex_replace('[.]pub$', '') }}
+          {{ ansible_user }}@{{ ansible_host }} true
+      delegate_to: localhost
+      changed_when: false
+
+    - name: Rotate the root password to the chosen one
+      # Runs only after key auth is proven, so a wrong one-time password or a
+      # misplaced key can never leave the server with an unknown password.
+      # The running play keeps its already-authenticated connection; the NEXT
+      # login (you, Semaphore, CI) uses the key or the new password.
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        password: "{{ new_password_secret.content | b64decode | trim | password_hash('sha512') }}"
+      no_log: true
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Key authentication confirmed for {{ ansible_user }}@{{ ansible_host }}
+          and the root password was rotated. Next steps:
+          ansible-playbook ping.yml, then
+          ansible-playbook provision.yml --vault-password-file .secrets/vault-pass.
+          Finally, overwrite both files in .secrets/ with junk or delete them —
+          the one-time password is spent and the new one is now live on the
+          server, not in this directory.

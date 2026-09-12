@@ -11,9 +11,11 @@ import { webhookRateLimit } from './middleware/webhookRateLimit.js';
 import { startCommand } from './commands/start.command.js';
 import { helpCommand } from './commands/help.command.js';
 import { cancelCommand } from './commands/cancel.command.js';
-import { leadConversation } from './conversations/lead.conversation.js';
+import { requestConversation } from './conversations/request.conversation.js';
+import { notificationService } from './services/notification.service.js';
 import { prisma } from '../config/database.js';
 import { redis } from '../config/redis.js';
+import { NEW_REQUEST_CHANNEL, type NewRequestEvent } from '../services/notify.service.js';
 import { Sentry } from '../config/sentry.js';
 import type { BotContext, SessionData } from './types.js';
 
@@ -25,15 +27,15 @@ export function createBot(): Bot<BotContext> {
   bot.use(errorMiddleware);
   bot.use(
     session({
-      initial: (): SessionData => ({ lead: {} }),
+      initial: (): SessionData => ({ request: {} }),
       // Redis-backed session storage so in-flight conversation state
-      // (e.g. a lead being drafted) survives bot process restarts/deploys
+      // (e.g. a request being drafted) survives bot process restarts/deploys
       // instead of living only in process memory.
       storage: new RedisAdapter<SessionData>({ instance: redis }),
     }),
   );
   bot.use(conversations());
-  bot.use(createConversation(leadConversation, 'lead-conversation'));
+  bot.use(createConversation(requestConversation, 'request-conversation'));
 
   bot.command('start', startCommand);
   bot.command('help', helpCommand);
@@ -98,7 +100,38 @@ export async function createApp(): Promise<FastifyInstance> {
     logger.info({ webhookUrl: botConfig.webhookUrl }, 'Webhook set');
   }
 
+  // Website submissions arrive here over Redis pub/sub rather than by giving
+  // the API a Telegram token of its own. A dedicated connection is required:
+  // ioredis puts a client into subscriber mode, after which it refuses ordinary
+  // commands — sharing the app-wide client would break every other Redis user
+  // in this process.
+  const subscriber = redis.duplicate();
+
+  subscriber.on('error', (error) => {
+    logger.error({ err: error }, 'Redis subscriber error');
+  });
+
+  subscriber.on('message', (channel, payload) => {
+    if (channel !== NEW_REQUEST_CHANNEL) return;
+    try {
+      const event = JSON.parse(payload) as NewRequestEvent;
+      void notificationService.notifyAdminsOfWebRequest(bot.api, event);
+    } catch (error) {
+      logger.error({ err: error }, 'Malformed new-request notification');
+    }
+  });
+
   app.addHook('onReady', async () => {
+    try {
+      await subscriber.subscribe(NEW_REQUEST_CHANNEL);
+      logger.info({ channel: NEW_REQUEST_CHANNEL }, 'Subscribed to website request notifications');
+    } catch (error) {
+      // A missing subscription costs notifications, not enquiries — the request
+      // is already safely in Postgres and visible in the admin panel. Log it
+      // loudly and carry on rather than refusing to serve the webhook.
+      logger.error({ err: error }, 'Failed to subscribe to new-request channel');
+    }
+
     if (botConfig.mode !== 'webhook') {
       bot.start().catch((error) => {
         logger.error({ message: (error as Error).message }, 'Bot polling error');
@@ -111,6 +144,9 @@ export async function createApp(): Promise<FastifyInstance> {
     if (botConfig.mode !== 'webhook') {
       await bot.stop();
     }
+    await subscriber.quit().catch((error: unknown) => {
+      logger.error({ err: error }, 'Error closing Redis subscriber');
+    });
     logger.info('Bot stopped');
   });
 

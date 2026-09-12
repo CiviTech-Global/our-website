@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/backup/templates/civitech-backup.sh.j2.
+#
+# Dumps the CiviTech Postgres database to a timestamped, gzip-compressed file,
+# copies it off the host, and prunes local dumps older than the retention
+# window.
+#
+# Called by:
+#   - the nightly cron job installed by roles/backup
+#   - deploy.yml, immediately before it runs migrations
+#
+# pg_dump runs INSIDE the postgres container, so the host never needs a
+# postgresql-client kept in step with the server's major version.
+#
+# RESTORE
+#   gunzip -c {{ backup_dir }}/civitechglobal_<ts>.sql.gz | \
+#     docker compose -f {{ app_root }}/docker-compose.yml \
+#                    -f {{ app_root }}/docker-compose.prod.yml \
+#       exec -T postgres psql -U {{ postgres_user }} -d {{ postgres_db }}
+#
+#   Restoring into a scratch database first is how you find out whether the
+#   dump is good WITHOUT betting production on the answer. Do it quarterly:
+#     docker compose ... exec -T postgres createdb -U {{ postgres_user }} restore_test
+#     gunzip -c <dump> | docker compose ... exec -T postgres psql -U {{ postgres_user }} -d restore_test
+#     docker compose ... exec -T postgres psql -U {{ postgres_user }} -d restore_test -c 'select count(*) from leads;'
+#   Write down the date and the row count. That record is the difference
+#   between having backups and knowing you do.
+
+set -euo pipefail
+
+APP_ROOT="{{ app_root }}"
+BACKUP_DIR="{{ backup_dir }}"
+RETENTION_DAYS="{{ backup_retention_days }}"
+BACKUP_REMOTE="{{ backup_remote }}"
+PG_USER="{{ postgres_user }}"
+PG_DB="{{ postgres_db }}"
+
+COMPOSE="docker compose -f ${APP_ROOT}/docker-compose.yml -f ${APP_ROOT}/docker-compose.prod.yml"
+
+mkdir -p "$BACKUP_DIR"
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+output_file="${BACKUP_DIR}/civitechglobal_${timestamp}.sql.gz"
+
+echo "[$(date -u +%FT%TZ)] backup: starting -> ${output_file}"
+
+# Fail if Postgres is not actually up, rather than writing a valid-looking
+# empty gzip that nobody notices until the day they need it.
+if ! $COMPOSE exec -T postgres pg_isready -U "$PG_USER" >/dev/null 2>&1; then
+  echo "[$(date -u +%FT%TZ)] backup: ERROR postgres is not accepting connections" >&2
+  exit 1
+fi
+
+# Write to a temporary name and move it into place only on success, so an
+# interrupted dump never leaves a truncated file that looks like a backup.
+tmp_file="${output_file}.partial"
+if ! $COMPOSE exec -T postgres pg_dump -U "$PG_USER" "$PG_DB" | gzip > "$tmp_file"; then
+  echo "[$(date -u +%FT%TZ)] backup: ERROR pg_dump failed" >&2
+  rm -f "$tmp_file"
+  exit 1
+fi
+mv "$tmp_file" "$output_file"
+chmod 0600 "$output_file"
+
+echo "[$(date -u +%FT%TZ)] backup: wrote ${output_file} ($(du -h "$output_file" | cut -f1))"
+
+# Uploaded files: client attachments and CVs.
+#
+# The rows referencing these are in the dump above; the bytes are not. Nothing
+# captured them at all until this was added, so a restore would have produced a
+# database full of rows pointing at files that no longer existed. Skipped when
+# STORAGE_DRIVER=s3, because the object store holds them then.
+if [ "${STORAGE_DRIVER:-local}" = "local" ]; then
+  uploads_file="${BACKUP_DIR}/uploads_${timestamp}.tar.gz"
+  uploads_tmp="${uploads_file}.partial"
+
+  # Read straight out of the running container, so this works wherever Docker
+  # put the volume and needs no root on the host.
+  if $COMPOSE exec -T api tar -cf - -C "${UPLOAD_DIR:-/app/storage/project-attachments}" . 2>/dev/null | gzip > "$uploads_tmp"; then
+    mv "$uploads_tmp" "$uploads_file"
+    chmod 0600 "$uploads_file"
+    echo "[$(date -u +%FT%TZ)] backup: wrote ${uploads_file} ($(du -h "$uploads_file" | cut -f1))"
+  else
+    rm -f "$uploads_tmp"
+    # Loud but not fatal: the database dump is the more critical artefact and
+    # has already succeeded. Failing the whole run now would discard it.
+    echo "[$(date -u +%FT%TZ)] backup: ERROR uploads archive failed" >&2
+  fi
+fi
+
+if [ -n "$BACKUP_REMOTE" ]; then
+  # --max-age covers the whole retention window rather than just this dump, so
+  # a remote that was unreachable on an earlier night catches up tonight
+  # instead of leaving a permanent hole.
+  if rclone copy "$BACKUP_DIR" "$BACKUP_REMOTE" \
+       --include 'civitechglobal_*.sql.gz' \
+       --include 'uploads_*.tar.gz' \
+       --max-age "${RETENTION_DAYS}d" \
+       --transfers 2 --retries 3; then
+    echo "[$(date -u +%FT%TZ)] backup: off-host copy complete -> ${BACKUP_REMOTE}"
+  else
+    # Not fatal — the local dump exists and tonight's failure may be transient.
+    # Loud, though: an off-host copy that has been silently failing for a month
+    # is indistinguishable from never having configured one.
+    echo "[$(date -u +%FT%TZ)] backup: ERROR off-host copy to ${BACKUP_REMOTE} FAILED. This dump exists only on the host it protects." >&2
+  fi
+else
+  echo "[$(date -u +%FT%TZ)] backup: WARNING BACKUP_REMOTE is unset. This dump exists only on the host it protects." >&2
+fi
+
+# Prune AFTER the off-host copy, never before — otherwise a failed sync plus a
+# successful prune loses data that was never copied anywhere.
+find "$BACKUP_DIR" -name 'civitechglobal_*.sql.gz' -mtime "+${RETENTION_DAYS}" -delete || true
+find "$BACKUP_DIR" -name 'uploads_*.tar.gz' -mtime "+${RETENTION_DAYS}" -delete || true
+find "$BACKUP_DIR" -name '*.partial' -mtime +1 -delete || true
+
+echo "[$(date -u +%FT%TZ)] backup: done"

@@ -1,0 +1,8 @@
+---
+# ansible-lint configuration for the deployment playbooks.
+#
+# Encrypted vault files hold no lintable content - skipping them keeps the
+# "Decryption failed" warnings out of every run (locally and in CI).
+exclude_paths:
+  - group_vars/all/vault.yml
+  - .secrets/

@@ -1,0 +1,69 @@
+---
+# Docker Engine and the Compose v2 plugin, from Docker's own apt repository
+# rather than the distribution's older `docker.io` package — the compose file
+# uses `service_completed_successfully`, which needs a recent Compose.
+
+- name: Ensure the apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Add Docker's official GPG key
+  ansible.builtin.get_url:
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Add the Docker apt repository
+  # ansible_distribution_release is a gathered fact, so this resolves to
+  # `noble` on 24.04, `jammy` on 22.04 and `focal` on 20.04 with no edits.
+  # Docker still publishes focal packages (verified: 28.x), so 20.04 works.
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}
+      signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/{{ ansible_distribution | lower }}
+      {{ ansible_distribution_release }} stable
+    filename: docker
+    state: present
+
+- name: Install Docker Engine and the Compose plugin
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+
+- name: Ensure Docker is running and enabled at boot
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Cap container log growth
+  # Without this the default json-file driver grows without bound and
+  # eventually takes the disk — and with it Postgres — down. The compose file
+  # sets per-service limits too; this covers anything that does not.
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    mode: "0644"
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "5"
+        }
+      }
+  notify: Restart docker
+
+- name: Verify Compose v2 is available
+  # `docker compose`, not `docker-compose`. The compose file's
+  # `service_completed_successfully` dependency needs v2.
+  ansible.builtin.command: docker compose version
+  changed_when: false

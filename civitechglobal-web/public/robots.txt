@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Signed-in areas hold no public content, and a tracking code is a private
+# reference someone was given — none of it should be crawled or indexed.
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /track
+Disallow: /proposal
+
+Sitemap: https://civitechglobal.com/sitemap.xml

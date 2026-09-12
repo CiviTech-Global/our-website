@@ -1,0 +1,134 @@
+---
+# Nightly database dumps, pruned by age, and copied off the host.
+#
+# This runs on the HOST rather than as a container sidecar (see the note in
+# roles/app/templates/docker-compose.prod.yml.j2) so that deploy.yml has one
+# command it can call before migrating, and so the schedule survives a
+# `docker compose down`.
+#
+# pg_dump itself runs INSIDE the postgres container via `docker compose exec`,
+# so the host never needs a postgresql-client whose major version has to be
+# kept in step with the server's.
+
+- name: Create the backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Create the backup log directory
+  ansible.builtin.file:
+    path: /var/log/civitech
+    state: directory
+    mode: "0750"
+
+- name: Install rclone for the off-host copy
+  ansible.builtin.apt:
+    name: rclone
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: backup_remote | length > 0
+
+- name: Ensure the rclone config directory exists
+  ansible.builtin.file:
+    path: /root/.config/rclone
+    state: directory
+    mode: "0700"
+  when: backup_remote | length > 0
+
+- name: Install the rclone configuration
+  # Cloud credentials. 0600, root-owned, and never committed — it comes from
+  # the control machine, where you already configured it with `rclone config`.
+  ansible.builtin.copy:
+    src: "{{ rclone_config_src | expanduser }}"
+    dest: /root/.config/rclone/rclone.conf
+    owner: root
+    group: root
+    mode: "0600"
+  when: backup_remote | length > 0
+  no_log: true
+
+- name: Install the backup script
+  ansible.builtin.template:
+    src: civitech-backup.sh.j2
+    dest: /usr/local/bin/civitech-backup.sh
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Schedule the nightly backup
+  ansible.builtin.cron:
+    name: civitech-postgres-backup
+    hour: "{{ backup_cron_hour | string }}"
+    minute: "{{ backup_cron_minute | string }}"
+    user: root
+    job: "/usr/local/bin/civitech-backup.sh >> /var/log/civitech/backup.log 2>&1"
+
+- name: Rotate the backup log
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/civitech-backup
+    mode: "0644"
+    content: |
+      /var/log/civitech/backup.log {
+        weekly
+        rotate 8
+        compress
+        missingok
+        notifempty
+        copytruncate
+      }
+
+- name: Install the restore drill
+  # The backup's counterpart. Taking dumps proves nothing on its own; this is
+  # what turns "we have backups" from a belief into a weekly measurement.
+  ansible.builtin.template:
+    src: civitech-restore-drill.sh.j2
+    dest: /usr/local/bin/civitech-restore-drill.sh
+    owner: root
+    group: root
+    mode: "0700"
+  when: restore_drill_enabled | bool
+
+- name: Schedule the restore drill
+  # Weekly rather than nightly: it restores the whole database, so it is the
+  # heaviest scheduled job on the box. Placed after the nightly backup hour so
+  # it always exercises a fresh dump.
+  ansible.builtin.cron:
+    name: civitech-restore-drill
+    weekday: "{{ restore_drill_weekday }}"
+    hour: "{{ restore_drill_hour }}"
+    minute: "0"
+    user: root
+    job: "/usr/local/bin/civitech-restore-drill.sh >> /var/log/civitech/restore-drill.log 2>&1"
+    state: "{{ 'present' if restore_drill_enabled | bool else 'absent' }}"
+
+- name: Rotate the restore drill log
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/civitech-restore-drill
+    mode: "0644"
+    content: |
+      /var/log/civitech/restore-drill.log {
+        monthly
+        rotate 6
+        compress
+        missingok
+        notifempty
+        copytruncate
+      }
+
+- name: Warn when backups never leave this machine
+  # Not a failure — an explicit, unmissable decision. A host loss, a disk loss
+  # or a stray `docker volume prune` takes the database and all
+  # {{ backup_retention_days }} days of its dumps together. That is not a
+  # backup strategy, and it should not be able to become the state of the
+  # system by nobody having said anything.
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: backup_remote is empty. Dumps will exist ONLY on the machine
+      they are protecting. Set backup_remote to an rclone destination in
+      group_vars/all/main.yml, or record that you accept losing the data with
+      the host.
+  when: backup_remote | length == 0

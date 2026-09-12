@@ -1,0 +1,15 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/monitoring/templates/civitech-health.service.j2.
+
+[Unit]
+Description=CiviTech health check
+# Nothing to check before the network is up.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/civitech-health.sh
+# The script decides what is worth alerting on and always exits 0, so a failed
+# check is not also a failed unit. `systemctl status` staying green means the
+# CHECKER is healthy, which is a different question from whether the app is.

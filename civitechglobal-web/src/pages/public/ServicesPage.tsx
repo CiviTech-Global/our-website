@@ -1,10 +1,23 @@
-import { Code2, Smartphone, Landmark, BarChart3, UserCheck, Bot, Activity, Headset } from 'lucide-react';
+import {
+  Activity,
+  BarChart3,
+  ClipboardList,
+  Code2,
+  Headset,
+  Landmark,
+  Smartphone,
+  UserCheck,
+} from 'lucide-react';
+import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
+import { Button } from '@/components/ui/Button';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function ServicesPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.services);
 
   const softwareServices = [
     { icon: Code2, title: t.services.software1Title, desc: t.services.software1Desc, glow: 'green' as const },
@@ -15,7 +28,7 @@ export default function ServicesPage() {
 
   const insuranceServices = [
     { icon: UserCheck, title: t.services.service1Title, desc: t.services.service1Desc, glow: 'green' as const },
-    { icon: Bot, title: t.services.service2Title, desc: t.services.service2Desc, glow: 'amber' as const },
+    { icon: ClipboardList, title: t.services.service2Title, desc: t.services.service2Desc, glow: 'amber' as const },
     { icon: Activity, title: t.services.service3Title, desc: t.services.service3Desc, glow: 'red' as const },
     { icon: Headset, title: t.services.service4Title, desc: t.services.service4Desc, glow: 'green' as const },
   ];
@@ -34,6 +47,9 @@ export default function ServicesPage() {
             {t.services.groupSoftwareTitle}
           </h2>
           <p className="mt-1 text-text-secondary">{t.services.groupSoftwareSubtitle}</p>
+          <Link to="/start-project" className="mt-4 inline-block">
+            <Button>{t.nav.startProject}</Button>
+          </Link>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

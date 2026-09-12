@@ -1,0 +1,81 @@
+---
+# A systemd timer that curls the health endpoints and alerts to Telegram after
+# {{ health_failure_threshold }} consecutive failures.
+#
+# SCOPE. A checker running on the server catches the APPLICATION dying while
+# the machine lives. It cannot tell you the machine is gone — it would be gone
+# too. The same script runs from anywhere, so run it from a laptop as well, or
+# point a free external uptime service at
+# https://{{ domain_name }}/api/health/live. Both halves are cheap; having
+# only one is the mistake.
+
+- name: Create the log directory
+  ansible.builtin.file:
+    path: /var/log/civitech
+    state: directory
+    mode: "0750"
+
+- name: Create the state directory
+  # Holds the consecutive-failure counter between timer firings, so a single
+  # dropped packet does not alert and a real outage does.
+  ansible.builtin.file:
+    path: /var/lib/civitech
+    state: directory
+    mode: "0750"
+
+- name: Install the health check script
+  ansible.builtin.template:
+    src: civitech-health.sh.j2
+    dest: /usr/local/bin/civitech-health.sh
+    owner: root
+    group: root
+    mode: "0750"
+  no_log: true
+
+- name: Install the systemd service unit
+  ansible.builtin.template:
+    src: civitech-health.service.j2
+    dest: /etc/systemd/system/civitech-health.service
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Install the systemd timer unit
+  ansible.builtin.template:
+    src: civitech-health.timer.j2
+    dest: /etc/systemd/system/civitech-health.timer
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Apply the unit files
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start the health timer
+  ansible.builtin.systemd:
+    name: civitech-health.timer
+    state: started
+    enabled: true
+
+- name: Rotate the health log
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/civitech-health
+    mode: "0644"
+    content: |
+      /var/log/civitech/health.log {
+        weekly
+        rotate 4
+        compress
+        missingok
+        notifempty
+        copytruncate
+      }
+
+- name: Warn when there is nowhere to send an alert
+  # Without a channel this timer writes to a log file on the machine it is
+  # watching. That is a record, not a monitor: if the box is unhealthy, nobody
+  # finds out until someone reads a file on it.
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: no alert channel configured. Set vault_telegram_alert_bot_token
+      and vault_telegram_alert_chat_id, or this timer only writes to
+      {{ health_log_file }} and no one is told anything.
+  when: vault_telegram_alert_bot_token | default('') | length == 0

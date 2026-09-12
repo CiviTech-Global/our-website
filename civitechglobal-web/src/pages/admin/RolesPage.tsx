@@ -1,5 +1,6 @@
 import { Shield } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { useAdminRoles } from '@/api/admin';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -13,6 +14,7 @@ import { Spinner } from '@/components/ui/Spinner';
  */
 export default function RolesPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.admin.roles);
   const { data, isLoading, isError } = useAdminRoles();
 
   return (

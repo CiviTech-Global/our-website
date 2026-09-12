@@ -1,8 +1,10 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import { hashPassword } from '../src/utils/password.js';
 import { generateSecurePassword } from '../src/utils/passwordPolicy.js';
+import { CATALOG, CATALOG_VERSION, CATEGORIES } from '../src/insurance/catalog/index.js';
+import { ALL_PERMISSIONS } from '../src/auth/permissions.js';
 
 const prisma = new PrismaClient();
 
@@ -12,50 +14,8 @@ function emailHash(email: string): string {
 
 const SUPER_ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@civitechglobal.com';
 
-const ALL_PERMISSIONS = ['leads', 'users', 'analytics'];
 
-const INSURANCE_CATEGORIES: Array<{ title: string; emoji: string; subcategories: string[] }> = [
-  {
-    title: 'بیمه شخص ثالث',
-    emoji: '🚗',
-    subcategories: ['شخص ثالث خودرو', 'شخص ثالث موتورسیکلت', 'مازاد شخص ثالث'],
-  },
-  {
-    title: 'بیمه بدنه',
-    emoji: '🛡️',
-    subcategories: ['بدنه خودرو سواری', 'بدنه موتورسیکلت', 'بدنه خودروهای سنگین'],
-  },
-  {
-    title: 'بیمه عمر',
-    emoji: '👨‍👩‍👧‍👦',
-    subcategories: ['عمر و سرمایه‌گذاری', 'عمر گروهی', 'عمر مانده بدهکار', 'عمر و تأمین آتیه فرزندان'],
-  },
-  {
-    title: 'بیمه درمان',
-    emoji: '❤️',
-    subcategories: ['درمان تکمیلی انفرادی', 'درمان تکمیلی خانواده', 'درمان تکمیلی شرکتی'],
-  },
-  {
-    title: 'بیمه مسئولیت',
-    emoji: '⚖️',
-    subcategories: ['مسئولیت مدنی کارفرما', 'مسئولیت حرفه‌ای پزشکان', 'مسئولیت مدیران ساختمان'],
-  },
-  {
-    title: 'بیمه آتش‌سوزی',
-    emoji: '🏠',
-    subcategories: ['آتش‌سوزی مسکونی', 'آتش‌سوزی اداری و تجاری', 'آتش‌سوزی صنعتی'],
-  },
-  {
-    title: 'بیمه مسافرتی',
-    emoji: '✈️',
-    subcategories: ['مسافرت خارجی', 'مسافرت داخلی', 'زائرین عتبات'],
-  },
-];
-
-async function main(): Promise<void> {
-  console.log('Seeding database...');
-
-  // --- Super Admin -------------------------------------------------------
+async function seedSuperAdmin(): Promise<void> {
   const existingSuperAdmin = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
 
   if (existingSuperAdmin) {
@@ -83,50 +43,133 @@ async function main(): Promise<void> {
     } else {
       console.log('Super Admin already exists, skipping user creation.');
     }
-  } else {
-    const rawPassword = process.env.SEED_ADMIN_PASSWORD || generateSecurePassword(20);
-    const hashed = await hashPassword(rawPassword);
+    return;
+  }
 
-    await prisma.user.create({
-      data: {
-        email: SUPER_ADMIN_EMAIL,
-        emailHash: emailHash(SUPER_ADMIN_EMAIL),
-        username: 'superadmin',
-        password: hashed,
-        firstName: 'Super',
-        lastName: 'Admin',
-        role: 'SUPER_ADMIN',
-        permissions: ALL_PERMISSIONS,
-        emailVerified: true,
+  const rawPassword = process.env.SEED_ADMIN_PASSWORD || generateSecurePassword(20);
+  const hashed = await hashPassword(rawPassword);
+
+  await prisma.user.create({
+    data: {
+      email: SUPER_ADMIN_EMAIL,
+      emailHash: emailHash(SUPER_ADMIN_EMAIL),
+      username: 'superadmin',
+      password: hashed,
+      firstName: 'Super',
+      lastName: 'Admin',
+      role: 'SUPER_ADMIN',
+      permissions: ALL_PERMISSIONS,
+      emailVerified: true,
+    },
+  });
+
+  console.log('----------------------------------------------------------');
+  console.log('  Super Admin created');
+  console.log(`  Email:    ${SUPER_ADMIN_EMAIL}`);
+  console.log(`  Password: ${rawPassword}`);
+  console.log('  Save this password now — it will not be shown again.');
+  console.log('----------------------------------------------------------');
+}
+
+/**
+ * Mirrors `src/insurance/catalog` into the database.
+ *
+ * The catalog in code is the source of truth; these rows are a read model that
+ * the public API and the admin panel query. That makes the seed safe to re-run
+ * on every deploy, and it is meant to be: it is how a catalog change reaches
+ * production.
+ *
+ * Nothing is ever deleted. A product withdrawn from the catalog is deactivated
+ * instead, because requests already reference it and an admin still needs to
+ * read those. The same goes for the pre-refactor categories, which the
+ * migration left in place and inactive.
+ */
+async function seedCatalog(): Promise<void> {
+  const categoryIdBySlug = new Map<string, string>();
+
+  for (const category of CATEGORIES) {
+    const row = await prisma.insuranceCategory.upsert({
+      where: { slug: category.slug },
+      update: {
+        title: category.title,
+        titleEn: category.titleEn,
+        emoji: category.emoji,
+        icon: category.icon,
+        displayOrder: category.order,
+        active: true,
+      },
+      create: {
+        slug: category.slug,
+        title: category.title,
+        titleEn: category.titleEn,
+        emoji: category.emoji,
+        icon: category.icon,
+        displayOrder: category.order,
+        active: true,
       },
     });
-
-    console.log('----------------------------------------------------------');
-    console.log('  Super Admin created');
-    console.log(`  Email:    ${SUPER_ADMIN_EMAIL}`);
-    console.log(`  Password: ${rawPassword}`);
-    console.log('  Save this password now — it will not be shown again.');
-    console.log('----------------------------------------------------------');
+    categoryIdBySlug.set(category.slug, row.id);
   }
 
-  // --- Insurance categories + subcategories -------------------------------
-  for (const category of INSURANCE_CATEGORIES) {
-    const upserted = await prisma.insuranceCategory.upsert({
-      where: { title: category.title },
-      update: { emoji: category.emoji },
-      create: { title: category.title, emoji: category.emoji },
-    });
-
-    for (const subcategoryTitle of category.subcategories) {
-      await prisma.insuranceSubcategory.upsert({
-        where: { categoryId_title: { categoryId: upserted.id, title: subcategoryTitle } },
-        update: {},
-        create: { categoryId: upserted.id, title: subcategoryTitle },
-      });
+  for (const product of CATALOG) {
+    const categoryId = categoryIdBySlug.get(product.categorySlug);
+    if (!categoryId) {
+      // assertCatalogIntegrity() already rules this out; belt and braces, since
+      // a silent miss here would leave a product invisible on the site.
+      throw new Error(`Product ${product.slug} references unknown category ${product.categorySlug}`);
     }
-  }
-  console.log(`Seeded ${INSURANCE_CATEGORIES.length} insurance categories with subcategories.`);
 
+    const data = {
+      categoryId,
+      title: product.title,
+      titleEn: product.titleEn,
+      summary: product.summary,
+      summaryEn: product.summaryEn,
+      description: product.description,
+      descriptionEn: product.descriptionEn,
+      coverages: product.coverages,
+      exclusions: product.exclusions ?? [],
+      requiredDocuments: product.requiredDocuments ?? [],
+      premiumFactors: product.premiumFactors ?? [],
+      faq: (product.faq ?? []) as unknown as Prisma.InputJsonValue,
+      keyFacts: (product.keyFacts ?? []) as unknown as Prisma.InputJsonValue,
+      claimSteps: product.claimSteps ?? [],
+      optionalCoverages: product.optionalCoverages ?? [],
+      notes: product.notes ?? [],
+      intakeMode: product.intake,
+      audience: product.audience,
+      icon: product.icon,
+      displayOrder: product.order,
+      active: true,
+      formSchema: product.allFields as unknown as Prisma.InputJsonValue,
+      catalogVersion: CATALOG_VERSION,
+    };
+
+    await prisma.insuranceProduct.upsert({
+      where: { slug: product.slug },
+      update: data,
+      create: { slug: product.slug, ...data },
+    });
+  }
+
+  // Withdraw anything the catalog no longer defines, without deleting it.
+  const liveSlugs = CATALOG.map((p) => p.slug);
+  const { count: retired } = await prisma.insuranceProduct.updateMany({
+    where: { slug: { notIn: liveSlugs }, active: true },
+    data: { active: false },
+  });
+
+  console.log(
+    `Seeded ${CATEGORIES.length} categories and ${CATALOG.length} products ` +
+      `(catalog version ${CATALOG_VERSION}).`,
+  );
+  if (retired > 0) console.log(`Deactivated ${retired} product(s) no longer in the catalog.`);
+}
+
+async function main(): Promise<void> {
+  console.log('Seeding database...');
+  await seedSuperAdmin();
+  await seedCatalog();
   console.log('Seeding complete.');
 }
 

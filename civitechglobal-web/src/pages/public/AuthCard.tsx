@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { motion } from 'framer-motion';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Card } from '@/components/ui/Card';
 
@@ -24,11 +23,8 @@ export function AuthCard({
         }}
         aria-hidden="true"
       />
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
+      <div
+        className="ct-enter w-full max-w-md"
       >
         <Card glass className="shadow-soft-lg">
           <div className="mb-6 text-center">
@@ -43,7 +39,7 @@ export function AuthCard({
           </div>
           {children}
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -39,6 +39,44 @@ export const credentialRateLimiter = rateLimit({
   passOnStoreError: true,
 });
 
+/**
+ * Password-reset and verification emails.
+ *
+ * Tight, because each request sends mail to somebody. Unthrottled it is a way
+ * to use us to flood a third party's inbox, and `skipSuccessfulRequests` is
+ * deliberately off for the same reason — a successful send is exactly the
+ * thing being abused.
+ */
+export const accountEmailRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: rateLimitMessage,
+  store: createStore('rl:acctmail:'),
+  passOnStoreError: true,
+});
+
+/**
+ * Browser error reports.
+ *
+ * Unauthenticated and write-only, so it needs a ceiling: one broken render in
+ * a loop could otherwise post thousands of times from a single tab. Generous
+ * enough that a genuinely broken page still tells us, tight enough that it
+ * cannot be used to fill the log.
+ */
+export const clientErrorRateLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: rateLimitMessage,
+  store: createStore('rl:clienterr:'),
+  passOnStoreError: true,
+});
+
 /** Token refresh is called on every app load; keep a higher bucket. */
 export const refreshRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -48,6 +86,73 @@ export const refreshRateLimiter = rateLimit({
   keyGenerator,
   message: rateLimitMessage,
   store: createStore('rl:refresh:'),
+  passOnStoreError: true,
+});
+
+/**
+ * One-time code requests.
+ *
+ * Every send costs real money and lands on someone's phone, so this is the one
+ * limiter where being noisy matters more than being permissive: an unthrottled
+ * endpoint here is both an SMS bill and a way to harass a phone number. The
+ * per-number cooldown in otp.service is the other half — this bounds a single
+ * source hitting many numbers, that bounds many sources hitting one number.
+ */
+export const otpRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: { success: false, message: 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد تلاش کنید.' },
+  store: createStore('rl:otp:'),
+  passOnStoreError: true,
+});
+
+/** Public, unauthenticated form submission. */
+export const insuranceSubmitRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: { success: false, message: 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد تلاش کنید.' },
+  store: createStore('rl:insurance:'),
+  passOnStoreError: true,
+});
+
+/**
+ * Project enquiries. Tighter than the insurance limiter because each request
+ * can carry 25 MB of attachments, so the cost of a flood is disk and CPU, not
+ * just rows. This is the per-CALLER bound; the per-IDENTITY rules (three a day,
+ * one hour apart) live in client-identity.service.ts and cover the case of one
+ * person moving between addresses.
+ */
+export const projectSubmitRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: { success: false, message: 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد تلاش کنید.' },
+  store: createStore('rl:project:'),
+  passOnStoreError: true,
+});
+
+/**
+ * Answering a proposal (accept/decline) and reading a tracking code. Cheap
+ * actions with no upload behind them, so they get their own budget rather than
+ * sharing the submit limiter — a client who filed a brief this hour must still
+ * be able to accept the proposal that came back.
+ */
+export const projectRespondRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: { success: false, message: 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد تلاش کنید.' },
+  store: createStore('rl:project-respond:'),
   passOnStoreError: true,
 });
 

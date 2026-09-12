@@ -1,0 +1,23 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/nginx/templates/civitech_security_headers.j2.
+#
+# Included by every location that sets a header of its own, because nginx
+# inherits `add_header` into a location ONLY when that location declares none
+# itself. A block that adds a single Cache-Control therefore silently serves
+# no security headers at all.
+#
+# Content-Security-Policy is deliberately NOT here: the web container sets it
+# on the responses it serves, which is where the policy belongs. Two owners
+# for one header means two definitions that drift.
+
+{% if enable_ssl | bool %}
+# Two years, subdomains included, preload-eligible — matching what helmet
+# already sets on API responses. Only meaningful once TLS is actually live,
+# which is why it is conditional: an HSTS header on a plain HTTP site is
+# ignored by browsers and misleading to anyone reading the config.
+add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+{% endif %}
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options        "SAMEORIGIN" always;
+add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy     "camera=(), microphone=(), geolocation=()" always;

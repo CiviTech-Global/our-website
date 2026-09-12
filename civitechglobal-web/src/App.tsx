@@ -6,22 +6,68 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { Spinner } from '@/components/ui/Spinner';
 
+// HomePage stays eager: it is the landing route, and lazy-loading the first
+// thing a visitor sees would trade bundle size for a blank frame and an extra
+// round trip on the one page where speed is most visible.
 import HomePage from '@/pages/public/HomePage';
-import AboutPage from '@/pages/public/AboutPage';
-import ServicesPage from '@/pages/public/ServicesPage';
-import ContactPage from '@/pages/public/ContactPage';
-import LoginPage from '@/pages/public/LoginPage';
-import RegisterPage from '@/pages/public/RegisterPage';
-import NotFoundPage from '@/pages/public/NotFoundPage';
+
+// Everything else is reached by a click, which is ample time to fetch a few
+// kilobytes. Keeping these eager put all of them — plus their forms and
+// validation — into the chunk the landing page had to download first.
+const AboutPage = lazy(() => import('@/pages/public/AboutPage'));
+const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'));
+const ContactPage = lazy(() => import('@/pages/public/ContactPage'));
+const LoginPage = lazy(() => import('@/pages/public/LoginPage'));
+const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/public/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/public/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/public/VerifyEmailPage'));
+const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
+
+// Route-split: the insurance section carries the catalog, the dynamic form and
+// the OTP step, none of which the landing page needs in its bundle.
+const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
+// The main service line, and a heavy form: split out so the home page does
+// not carry it.
+const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
+const ProposalDocumentPage = lazy(() => import('@/pages/public/ProposalDocumentPage'));
+const JoinUsPage = lazy(() => import('@/pages/public/JoinUsPage'));
+const ProjectsPage = lazy(() => import('@/pages/admin/ProjectsPage'));
+const AdminResumesPage = lazy(() => import('@/pages/admin/ResumesPage'));
+const AdminResumeDetailPage = lazy(() => import('@/pages/admin/ResumeDetailPage'));
+const MessagesPage = lazy(() => import('@/pages/admin/MessagesPage'));
+const ProjectDetailPage = lazy(() => import('@/pages/admin/ProjectDetailPage'));
+const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
+const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
+
+// The marketplace. Split out as its own set: the boards carry their own
+// filters, forms and money formatting, and none of it belongs in the bundle a
+// visitor downloads to read the landing page.
+const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
+const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
+const FreelanceProjectsPage = lazy(() => import('@/pages/public/FreelanceProjectsPage'));
+const FreelanceProjectDetailPage = lazy(
+  () => import('@/pages/public/FreelanceProjectDetailPage')
+);
 
 const UserDashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
+const VerificationPage = lazy(() => import('@/pages/dashboard/VerificationPage'));
+const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
+const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
+const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
+const MyBidsPage = lazy(() => import('@/pages/dashboard/MyBidsPage'));
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/DashboardPage'));
-const LeadsPage = lazy(() => import('@/pages/admin/LeadsPage'));
-const LeadDetailPage = lazy(() => import('@/pages/admin/LeadDetailPage'));
+const RequestsPage = lazy(() => import('@/pages/admin/RequestsPage'));
+const RequestDetailPage = lazy(() => import('@/pages/admin/RequestDetailPage'));
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
+const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
+const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
+const ApplicationQueuePage = lazy(() => import('@/pages/admin/ApplicationQueuePage'));
+const ProjectQueuePage = lazy(() => import('@/pages/admin/ProjectQueuePage'));
+const BidQueuePage = lazy(() => import('@/pages/admin/BidQueuePage'));
 
 function RouteLoadingFallback() {
   return (
@@ -33,14 +79,114 @@ function RouteLoadingFallback() {
 
 export default function App() {
   return (
-    <Routes>
+    // One boundary around the whole tree, so a lazy route does not need its own
+    // wrapper to be safe. The per-route boundaries below stay because they keep
+    // an already-rendered layout on screen while only the panel swaps.
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Routes>
+      <Route
+        path="/proposal/:code"
+        element={
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <ProposalDocumentPage />
+          </Suspense>
+        }
+      />
+
+      {/* Staff preview of a proposal before it is sent. Outside AdminLayout for
+          the same reason the public one is outside PublicLayout: the page is
+          the document, and there is no chrome to strip when printing. */}
+      <Route
+        path="/proposal/preview/:proposalId"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'SUPER_ADMIN']}>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ProposalDocumentPage />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/join" element={<JoinUsPage />} />
+        <Route
+          path="/start-project"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <StartProjectPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/insurance"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <InsurancePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/insurance/:slug"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <InsuranceProductPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/track"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <TrackRequestPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/jobs"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobsPage />
+            </Suspense>
+          }
+        />
+        {/* The code, not the id: it is what somebody can quote, and it does not
+            leak how many postings there have ever been. */}
+        <Route
+          path="/jobs/:code"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <FreelanceProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/projects/:code"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <FreelanceProjectDetailPage />
+            </Suspense>
+          }
+        />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        {/* Both reached from a link in an email, and both read their token from
+            the query string rather than the path — a token in a path segment
+            ends up in referrer headers and server access logs. */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
@@ -68,6 +214,46 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route
+          path="verification"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <VerificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="jobs"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyJobsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="applications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyApplicationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="projects"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="bids"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyBidsPage />
+            </Suspense>
+          }
+        />
       </Route>
 
       <Route
@@ -87,18 +273,58 @@ export default function App() {
           }
         />
         <Route
-          path="leads"
+          path="requests"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <LeadsPage />
+              <RequestsPage />
             </Suspense>
           }
         />
         <Route
-          path="leads/:id"
+          path="projects"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <LeadDetailPage />
+              <ProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="resumes"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AdminResumesPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="resumes/:id"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AdminResumeDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="messages"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MessagesPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="projects/:id"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ProjectDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="requests/:id"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <RequestDetailPage />
             </Suspense>
           }
         />
@@ -118,7 +344,48 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route
+          path="verifications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <VerificationQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="job-postings"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="applications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ApplicationQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="freelance-projects"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ProjectQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="bids"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BidQueuePage />
+            </Suspense>
+          }
+        />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }

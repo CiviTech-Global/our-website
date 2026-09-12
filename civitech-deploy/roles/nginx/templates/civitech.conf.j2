@@ -1,0 +1,117 @@
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/nginx/templates/civitech.conf.j2.
+#
+# certbot --nginx edits this file in place to add the TLS listener and the
+# HTTP->HTTPS redirect. Re-running the nginx role rewrites the file and certbot
+# re-applies its changes on the next run, so the two stay compatible.
+
+# ---- Edge rate limiting ----------------------------------------------------
+# These sit in front of the application's own limiter, which is Redis-backed
+# and correct. The point is not that the app cannot count — it is that every
+# request the app rejects has already been accepted, parsed, run through
+# optionalAuth (a database read whenever a token is present) and round-tripped
+# to Redis. nginx drops a flood before any of that happens, for microseconds.
+limit_req_zone  $binary_remote_addr zone=civitech_api:10m  rate={{ nginx_api_rate }};
+limit_req_zone  $binary_remote_addr zone=civitech_auth:10m rate={{ nginx_auth_rate }};
+limit_conn_zone $binary_remote_addr zone=civitech_conn:10m;
+
+# ---- Upstreams -------------------------------------------------------------
+# Named upstreams rather than a bare proxy_pass, for two reasons: keepalive to
+# the backend removes a TCP handshake per request, and this is the seam where
+# a second replica goes when one is needed. The app is stateless per request
+# (JWT auth, Redis-backed counters), so adding one is a line here.
+upstream civitech_api {
+    server 127.0.0.1:{{ api_port }};
+    keepalive 32;
+}
+
+upstream civitech_web {
+    server 127.0.0.1:{{ web_port }};
+    keepalive 16;
+}
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name {{ domain_name }}{% if domain_alias %} {{ domain_alias }}{% endif %};
+
+    # Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
+    # request with a 413 before Node ever sees it.
+    client_max_body_size {{ nginx_client_max_body_size }};
+    client_body_timeout 30s;
+
+    include /etc/nginx/civitech_security_headers;
+
+    # ---- TLS policy --------------------------------------------------------
+    # Effective once certbot adds `listen 443 ssl`. Kept here as well as in
+    # certbot's own include so the policy survives that include changing.
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # ---- Compression -------------------------------------------------------
+    # The web container gzips too; this covers proxied API responses, which it
+    # does not see.
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_types text/plain text/css application/javascript application/json
+               image/svg+xml font/woff2 application/manifest+json;
+
+    # ---- Maintenance page --------------------------------------------------
+    error_page 502 503 504 /maintenance.html;
+    location = /maintenance.html {
+        root /var/www/civitech-static;
+        internal;
+    }
+
+    # ---- Health checks -----------------------------------------------------
+    # Never rate limited and never logged. The API exempts these from its own
+    # limiter too — they are registered before the middleware in src/app.ts —
+    # so a monitor can never be throttled by either layer.
+    location = /api/health/live {
+        proxy_pass http://civitech_api;
+        include /etc/nginx/civitech_proxy_params;
+        access_log off;
+    }
+
+    location = /api/health/ready {
+        proxy_pass http://civitech_api;
+        include /etc/nginx/civitech_proxy_params;
+        access_log off;
+    }
+
+    # ---- Credential endpoints ----------------------------------------------
+    # Tighter than the rest of the API, because these guard passwords.
+    # burst={{ nginx_auth_burst }} nodelay tolerates a human retyping a
+    # password; a credential-stuffing run hits the wall immediately. The
+    # application's own limiter (10 per 15 min, skipping successful requests)
+    # and its Redis account lockout sit behind this.
+    location /api/auth/ {
+        limit_req  zone=civitech_auth burst={{ nginx_auth_burst }} nodelay;
+        limit_conn civitech_conn 10;
+        proxy_pass http://civitech_api;
+        include /etc/nginx/civitech_proxy_params;
+    }
+
+    # ---- API ---------------------------------------------------------------
+    location /api/ {
+        limit_req  zone=civitech_api burst={{ nginx_api_burst }} nodelay;
+        limit_conn civitech_conn 25;
+        proxy_pass http://civitech_api;
+        include /etc/nginx/civitech_proxy_params;
+        proxy_read_timeout 60s;
+    }
+
+    # ---- Everything else ---------------------------------------------------
+    # The web container serves the SPA and already sets its own Cache-Control
+    # (immutable on /assets/, no-cache on index.html) and its own CSP. Those
+    # headers are not repeated here — one owner per header, or the two
+    # definitions drift and nobody knows which is live.
+    location / {
+        proxy_pass http://civitech_web;
+        include /etc/nginx/civitech_proxy_params;
+    }
+}

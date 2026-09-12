@@ -1,5 +1,7 @@
+import { randomBytes } from 'node:crypto';
 import { sha256Hex } from '../utils/hash.js';
 import { redis } from '../config/redis.js';
+import { logger } from '../config/logger.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
 import { refreshTokenRepository } from '../database/prisma/repositories/refresh-token.repository.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
@@ -19,7 +21,7 @@ function normalizeEmail(email: string): string {
  * comment on `User.emailHash` in prisma/schema.prisma: this keeps every
  * lookup path independent of whether `email` itself is later encrypted.
  */
-function emailLookupHash(email: string): string {
+export function emailLookupHash(email: string): string {
   return sha256Hex(normalizeEmail(email));
 }
 
@@ -163,6 +165,74 @@ export async function register(input: RegisterInput) {
   return { user, ...tokens };
 }
 
+/**
+ * Short-lived proof that a password was accepted, pending a second factor.
+ *
+ * Kept in Redis rather than issued as a JWT: it must be revocable the instant
+ * it is spent, it is worthless after five minutes, and it should never be
+ * mistaken by any middleware for an access token — which a JWT signed with the
+ * same key eventually would be.
+ */
+const MFA_CHALLENGE_TTL_SECONDS = 5 * 60;
+
+function mfaChallengeKey(token: string): string {
+  return `mfa:challenge:${sha256Hex(token)}`;
+}
+
+export async function issueMfaChallenge(userId: string): Promise<string> {
+  const token = randomBytes(32).toString('base64url');
+  await redis.set(mfaChallengeKey(token), userId, 'EX', MFA_CHALLENGE_TTL_SECONDS);
+  return token;
+}
+
+/** How many wrong codes a challenge survives before it is thrown away. */
+const MFA_CHALLENGE_MAX_ATTEMPTS = 5;
+
+/**
+ * Reads the challenge WITHOUT spending it, and returns whose it is.
+ *
+ * Deliberately not consumed here. Deleting on read makes a single mistyped
+ * digit cost the whole sign-in, password and all, which is hostile enough that
+ * people turn the feature off. Replay protection comes from deleting on
+ * success instead; brute force is bounded by the attempt counter below.
+ */
+export async function peekMfaChallenge(token: string): Promise<string | null> {
+  return redis.get(mfaChallengeKey(token));
+}
+
+/** Called once the second factor is accepted, so the challenge cannot replay. */
+export async function spendMfaChallenge(token: string): Promise<void> {
+  await redis.del(mfaChallengeKey(token), `${mfaChallengeKey(token)}:attempts`);
+}
+
+/**
+ * Records a wrong code, and destroys the challenge once there have been too
+ * many. Returns how many attempts remain.
+ */
+export async function recordMfaFailure(token: string): Promise<number> {
+  const attemptsKey = `${mfaChallengeKey(token)}:attempts`;
+  const attempts = await redis.incr(attemptsKey);
+  // Expire alongside the challenge itself; a counter that outlives it would
+  // block the next sign-in for no reason.
+  if (attempts === 1) await redis.expire(attemptsKey, MFA_CHALLENGE_TTL_SECONDS);
+
+  if (attempts >= MFA_CHALLENGE_MAX_ATTEMPTS) {
+    await spendMfaChallenge(token);
+    return 0;
+  }
+  return MFA_CHALLENGE_MAX_ATTEMPTS - attempts;
+}
+
+/** Issues the real session for a user who has cleared every check. */
+export async function issueSessionFor(userId: string) {
+  const user = await userRepository.findFirst({ where: { id: userId, deletedAt: null } });
+  if (!user) throw new AppError('Invalid credentials', 401);
+
+  const tokens = await issueTokenPair(user);
+  const { password: _password, ...safeUser } = user;
+  return { user: safeUser, ...tokens };
+}
+
 export async function login(input: LoginInput) {
   await checkLockout(input.email);
 
@@ -196,7 +266,27 @@ export async function refreshTokens(oldRefreshToken: string) {
 
   const storedToken = await refreshTokenRepository.findUnique({ where: { token: tokenHash } });
   if (!storedToken) throw new AppError('Invalid refresh token', 401);
-  if (storedToken.revokedAt) throw new AppError('Refresh token has already been used or revoked', 401);
+
+  if (storedToken.revokedAt) {
+    // REUSE DETECTION. Refresh tokens are rotated single-use: the row is
+    // revoked at the moment its replacement is issued. So a revoked token
+    // being presented again means one of two things — a client raced itself,
+    // or someone is replaying a token they should not have. We cannot tell
+    // which from here, and only one of them is safe to ignore.
+    //
+    // The safe response to both is to assume the whole chain is compromised
+    // and burn it: revoke every outstanding refresh token for this user and
+    // bump tokenVersion, which also invalidates every access token already
+    // issued (see middleware/authenticate.ts). The legitimate user logs in
+    // again; the attacker's stolen token is now worth nothing.
+    logger.warn(
+      { userId: storedToken.userId, event: 'refresh_token_reuse' },
+      'Revoked refresh token replayed — revoking all sessions for this user',
+    );
+    await revokeAllUserRefreshTokens(storedToken.userId);
+    throw new AppError('Refresh token has already been used or revoked', 401);
+  }
+
   if (storedToken.expiresAt < new Date()) throw new AppError('Refresh token expired', 401);
 
   const user = await userRepository.findUnique({ where: { id: payload.userId } });

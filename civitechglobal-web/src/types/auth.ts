@@ -8,11 +8,30 @@ export interface AuthUser {
   phone?: string | null;
   role: UserRole;
   permissions: string[];
+  /** Whether the address has been confirmed by following an emailed link. */
+  emailVerified?: boolean;
 }
 
 export interface AuthResponse {
   user: AuthUser;
   accessToken: string;
+}
+
+/**
+ * What POST /auth/login returns when the account has a second factor.
+ *
+ * No session is issued at this point, and no refresh cookie is set — a
+ * half-finished sign-in must leave nothing behind that could be used.
+ */
+export interface MfaChallenge {
+  mfaRequired: true;
+  challengeToken: string;
+}
+
+export type LoginResult = { mfaRequired?: false; user: AuthUser } | MfaChallenge;
+
+export function isMfaChallenge(result: LoginResult): result is MfaChallenge {
+  return result.mfaRequired === true;
 }
 
 export interface LoginPayload {

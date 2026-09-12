@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -14,6 +15,7 @@ import { AuthCard } from './AuthCard';
 
 export default function RegisterPage() {
   const { t } = useLocale();
+  useDocumentTitle(t.nav.register);
   const { register: registerUser } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();

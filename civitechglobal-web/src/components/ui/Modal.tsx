@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { usePresence } from '@/lib/motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +18,9 @@ const FOCUSABLE_SELECTOR =
 export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<Element | null>(null);
+  // Holds the dialog in the tree while it animates out; `state` picks the
+  // enter or leave keyframe.
+  const { mounted, state } = usePresence(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -58,32 +61,29 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     };
   }, [isOpen, onClose]);
 
+  if (!mounted) return null;
+
   return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-surface-950/60 backdrop-blur-sm"
-            onClick={onClose}
-            aria-hidden="true"
-          />
-          <motion.div
-            ref={dialogRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={title ? 'modal-title' : undefined}
-            initial={{ opacity: 0, scale: 0.96, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.2 }}
-            className={cn(
-              'glass relative z-10 w-full max-w-lg rounded-xl p-6 shadow-soft-lg',
-              className
-            )}
-          >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className={cn(
+          'absolute inset-0 bg-surface-950/60 backdrop-blur-sm',
+          state === 'entering' ? 'ct-fade-in' : 'ct-fade-out'
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
+        className={cn(
+          'glass relative z-10 w-full max-w-lg rounded-xl p-6 shadow-soft-lg',
+          state === 'entering' ? 'ct-pop-in' : 'ct-pop-out',
+          className
+        )}
+      >
             <div className="mb-4 flex items-center justify-between">
               {title && (
                 <h2 id="modal-title" className="text-lg font-semibold text-text-primary">
@@ -99,11 +99,9 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
                 <X className="size-5" aria-hidden="true" />
               </button>
             </div>
-            {children}
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>,
+        {children}
+      </div>
+    </div>,
     document.body
   );
 }

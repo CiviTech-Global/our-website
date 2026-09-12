@@ -9,8 +9,10 @@ import { corsOptions } from './config/cors.js';
 import { logger } from './config/logger.js';
 import { prisma } from './config/database.js';
 import { pingRedis } from './config/redis.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { generalRateLimiter } from './middleware/rateLimit.js';
+import { recordRequest } from './services/metrics.service.js';
+import { noStore } from './middleware/cacheControl.js';
 import { optionalAuth } from './middleware/authenticate.js';
 import routes from './routes/index.js';
 
@@ -48,37 +50,97 @@ export function createApp(): Express {
     next();
   });
 
+  // Timed here rather than inside the router so the measurement includes body
+  // parsing, authentication and the rate limiters — everything the caller
+  // actually waited for, not just the handler.
+  app.use((req, res, next) => {
+    const startedAt = process.hrtime.bigint();
+    res.on('finish', () => {
+      const seconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
+      // originalUrl, not req.route.path: the latter is relative to whichever
+      // router matched, so it labels /api/insurance/catalog as "/catalog" and
+      // collides with every other router that has one. req.baseUrl would put
+      // the mount back, except Express restores it while unwinding the router
+      // stack, so by the time this listener runs it is empty again.
+      // recordRequest collapses ids and codes out of the path itself.
+      recordRequest(req.method, req.originalUrl, res.statusCode, seconds);
+    });
+    next();
+  });
+
   // Populate req.user (when a valid token is present) before routes/rate-limits key off it.
   app.use(optionalAuth);
 
-  app.get('/api/health/live', (_req, res) => {
+  // Health probes must never be cached. A proxy holding a 200 for even a few
+  // seconds reports a dead service as healthy, which is the one answer these
+  // endpoints exist to prevent.
+  app.use(['/api/health', '/api/v1/health'], noStore);
+
+  // Registered on both mounts, like every other route, so a probe configured
+  // against the versioned base does not silently 404.
+  app.get(['/api/health/live', '/api/v1/health/live'], (_req, res) => {
     res.json({ success: true, message: 'CiviTech Global API is alive' });
   });
 
-  app.get('/api/health/ready', async (_req, res) => {
+  /**
+   * Each dependency gets its own deadline.
+   *
+   * Without one, an unreachable database makes the probe wait for the driver's
+   * connect timeout — about five seconds — which is the same as the timeout on
+   * the container healthcheck, so the probe flaps between "unhealthy" and "no
+   * answer at all" instead of reporting a clear false. A readiness probe that
+   * is slow when things are broken is a readiness probe that is useless
+   * precisely when it is needed.
+   */
+  const READINESS_TIMEOUT_MS = 2000;
+
+  async function check(name: string, probe: () => Promise<unknown>): Promise<boolean> {
+    try {
+      await Promise.race([
+        probe(),
+        new Promise((_resolve, reject) =>
+          setTimeout(() => reject(new Error(`timed out after ${READINESS_TIMEOUT_MS}ms`)), READINESS_TIMEOUT_MS).unref(),
+        ),
+      ]);
+      return true;
+    } catch (err) {
+      logger.error({ message: (err as Error).message }, `Readiness check failed: ${name}`);
+      return false;
+    }
+  }
+
+  app.get(['/api/health/ready', '/api/v1/health/ready'], async (_req, res) => {
     const checks: Record<string, boolean> = {};
 
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      checks.database = true;
-    } catch (err) {
-      logger.error({ message: (err as Error).message }, 'Readiness check failed: database');
-      checks.database = false;
-    }
-
-    try {
-      await pingRedis();
-      checks.redis = true;
-    } catch (err) {
-      logger.error({ message: (err as Error).message }, 'Readiness check failed: redis');
-      checks.redis = false;
-    }
+    // Concurrently: two dependencies should not add their latencies together
+    // when the answer needs both of them anyway.
+    const [database, redis] = await Promise.all([
+      check('database', () => prisma.$queryRaw`SELECT 1`),
+      check('redis', () => pingRedis()),
+    ]);
+    checks.database = database;
+    checks.redis = redis;
 
     const healthy = Object.values(checks).every(Boolean);
     res.status(healthy ? 200 : 503).json({ success: healthy, message: healthy ? 'API is ready' : 'API is not ready', checks });
   });
 
-  app.use('/api', generalRateLimiter, routes);
+  // Uncacheable by default. Endpoints that are genuinely public and identical
+  // for everyone opt back in with publicCache(); anything that forgets stays
+  // safe, because a shared cache serving one person's response to another is
+  // worse than any latency it would have saved.
+  //
+  // Mounted twice. /api/v1 is the address to publish and the one a breaking
+  // change would leave behind by adding /api/v2 beside it. /api is the
+  // unversioned alias every existing client already uses, frozen at v1 — it
+  // stays because silently repointing live callers is not a migration.
+  //
+  // /api/v1 must be mounted first: app.use('/api') also matches /api/v1/x and
+  // would hand the router "/v1/x", which matches nothing.
+  app.use('/api/v1', noStore, generalRateLimiter, routes);
+  app.use('/api', noStore, generalRateLimiter, routes);
+
+  app.use('/api', notFoundHandler);
 
   app.use(errorHandler);
 

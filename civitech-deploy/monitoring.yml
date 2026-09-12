@@ -1,0 +1,17 @@
+---
+# Install the on-server health check timer.
+#
+#   ansible-playbook monitoring.yml --vault-password-file ~/.civitech-vault-pass
+#
+# SCOPE, so this is not mistaken for more than it is: a checker running on the
+# server catches the application dying while the machine lives. It cannot tell
+# you the machine is gone — it would be gone too. Run the same script from a
+# laptop, or point an external uptime service at
+# https://<domain>/api/health/live, for that half of the problem.
+
+- name: Install health monitoring on the CiviTech server
+  hosts: civitech_prod
+  become: true
+
+  roles:
+    - monitoring

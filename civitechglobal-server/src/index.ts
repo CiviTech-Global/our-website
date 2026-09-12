@@ -2,7 +2,7 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { initSentry } from './config/sentry.js';
-import { disconnectPrisma } from './config/database.js';
+import { connectPrisma, disconnectPrisma } from './config/database.js';
 import { disconnectRedis } from './config/redis.js';
 
 initSentry(env.SENTRY_DSN || undefined, env.NODE_ENV);
@@ -16,6 +16,22 @@ function handleFatalError(label: string, err: unknown): void {
 
 process.on('uncaughtException', (err) => handleFatalError('Uncaught exception', err));
 process.on('unhandledRejection', (reason) => handleFatalError('Unhandled rejection', reason));
+
+/**
+ * Warm the connection pool before announcing the port.
+ *
+ * Prisma connects lazily, so without this the first query of the process pays
+ * for establishing the pool — which is slow enough to trip the readiness
+ * probe's own deadline and make a perfectly healthy service report itself as
+ * not ready on its first check.
+ *
+ * Not fatal if it fails: a database that is briefly unreachable at boot is a
+ * thing to report through the probe and recover from, not a reason to refuse
+ * to start and lose the endpoint that would have explained it.
+ */
+connectPrisma()
+  .then(() => logger.info('Database pool ready'))
+  .catch((err: unknown) => logger.error({ err }, 'Could not reach the database at startup'));
 
 const server = app.listen(env.PORT, () => {
   logger.info(`API server listening on port ${env.PORT}`);

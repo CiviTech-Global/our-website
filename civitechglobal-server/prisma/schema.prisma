@@ -21,6 +21,26 @@ enum LeadStatus {
   CANCELLED
 }
 
+/// How a product is sold. SELF_SERVE products publish a real field list and get
+/// a full form; CALLBACK products are priced by hand, so their form collects a
+/// structured brief and a call is scheduled instead.
+enum IntakeMode {
+  SELF_SERVE
+  CALLBACK
+}
+
+enum ProductAudience {
+  INDIVIDUAL
+  CORPORATE
+}
+
+/// Which channel a request arrived through. Both are first-class: the website
+/// carries the full per-product form, the bot carries a short one.
+enum RequestSource {
+  WEB
+  TELEGRAM
+}
+
 /// Named bundle of permission strings that can be assigned to a User in
 /// addition to (or instead of) ad-hoc permissions on the user itself.
 model AdminRole {
@@ -38,14 +58,14 @@ model AdminRole {
 }
 
 model User {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   // NOTE: email is stored in plaintext for this pass. `emailHash` is a
   // deterministic (non-reversible) lookup key so uniqueness/queries never
   // need to scan-and-compare plaintext. If field-level encryption at rest is
   // added later, `email` becomes ciphertext and every read path already goes
   // through emailHash, so no query code needs to change.
   email     String
-  emailHash String  @unique @map("email_hash")
+  emailHash String @unique @map("email_hash")
 
   username String? @unique
 
@@ -67,12 +87,50 @@ model User {
 
   emailVerified Boolean @default(false)
 
+  /// Two-factor authentication, TOTP.
+  ///
+  /// Opt-in per account. Staff can read NDA-bound client attachments and every
+  /// CV that arrives, so a stolen password should not be the whole story.
+  ///
+  /// The secret is stored as base32 — the same form the authenticator holds.
+  /// Encrypting it at rest would only help against a database dump taken
+  /// without the application key, which is worth doing once there is a key
+  /// management story; today the honest protection is that the column is never
+  /// selected outside the enrolment and verification paths.
+  mfaSecret        String?   @map("mfa_secret")
+  /// Null means enrolment was started and never confirmed, so MFA is not on.
+  mfaEnabledAt     DateTime? @map("mfa_enabled_at")
+  /// SHA-256 of each code. They are credentials; a dump must not yield working
+  /// ones, and each is deleted from the array as it is spent.
+  mfaRecoveryCodes String[]  @default([]) @map("mfa_recovery_codes")
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  refreshTokens  RefreshToken[]
-  assignedLeads  Lead[]         @relation("LeadAssignee")
+  refreshTokens RefreshToken[]
+  tokens        UserToken[]
+
+  // ---- Marketplace --------------------------------------------------------
+  verification          UserVerification?
+  verificationsReviewed UserVerification[] @relation("VerificationReviewer")
+
+  jobPosts             JobPost[]        @relation("JobAuthor")
+  jobsReviewed         JobPost[]        @relation("JobReviewer")
+  jobApplications      JobApplication[] @relation("JobApplicant")
+  applicationsReviewed JobApplication[] @relation("ApplicationReviewer")
+
+  freelanceProjects FreelanceProject[] @relation("ProjectAuthor")
+  projectsReviewed  FreelanceProject[] @relation("ProjectReviewer")
+
+  bids             ProjectBid[]       @relation("Bidder")
+  bidsReviewed     ProjectBid[]       @relation("BidReviewer")
+  awardsMade       MarketplaceAward[] @relation("AwardedBy")
+  assignedRequests InsuranceRequest[] @relation("LeadAssignee")
+
+  assignedProjectRequests ProjectRequest[]   @relation("AssignedProjectRequests")
+  authoredProposals       ProjectProposal[]  @relation("AuthoredProposals")
+  assignedResumes         ResumeSubmission[] @relation("AssignedResumes")
 
   @@index([role])
   @@index([createdAt])
@@ -98,20 +156,126 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+/// What a one-time link is for. One table rather than two: the lifecycle is
+/// identical — issue, hash, expire, spend once — and only the wording of the
+/// email and the action taken on redemption differ.
+enum UserTokenPurpose {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+/// A single-use link sent to an email address.
+///
+/// Only a SHA-256 hash of the token is stored, for the same reason refresh
+/// tokens are: the raw value exists in the recipient's inbox and nowhere else,
+/// so a database dump cannot be replayed as a working reset link.
+model UserToken {
+  id      String           @id @default(cuid())
+  userId  String           @map("user_id")
+  purpose UserTokenPurpose
+  /// SHA-256 of the token that was emailed. Unique so a collision is a
+  /// database error rather than two accounts sharing one link.
+  token   String           @unique
+
+  expiresAt DateTime  @map("expires_at")
+  /// Set the moment it is redeemed. A spent link is kept rather than deleted so
+  /// a second click can be told "already used" instead of "invalid", and so the
+  /// history is there if an account is ever disputed.
+  usedAt    DateTime? @map("used_at")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@map("user_tokens")
+}
+
 model InsuranceCategory {
-  id    String  @id @default(cuid())
-  title String  @unique
-  emoji String?
+  id      String  @id @default(cuid())
+  /// Stable identity and URL segment. `title` is display text and may change.
+  slug    String  @unique
+  title   String  @unique
+  titleEn String  @map("title_en")
+  emoji   String?
+  icon    String?
+
+  displayOrder Int @default(0) @map("display_order")
+
+  /// Pre-refactor categories are kept for the legacy requests that reference
+  /// them, but set inactive so they never appear in the public catalog.
+  active Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  products      InsuranceProduct[]
   subcategories InsuranceSubcategory[]
-  leads         Lead[]
+  requests      InsuranceRequest[]
 
   @@map("insurance_categories")
 }
 
+/// One row per catalog product, seeded from `src/insurance/catalog`.
+///
+/// The database is a read model here, not the source of truth: `prisma/seed.ts`
+/// writes these rows from the typed catalog on every deploy. Editing a row by
+/// hand will be overwritten on the next seed — change the catalog instead.
+/// `formSchema` is the resolved field list (product questions plus the shared
+/// contact block) that the web app renders and the API validates against.
+model InsuranceProduct {
+  id         String @id @default(cuid())
+  slug       String @unique
+  categoryId String @map("category_id")
+
+  title         String
+  titleEn       String @map("title_en")
+  summary       String
+  summaryEn     String @map("summary_en")
+  description   String
+  descriptionEn String @map("description_en")
+
+  coverages         String[] @default([])
+  optionalCoverages String[] @default([]) @map("optional_coverages")
+  notes             String[] @default([])
+  exclusions        String[] @default([])
+  requiredDocuments String[] @default([]) @map("required_documents")
+  premiumFactors    String[] @default([]) @map("premium_factors")
+
+  /// [{ question, answer }] — shape enforced by the catalog, not the database.
+  faq Json?
+
+  /// [{ label, value }] — the spec strip at the top of the product page.
+  keyFacts Json? @map("key_facts")
+
+  claimSteps String[] @default([]) @map("claim_steps")
+
+  intakeMode IntakeMode      @default(SELF_SERVE) @map("intake_mode")
+  audience   ProductAudience @default(INDIVIDUAL)
+
+  icon         String?
+  displayOrder Int     @default(0) @map("display_order")
+  active       Boolean @default(true)
+
+  formSchema     Json @map("form_schema")
+  catalogVersion Int  @default(1) @map("catalog_version")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category InsuranceCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  requests InsuranceRequest[]
+
+  @@index([categoryId])
+  @@index([active])
+  @@map("insurance_products")
+}
+
+/// DEPRECATED — retained only so pre-refactor rows in `insurance_requests`
+/// keep a readable category label. Nothing writes to this table any more; new
+/// requests point at `InsuranceProduct` instead. Drop it once the legacy rows
+/// have been closed out.
 model InsuranceSubcategory {
   id         String @id @default(cuid())
   categoryId String @map("category_id")
@@ -120,33 +284,73 @@ model InsuranceSubcategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category InsuranceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  leads    Lead[]
+  category InsuranceCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  requests InsuranceRequest[]
 
   @@unique([categoryId, title])
   @@index([categoryId])
   @@map("insurance_subcategories")
 }
 
-/// A lead collected by the Telegram bot's conversational flow.
-model Lead {
+/// An insurance enquiry, however it arrived.
+///
+/// Was `Lead`, and shaped entirely around the Telegram bot: every row required
+/// a `telegramUserId`, a category and a subcategory. Since the website now
+/// carries a distinct form per product, the fixed columns cannot describe a
+/// submission on their own — `productId` says which form was filled and
+/// `answers` holds what was answered, validated against that product's schema
+/// at `catalogVersion`.
+///
+/// The Telegram columns stay nullable rather than being dropped: rows collected
+/// before the refactor are real enquiries that people are still owed a call
+/// about, and the bot continues to write here with `source = TELEGRAM`.
+model InsuranceRequest {
   id String @id @default(cuid())
 
-  telegramUserId    String  @map("telegram_user_id")
+  /// Short human-quotable reference, given to the applicant on submission so
+  /// they can check progress without an account. Not a secret — status lookup
+  /// by this code returns state only, never personal data.
+  trackingCode String @unique @map("tracking_code")
+
+  source RequestSource @default(WEB)
+
+  telegramUserId    String? @map("telegram_user_id")
   telegramUsername  String? @map("telegram_username")
   telegramFirstName String? @map("telegram_first_name")
 
-  categoryId    String @map("category_id")
-  subcategoryId String @map("subcategory_id")
+  productId String? @map("product_id")
 
-  fullName             String  @map("full_name")
-  phoneNumber          String  @map("phone_number")
+  /// Legacy taxonomy. Populated on pre-refactor rows and by the bot's short
+  /// flow; null on a website submission, which resolves its category through
+  /// the product.
+  categoryId    String? @map("category_id")
+  subcategoryId String? @map("subcategory_id")
+
+  /// The answers to `product.formSchema`, keyed by field name.
+  answers        Json?
+  /// Which catalog version the form was filled under, so the admin panel can
+  /// flag answers whose questions have since changed.
+  catalogVersion Int?  @map("catalog_version")
+
+  fullName        String  @map("full_name")
+  phoneNumber     String  @map("phone_number")
   // Deterministic hash of the normalized phone number, for fast lookup/dedupe
   // without needing to decrypt every row (see note on User.emailHash).
-  phoneNumberHash       String? @map("phone_number_hash")
-  city                  String
-  preferredContactTime  String  @map("preferred_contact_time")
-  notes                 String?
+  phoneNumberHash String? @map("phone_number_hash")
+  /// True when the number was proved reachable by one-time code before the
+  /// request was accepted. Always false for bot-sourced rows.
+  phoneVerified   Boolean @default(false) @map("phone_verified")
+
+  email            String?
+  organizationName String? @map("organization_name")
+
+  province             String?
+  city                 String
+  preferredContactTime String  @map("preferred_contact_time")
+  notes                String?
+
+  /// When a specialist has agreed to call back.
+  callbackScheduledAt DateTime? @map("callback_scheduled_at")
 
   status LeadStatus @default(NEW)
 
@@ -159,12 +363,878 @@ model Lead {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category    InsuranceCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  subcategory InsuranceSubcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+  product     InsuranceProduct?     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  category    InsuranceCategory?    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory InsuranceSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
 
   @@index([status])
   @@index([createdAt])
   @@index([phoneNumberHash])
   @@index([assignedToId])
-  @@map("leads")
+  @@index([productId])
+  @@index([source])
+  @@map("insurance_requests")
+}
+
+// ===========================================================================
+// Software project enquiries
+//
+// The shape of this follows ordinary agency practice rather than anything
+// invented here: a client submits a brief, we triage it, ask for whatever the
+// brief left ambiguous, and answer with a proposal. The proposal is where the
+// money question gets answered honestly — see the note on ProjectProposal.
+// ===========================================================================
+
+enum ProjectRequestStatus {
+  /// Received, nobody has looked at it yet.
+  SUBMITTED
+  /// Being read and costed.
+  IN_REVIEW
+  /// We have asked the client something and are waiting on them.
+  NEEDS_CLARIFICATION
+  /// A proposal has been sent; the ball is with the client.
+  PROPOSAL_SENT
+  /// Client accepted a proposal. The engagement starts here.
+  ACCEPTED
+  /// We declined it, or the client went elsewhere.
+  DECLINED
+  /// The client pulled the request.
+  WITHDRAWN
+  /// No answer before the proposal's validity date passed.
+  EXPIRED
+}
+
+enum ProjectType {
+  NEW_BUILD
+  REBUILD
+  INTEGRATION
+  MOBILE_APP
+  WEB_APP
+  DATA_PLATFORM
+  AUTOMATION
+  MAINTENANCE
+  CONSULTING
+  OTHER
+}
+
+/// How the client would like to be billed. `NOT_SURE` is a real and common
+/// answer, and pretending otherwise just produces a guess in the data.
+enum EngagementModel {
+  FIXED_PRICE
+  TIME_AND_MATERIALS
+  RETAINER
+  NOT_SURE
+}
+
+enum ProjectUrgency {
+  EXPLORING
+  NEXT_QUARTER
+  NEXT_MONTH
+  URGENT
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  /// Past `validUntil` with no answer. Set by whoever reads it next, not by a
+  /// background job — the date on the row is the source of truth either way.
+  EXPIRED
+  /// Superseded by a later version, or pulled by us.
+  WITHDRAWN
+}
+
+/// A client, identified by the pair (email, phone).
+///
+/// There is no account and no verification code on this flow, so this record
+/// is what stands in for an identity. Both hashes are unique, which is what
+/// enforces the pairing rule: an email that has been seen with one phone
+/// number cannot later be used with a different one, and vice versa. The
+/// effect is that abuse costs a fresh email AND a fresh phone number rather
+/// than a fresh browser session.
+///
+/// It also carries the rate-limit state. Counting rows on ProjectRequest would
+/// work too, but this keeps the check to a single indexed read.
+model ClientIdentity {
+  id String @id @default(cuid())
+
+  email     String
+  emailHash String @unique @map("email_hash")
+
+  /// Normalised to 09xxxxxxxxx before hashing, so formatting differences
+  /// cannot be used to slip past the pairing rule.
+  phone     String
+  phoneHash String @unique @map("phone_hash")
+
+  /// Denormalised rate-limit state. `requestCount` is lifetime, not windowed;
+  /// the windowed check reads ProjectRequest.createdAt.
+  requestCount  Int       @default(0) @map("request_count")
+  lastRequestAt DateTime? @map("last_request_at")
+
+  /// Standing, set by staff through PATCH /api/admin/identities/:id.
+  ///
+  /// Mutually exclusive in practice — the endpoint takes one of
+  /// normal | trusted | blocked and writes both columns — because "trusted and
+  /// blocked" has no meaning and leaving it representable means somebody has to
+  /// decide which wins at the point it matters least.
+  ///
+  /// trusted lets a known client past the daily cap; blocked refuses every
+  /// submission without deleting their history.
+  trusted Boolean @default(false)
+  blocked Boolean @default(false)
+
+  requests ProjectRequest[]
+  resumes  ResumeSubmission[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@map("client_identities")
+}
+
+model ProjectRequest {
+  id String @id @default(cuid())
+
+  /// Quotable reference. Also how the client reads their proposal back without
+  /// an account, so it is generated from the same ambiguity-free alphabet as
+  /// the insurance tracking code.
+  trackingCode String @unique @map("tracking_code")
+
+  identityId String         @map("identity_id")
+  identity   ClientIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+
+  // ---- Who is asking -----------------------------------------------------
+  contactName      String  @map("contact_name")
+  contactRole      String? @map("contact_role")
+  organizationName String? @map("organization_name")
+  website          String?
+  /// Copied from the identity at submission time. Denormalised on purpose: a
+  /// request should still read correctly if the identity row is ever merged.
+  email            String
+  phone            String
+
+  // ---- What they want ----------------------------------------------------
+  title           String
+  /// The problem in their words. This is the field that actually matters.
+  summary         String
+  projectType     ProjectType @default(OTHER) @map("project_type")
+  /// web, ios, android, desktop, api …
+  platforms       String[]    @default([])
+  /// What success looks like to them.
+  goals           String?
+  targetUsers     String?     @map("target_users")
+  /// Systems this has to talk to, and anything already built.
+  existingSystems String?     @map("existing_systems")
+  constraints     String?
+  /// Anything they consider out of scope up front.
+  outOfScope      String?     @map("out_of_scope")
+
+  // ---- When --------------------------------------------------------------
+  urgency        ProjectUrgency @default(EXPLORING)
+  desiredStartAt DateTime?      @map("desired_start_at")
+  deadlineAt     DateTime?      @map("deadline_at")
+  deadlineReason String?        @map("deadline_reason")
+
+  // ---- Money -------------------------------------------------------------
+  //
+  // Asked as a range, not a number. An early-stage software estimate carries
+  // roughly -25%/+75% accuracy, so a single figure from either side is a
+  // fiction; a range is the honest question and the honest answer.
+  //
+  // Amounts are stored in whole IRR toman as BigInt. Not Float: money in a
+  // binary float is a rounding bug waiting for a large number, and Iranian
+  // amounts get large.
+  budgetMin       BigInt?         @map("budget_min")
+  budgetMax       BigInt?         @map("budget_max")
+  /// What the client thinks the job is worth, if they offered a figure.
+  suggestedPrice  BigInt?         @map("suggested_price")
+  currency        String          @default("IRT")
+  /// True when the client says they have no idea what this should cost, which
+  /// is a legitimate answer and changes how the first reply is written.
+  budgetUnknown   Boolean         @default(false) @map("budget_unknown")
+  engagementModel EngagementModel @default(NOT_SURE) @map("engagement_model")
+
+  // ---- Handling ----------------------------------------------------------
+  status        ProjectRequestStatus @default(SUBMITTED)
+  ndaRequired   Boolean              @default(false) @map("nda_required")
+  /// Free text from the client, and separately our own notes on the row.
+  clientNotes   String?              @map("client_notes")
+  internalNotes String?              @map("internal_notes")
+
+  assignedToId String? @map("assigned_to_id")
+  assignedTo   User?   @relation("AssignedProjectRequests", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  attachments ProjectAttachment[]
+  proposals   ProjectProposal[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([identityId])
+  @@index([assignedToId])
+  @@map("project_requests")
+}
+
+/// An uploaded file.
+///
+/// The bytes never live in the database and never live under the web root.
+/// `storedName` is a generated name; `originalName` is only ever echoed back
+/// as text, never used to build a path.
+model ProjectAttachment {
+  id String @id @default(cuid())
+
+  requestId String         @map("request_id")
+  request   ProjectRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  /// As the client named it. Display only.
+  originalName String @map("original_name")
+  /// Random name on disk, with an extension we chose from the sniffed type.
+  storedName   String @unique @map("stored_name")
+  /// The type we detected from the file's own bytes, not from the request.
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  /// SHA-256 of the content, for de-duplication and for proving a file has not
+  /// been swapped on disk.
+  checksum     String
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([requestId])
+  @@map("project_attachments")
+}
+
+/// Our answer.
+///
+/// The point of this record is to be more honest than a single number. It
+/// restates the scope as we understood it, says what is NOT included, and
+/// prices a RANGE rather than a point:
+///
+///   - Vague scope with no stated exclusions is the single biggest cause of
+///     fixed-price disputes, so `exclusions` is as prominent as `deliverables`.
+///   - A three-point estimate (optimistic / likely / pessimistic) is the
+///     standard way to express an early estimate. `pertHours` stores the
+///     PERT weighting (O + 4M + P) / 6 so the headline figure and the range
+///     it came from cannot drift apart.
+///   - `validUntil` exists because a price with no expiry is a promise with
+///     no end. Thirty days is the usual default.
+model ProjectProposal {
+  id String @id @default(cuid())
+
+  requestId String         @map("request_id")
+  request   ProjectRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  /// 1, 2, 3 … A revised offer is a new version, not an edit, so what the
+  /// client was shown at the time stays on the record.
+  version Int @default(1)
+
+  status ProposalStatus @default(DRAFT)
+
+  /// Scope as WE understood it, in our words. If this is wrong, everything
+  /// after it is wrong, which is why it is the first thing the client reads.
+  scopeSummary String @map("scope_summary")
+
+  deliverables String[] @default([])
+  assumptions  String[] @default([])
+  /// Stated explicitly, always. See the note above.
+  exclusions   String[] @default([])
+  /// [{ title, description, durationDays, price }]
+  milestones   Json?
+
+  engagementModel EngagementModel @default(FIXED_PRICE) @map("engagement_model")
+
+  // ---- Effort ------------------------------------------------------------
+  optimisticHours  Int? @map("optimistic_hours")
+  likelyHours      Int? @map("likely_hours")
+  pessimisticHours Int? @map("pessimistic_hours")
+  /// (O + 4M + P) / 6, rounded. Computed on write, stored so that reports and
+  /// the client's view agree without recomputing.
+  pertHours        Int? @map("pert_hours")
+
+  // ---- Price -------------------------------------------------------------
+  priceMin    BigInt? @map("price_min")
+  priceLikely BigInt? @map("price_likely")
+  priceMax    BigInt? @map("price_max")
+  currency    String  @default("IRT")
+  /// Rate used when the model is time-and-materials.
+  hourlyRate  BigInt? @map("hourly_rate")
+
+  // ---- Discovery ---------------------------------------------------------
+  //
+  // For anything non-trivial the professional answer to "what will this cost"
+  // is a short paid discovery, not a number pulled off a form. These fields
+  // let a proposal say exactly that.
+  discoveryRequired Boolean @default(false) @map("discovery_required")
+  discoveryPrice    BigInt? @map("discovery_price")
+  discoveryDays     Int?    @map("discovery_days")
+
+  timelineWeeksMin Int? @map("timeline_weeks_min")
+  timelineWeeksMax Int? @map("timeline_weeks_max")
+
+  /// Written to the client. Rendered on the tracking page.
+  message       String?
+  /// Never leaves the admin panel.
+  internalNotes String? @map("internal_notes")
+
+  validUntil DateTime? @map("valid_until")
+  sentAt     DateTime? @map("sent_at")
+  decidedAt  DateTime? @map("decided_at")
+
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("AuthoredProposals", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@unique([requestId, version])
+  @@index([requestId])
+  @@index([status])
+  @@map("project_proposals")
+}
+
+/// A message from the public contact form.
+///
+/// Previously this form opened a `mailto:` link and stored nothing, so an
+/// enquiry existed only if the visitor's machine had a mail client configured
+/// and they went through with sending it. Anything else was lost silently,
+/// which is the worst way to lose a customer.
+model ContactMessage {
+  id String @id @default(cuid())
+
+  name      String
+  email     String
+  /// Deterministic hash for lookup and abuse checks without scanning
+  /// plaintext, matching the convention on User.emailHash.
+  emailHash String  @map("email_hash")
+  subject   String?
+  message   String
+
+  /// Read/handled state. No enum: two booleans answer the only two questions
+  /// anyone asks of an inbox, and adding a workflow later should be a
+  /// deliberate act rather than something an enum invited.
+  readAt        DateTime? @map("read_at")
+  handledAt     DateTime? @map("handled_at")
+  internalNotes String?   @map("internal_notes")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([createdAt])
+  @@index([emailHash])
+  @@map("contact_messages")
+}
+
+// ===========================================================================
+// Talent intake
+//
+// A person sends a CV; we read it and get in touch if something fits. There is
+// no job board yet and no application-to-vacancy link — that is the next step,
+// not this one — so a submission stands on its own.
+// ===========================================================================
+
+enum ResumeStatus {
+  /// Received, nobody has read it yet.
+  RECEIVED
+  IN_REVIEW
+  /// Worth keeping in front of us.
+  SHORTLISTED
+  /// Matched to something and in conversation.
+  MATCHED
+  /// Nothing right now, but worth revisiting.
+  ON_HOLD
+  DECLINED
+  WITHDRAWN
+}
+
+model ResumeSubmission {
+  id String @id @default(cuid())
+
+  /// Quotable reference, from the same ambiguity-free alphabet as the other
+  /// intakes — it gets read down a phone line too.
+  trackingCode String @unique @map("tracking_code")
+
+  /// The SAME identity record the project intake uses. One person who both
+  /// commissions work and applies for a job is one identity, and the (email,
+  /// phone) pairing rule is therefore enforced once, in one place, for both.
+  identityId String         @map("identity_id")
+  identity   ClientIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+
+  // ---- Who ---------------------------------------------------------------
+  fullName  String  @map("full_name")
+  email     String
+  phone     String
+  city      String?
+  province  String?
+  /// Year of birth, Gregorian. Not a full date: nothing here needs a birthday,
+  /// and asking for less of somebody's identity is the better default.
+  birthYear Int?    @map("birth_year")
+
+  /// Anything they want to say that the CV does not.
+  coverNote String? @map("cover_note")
+
+  // ---- The file ----------------------------------------------------------
+  //
+  // Exactly one, stored the same way project attachments are: outside any
+  // served directory, under a generated name, with the type decided by the
+  // file's own bytes.
+  resumeOriginalName String @map("resume_original_name")
+  resumeStoredName   String @unique @map("resume_stored_name")
+  resumeMimeType     String @map("resume_mime_type")
+  resumeSizeBytes    Int    @map("resume_size_bytes")
+  resumeChecksum     String @map("resume_checksum")
+
+  // ---- Handling ----------------------------------------------------------
+  status        ResumeStatus @default(RECEIVED)
+  internalNotes String?      @map("internal_notes")
+  /// Free-text for now. A relation to a vacancy belongs to the job board that
+  /// does not exist yet, and inventing the table early would guess its shape.
+  matchedRole   String?      @map("matched_role")
+
+  assignedToId String? @map("assigned_to_id")
+  assignedTo   User?   @relation("AssignedResumes", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([identityId])
+  @@index([assignedToId])
+  @@map("resume_submissions")
+}
+
+// ===========================================================================
+// Marketplace — hiring and freelance work
+//
+// Two products over three shared subsystems.
+//
+//   Jobs       An employer posts a role; users apply.
+//   Freelance  A client posts a piece of work; freelancers bid, and so can we.
+//
+//   Verification  Nobody posts or bids until an admin has seen who they are.
+//   Moderation    Every post and every bid is reviewed before it reaches the
+//                 other side. Approval is not a formality here: it is the
+//                 product, because it is what makes a listing worth reading.
+//   Award         Who won. Money is out of scope for now, so this records the
+//                 outcome rather than settling it — the row a fee, an invoice
+//                 or an escrow would later hang from.
+//
+// Deliberately NOT folded into ProjectRequest. That model is an account-less
+// stranger asking OUR company to build something, answered by one proposal
+// from us. This is a registered, verified user publishing to a market that
+// many parties bid into. Same words, different actors, different lifecycle,
+// different visibility — merging them would mean one model where half the
+// columns are null in each direction.
+// ===========================================================================
+
+/// Whether an account acts for itself or for a registered business.
+///
+/// A company supplies registration details on top of the personal identity of
+/// whoever operates the account; it never replaces it, because a company
+/// cannot be held to anything and a person can.
+enum AccountKind {
+  INDIVIDUAL
+  COMPANY
+}
+
+enum VerificationStatus {
+  /// Never submitted. The state every account starts in.
+  UNVERIFIED
+  PENDING
+  APPROVED
+  /// Refused with a reason, and re-submittable — most rejections are a blurry
+  /// photograph rather than a fraud attempt.
+  REJECTED
+}
+
+/// Where something sits on its way to being visible to the other side.
+///
+/// Shared by posts and bids so that "what is waiting for review" is one
+/// question with one answer, rather than three queues with three vocabularies.
+enum ModerationStatus {
+  DRAFT
+  PENDING_REVIEW
+  /// Sent back with a note. The author edits and resubmits; the history of
+  /// what was asked for stays on the record.
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+/// What has happened to an approved listing since it went live.
+enum ListingState {
+  OPEN
+  /// Someone was chosen. Still readable, no longer accepting anything.
+  AWARDED
+  /// Withdrawn by its author, or closed by staff.
+  CLOSED
+  EXPIRED
+}
+
+enum JobEmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  FREELANCE
+}
+
+enum JobWorkArrangement {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+/// What the poster decided about one application or bid, after staff approved
+/// it and passed it on.
+enum OfferOutcome {
+  PENDING
+  SHORTLISTED
+  ACCEPTED
+  DECLINED
+  /// Pulled by the person who sent it.
+  WITHDRAWN
+}
+
+enum VerificationDocumentKind {
+  NATIONAL_ID_CARD
+  PASSPORT
+  /// A company's registration certificate — «آگهی تأسیس» or equivalent.
+  COMPANY_REGISTRATION
+  /// Proof the operator may act for the company.
+  AUTHORITY_LETTER
+  OTHER
+}
+
+/// Who somebody is, checked by a person before they can trade on this.
+///
+/// One row per account. Identity is not per-listing: verifying the same person
+/// twice tells you nothing new and doubles the review queue.
+model UserVerification {
+  id String @id @default(cuid())
+
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind   AccountKind        @default(INDIVIDUAL)
+  status VerificationStatus @default(UNVERIFIED)
+
+  // ---- The person, always -------------------------------------------------
+  legalFirstName String    @map("legal_first_name")
+  legalLastName  String    @map("legal_last_name")
+  /// Iranian national id. Validated by utils/persian.ts before it is stored,
+  /// so a check-digit failure never reaches a reviewer's queue.
+  nationalId     String    @map("national_id")
+  birthDate      DateTime? @map("birth_date")
+  phone          String
+  province       String?
+  city           String?
+  addressLine    String?   @map("address_line")
+
+  // ---- The company, when there is one -------------------------------------
+  companyName           String? @map("company_name")
+  companyRegistrationNo String? @map("company_registration_no")
+  /// «کد اقتصادی».
+  companyEconomicCode   String? @map("company_economic_code")
+  companyRole           String? @map("company_role")
+  companyWebsite        String? @map("company_website")
+
+  // ---- Review -------------------------------------------------------------
+  submittedAt  DateTime? @map("submitted_at")
+  reviewedAt   DateTime? @map("reviewed_at")
+  reviewedById String?   @map("reviewed_by_id")
+  reviewedBy   User?     @relation("VerificationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  /// Shown to the applicant. A rejection they cannot act on is a dead end.
+  reviewNote   String?   @map("review_note")
+  internalNote String?   @map("internal_note")
+
+  documents VerificationDocument[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@map("user_verifications")
+}
+
+/// An identity document. Stored through services/storage like every other
+/// upload — never in a served directory, random name, scanned before writing.
+model VerificationDocument {
+  id String @id @default(cuid())
+
+  verificationId String           @map("verification_id")
+  verification   UserVerification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  kind VerificationDocumentKind
+
+  originalName String @map("original_name")
+  storedName   String @unique @map("stored_name")
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  checksum     String
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([verificationId])
+  @@map("verification_documents")
+}
+
+/// A role somebody is hiring for.
+model JobPost {
+  id String @id @default(cuid())
+
+  /// Quotable public reference, same alphabet as the other tracking codes.
+  code String @unique
+
+  authorId String @map("author_id")
+  author   User   @relation("JobAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+  /// Denormalised from the author's verification at publish time: an employer
+  /// may verify as a company, and the listing should say which company even if
+  /// the account is later changed.
+  companyName String? @map("company_name")
+
+  employmentType  JobEmploymentType
+  workArrangement JobWorkArrangement
+  province        String?
+  city            String?
+
+  salaryMin         BigInt? @map("salary_min")
+  salaryMax         BigInt? @map("salary_max")
+  currency          String  @default("IRT")
+  salaryUndisclosed Boolean @default(false) @map("salary_undisclosed")
+
+  skills String[] @default([])
+
+  // ---- Moderation ---------------------------------------------------------
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("JobReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  /// Shown to the author when changes are requested or it is rejected.
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  // ---- Life after approval ------------------------------------------------
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
+  closesAt    DateTime?    @map("closes_at")
+
+  applications JobApplication[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
+  @@index([authorId])
+  @@map("job_posts")
+}
+
+/// Somebody putting themselves forward for a role.
+model JobApplication {
+  id String @id @default(cuid())
+
+  jobId String  @map("job_id")
+  job   JobPost @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  applicantId String @map("applicant_id")
+  applicant   User   @relation("JobApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+
+  coverLetter    String? @map("cover_letter")
+  expectedSalary BigInt? @map("expected_salary")
+
+  /// One CV, inline — the same shape ResumeSubmission uses, for the same
+  /// reason: exactly one file, so a join table would be ceremony.
+  cvOriginalName String? @map("cv_original_name")
+  cvStoredName   String? @unique @map("cv_stored_name")
+  cvMimeType     String? @map("cv_mime_type")
+  cvSizeBytes    Int?    @map("cv_size_bytes")
+  cvChecksum     String? @map("cv_checksum")
+
+  moderationStatus ModerationStatus @default(PENDING_REVIEW) @map("moderation_status")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("ApplicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  /// What the employer decided, once staff passed it on.
+  outcome OfferOutcome @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  /// One application per person per role. A second one is an edit, not a new
+  /// application, and letting both exist means the employer reads two.
+  @@unique([jobId, applicantId])
+  @@index([jobId, moderationStatus])
+  @@index([applicantId])
+  @@map("job_applications")
+}
+
+/// A piece of work put out to bid.
+model FreelanceProject {
+  id String @id @default(cuid())
+
+  code String @unique
+
+  authorId String @map("author_id")
+  author   User   @relation("ProjectAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+  companyName String? @map("company_name")
+
+  category String?
+  skills   String[] @default([])
+
+  budgetMin     BigInt? @map("budget_min")
+  budgetMax     BigInt? @map("budget_max")
+  currency      String  @default("IRT")
+  budgetUnknown Boolean @default(false) @map("budget_unknown")
+
+  deliverBy DateTime? @map("deliver_by")
+
+  /// Whether the company may put its own offer in alongside the freelancers.
+  /// The author's choice, asked at posting time, because somebody looking for
+  /// an individual should not be pitched an agency without having agreed to it.
+  openToCompanyOffer Boolean @default(true) @map("open_to_company_offer")
+
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("ProjectReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
+  closesAt    DateTime?    @map("closes_at")
+
+  attachments FreelanceAttachment[]
+  bids        ProjectBid[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
+  @@index([authorId])
+  @@map("freelance_projects")
+}
+
+model FreelanceAttachment {
+  id String @id @default(cuid())
+
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  originalName String @map("original_name")
+  storedName   String @unique @map("stored_name")
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  checksum     String
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([projectId])
+  @@map("freelance_attachments")
+}
+
+/// An offer to do the work.
+///
+/// Sealed: a bidder sees only their own. That is deliberate — open bidding
+/// turns a marketplace into a race to the bottom and pushes the serious
+/// bidders out of going first.
+///
+/// It reaches staff BEFORE the poster. A reviewer judges whether the number is
+/// fair for the work described and can send it back with a note, so somebody
+/// who has badly under- or over-priced gets the chance to correct it rather
+/// than simply losing or winning on a mistake.
+model ProjectBid {
+  id String @id @default(cuid())
+
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Null exactly when this is the company's own offer, which is submitted by
+  /// staff rather than by an account bidding for itself.
+  bidderId String? @map("bidder_id")
+  bidder   User?   @relation("Bidder", fields: [bidderId], references: [id], onDelete: Cascade)
+
+  /// Surfaced to the poster as the company's professional offer, so it is
+  /// never mistaken for one freelancer among many.
+  isCompanyOffer Boolean @default(false) @map("is_company_offer")
+
+  amount       BigInt
+  currency     String @default("IRT")
+  /// Working days the bidder expects to need.
+  deliveryDays Int?   @map("delivery_days")
+  message      String
+
+  /// One optional supporting file — a portfolio piece, a breakdown.
+  attachmentOriginalName String? @map("attachment_original_name")
+  attachmentStoredName   String? @unique @map("attachment_stored_name")
+  attachmentMimeType     String? @map("attachment_mime_type")
+  attachmentSizeBytes    Int?    @map("attachment_size_bytes")
+  attachmentChecksum     String? @map("attachment_checksum")
+
+  moderationStatus ModerationStatus @default(PENDING_REVIEW) @map("moderation_status")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("BidReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  /// The fairness note, shown to the BIDDER. This is the one that says "this
+  /// looks low for the scope described" and invites a revision.
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+  /// What a reviewer thinks the work is actually worth. Advisory, never
+  /// applied automatically — the price on the bid stays the bidder's own.
+  suggestedAmount  BigInt?          @map("suggested_amount")
+
+  outcome OfferOutcome @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  /// One live bid per person per project, for the same reason as applications.
+  /// The company's offer is exempt: bidderId is null there, and Postgres treats
+  /// nulls as distinct in a unique index.
+  @@unique([projectId, bidderId])
+  @@index([projectId, moderationStatus])
+  @@index([bidderId])
+  @@map("project_bids")
+}
+
+/// Who won, and on what terms.
+///
+/// Money is out of scope for now, so this settles nothing. It exists because
+/// the outcome is the thing worth recording even when no funds move, and
+/// because a fee, an invoice or an escrow later hangs off exactly this row
+/// rather than needing the history reconstructed.
+model MarketplaceAward {
+  id String @id @default(cuid())
+
+  jobApplicationId String? @unique @map("job_application_id")
+  projectBidId     String? @unique @map("project_bid_id")
+
+  /// Copied at award time. The bid's amount may later be edited or the bid
+  /// deleted; what was agreed should not move.
+  agreedAmount BigInt? @map("agreed_amount")
+  currency     String  @default("IRT")
+
+  awardedById String? @map("awarded_by_id")
+  awardedBy   User?   @relation("AwardedBy", fields: [awardedById], references: [id], onDelete: SetNull)
+
+  note String?
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@map("marketplace_awards")
 }

@@ -1,0 +1,13 @@
+---
+# ansible-galaxy collection install -r requirements.yml
+#
+# Version floors are set to what ships with a current Ubuntu `ansible`
+# package rather than to the newest release — a floor you cannot satisfy from
+# the distro packages is a floor that gets ignored.
+collections:
+  - name: community.general      # ufw, timezone
+    version: ">=8.0.0"
+  - name: community.docker       # docker_login, docker_compose_v2
+    version: ">=3.4.0"
+  - name: ansible.posix          # authorized_key, profile_tasks
+    version: ">=1.5.0"

@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+{{ ansible_managed | comment }}
+# Rendered by Ansible from roles/monitoring/templates/civitech-health.sh.j2.
+#
+# Checks every URL in health_check_urls. Alerts after
+# {{ health_failure_threshold }} CONSECUTIVE failures, and again — once — when
+# the service recovers.
+#
+# The URLs are checked for different reasons and fail for different reasons:
+#   - through nginx, which also catches a broken vhost or a stopped nginx
+#   - directly at the API container, so a failure there is unambiguously the app
+#
+# /api/health/ready probes Postgres AND Redis and returns 503 when either is
+# down, so a 200 means genuinely serving rather than merely listening.
+
+set -uo pipefail
+
+STATE_FILE=/var/lib/civitech/health.state
+LOG_FILE="{{ health_log_file }}"
+THRESHOLD={{ health_failure_threshold }}
+TIMEOUT={{ health_check_timeout }}
+BOT_TOKEN="{{ vault_telegram_alert_bot_token | default('') }}"
+CHAT_ID="{{ vault_telegram_alert_chat_id | default('') }}"
+HOSTNAME_S="$(hostname -s)"
+
+URLS=(
+{% for url in health_check_urls %}
+  "{{ url }}"
+{% endfor %}
+)
+
+log() { echo "[$(date -u +%FT%TZ)] $*" >> "$LOG_FILE"; }
+
+notify() {
+  # No channel configured means this script is a record, not a monitor. Say so
+  # in the log rather than failing silently.
+  if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+    log "ALERT (undeliverable, no channel configured): $1"
+    return 0
+  fi
+  curl -fsS --max-time 10 \
+    -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+    -d "chat_id=${CHAT_ID}" \
+    -d "text=$1" >/dev/null 2>&1 \
+    || log "ALERT delivery to Telegram FAILED: $1"
+}
+
+failures=0
+failed_urls=""
+
+for url in "${URLS[@]}"; do
+  if ! curl -fsS --max-time "$TIMEOUT" -o /dev/null "$url"; then
+    failures=$((failures + 1))
+    failed_urls="${failed_urls} ${url}"
+  fi
+done
+
+prev="$(cat "$STATE_FILE" 2>/dev/null || echo 0)"
+case "$prev" in ''|*[!0-9]*) prev=0 ;; esac
+
+if [ "$failures" -gt 0 ]; then
+  streak=$((prev + 1))
+  echo "$streak" > "$STATE_FILE"
+  log "UNHEALTHY (${streak}/${THRESHOLD}):${failed_urls}"
+
+  # Alert exactly once, on the firing edge. Re-alerting every two minutes for
+  # an outage everyone already knows about trains people to mute the channel,
+  # which is worse than not alerting at all.
+  if [ "$streak" -eq "$THRESHOLD" ]; then
+    notify "🔴 CiviTech ${HOSTNAME_S}: health check failing for ${THRESHOLD} consecutive runs.${failed_urls}"
+  fi
+else
+  if [ "$prev" -ge "$THRESHOLD" ]; then
+    notify "🟢 CiviTech ${HOSTNAME_S}: recovered. All health checks passing."
+    log "RECOVERED after ${prev} failed runs"
+  fi
+  echo 0 > "$STATE_FILE"
+fi
+
+exit 0

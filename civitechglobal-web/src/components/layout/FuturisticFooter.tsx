@@ -2,7 +2,6 @@ import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
 
-const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_BOT_URL ?? 'https://t.me/';
 
 export function FuturisticFooter() {
   const { t } = useLocale();
@@ -24,11 +23,10 @@ export function FuturisticFooter() {
                 <span className="gradient-text">{t.common.brand}</span>
               </div>
               <p className="text-sm text-text-secondary">{t.footer.tagline}</p>
-              <p className="mt-1 text-xs text-text-muted">{t.common.legalName}</p>
+              {!t.common.brand.includes(t.common.legalName) && (
+                <p className="mt-1 text-xs text-text-muted">{t.common.legalName}</p>
+              )}
               <div className="mt-4 flex items-center gap-3">
-                <SocialLink href={TELEGRAM_URL} label="Telegram">
-                  <TelegramIcon />
-                </SocialLink>
                 <SocialLink href="mailto:info@civitechglobal.com" label="Email">
                   <MailIcon />
                 </SocialLink>
@@ -70,7 +68,11 @@ export function FuturisticFooter() {
           </div>
 
           <div className="mt-8 border-t border-border-subtle pt-4 text-center text-xs text-text-muted">
-            © {year} {t.common.brand} ({t.common.legalName}). {t.footer.rights}
+            © {year}{' '}
+            {t.common.brand.includes(t.common.legalName)
+              ? t.common.brand
+              : `${t.common.brand} (${t.common.legalName})`}
+            . {t.footer.rights}
           </div>
         </div>
       </div>
@@ -89,14 +91,6 @@ function SocialLink({ href, label, children }: { href: string; label: string; ch
     >
       {children}
     </a>
-  );
-}
-
-function TelegramIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden="true">
-      <path d="M21.94 3.29a1.5 1.5 0 0 0-1.56-.22L2.7 10.4a1.4 1.4 0 0 0 .1 2.63l4.55 1.47 1.76 5.6a1.4 1.4 0 0 0 2.31.55l2.55-2.4 4.47 3.3a1.4 1.4 0 0 0 2.23-.86l3.05-15.1a1.5 1.5 0 0 0-.78-1.3ZM9.6 14.7l-1.2-3.9L17 6.4l-7.4 8.3Z" />
-    </svg>
   );
 }
 

@@ -21,13 +21,20 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: true,
+    // Source maps are NOT published. `true` emits .map files into dist/ and
+    // references them from the bundle, so nginx serves the entire unminified
+    // front-end source — comments included — to anyone who asks.
+    //
+    // When browser-side Sentry lands, switch this to 'hidden': maps are still
+    // generated (so Sentry can symbolicate) but the bundle carries no
+    // sourceMappingURL, and the upload step must delete them from dist/
+    // before the image is built.
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router'],
-          query: ['@tanstack/react-query', 'axios'],
-          motion: ['framer-motion'],
+          query: ['@tanstack/react-query'],
         },
       },
     },

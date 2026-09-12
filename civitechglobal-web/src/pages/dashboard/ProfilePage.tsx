@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router';
+import { LogOut } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -10,12 +13,15 @@ import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { MfaSettings } from '@/components/account/MfaSettings';
 
 /** NOTE: relies on an assumed `PUT /api/auth/me` endpoint (see AuthProvider.updateProfile). */
 export default function ProfilePage() {
   const { t } = useLocale();
-  const { user, updateProfile } = useAuth();
+  useDocumentTitle(t.nav.profile);
+  const { user, updateProfile, logoutEverywhere } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -71,6 +77,40 @@ export default function ProfilePage() {
               {t.common.save}
             </Button>
           </form>
+        </Card>
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.05}>
+        <MfaSettings />
+      </AnimatedSection>
+
+      {/* Separate card, and the only destructive control on the page: this ends
+          the current session too, so it is not something to click by mistake
+          while editing a phone number. */}
+      <AnimatedSection delay={0.1}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.dashboard.securityTitle}</CardTitle>
+            <CardDescription>{t.dashboard.signOutEverywhereHint}</CardDescription>
+          </CardHeader>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-fit"
+            onClick={async () => {
+              try {
+                await logoutEverywhere();
+                showToast(t.dashboard.signedOutEverywhere, 'success');
+              } finally {
+                // Either way the local session is gone, so there is nothing
+                // signed-in left to render here.
+                navigate('/login');
+              }
+            }}
+          >
+            <LogOut className="size-4" />
+            {t.dashboard.signOutEverywhere}
+          </Button>
         </Card>
       </AnimatedSection>
     </div>

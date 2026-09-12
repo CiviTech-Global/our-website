@@ -3,25 +3,24 @@
 /* Explicit `.dark` class toggling (in addition to the OS preference on first load) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-@font-face {
-  font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir-Thin.ttf') format('truetype');
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
+/* Vazir, as WOFF2 and only in the weights the interface actually uses.
+ *
+ * Previously five TTF faces totalling 472 kB were downloaded on every visit —
+ * more than the entire JavaScript bundle. Two of them (Thin 100 and Light 300)
+ * were referenced by nothing at all; the other three shipped as TTF, a format
+ * with no compression, where WOFF2 is Brotli-compressed and universally
+ * supported by every browser this app targets. Same three weights now cost
+ * 128 kB.
+ *
+ * Weight 600 (`font-semibold`, the most-used utility here) has no face on
+ * purpose: the browser interpolates it between 500 and 700, which costs
+ * nothing and is visually indistinguishable at UI sizes from shipping a fourth
+ * file. `font-display: swap` keeps text readable while the face loads.
+ */
 
 @font-face {
   font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir-Light.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir.ttf') format('truetype');
+  src: url('./assets/fonts/Vazir.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,7 +28,7 @@
 
 @font-face {
   font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir-Medium.ttf') format('truetype');
+  src: url('./assets/fonts/Vazir-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -37,7 +36,7 @@
 
 @font-face {
   font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir-Bold.ttf') format('truetype');
+  src: url('./assets/fonts/Vazir-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -268,4 +267,225 @@ body {
 input::placeholder,
 textarea::placeholder {
   text-align: start;
+}
+
+/* ===========================================================================
+   Print
+   ===========================================================================
+   Used by the proposal document at /proposal/:code, whose "Save as PDF" is the
+   browser's own print-to-PDF. That is the right tool for this app rather than a
+   compromise: the browser already shapes and orders Persian correctly, which
+   server-side PDF libraries do not, and it produces selectable vector text.
+
+   The rules below turn a web page into a document: paper geometry, ink-cheap
+   colours, and page breaks that never split a section from its heading. */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
+
+  /* Force the light palette regardless of the viewer's theme. A dark-mode PDF
+     is unreadable on paper and pours ink into a solid background. */
+  :root,
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --color-surface-50: #ffffff;
+    --color-surface-100: #ffffff;
+    --color-surface-200: #ffffff;
+    --color-text-primary: #111827;
+    --color-text-secondary: #374151;
+    --color-text-muted: #6b7280;
+    --color-border-default: #d1d5db;
+    --color-border-subtle: #e5e7eb;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Anything that only makes sense on screen: toolbars, buttons, the app
+     chrome around a document opened from inside the site. */
+  .no-print,
+  nav,
+  footer.site-footer,
+  button {
+    display: none !important;
+  }
+
+  .proposal-doc {
+    box-shadow: none !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* A heading stranded at the foot of a page, or an exclusion list split
+     across two, is exactly the sort of thing people then miss. */
+  .doc-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Underlines and link colours cost ink and say nothing on paper. */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
+
+/* ===========================================================================
+   Motion
+   ===========================================================================
+   Replaces the animation library this app used to load on every page. These
+   run on the compositor rather than the main thread, so they are cheaper than
+   what they replace as well as smaller. The only animation left in JavaScript
+   is the scroll trigger and the exit delay, in lib/motion.ts. */
+
+@keyframes ct-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ct-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ct-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ct-pop-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@keyframes ct-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ct-pulse-soft {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes ct-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Scroll reveal. The element is laid out from the start — only its paint
+   changes — so revealing it cannot shift anything around it. */
+.ct-reveal {
+  opacity: 0;
+}
+
+.ct-reveal-in {
+  animation: ct-fade-up 0.5s ease-out both;
+  animation-delay: var(--ct-delay, 0s);
+}
+
+.ct-fade-in {
+  animation: ct-fade-in 0.2s ease-out both;
+}
+.ct-fade-out {
+  animation: ct-fade-in 0.2s ease-in both reverse;
+}
+.ct-pop-in {
+  animation: ct-pop-in 0.2s ease-out both;
+}
+.ct-pop-out {
+  animation: ct-pop-out 0.2s ease-in both;
+}
+.ct-drop-in {
+  animation: ct-drop-in 0.2s ease-out both;
+}
+.ct-enter {
+  animation: ct-fade-up 0.4s ease-out both;
+}
+.ct-pulse-soft {
+  animation: ct-pulse-soft 6s ease-in-out infinite;
+}
+.ct-spin-slow {
+  animation: ct-spin-slow 40s linear infinite;
+}
+
+/* Hover lift, previously a JS-driven spring. A transition on two compositable
+   properties does the same job without a frame loop. */
+.ct-lift {
+  transition:
+    transform 0.25s ease-out,
+    box-shadow 0.25s ease-out;
+}
+.ct-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* One place, for every animation on the page — including the CSS-only ones a
+   per-component JS check would never have covered. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ct-reveal {
+    opacity: 1;
+  }
 }
