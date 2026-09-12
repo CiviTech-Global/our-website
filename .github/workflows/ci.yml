@@ -13,6 +13,25 @@ jobs:
   server:
     name: Server (audit, lint, typecheck, test, build)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: civitech
+          POSTGRES_PASSWORD: civitech
+          POSTGRES_DB: civitechglobal
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U civitech -d civitechglobal"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +57,16 @@ jobs:
       - name: Typecheck
         working-directory: civitechglobal-server
         run: npx tsc -p tsconfig.json --noEmit
+
+      - name: Prepare test environment
+        # config/env.ts validates required variables at import time; the test
+        # suites run against the postgres/redis service containers above.
+        working-directory: civitechglobal-server
+        run: cp .env.example .env
+
+      - name: Apply the schema
+        working-directory: civitechglobal-server
+        run: npx prisma migrate deploy
 
       - name: Test
         run: npm run test:server

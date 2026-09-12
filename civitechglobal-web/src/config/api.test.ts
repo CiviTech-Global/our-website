@@ -96,7 +96,11 @@ describe('requests', () => {
   it('returns a blob untouched, without envelope unwrapping', async () => {
     fetchMock.mockResolvedValueOnce(new Response('bytes', { status: 200 }));
     const res = await api.get<Blob>('/file', { responseType: 'blob' });
-    expect(res.data).toBeInstanceOf(Blob);
+    // Structural, not instanceof: depending on Node version, Response comes
+    // from undici or jsdom, so the blob's realm (and method set) varies even
+    // though it is always a genuine Blob.
+    expect(res.data?.constructor?.name).toBe('Blob');
+    expect(res.data.size).toBe(5);
   });
 });
 
