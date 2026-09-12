@@ -1,12 +1,18 @@
 import { Outlet } from 'react-router';
 import {
+  Briefcase,
   ClipboardList,
   Code2,
   Inbox,
   LayoutDashboard,
   Mail,
+  FileText,
+  FolderKanban,
+  Gavel,
   Settings,
   Shield,
+  ShieldCheck,
+  Store,
   UserPlus,
   Users,
 } from 'lucide-react';
@@ -48,6 +54,52 @@ export function AdminLayout() {
           : []),
         ...(can('messages')
           ? [{ to: '/admin/messages', label: t.contact.inboxTitle, icon: <Mail className="size-4" /> }]
+          : []),
+      ],
+    },
+    {
+      id: 'marketplace',
+      label: t.market.groupMarketplace,
+      icon: <Store className="size-4" />,
+      items: [
+        ...(can('verification')
+          ? [
+              {
+                to: '/admin/verifications',
+                label: t.market.queueVerifications,
+                icon: <ShieldCheck className="size-4" />,
+              },
+            ]
+          : []),
+        // Postings and the applications answering them are one desk: whoever
+        // decides a role belongs on the board is who judges the replies to it.
+        ...(can('jobs')
+          ? [
+              {
+                to: '/admin/job-postings',
+                label: t.market.queueJobs,
+                icon: <Briefcase className="size-4" />,
+              },
+              {
+                to: '/admin/applications',
+                label: t.market.queueApplications,
+                icon: <FileText className="size-4" />,
+              },
+            ]
+          : []),
+        ...(can('freelance')
+          ? [
+              {
+                to: '/admin/freelance-projects',
+                label: t.market.queueProjects,
+                icon: <FolderKanban className="size-4" />,
+              },
+              {
+                to: '/admin/bids',
+                label: t.market.queueBids,
+                icon: <Gavel className="size-4" />,
+              },
+            ]
           : []),
       ],
     },

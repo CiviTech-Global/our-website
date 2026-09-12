@@ -1,0 +1,405 @@
+import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
+import { Building2, Plus, Users } from 'lucide-react';
+import {
+  useAcceptBid,
+  useCreateProject,
+  useOwnProjects,
+  useOwnVerification,
+  useProjectBids,
+  useSubmitProject,
+} from '@/api/marketplace';
+import { useLocale } from '@/i18n/LocaleProvider';
+import { useToast } from '@/contexts/ToastContext';
+import { useDocumentTitle } from '@/lib/documentTitle';
+import { apiMessage } from '@/lib/apiMessage';
+import { formatDate, toPersianDigits } from '@/i18n/utils';
+import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { FormField } from '@/components/ui/FormField';
+import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { Spinner } from '@/components/ui/Spinner';
+import { TextArea } from '@/components/ui/TextArea';
+
+/**
+ * What a client sees of their own projects, and the offers on them.
+ *
+ * Offers appear here only once reviewed — which is why the count on a project
+ * awaiting review can sit at zero while people are in fact bidding. The sealed
+ * hint says so, rather than leaving that to look like indifference.
+ */
+export default function MyProjectsPage() {
+  const { t, locale } = useLocale();
+  useDocumentTitle(t.market.myProjects);
+  const { showToast } = useToast();
+
+  const { data: verification } = useOwnVerification();
+  const { data: projects, isLoading } = useOwnProjects();
+  const create = useCreateProject();
+  const submitProject = useSubmitProject();
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [openBids, setOpenBids] = useState<string | null>(null);
+
+  const isVerified = verification?.status === 'APPROVED';
+  const num = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
+
+  const [draft, setDraft] = useState({
+    title: '',
+    description: '',
+    category: '',
+    budgetMin: '',
+    budgetMax: '',
+    budgetUnknown: false,
+    skills: '',
+    deliverBy: '',
+    openToCompanyOffer: true,
+  });
+  const [attachments, setAttachments] = useState<File[]>([]);
+
+  const set = (name: keyof typeof draft) => (value: string | boolean) =>
+    setDraft((prev) => ({ ...prev, [name]: value }));
+
+  async function handleCreate(event: FormEvent) {
+    event.preventDefault();
+    try {
+      await create.mutateAsync({
+        payload: {
+          title: draft.title.trim(),
+          description: draft.description.trim(),
+          category: draft.category.trim() || undefined,
+          budgetUnknown: draft.budgetUnknown,
+          budgetMin: draft.budgetUnknown
+            ? undefined
+            : draft.budgetMin.replace(/[^0-9]/g, '') || undefined,
+          budgetMax: draft.budgetUnknown
+            ? undefined
+            : draft.budgetMax.replace(/[^0-9]/g, '') || undefined,
+          deliverBy: draft.deliverBy || undefined,
+          openToCompanyOffer: draft.openToCompanyOffer,
+          skills: draft.skills
+            .split(',')
+            .map((skill) => skill.trim())
+            .filter(Boolean),
+        },
+        attachments,
+      });
+      setIsFormOpen(false);
+      showToast(t.market.draftCreated, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-2xl font-bold text-text-primary">{t.market.myProjects}</h1>
+        {isVerified && (
+          <Button onClick={() => setIsFormOpen(true)}>
+            <Plus className="size-4" aria-hidden="true" />
+            {t.market.newProject}
+          </Button>
+        )}
+      </div>
+
+      {!isVerified && (
+        <Card>
+          <p className="text-sm text-text-secondary">{t.market.verificationRequired}</p>
+          <Link to="/dashboard/verification" className="mt-3 inline-block">
+            <Button variant="outline">{t.market.goToVerification}</Button>
+          </Link>
+        </Card>
+      )}
+
+      {isLoading && (
+        <div className="flex justify-center py-16">
+          <Spinner label={t.common.loading} />
+        </div>
+      )}
+
+      {!isLoading && isVerified && projects?.length === 0 && (
+        <EmptyState title={t.market.noProjects} />
+      )}
+
+      <ul className="flex flex-col gap-3">
+        {projects?.map((project) => (
+          <li key={project.id}>
+            <Card>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-text-primary">{project.title}</p>
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    <span className="ltr font-mono">{project.code}</span>
+                    {' · '}
+                    {formatDate(project.createdAt, locale)}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge variant={moderationVariant(project.moderationStatus)}>
+                    {t.market[project.moderationStatus]}
+                  </Badge>
+                  <Badge variant={stateVariant(project.state)}>{t.market[project.state]}</Badge>
+                </div>
+              </div>
+
+              {project.reviewNote && (
+                <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
+                  <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
+                  <p className="mt-1 text-sm text-text-primary">{project.reviewNote}</p>
+                </div>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {(project.moderationStatus === 'DRAFT' ||
+                  project.moderationStatus === 'CHANGES_REQUESTED') && (
+                  <Button
+                    size="sm"
+                    isLoading={submitProject.isPending}
+                    onClick={async () => {
+                      try {
+                        await submitProject.mutateAsync(project.id);
+                        showToast(t.market.sentForReview, 'success');
+                      } catch (error) {
+                        showToast(apiMessage(error, t.common.error), 'error');
+                      }
+                    }}
+                  >
+                    {t.market.submitForReview}
+                  </Button>
+                )}
+
+                {project.moderationStatus === 'APPROVED' && (
+                  <Button size="sm" variant="outline" onClick={() => setOpenBids(project.id)}>
+                    <Users className="size-4" aria-hidden="true" />
+                    {t.market.bids} ({num(project._count.bids)})
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </li>
+        ))}
+      </ul>
+
+      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={t.market.newProject}>
+        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+          <FormField label={t.market.title} htmlFor="projectTitle">
+            <Input
+              id="projectTitle"
+              required
+              value={draft.title}
+              onChange={(e) => set('title')(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label={t.market.description} htmlFor="projectDescription">
+            <TextArea
+              id="projectDescription"
+              required
+              rows={6}
+              value={draft.description}
+              onChange={(e) => set('description')(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label={t.market.category} htmlFor="category">
+            <Input
+              id="category"
+              value={draft.category}
+              onChange={(e) => set('category')(e.target.value)}
+            />
+          </FormField>
+
+          <label className="flex items-center gap-2 text-sm text-text-secondary">
+            <input
+              type="checkbox"
+              className="size-4 rounded border-border-strong"
+              checked={draft.budgetUnknown}
+              onChange={(e) => set('budgetUnknown')(e.target.checked)}
+            />
+            {t.market.budgetUnknown}
+          </label>
+
+          {!draft.budgetUnknown && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label={`${t.market.budget} (${t.market.from})`} htmlFor="budgetMin">
+                <Input
+                  id="budgetMin"
+                  inputMode="numeric"
+                  className="ltr"
+                  value={draft.budgetMin}
+                  onChange={(e) => set('budgetMin')(e.target.value)}
+                />
+              </FormField>
+              <FormField label={`${t.market.budget} (${t.market.to})`} htmlFor="budgetMax">
+                <Input
+                  id="budgetMax"
+                  inputMode="numeric"
+                  className="ltr"
+                  value={draft.budgetMax}
+                  onChange={(e) => set('budgetMax')(e.target.value)}
+                />
+              </FormField>
+            </div>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label={t.market.skills} htmlFor="projectSkills" hint="react, figma">
+              <Input
+                id="projectSkills"
+                value={draft.skills}
+                onChange={(e) => set('skills')(e.target.value)}
+              />
+            </FormField>
+            <FormField label={t.market.deliverBy} htmlFor="deliverBy">
+              <Input
+                id="deliverBy"
+                type="date"
+                className="ltr"
+                value={draft.deliverBy}
+                onChange={(e) => set('deliverBy')(e.target.value)}
+              />
+            </FormField>
+          </div>
+
+          <FormField label={t.market.attachments} htmlFor="projectAttachments">
+            <Input
+              id="projectAttachments"
+              type="file"
+              multiple
+              onChange={(e) => setAttachments(Array.from(e.target.files ?? []))}
+            />
+          </FormField>
+
+          <label className="flex items-start gap-2 text-sm text-text-secondary">
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 rounded border-border-strong"
+              checked={draft.openToCompanyOffer}
+              onChange={(e) => set('openToCompanyOffer')(e.target.checked)}
+            />
+            {t.market.openToCompanyOffer}
+          </label>
+
+          <p className="text-xs text-text-muted">{t.market.submitWarning}</p>
+
+          <div className="flex gap-2">
+            <Button type="submit" isLoading={create.isPending}>
+              {t.market.saveDraft}
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)}>
+              {t.common.cancel}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {openBids && <BidsModal projectId={openBids} onClose={() => setOpenBids(null)} />}
+    </div>
+  );
+}
+
+/**
+ * The offers on one project.
+ *
+ * The company's own offer is flagged rather than hidden or promoted: the
+ * client should be able to weigh it knowing exactly what it is.
+ */
+function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => void }) {
+  const { t, locale } = useLocale();
+  const { showToast } = useToast();
+  const { data, isLoading } = useProjectBids(projectId);
+  const accept = useAcceptBid();
+  const [confirming, setConfirming] = useState<string | null>(null);
+
+  async function handleAccept(bidId: string) {
+    try {
+      await accept.mutateAsync(bidId);
+      showToast(t.market.accepted, 'success');
+      setConfirming(null);
+      onClose();
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  return (
+    <Modal isOpen onClose={onClose} title={t.market.bids}>
+      <p className="mb-4 text-sm text-text-muted">{t.market.sealedHint}</p>
+
+      {isLoading && (
+        <div className="flex justify-center py-8">
+          <Spinner label={t.common.loading} />
+        </div>
+      )}
+
+      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noBids} />}
+
+      <ul className="flex flex-col gap-3">
+        {data?.map((bid) => (
+          <li key={bid.id}>
+            <Card className={bid.isCompanyOffer ? 'border-brand-green-500/50' : undefined}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  {bid.isCompanyOffer ? (
+                    <p className="flex items-center gap-1.5 font-medium text-brand-green-600">
+                      <Building2 className="size-4" aria-hidden="true" />
+                      {t.market.companyOffer}
+                    </p>
+                  ) : (
+                    <p className="font-medium text-text-primary">
+                      {bid.bidder?.firstName} {bid.bidder?.lastName}
+                    </p>
+                  )}
+                  <p className="mt-0.5 text-sm text-text-secondary">
+                    {formatMoney(bid.amount, locale)} {t.market.currency}
+                    {bid.deliveryDays
+                      ? ` · ${locale === 'fa' ? toPersianDigits(bid.deliveryDays) : bid.deliveryDays} ${t.market.deliveryDays}`
+                      : ''}
+                  </p>
+                </div>
+                <Badge variant={outcomeVariant(bid.outcome)}>{t.market[bid.outcome]}</Badge>
+              </div>
+
+              {bid.isCompanyOffer && (
+                <p className="mt-2 text-xs text-text-muted">{t.market.companyOfferHint}</p>
+              )}
+
+              <p className="mt-2 whitespace-pre-line text-sm text-text-primary">{bid.message}</p>
+
+              {bid.outcome === 'PENDING' && (
+                <div className="mt-3">
+                  {confirming === bid.id ? (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm text-text-secondary">{t.market.acceptBidConfirm}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          isLoading={accept.isPending}
+                          onClick={() => void handleAccept(bid.id)}
+                        >
+                          {t.market.accept}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setConfirming(null)}>
+                          {t.common.cancel}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button size="sm" variant="outline" onClick={() => setConfirming(bid.id)}>
+                      {t.market.acceptBid}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Card>
+          </li>
+        ))}
+      </ul>
+    </Modal>
+  );
+}

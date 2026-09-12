@@ -25,6 +25,8 @@ type NavKey =
   | 'about'
   | 'insurance'
   | 'track'
+  | 'jobs'
+  | 'freelance'
   | 'contact';
 
 interface NavLinkItem {
@@ -34,7 +36,7 @@ interface NavLinkItem {
 
 interface NavMenu {
   id: string;
-  key: 'servicesMenu' | 'companyMenu';
+  key: 'servicesMenu' | 'companyMenu' | 'marketplaceMenu';
   items: NavLinkItem[];
 }
 
@@ -57,6 +59,17 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/services', key: 'services' },
       { to: '/start-project', key: 'startProject' },
       { to: '/insurance', key: 'insurance' },
+    ],
+  },
+  // The boards are a destination in their own right rather than a service we
+  // sell, so they get their own menu instead of being buried under Services
+  // where somebody looking for work would never think to open them.
+  {
+    id: 'marketplace',
+    key: 'marketplaceMenu',
+    items: [
+      { to: '/jobs', key: 'jobs' },
+      { to: '/projects', key: 'freelance' },
     ],
   },
   {

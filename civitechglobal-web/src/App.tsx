@@ -40,14 +40,34 @@ const ProjectDetailPage = lazy(() => import('@/pages/admin/ProjectDetailPage'));
 const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
 const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
 
+// The marketplace. Split out as its own set: the boards carry their own
+// filters, forms and money formatting, and none of it belongs in the bundle a
+// visitor downloads to read the landing page.
+const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
+const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
+const FreelanceProjectsPage = lazy(() => import('@/pages/public/FreelanceProjectsPage'));
+const FreelanceProjectDetailPage = lazy(
+  () => import('@/pages/public/FreelanceProjectDetailPage')
+);
+
 const UserDashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
+const VerificationPage = lazy(() => import('@/pages/dashboard/VerificationPage'));
+const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
+const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
+const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
+const MyBidsPage = lazy(() => import('@/pages/dashboard/MyBidsPage'));
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/DashboardPage'));
 const RequestsPage = lazy(() => import('@/pages/admin/RequestsPage'));
 const RequestDetailPage = lazy(() => import('@/pages/admin/RequestDetailPage'));
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
+const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
+const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
+const ApplicationQueuePage = lazy(() => import('@/pages/admin/ApplicationQueuePage'));
+const ProjectQueuePage = lazy(() => import('@/pages/admin/ProjectQueuePage'));
+const BidQueuePage = lazy(() => import('@/pages/admin/BidQueuePage'));
 
 function RouteLoadingFallback() {
   return (
@@ -124,6 +144,40 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route
+          path="/jobs"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobsPage />
+            </Suspense>
+          }
+        />
+        {/* The code, not the id: it is what somebody can quote, and it does not
+            leak how many postings there have ever been. */}
+        <Route
+          path="/jobs/:code"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <FreelanceProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/projects/:code"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <FreelanceProjectDetailPage />
+            </Suspense>
+          }
+        />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -157,6 +211,46 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <ProfilePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="verification"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <VerificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="jobs"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyJobsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="applications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyApplicationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="projects"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="bids"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyBidsPage />
             </Suspense>
           }
         />
@@ -247,6 +341,46 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <RolesPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="verifications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <VerificationQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="job-postings"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="applications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ApplicationQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="freelance-projects"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ProjectQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="bids"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BidQueuePage />
             </Suspense>
           }
         />
