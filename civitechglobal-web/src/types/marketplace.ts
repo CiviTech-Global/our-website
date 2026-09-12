@@ -6,7 +6,7 @@
  * sooner than you would think — parsing one would round somebody's pay.
  */
 
-export type AccountKind = 'INDIVIDUAL' | 'COMPANY' | 'COMPANY_REPRESENTATIVE';
+export type AccountKind = 'INDIVIDUAL' | 'COMPANY';
 
 export type VerificationStatus = 'UNVERIFIED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -27,10 +27,9 @@ export type OfferOutcome = 'PENDING' | 'SHORTLISTED' | 'ACCEPTED' | 'DECLINED';
 
 export type VerificationDocumentKind =
   | 'NATIONAL_ID_CARD'
-  | 'BIRTH_CERTIFICATE'
+  | 'PASSPORT'
   | 'COMPANY_REGISTRATION'
-  | 'OFFICIAL_GAZETTE'
-  | 'AUTHORISATION_LETTER'
+  | 'AUTHORITY_LETTER'
   | 'OTHER';
 
 export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
@@ -44,6 +43,7 @@ export interface Paged<T> {
 
 // --- Verification ----------------------------------------------------------
 
+/** Field for field what the server's verificationSchema accepts. */
 export interface VerificationPayload {
   kind: AccountKind;
   legalFirstName: string;
@@ -51,11 +51,14 @@ export interface VerificationPayload {
   nationalId: string;
   phone: string;
   birthDate?: string;
-  address?: string;
+  province?: string;
+  city?: string;
+  addressLine?: string;
   companyName?: string;
-  companyRegistrationNumber?: string;
-  companyNationalId?: string;
-  positionTitle?: string;
+  companyRegistrationNo?: string;
+  companyEconomicCode?: string;
+  companyRole?: string;
+  companyWebsite?: string;
 }
 
 export interface OwnVerification {
@@ -250,10 +253,13 @@ export interface VerificationDetail extends VerificationQueueRow {
   nationalId: string;
   phone: string;
   birthDate: string | null;
-  address: string | null;
-  companyRegistrationNumber: string | null;
-  companyNationalId: string | null;
-  positionTitle: string | null;
+  province: string | null;
+  city: string | null;
+  addressLine: string | null;
+  companyRegistrationNo: string | null;
+  companyEconomicCode: string | null;
+  companyRole: string | null;
+  companyWebsite: string | null;
   reviewNote: string | null;
   internalNote: string | null;
   reviewedAt: string | null;

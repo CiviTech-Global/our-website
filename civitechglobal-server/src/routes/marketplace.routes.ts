@@ -17,6 +17,7 @@ import {
   applicationSchema,
   bidReviewSchema,
   bidSchema,
+  documentKindsSchema,
   jobSchema,
   jobUpdateSchema,
   listQuerySchema,
@@ -68,6 +69,17 @@ function payloadOf(req: Request): unknown {
     return JSON.parse(raw);
   } catch {
     throw new AppError('قالب اطلاعات فرم نامعتبر است.', 400);
+  }
+}
+
+/** A JSON array sent as a form field beside the files. */
+function parseJsonField(req: Request, name: string, fallback: unknown): unknown {
+  const raw = req.body?.[name];
+  if (typeof raw !== 'string' || !raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new AppError(`قالب «${name}» نامعتبر است.`, 400);
   }
 }
 
@@ -146,11 +158,18 @@ router.post(
   upload.array('documents', MAX_FILES),
   wrap(async (req, res) => {
     const input = verificationSchema.parse(payloadOf(req));
-    // Each file's kind travels alongside it, in the same order.
-    const kinds = (JSON.parse(String(req.body.kinds ?? '[]')) as string[]) ?? [];
+
+    // Each file's kind travels alongside it, in the same order — as its own
+    // JSON array rather than one field per file, because multipart preserves
+    // field order but not the pairing between two repeated fields.
+    //
+    // Parsed, not cast: this never passes through validate(), and asserting it
+    // into the enum meant an unrecognised kind reached Prisma and came back as
+    // a 500 blaming us for the caller's typo.
+    const kinds = documentKindsSchema.parse(parseJsonField(req, 'kinds', []));
     const documents = files(req).map((file, index) => ({
       ...file,
-      kind: (kinds[index] ?? 'OTHER') as never,
+      kind: kinds[index] ?? ('OTHER' as const),
     }));
 
     const result = await verification.submitVerification(req.user!.userId, input, documents);

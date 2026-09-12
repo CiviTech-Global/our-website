@@ -138,11 +138,14 @@ function VerificationDetailPanel({ id }: { id: string }) {
     [t.market.nationalId, data.nationalId],
     [t.market.phone, data.phone],
     [t.market.birthDate, data.birthDate ? formatDate(data.birthDate, locale) : null],
-    [t.market.address, data.address],
+    [t.market.residenceProvince, data.province],
+    [t.market.residenceCity, data.city],
+    [t.market.address, data.addressLine],
     [t.market.companyName, data.companyName],
-    [t.market.companyRegistrationNumber, data.companyRegistrationNumber],
-    [t.market.companyNationalId, data.companyNationalId],
-    [t.market.positionTitle, data.positionTitle],
+    [t.market.companyRegistrationNo, data.companyRegistrationNo],
+    [t.market.companyEconomicCode, data.companyEconomicCode],
+    [t.market.companyRole, data.companyRole],
+    [t.market.companyWebsite, data.companyWebsite],
   ];
 
   return (

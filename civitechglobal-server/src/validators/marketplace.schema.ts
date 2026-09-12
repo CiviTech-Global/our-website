@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { isValidNationalId } from '../utils/persian.js';
 
+/** Matches the upload cap in attachment.service, which is what actually binds. */
+const MAX_DOCUMENTS = 8;
+
 /**
  * Wire formats for the marketplace.
  *
@@ -58,6 +61,12 @@ export const verificationSchema = z
     companyRole: trimmed(80).optional(),
     companyWebsite: z.union([z.literal(''), z.string().trim().url('نشانی معتبر نیست')]).optional(),
   })
+  // Strict, unlike the rest: zod strips unknown keys by default, so a client
+  // sending `address` where this expects `addressLine` had the field quietly
+  // discarded and the reviewer saw a blank where somebody had typed their
+  // home address. For identity documents, losing a field in silence is worse
+  // than refusing the request and saying which key was not recognised.
+  .strict()
   // A company that has not said which company it is cannot be checked against
   // anything, so the requirement belongs here rather than in a reviewer's head.
   .refine((data) => data.kind !== 'COMPANY' || Boolean(data.companyName?.trim()), {
@@ -68,6 +77,20 @@ export const verificationSchema = z
     message: 'شمارهٔ ثبت شرکت الزامی است',
     path: ['companyRegistrationNo'],
   });
+
+/**
+ * The kind of each uploaded document, in the same order as the files.
+ *
+ * Parsed rather than cast. This arrives as a JSON string in a form field, so
+ * it never passes through validate(), and the previous code asserted it into
+ * the enum with `as never` — which meant a value the enum does not have
+ * travelled all the way to Prisma and came back as a 500. A caller sending a
+ * kind we do not recognise has made a mistake, and should be told which field
+ * it was in.
+ */
+export const documentKindsSchema = z
+  .array(z.enum(['NATIONAL_ID_CARD', 'PASSPORT', 'COMPANY_REGISTRATION', 'AUTHORITY_LETTER', 'OTHER']))
+  .max(MAX_DOCUMENTS, 'تعداد مدارک بیش از حد مجاز است');
 
 export const verificationReviewSchema = z.object({
   decision: z.enum(['APPROVED', 'REJECTED']),

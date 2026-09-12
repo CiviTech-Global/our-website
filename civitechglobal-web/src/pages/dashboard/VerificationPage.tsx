@@ -16,16 +16,25 @@ import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
 import type { AccountKind, VerificationDocumentKind } from '@/types/marketplace';
 
-const KINDS: AccountKind[] = ['INDIVIDUAL', 'COMPANY', 'COMPANY_REPRESENTATIVE'];
+const KINDS: AccountKind[] = ['INDIVIDUAL', 'COMPANY'];
 
 const DOCUMENT_KINDS: VerificationDocumentKind[] = [
   'NATIONAL_ID_CARD',
-  'BIRTH_CERTIFICATE',
+  'PASSPORT',
   'COMPANY_REGISTRATION',
-  'OFFICIAL_GAZETTE',
-  'AUTHORISATION_LETTER',
+  'AUTHORITY_LETTER',
   'OTHER',
 ];
+
+/**
+ * What the server refuses to proceed without, mirrored from its
+ * REQUIRED_DOCUMENTS. Checked here so somebody is told before they upload and
+ * submit, not after — the server still enforces it, as it must.
+ */
+const REQUIRED_DOCUMENTS: Record<AccountKind, VerificationDocumentKind[]> = {
+  INDIVIDUAL: ['NATIONAL_ID_CARD'],
+  COMPANY: ['NATIONAL_ID_CARD', 'COMPANY_REGISTRATION'],
+};
 
 interface DocumentRow {
   /** Stable across re-renders so React does not reorder file inputs. */
@@ -58,11 +67,14 @@ export default function VerificationPage() {
     nationalId: '',
     phone: '',
     birthDate: '',
-    address: '',
+    province: '',
+    city: '',
+    addressLine: '',
     companyName: '',
-    companyRegistrationNumber: '',
-    companyNationalId: '',
-    positionTitle: '',
+    companyRegistrationNo: '',
+    companyEconomicCode: '',
+    companyRole: '',
+    companyWebsite: '',
   });
   const [documents, setDocuments] = useState<DocumentRow[]>([
     { key: 0, kind: 'NATIONAL_ID_CARD', file: null },
@@ -71,7 +83,7 @@ export default function VerificationPage() {
   const set = (name: keyof typeof fields) => (value: string) =>
     setFields((prev) => ({ ...prev, [name]: value }));
 
-  const needsCompany = kind === 'COMPANY' || kind === 'COMPANY_REPRESENTATIVE';
+  const needsCompany = kind === 'COMPANY';
 
   if (isLoading) {
     return (
@@ -88,8 +100,17 @@ export default function VerificationPage() {
     event.preventDefault();
 
     const ready = documents.filter((doc): doc is DocumentRow & { file: File } => doc.file !== null);
-    if (ready.length === 0) {
-      showToast(t.market.documents, 'error');
+
+    // The server checks this too. Doing it here as well means somebody is told
+    // before they upload and submit rather than after, and it is the only way
+    // the form can name which document is missing.
+    const supplied = new Set(ready.map((doc) => doc.kind));
+    const missing = REQUIRED_DOCUMENTS[kind].filter((required) => !supplied.has(required));
+    if (missing.length > 0) {
+      showToast(
+        kind === 'COMPANY' ? t.market.requiredDocumentsCompany : t.market.requiredDocumentsIndividual,
+        'error'
+      );
       return;
     }
 
@@ -104,13 +125,16 @@ export default function VerificationPage() {
           // Blank is not the same as absent to the server's schema, and blank
           // is the one that fails. Anything empty simply does not travel.
           birthDate: fields.birthDate || undefined,
-          address: fields.address.trim() || undefined,
+          province: fields.province.trim() || undefined,
+          city: fields.city.trim() || undefined,
+          addressLine: fields.addressLine.trim() || undefined,
           ...(needsCompany
             ? {
                 companyName: fields.companyName.trim() || undefined,
-                companyRegistrationNumber: fields.companyRegistrationNumber.trim() || undefined,
-                companyNationalId: fields.companyNationalId.trim() || undefined,
-                positionTitle: fields.positionTitle.trim() || undefined,
+                companyRegistrationNo: fields.companyRegistrationNo.trim() || undefined,
+                companyEconomicCode: fields.companyEconomicCode.trim() || undefined,
+                companyRole: fields.companyRole.trim() || undefined,
+                companyWebsite: fields.companyWebsite.trim() || undefined,
               }
             : {}),
         },
@@ -225,12 +249,29 @@ export default function VerificationPage() {
               </FormField>
             </div>
 
-            <FormField label={t.market.address} htmlFor="address">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label={t.market.residenceProvince} htmlFor="province">
+                <Input
+                  id="province"
+                  value={fields.province}
+                  onChange={(e) => set('province')(e.target.value)}
+                />
+              </FormField>
+              <FormField label={t.market.residenceCity} htmlFor="city">
+                <Input
+                  id="city"
+                  value={fields.city}
+                  onChange={(e) => set('city')(e.target.value)}
+                />
+              </FormField>
+            </div>
+
+            <FormField label={t.market.address} htmlFor="addressLine">
               <TextArea
-                id="address"
+                id="addressLine"
                 rows={2}
-                value={fields.address}
-                onChange={(e) => set('address')(e.target.value)}
+                value={fields.addressLine}
+                onChange={(e) => set('addressLine')(e.target.value)}
               />
             </FormField>
 
@@ -244,36 +285,40 @@ export default function VerificationPage() {
                     onChange={(e) => set('companyName')(e.target.value)}
                   />
                 </FormField>
-                <FormField
-                  label={t.market.companyRegistrationNumber}
-                  htmlFor="companyRegistrationNumber"
-                >
+                <FormField label={t.market.companyRegistrationNo} htmlFor="companyRegistrationNo">
                   <Input
-                    id="companyRegistrationNumber"
+                    id="companyRegistrationNo"
                     required
                     className="ltr"
-                    value={fields.companyRegistrationNumber}
-                    onChange={(e) => set('companyRegistrationNumber')(e.target.value)}
+                    value={fields.companyRegistrationNo}
+                    onChange={(e) => set('companyRegistrationNo')(e.target.value)}
                   />
                 </FormField>
-                <FormField label={t.market.companyNationalId} htmlFor="companyNationalId">
+                <FormField label={t.market.companyEconomicCode} htmlFor="companyEconomicCode">
                   <Input
-                    id="companyNationalId"
+                    id="companyEconomicCode"
                     className="ltr"
-                    value={fields.companyNationalId}
-                    onChange={(e) => set('companyNationalId')(e.target.value)}
+                    value={fields.companyEconomicCode}
+                    onChange={(e) => set('companyEconomicCode')(e.target.value)}
                   />
                 </FormField>
-                {kind === 'COMPANY_REPRESENTATIVE' && (
-                  <FormField label={t.market.positionTitle} htmlFor="positionTitle">
-                    <Input
-                      id="positionTitle"
-                      required
-                      value={fields.positionTitle}
-                      onChange={(e) => set('positionTitle')(e.target.value)}
-                    />
-                  </FormField>
-                )}
+                <FormField label={t.market.companyRole} htmlFor="companyRole">
+                  <Input
+                    id="companyRole"
+                    value={fields.companyRole}
+                    onChange={(e) => set('companyRole')(e.target.value)}
+                  />
+                </FormField>
+                <FormField label={t.market.companyWebsite} htmlFor="companyWebsite">
+                  <Input
+                    id="companyWebsite"
+                    type="url"
+                    className="ltr"
+                    placeholder="https://"
+                    value={fields.companyWebsite}
+                    onChange={(e) => set('companyWebsite')(e.target.value)}
+                  />
+                </FormField>
               </div>
             )}
 
@@ -281,6 +326,11 @@ export default function VerificationPage() {
               <legend className="mb-1 text-sm font-medium text-text-primary">
                 {t.market.documents}
               </legend>
+              <p className="-mt-2 text-xs text-text-muted">
+                {needsCompany
+                  ? t.market.requiredDocumentsCompany
+                  : t.market.requiredDocumentsIndividual}
+              </p>
 
               {documents.map((doc, index) => (
                 <div key={doc.key} className="flex flex-wrap items-end gap-3">
