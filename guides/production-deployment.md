@@ -524,10 +524,11 @@ failure.
 
 ## 11. Continuous delivery
 
-The last missing link: CI builds, scans and pushes, and nothing collects. Add
-a `deploy` job gated on the `docker` job and on a **GitHub Environment with
-required reviewers**, so a merge to `main` *proposes* a deploy rather than
-performing one.
+Implemented in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) as the
+`deploy` job, gated on the `docker` job and on a **GitHub Environment with
+required reviewers** — so a merge to `main` *proposes* a deploy rather than
+performing one. (CI renders `inventory.ini` from secrets, because the real one
+is gitignored; see the workflow.)
 
 ```yaml
   deploy:
@@ -565,8 +566,8 @@ performing one.
 `app_version=${{ github.sha }}` closes the loop: the images the `docker` job
 just built and Trivy just scanned are precisely the ones that go live.
 
-Add a lint job too — a playbook is code, and it is the code that touches
-production:
+The `ansible-lint` job in the same workflow runs on every push and pull
+request — a playbook is code, and it is the code that touches production:
 
 ```yaml
   ansible-lint:

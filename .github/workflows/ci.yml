@@ -140,3 +140,79 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ github.sha }}
+
+  ansible-lint:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up lint environment
+        # A venv (not pipx): the lint run must see the same collections the
+        # playbooks require, so ansible and ansible-lint share one env.
+        run: |
+          python3 -m venv /tmp/lintenv
+          /tmp/lintenv/bin/pip install --quiet ansible ansible-lint
+      - name: Install required collections
+        run: /tmp/lintenv/bin/ansible-galaxy collection install -r civitech-deploy/requirements.yml
+      - name: Lint
+        run: /tmp/lintenv/bin/ansible-lint civitech-deploy/
+
+  deploy:
+    name: Deploy to production
+    needs: [docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production      # add required reviewers in repo settings
+      url: http://62.220.123.6 # TODO: https://<domain> once DNS lands; also drop -e enable_ssl=false below
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: pipx install --include-deps ansible
+
+      - name: Restore the SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Render the inventory
+        # inventory.ini is gitignored, so CI renders it from secrets.
+        # DEPLOY_HOST doubles as domain_name while no domain points at the
+        # server; add a DEPLOY_DOMAIN secret and use it here once DNS lands.
+        working-directory: civitech-deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          cat > inventory.ini <<EOF
+          [civitech_prod]
+          civitech-prod ansible_host=${DEPLOY_HOST} ansible_user=root
+
+          [civitech_prod:vars]
+          domain_name=${DEPLOY_HOST}
+          domain_alias=
+          certbot_email=REPLACE_ME_EMAIL
+
+          ansible_ssh_private_key_file=~/.ssh/id_ed25519
+
+          [semaphore]
+          civitech-prod ansible_host=${DEPLOY_HOST} ansible_user=root
+          EOF
+
+      - name: Deploy this exact commit
+        working-directory: civitech-deploy
+        env:
+          ANSIBLE_CONFIG: ${{ github.workspace }}/civitech-deploy/ansible.cfg
+        run: |
+          ansible-galaxy collection install -r requirements.yml
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > /tmp/vp
+          chmod 600 /tmp/vp
+          # -e enable_ssl=false: the API bakes CORS_ORIGIN/APP_URL's scheme from
+          # enable_ssl, and no domain/TLS exists yet. Remove the override (and
+          # stop overriding enable_ssl) once HTTPS is live.
+          ansible-playbook deploy.yml \
+            -e app_version=${{ github.sha }} \
+            -e enable_ssl=false \
+            --vault-password-file /tmp/vp

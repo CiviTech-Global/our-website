@@ -17,7 +17,8 @@
 
 - name: Add the Docker apt repository
   # ansible_distribution_release is a gathered fact, so this resolves to
-  # `noble` on 24.04 and `jammy` on 22.04 with no edits.
+  # `noble` on 24.04, `jammy` on 22.04 and `focal` on 20.04 with no edits.
+  # Docker still publishes focal packages (verified: 28.x), so 20.04 works.
   ansible.builtin.apt_repository:
     repo: >-
       deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}

@@ -235,4 +235,4 @@ semaphore_admin_name: "CiviTech Admin"
 # deploy.yml takes a database dump before running migrations, because Prisma
 # migrations are forward-only: rollback.yml can put the old image back, but
 # only that dump can put the data back.
-pre_deploy_backup: true
+app_pre_deploy_backup: true

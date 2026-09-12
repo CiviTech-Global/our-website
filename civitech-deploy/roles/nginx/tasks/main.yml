@@ -107,8 +107,8 @@
       -d {{ domain_name }}
       {% if domain_alias %}-d {{ domain_alias }}{% endif %}
       --non-interactive --agree-tos --email {{ certbot_email }} --redirect
-  register: certbot_result
-  changed_when: "'Successfully received certificate' in certbot_result.stdout"
+  register: nginx_certbot_result
+  changed_when: "'Successfully received certificate' in nginx_certbot_result.stdout"
   when: enable_ssl | bool
 
 - name: Enable HTTP/2 on the TLS listener
@@ -129,7 +129,9 @@
   # that silently stops renewing takes the site down 90 days from now, on a
   # day nobody is expecting it.
   ansible.builtin.command: systemctl is-active certbot.timer
-  register: certbot_timer
+  # noqa: command-instead-of-module -- a read-only probe; the systemd module
+  # cannot report "is-active" without implying a desired state.
+  register: nginx_certbot_timer
   changed_when: false
   failed_when: false
   when: enable_ssl | bool
@@ -137,13 +139,13 @@
 - name: Warn when nothing is scheduled to renew the certificate
   ansible.builtin.debug:
     msg: >-
-      WARNING: certbot.timer is not active ({{ certbot_timer.stdout | default('unknown') }}).
+      WARNING: certbot.timer is not active ({{ nginx_certbot_timer.stdout | default('unknown') }}).
       Nothing will renew this certificate. Check with
       `systemctl list-timers | grep certbot` and test with
       `certbot renew --dry-run`.
   when:
     - enable_ssl | bool
-    - certbot_timer.stdout | default('') != 'active'
+    - nginx_certbot_timer.stdout | default('') != 'active'
 
 - name: Validate the final configuration
   ansible.builtin.command: nginx -t

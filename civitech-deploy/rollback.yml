@@ -65,4 +65,4 @@
         # Nothing new is being migrated, so there is nothing to protect
         # against. The dump taken before the deploy that broke things is the
         # one that matters, and it already exists.
-        pre_deploy_backup: false
+        app_pre_deploy_backup: false

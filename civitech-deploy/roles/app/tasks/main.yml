@@ -80,8 +80,8 @@
       docker compose -f docker-compose.yml -f docker-compose.prod.yml
       exec -T postgres pg_isready -U {{ postgres_user }}
     chdir: "{{ app_root }}"
-  register: pg_ready
-  until: pg_ready.rc == 0
+  register: app_pg_ready
+  until: app_pg_ready.rc == 0
   retries: 30
   delay: 2
   changed_when: false
@@ -141,8 +141,8 @@
   ansible.builtin.uri:
     url: "http://127.0.0.1:{{ api_port }}/api/health/ready"
     status_code: 200
-  register: api_health
-  until: api_health.status == 200
+  register: app_api_health
+  until: app_api_health.status == 200
   retries: 20
   delay: 3
 

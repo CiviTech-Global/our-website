@@ -1,5 +1,13 @@
-# The customer's IP and SSH user never land in source control.
+# The server's IP and SSH user never land in source control.
 inventory.ini
+
+# One-time bootstrap credentials and local secret material.
+# .secrets/ holds: the hosting provider's one-time root password, the new
+# root password you chose, and the Ansible Vault password that decrypts
+# group_vars/all/vault.yml on this control machine.
+.secrets/
+vault-pass
+.bootstrap-*
 
 # group_vars/all/vault.yml is deliberately NOT ignored: it is encrypted with
 # Ansible Vault, and committing it is how Semaphore and your teammates get

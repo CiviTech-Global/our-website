@@ -349,8 +349,8 @@ ansible [core 2.18.2]
 
 ## 4. Preparing the server
 
-You need one Linux server (Ubuntu 22.04 or 24.04 LTS is the easy choice) that
-you can SSH into.
+You need one Linux server (Ubuntu 20.04, 22.04 or 24.04 LTS all work — the
+playbooks are Debian/Ubuntu-generic) that you can SSH into.
 
 ### Set up key-based SSH
 
@@ -558,7 +558,8 @@ civitech-prod | SUCCESS => {
 ```
 
 `ansible_distribution_release` → `noble` is the fact the Docker apt repo task
-in section 11 uses, so it works on 22.04 (`jammy`) too with no edits.
+in section 11 uses, so it works on 22.04 (`jammy`) and 20.04 (`focal`) too
+with no edits.
 </details>
 
 Run bare `ansible civitech_prod -m setup` to dump *all* facts — it is several
@@ -1267,8 +1268,9 @@ Now the actual thing. This deploys the monorepo's Docker Compose stack —
 ```
 
 `{{ ansible_distribution_release }}` is a **fact** — Ansible gathered it from
-the host, so the repo line resolves to `.../ubuntu noble stable` on 24.04 and
-`.../ubuntu jammy stable` on 22.04 with no edits from you.
+the host, so the repo line resolves to `.../ubuntu noble stable` on 24.04,
+`.../ubuntu jammy stable` on 22.04 and `.../ubuntu focal stable` on 20.04 with
+no edits from you.
 
 Run it:
 

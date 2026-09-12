@@ -102,7 +102,7 @@
       changed_when: true
       when:
         - existing_release.stat.exists
-        - pre_deploy_backup | default(true) | bool
+        - app_pre_deploy_backup | default(true) | bool
 
   roles:
     - app
