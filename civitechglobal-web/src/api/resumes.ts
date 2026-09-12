@@ -88,18 +88,12 @@ export function useUpdateResumeStatus() {
   });
 }
 
+/** Where a CV is served from. Staff-only, so FilePreview fetches it. */
 /**
- * A CV is staff-only, so it cannot be a plain link — the browser would send no
- * Authorization header. Fetch it, then hand the bytes to the browser.
+ * Where a CV is served from.
+ *
+ * A path rather than a download helper. This route is staff-only, so a plain
+ * <a href> would send no Authorization header and get a 401 — FilePreview
+ * fetches it, shows it, and offers the same bytes as a download from there.
  */
-export async function downloadResume(id: string, filename: string): Promise<void> {
-  const res = await api.get(`/resumes/admin/${id}/file`, { responseType: 'blob' });
-  const url = URL.createObjectURL(res.data as Blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
+export const resumeFileUrl = (id: string) => `/resumes/admin/${id}/file`;

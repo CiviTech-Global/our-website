@@ -518,6 +518,24 @@ export async function listApplicationsForReview(query: { status?: string; page: 
   return { items, total, page: query.page, pageSize: query.pageSize };
 }
 
+/** An applicant's CV, for the reviewer holding the application. */
+export async function getApplicationCvForReview(applicationId: string) {
+  const application = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: { cvStoredName: true, cvMimeType: true, cvOriginalName: true },
+  });
+
+  if (!application?.cvStoredName || !application.cvMimeType || !application.cvOriginalName) {
+    throw new AppError('رزومه‌ای برای این درخواست ثبت نشده است.', 404);
+  }
+
+  return {
+    cvStoredName: application.cvStoredName,
+    cvMimeType: application.cvMimeType,
+    cvOriginalName: application.cvOriginalName,
+  };
+}
+
 export async function getJobForReview(jobId: string) {
   const job = await prisma.jobPost.findUnique({
     where: { id: jobId },

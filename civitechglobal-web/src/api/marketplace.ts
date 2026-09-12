@@ -533,23 +533,16 @@ export function usePlaceCompanyOffer() {
 }
 
 /**
- * An identity document is staff-only, so it cannot be a plain link — the
- * browser would send no Authorization header. Fetch it, then hand the bytes
- * to the browser, exactly as the CV pile does.
+ * Where each reviewable file lives.
+ *
+ * Paths rather than download helpers: these are staff-only routes, so a plain
+ * <a href> would send no Authorization header and get a 401 — FilePreview
+ * fetches them and can either show the bytes or hand them over as a download.
+ * The document's own id, never its storage key: a storage key handed to a
+ * client becomes part of the API and can never be changed afterwards.
  */
-export async function downloadVerificationDocument(
-  storedName: string,
-  filename: string
-): Promise<void> {
-  const res = await api.get(`/market/admin/verification-documents/${storedName}`, {
-    responseType: 'blob',
-  });
-  const url = URL.createObjectURL(res.data as Blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
+export const reviewFileUrls = {
+  verificationDocument: (id: string) => `/market/admin/verification-documents/${id}`,
+  projectAttachment: (id: string) => `/market/admin/project-attachments/${id}`,
+  applicationCv: (id: string) => `/market/admin/application-cvs/${id}`,
+};

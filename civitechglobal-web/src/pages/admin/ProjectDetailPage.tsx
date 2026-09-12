@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { apiMessage } from '@/lib/apiMessage';
 import { Link, useParams } from 'react-router';
-import { ChevronLeft, Download, FileText, Paperclip, Send, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, Eye, FileText, Paperclip, Send, ShieldAlert } from 'lucide-react';
 import {
-  downloadAttachment,
+  projectAttachmentUrl,
   useAdminProject,
   useCreateProposal,
   useSendProposal,
@@ -17,6 +17,7 @@ import { IdentityStandingControl } from '@/components/admin/IdentityStandingCont
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { DateField } from '@/components/ui/DateField';
@@ -53,6 +54,7 @@ export default function ProjectDetailPage() {
   const sendProposal = useSendProposal();
 
   const [composerOpen, setComposerOpen] = useState(false);
+  const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
 
   if (isLoading) {
     return (
@@ -217,20 +219,28 @@ export default function ProjectDetailPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={async () => {
-                    try {
-                      await downloadAttachment(file.id, file.originalName);
-                    } catch {
-                      showToast(t.proposal.downloadFailed, 'error');
-                    }
-                  }}
+                  aria-label={t.common.file.preview}
+                  onClick={() =>
+                    setPreviewing({
+                      url: projectAttachmentUrl(file.id),
+                      filename: file.originalName,
+                    })
+                  }
                 >
-                  <Download className="size-4" />
+                  <Eye className="size-4" />
                 </Button>
               </li>
             ))}
           </ul>
           <p className="mt-3 text-xs text-text-muted">{t.proposal.attachmentWarning}</p>
+
+          {previewing && (
+            <FilePreview
+              url={previewing.url}
+              filename={previewing.filename}
+              onClose={() => setPreviewing(null)}
+            />
+          )}
         </Card>
       )}
 

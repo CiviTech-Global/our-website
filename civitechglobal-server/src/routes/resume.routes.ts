@@ -10,6 +10,7 @@ import { projectRespondRateLimiter, projectSubmitRateLimiter } from '../middlewa
 import { validate } from '../middleware/validate.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { MAX_FILE_BYTES, openStoredFile, type IncomingFile } from '../services/attachment.service.js';
+import { requestedDisposition, serveStoredFile } from '../services/file-response.js';
 import * as resumeService from '../services/resume-submission.service.js';
 import {
   resumeAllowanceSchema,
@@ -208,16 +209,11 @@ router.get('/admin/:id/file', async (req, res, next) => {
 
     const object = await openStoredFile(row.resumeStoredName);
 
-    res.setHeader('Content-Type', row.resumeMimeType);
-    res.setHeader('Content-Length', String(object.sizeBytes));
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="resume"; filename*=UTF-8''${encodeURIComponent(row.resumeOriginalName)}`
-    );
-
-    object.stream.pipe(res);
+    serveStoredFile(res, object, {
+      mimeType: row.resumeMimeType,
+      originalName: row.resumeOriginalName,
+      disposition: requestedDisposition(req.query.disposition),
+    });
   } catch (error) {
     next(error);
   }

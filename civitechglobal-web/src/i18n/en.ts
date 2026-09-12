@@ -26,6 +26,11 @@ const en: typeof fa = {
     comingSoon: 'Coming soon',
     yes: 'Yes',
     no: 'No',
+    file: {
+      preview: 'View file',
+      download: 'Download',
+      notPreviewable: 'This file type cannot be shown in the browser. Download it to open it.',
+    },
     date: {
       choose: 'Choose a date',
       today: 'Today',

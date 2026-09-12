@@ -528,6 +528,17 @@ export async function listProjectsForReview(query: {
   return { items, total, page: query.page, pageSize: query.pageSize };
 }
 
+/** One project attachment, for a reviewer to look at. */
+export async function getAttachmentForReview(attachmentId: string) {
+  const attachment = await prisma.freelanceAttachment.findUnique({
+    where: { id: attachmentId },
+    select: { storedName: true, mimeType: true, originalName: true },
+  });
+
+  if (!attachment) throw new AppError('این فایل پیدا نشد.', 404);
+  return attachment;
+}
+
 /** The bid queue, with the project's scope alongside so fairness can be judged. */
 export async function listBidsForReview(query: { page: number; pageSize: number }) {
   const where: Prisma.ProjectBidWhereInput = { moderationStatus: 'PENDING_REVIEW' };

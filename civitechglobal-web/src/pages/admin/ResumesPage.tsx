@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Download } from 'lucide-react';
-import { downloadResume, useAdminResumes, useUpdateResumeStatus } from '@/api/resumes';
+import { Eye } from 'lucide-react';
+import { resumeFileUrl, useAdminResumes, useUpdateResumeStatus } from '@/api/resumes';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
@@ -56,6 +57,7 @@ export default function ResumesPage() {
   useDocumentTitle(t.join.adminTitle);
   const { showToast } = useToast();
   const [page, setPage] = useState(1);
+  const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
   const [status, setStatus] = useState<ResumeStatus | 'ALL'>('ALL');
 
   const { data, isLoading } = useAdminResumes({ page, pageSize: PAGE_SIZE, status });
@@ -119,16 +121,15 @@ export default function ResumesPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={async () => {
-                    try {
-                      await downloadResume(cv.id, `${cv.fullName}-${cv.trackingCode}`);
-                    } catch {
-                      showToast(t.common.error, 'error');
-                    }
-                  }}
+                  onClick={() =>
+                    setPreviewing({
+                      url: resumeFileUrl(cv.id),
+                      filename: `${cv.fullName}-${cv.trackingCode}`,
+                    })
+                  }
                 >
-                  <Download className="size-4" />
-                  {t.join.download}
+                  <Eye className="size-4" />
+                  {t.common.file.preview}
                 </Button>
 
                 <Select
@@ -166,6 +167,14 @@ export default function ResumesPage() {
           page={page}
           totalPages={Math.ceil(data.total / PAGE_SIZE)}
           onPageChange={setPage}
+        />
+      )}
+
+      {previewing && (
+        <FilePreview
+          url={previewing.url}
+          filename={previewing.filename}
+          onClose={() => setPreviewing(null)}
         />
       )}
     </div>

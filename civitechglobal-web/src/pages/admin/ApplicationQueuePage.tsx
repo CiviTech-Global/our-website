@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { useApplicationQueue, useReviewApplication } from '@/api/marketplace';
+import { Eye } from 'lucide-react';
+import { reviewFileUrls, useApplicationQueue, useReviewApplication } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { formatMoney, moderationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
@@ -34,6 +37,7 @@ export default function ApplicationQueuePage() {
 
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<ModerationStatus>('PENDING_REVIEW');
+  const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
 
   const { data, isLoading } = useApplicationQueue({ page, pageSize: PAGE_SIZE, status });
   const review = useReviewApplication();
@@ -112,9 +116,21 @@ export default function ApplicationQueuePage() {
               )}
 
               {row.cvOriginalName && (
-                <p className="mt-2 text-xs text-text-muted">
-                  {t.market.cv}: {row.cvOriginalName}
-                </p>
+                <div className="mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setPreviewing({
+                        url: reviewFileUrls.applicationCv(row.id),
+                        filename: row.cvOriginalName!,
+                      })
+                    }
+                  >
+                    <Eye className="size-4" aria-hidden="true" />
+                    {t.market.cv}: {row.cvOriginalName}
+                  </Button>
+                </div>
               )}
 
               <ReviewActions
@@ -131,6 +147,14 @@ export default function ApplicationQueuePage() {
           page={page}
           totalPages={Math.ceil(data.total / PAGE_SIZE)}
           onPageChange={setPage}
+        />
+      )}
+
+      {previewing && (
+        <FilePreview
+          url={previewing.url}
+          filename={previewing.filename}
+          onClose={() => setPreviewing(null)}
         />
       )}
     </div>

@@ -248,6 +248,24 @@ export async function getForReview(id: string) {
 }
 
 /**
+ * One identity document, for serving back to a reviewer.
+ *
+ * By document id rather than by stored name: the stored name is a storage key,
+ * and handing it to a client makes it part of the API — after which it cannot
+ * be changed, and any endpoint taking one has to re-prove it is not being
+ * walked. An id the reviewer already holds is both safer and simpler.
+ */
+export async function getDocumentForReview(documentId: string) {
+  const document = await prisma.verificationDocument.findUnique({
+    where: { id: documentId },
+    select: { storedName: true, mimeType: true, originalName: true },
+  });
+
+  if (!document) throw new AppError('این مدرک پیدا نشد.', 404);
+  return document;
+}
+
+/**
  * Approves or refuses.
  *
  * A rejection without a reason is a dead end: the person cannot tell whether

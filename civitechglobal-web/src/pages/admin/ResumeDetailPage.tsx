@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { ChevronLeft, Download, Mail, Phone } from 'lucide-react';
-import { downloadResume, useAdminResume, useUpdateResumeStatus } from '@/api/resumes';
+import { ChevronLeft, Eye, Mail, Phone } from 'lucide-react';
+import { resumeFileUrl, useAdminResume, useUpdateResumeStatus } from '@/api/resumes';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { useAdminUsers } from '@/api/admin';
 import { apiMessage } from '@/lib/apiMessage';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -42,6 +43,7 @@ export default function ResumeDetailPage() {
   const { id } = useParams();
   const { t, locale } = useLocale();
   const { showToast } = useToast();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { data, isLoading, isError, refetch } = useAdminResume(id);
   const update = useUpdateResumeStatus();
 
@@ -172,19 +174,9 @@ export default function ResumeDetailPage() {
         <h2 className="mb-4 text-sm font-semibold text-text-primary">{t.join.sectionResume}</h2>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={async () => {
-              try {
-                await downloadResume(data.id, `${data.fullName}-${data.trackingCode}`);
-              } catch (error) {
-                showToast(apiMessage(error, t.join.downloadFailed), 'error');
-              }
-            }}
-          >
-            <Download className="size-4" />
-            {t.join.download}
+          <Button type="button" variant="secondary" onClick={() => setIsPreviewOpen(true)}>
+            <Eye className="size-4" />
+            {t.common.file.preview}
           </Button>
           <span className="ltr text-xs text-text-muted">
             {data.resumeOriginalName} · {(data.resumeSizeBytes / 1024).toFixed(0)} kB
@@ -270,6 +262,15 @@ export default function ResumeDetailPage() {
           {t.common.save}
         </Button>
       </Card>
+
+      {isPreviewOpen && (
+        <FilePreview
+          url={resumeFileUrl(data.id)}
+          filename={`${data.fullName}-${data.trackingCode}`}
+          title={data.resumeOriginalName}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }

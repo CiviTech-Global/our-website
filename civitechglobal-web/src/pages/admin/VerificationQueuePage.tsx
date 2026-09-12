@@ -1,15 +1,13 @@
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import {
-  downloadVerificationDocument,
+  reviewFileUrls,
   useReviewVerification,
   useVerificationDetail,
   useVerificationQueue,
 } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { verificationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
@@ -17,6 +15,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
@@ -122,9 +121,9 @@ export default function VerificationQueuePage() {
 
 function VerificationDetailPanel({ id }: { id: string }) {
   const { t, locale } = useLocale();
-  const { showToast } = useToast();
   const { data, isLoading } = useVerificationDetail(id);
   const review = useReviewVerification();
+  const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
 
   if (isLoading || !data) {
     return (
@@ -170,15 +169,14 @@ function VerificationDetailPanel({ id }: { id: string }) {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={async () => {
-                    try {
-                      await downloadVerificationDocument(doc.storedName, doc.originalName);
-                    } catch (error) {
-                      showToast(apiMessage(error, t.common.error), 'error');
-                    }
-                  }}
+                  onClick={() =>
+                    setPreviewing({
+                      url: reviewFileUrls.verificationDocument(doc.id),
+                      filename: doc.originalName,
+                    })
+                  }
                 >
-                  <Download className="size-4" aria-hidden="true" />
+                  <Eye className="size-4" aria-hidden="true" />
                   {t.market[doc.kind]} — {doc.originalName}
                 </Button>
               </li>
@@ -191,6 +189,14 @@ function VerificationDetailPanel({ id }: { id: string }) {
         isPending={review.isPending}
         onReview={(input) => review.mutateAsync({ id, ...input })}
       />
+
+      {previewing && (
+        <FilePreview
+          url={previewing.url}
+          filename={previewing.filename}
+          onClose={() => setPreviewing(null)}
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { openStoredFile, type IncomingFile } from '../services/attachment.service.js';
+import { requestedDisposition, serveStoredFile } from '../services/file-response.js';
 import * as proposalService from '../services/project-proposal.service.js';
 import * as requestService from '../services/project-request.service.js';
 import type { z } from 'zod';
@@ -222,18 +223,11 @@ export async function downloadAttachment(
 
     const object = await openStoredFile(attachment.storedName);
 
-    res.setHeader('Content-Type', attachment.mimeType);
-    res.setHeader('Content-Length', String(object.sizeBytes));
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-    // RFC 5987 encoding: the original name may be Persian, and a raw UTF-8
-    // header value is not portable.
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="download"; filename*=UTF-8''${encodeURIComponent(attachment.originalName)}`
-    );
-
-    object.stream.pipe(res);
+    serveStoredFile(res, object, {
+      mimeType: attachment.mimeType,
+      originalName: attachment.originalName,
+      disposition: requestedDisposition(req.query.disposition),
+    });
   } catch (error) {
     next(error);
   }

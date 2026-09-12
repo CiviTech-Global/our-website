@@ -267,7 +267,7 @@ export interface VerificationDetail extends VerificationQueueRow {
     id: string;
     kind: VerificationDocumentKind;
     originalName: string;
-    storedName: string;
+    sizeBytes: number;
   }>;
 }
 
@@ -308,7 +308,6 @@ export interface ApplicationQueueRow {
   coverLetter: string | null;
   expectedSalary: string | null;
   cvOriginalName: string | null;
-  cvStoredName: string | null;
   moderationStatus: ModerationStatus;
   createdAt: string;
   applicant: { id: string; firstName: string; lastName: string; email: string };

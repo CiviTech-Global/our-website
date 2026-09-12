@@ -9,6 +9,7 @@ import { publicCache } from '../middleware/cacheControl.js';
 import { validate } from '../middleware/validate.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { MAX_FILE_BYTES, MAX_FILES, openStoredFile } from '../services/attachment.service.js';
+import { requestedDisposition, serveStoredFile } from '../services/file-response.js';
 import * as verification from '../services/verification.service.js';
 import * as jobs from '../services/jobs.service.js';
 import * as freelance from '../services/freelance.service.js';
@@ -402,17 +403,61 @@ router.post(
   }),
 );
 
-/** Identity documents come back out of exactly one place, like every upload. */
+/**
+ * Identity documents come back out of exactly one place, like every upload.
+ *
+ * ?disposition=inline asks for it to be shown rather than downloaded, which is
+ * what a reviewer wants: approving an identity document means looking at it,
+ * and forcing a download puts copies of other people's papers on the
+ * reviewer's disk, outside anything our retention rules reach.
+ *
+ * Previously this set no Content-Type at all, so the browser had nothing to
+ * render even had it been allowed to.
+ */
 router.get(
-  '/admin/verification-documents/:storedName',
+  '/admin/verification-documents/:id',
   ...canVerify,
   wrap(async (req, res) => {
-    const object = await openStoredFile(param(req, 'storedName'));
-    res.setHeader('Content-Length', String(object.sizeBytes));
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-    res.setHeader('Content-Disposition', 'attachment; filename="document"');
-    object.stream.pipe(res);
+    const document = await verification.getDocumentForReview(param(req, 'id'));
+    const object = await openStoredFile(document.storedName);
+
+    serveStoredFile(res, object, {
+      mimeType: document.mimeType,
+      originalName: document.originalName,
+      disposition: requestedDisposition(req.query.disposition),
+    });
+  }),
+);
+
+/** A project's brief and mockups, for whoever is judging the bids on it. */
+router.get(
+  '/admin/project-attachments/:id',
+  ...canModerateFreelance,
+  wrap(async (req, res) => {
+    const attachment = await freelance.getAttachmentForReview(param(req, 'id'));
+    const object = await openStoredFile(attachment.storedName);
+
+    serveStoredFile(res, object, {
+      mimeType: attachment.mimeType,
+      originalName: attachment.originalName,
+      disposition: requestedDisposition(req.query.disposition),
+    });
+  }),
+);
+
+/** An applicant's CV, for the reviewer deciding whether it reaches the employer. */
+router.get(
+  '/admin/application-cvs/:id',
+  ...canModerateJobs,
+  wrap(async (req, res) => {
+    const application = await jobs.getApplicationCvForReview(param(req, 'id'));
+    const object = await openStoredFile(application.cvStoredName);
+
+    serveStoredFile(res, object, {
+      mimeType: application.cvMimeType,
+      originalName: application.cvOriginalName,
+      disposition: requestedDisposition(req.query.disposition),
+    });
   }),
 );
 

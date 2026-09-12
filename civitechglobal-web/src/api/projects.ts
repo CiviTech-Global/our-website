@@ -163,20 +163,11 @@ export function useSendProposal() {
 }
 
 /**
- * Attachments are staff-only, so they cannot be a plain <a href>: the browser
- * would send no Authorization header. Fetch through the API client, then hand
- * the bytes to the browser as a blob.
+ * Where a project attachment is served from.
+ *
+ * A path rather than a download helper: this route is staff-only, so a plain
+ * <a href> would send no Authorization header and get a 401. FilePreview
+ * fetches it, shows it, and offers the same bytes as a download from there.
  */
-export async function downloadAttachment(attachmentId: string, filename: string): Promise<void> {
-  const res = await api.get(`/projects/admin/attachments/${attachmentId}`, {
-    responseType: 'blob',
-  });
-  const url = URL.createObjectURL(res.data as Blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
+export const projectAttachmentUrl = (attachmentId: string) =>
+  `/projects/admin/attachments/${attachmentId}`;
