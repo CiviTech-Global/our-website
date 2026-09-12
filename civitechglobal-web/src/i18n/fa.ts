@@ -24,6 +24,13 @@ const fa = {
     comingSoon: 'به‌زودی',
     yes: 'بله',
     no: 'خیر',
+    date: {
+      choose: 'انتخاب تاریخ',
+      today: 'امروز',
+      clear: 'پاک کردن تاریخ',
+      jalali: 'تقویم شمسی',
+      gregorian: 'تقویم میلادی',
+    },
   },
   nav: {
     insurance: 'بیمه‌ها',

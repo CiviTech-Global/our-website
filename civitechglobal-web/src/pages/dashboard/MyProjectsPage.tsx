@@ -21,6 +21,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { DateField } from '@/components/ui/DateField';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
@@ -256,12 +257,10 @@ export default function MyProjectsPage() {
               />
             </FormField>
             <FormField label={t.market.deliverBy} htmlFor="deliverBy">
-              <Input
+              <DateField
                 id="deliverBy"
-                type="date"
-                className="ltr"
                 value={draft.deliverBy}
-                onChange={(e) => set('deliverBy')(e.target.value)}
+                onChange={(next) => set('deliverBy')(next)}
               />
             </FormField>
           </div>

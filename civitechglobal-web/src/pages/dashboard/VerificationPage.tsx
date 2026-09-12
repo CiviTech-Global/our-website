@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { DateField } from '@/components/ui/DateField';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
@@ -239,12 +240,12 @@ export default function VerificationPage() {
                 />
               </FormField>
               <FormField label={t.market.birthDate} htmlFor="birthDate">
-                <Input
+                <DateField
                   id="birthDate"
-                  type="date"
-                  className="ltr"
                   value={fields.birthDate}
-                  onChange={(e) => set('birthDate')(e.target.value)}
+                  onChange={(next) => set('birthDate')(next)}
+                  // Nobody was born tomorrow.
+                  max={new Date().toISOString().slice(0, 10)}
                 />
               </FormField>
             </div>

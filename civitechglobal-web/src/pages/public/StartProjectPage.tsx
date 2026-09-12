@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { DateField } from '@/components/ui/DateField';
 import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
 import { formatThousands, normalizePersianDigits } from '@/lib/persian';
@@ -491,19 +492,19 @@ export default function StartProjectPage() {
               </Select>
             </FormField>
             <FormField label={t.project.desiredStart} htmlFor="desiredStartAt">
-              <Input
+              <DateField
                 id="desiredStartAt"
-                type="date"
                 value={form.desiredStartAt}
-                onChange={(e) => set('desiredStartAt', e.target.value)}
+                onChange={(next) => set('desiredStartAt', next)}
               />
             </FormField>
             <FormField label={t.project.deadline} htmlFor="deadlineAt">
-              <Input
+              <DateField
                 id="deadlineAt"
-                type="date"
                 value={form.deadlineAt}
-                onChange={(e) => set('deadlineAt', e.target.value)}
+                onChange={(next) => set('deadlineAt', next)}
+                // A deadline before the start is not a deadline.
+                min={form.desiredStartAt || undefined}
               />
             </FormField>
           </div>

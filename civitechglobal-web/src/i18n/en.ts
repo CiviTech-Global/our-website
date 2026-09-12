@@ -26,6 +26,13 @@ const en: typeof fa = {
     comingSoon: 'Coming soon',
     yes: 'Yes',
     no: 'No',
+    date: {
+      choose: 'Choose a date',
+      today: 'Today',
+      clear: 'Clear the date',
+      jalali: 'Iranian calendar',
+      gregorian: 'Gregorian calendar',
+    },
   },
   nav: {
     insurance: 'Insurance',

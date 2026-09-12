@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { DateField } from '@/components/ui/DateField';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
@@ -621,11 +622,10 @@ function ProposalComposer({
           />
         </FormField>
         <FormField label={t.proposal.validUntil} htmlFor="validUntil" hint={t.proposal.validUntilHint}>
-          <Input
+          <DateField
             id="validUntil"
-            type="date"
             value={form.validUntil}
-            onChange={(e) => set('validUntil', e.target.value)}
+            onChange={(next) => set('validUntil', next)}
           />
         </FormField>
       </div>

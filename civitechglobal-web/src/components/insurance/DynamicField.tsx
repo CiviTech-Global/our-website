@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { Check } from 'lucide-react';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { DateField } from '@/components/ui/DateField';
 import { TextArea } from '@/components/ui/TextArea';
 import { Select } from '@/components/ui/Select';
 import { cn } from '@/lib/utils';
@@ -123,15 +124,21 @@ export function DynamicField({ field, value, error, onChange, onBlur }: DynamicF
 
       case 'date':
         return (
-          <Input
+          <DateField
             id={id}
-            type="date"
-            invalid={!!error}
             value={(value as string) ?? ''}
-            min={typeof field.min === 'string' && field.min !== 'today' ? field.min : undefined}
-            onChange={(e) => onChange(e.target.value)}
-            onBlur={onBlur}
-            className="ltr text-start"
+            min={
+              field.min === 'today'
+                ? new Date().toISOString().slice(0, 10)
+                : typeof field.min === 'string'
+                  ? field.min
+                  : undefined
+            }
+            onChange={(next) => {
+              onChange(next);
+              onBlur?.();
+            }}
+            invalid={!!error}
           />
         );
 
