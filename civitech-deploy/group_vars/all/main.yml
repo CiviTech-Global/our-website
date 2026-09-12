@@ -36,6 +36,12 @@ app_group: civitech
 # far worse than one that fails loudly on a missing tag.
 pull_images: true
 
+# The seed is idempotent — it creates the SUPER_ADMIN when there is none and
+# otherwise resets that account to the vault's credentials. Running it on every
+# deploy is what makes a forgotten admin password recoverable. Set false only
+# if you deliberately want the live admin credentials to diverge from vault.
+app_seed_on_deploy: true
+
 registry: ghcr.io
 registry_owner: civitech-global
 app_version: latest

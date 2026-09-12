@@ -122,6 +122,27 @@
     chdir: "{{ app_root }}"
   changed_when: true
 
+- name: Seed the super admin and the insurance catalogue
+  # Idempotent and self-healing, which is why it runs on every deploy rather
+  # than once by hand: with SEED_ADMIN_PASSWORD set it creates the SUPER_ADMIN
+  # if there is none, and otherwise resets that account's credentials to match
+  # the vault. A forgotten admin password is therefore a re-run, not a lockout.
+  #
+  # This step did not exist, and nothing else ran the seed — the compose
+  # `migrate` service runs `prisma migrate deploy` and nothing more. The first
+  # deployment came up with an empty users table and no way to sign in.
+  #
+  # `node dist/seed.js`, not `prisma db seed`: the production image installs
+  # with --omit=dev so tsx is absent, and the seed is compiled into dist for
+  # exactly this reason.
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      run --rm --entrypoint node api dist/seed.js
+    chdir: "{{ app_root }}"
+  changed_when: true
+  when: app_seed_on_deploy | default(true) | bool
+
 - name: Give the least-privilege role a password
   # The migration creates civitech_app NOLOGIN and passwordless on purpose — a
   # credential committed to a migration is not a credential. This is where it
