@@ -1,7 +1,7 @@
 # Scheduled Postgres backup sidecar. Uses the postgres:16-alpine image
 # directly so `pg_dump` always matches the server's major version (see
 # scripts/backup-postgres.sh header comment).
-FROM postgres:16-alpine
+FROM postgres:18-alpine
 
 # rclone pushes each dump off the host. A backup stored on the same disk as
 # the database it protects does not survive the event it exists for.
