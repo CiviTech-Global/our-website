@@ -28,6 +28,20 @@ export const PERMISSIONS = {
   users: 'users',
   /** The admin dashboard's counts. */
   analytics: 'analytics',
+
+  // --- Marketplace ---------------------------------------------------------
+  //
+  // Three keys rather than one, because these are three different jobs a super
+  // admin may well want on three different desks: deciding whether somebody is
+  // who they claim to be is not the same work as reading a job advert, and
+  // neither is judging whether a price is fair for the scope described.
+
+  /** Approving or refusing identity and company verification. */
+  verification: 'verification',
+  /** Moderating job posts and the applications to them. */
+  jobs: 'jobs',
+  /** Moderating freelance projects and the bids on them. */
+  freelance: 'freelance',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

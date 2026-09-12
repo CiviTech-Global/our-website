@@ -7,6 +7,7 @@ import adminRoutes from './admin.routes.js';
 import projectRoutes from './project.routes.js';
 import contactRoutes from './contact.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
+import marketplaceRoutes from './marketplace.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
 
@@ -31,6 +32,9 @@ router.use('/contact', contactRoutes);
 router.use('/resumes', resumeRoutes);
 // One box for any tracking code, whichever intake issued it.
 router.use('/track', trackRoutes);
+
+// The job and freelance boards, their verification gate, and their queues.
+router.use('/market', marketplaceRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper

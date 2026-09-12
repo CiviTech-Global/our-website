@@ -82,24 +82,44 @@ export function createApp(): Express {
     res.json({ success: true, message: 'CiviTech Global API is alive' });
   });
 
+  /**
+   * Each dependency gets its own deadline.
+   *
+   * Without one, an unreachable database makes the probe wait for the driver's
+   * connect timeout — about five seconds — which is the same as the timeout on
+   * the container healthcheck, so the probe flaps between "unhealthy" and "no
+   * answer at all" instead of reporting a clear false. A readiness probe that
+   * is slow when things are broken is a readiness probe that is useless
+   * precisely when it is needed.
+   */
+  const READINESS_TIMEOUT_MS = 2000;
+
+  async function check(name: string, probe: () => Promise<unknown>): Promise<boolean> {
+    try {
+      await Promise.race([
+        probe(),
+        new Promise((_resolve, reject) =>
+          setTimeout(() => reject(new Error(`timed out after ${READINESS_TIMEOUT_MS}ms`)), READINESS_TIMEOUT_MS).unref(),
+        ),
+      ]);
+      return true;
+    } catch (err) {
+      logger.error({ message: (err as Error).message }, `Readiness check failed: ${name}`);
+      return false;
+    }
+  }
+
   app.get(['/api/health/ready', '/api/v1/health/ready'], async (_req, res) => {
     const checks: Record<string, boolean> = {};
 
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      checks.database = true;
-    } catch (err) {
-      logger.error({ message: (err as Error).message }, 'Readiness check failed: database');
-      checks.database = false;
-    }
-
-    try {
-      await pingRedis();
-      checks.redis = true;
-    } catch (err) {
-      logger.error({ message: (err as Error).message }, 'Readiness check failed: redis');
-      checks.redis = false;
-    }
+    // Concurrently: two dependencies should not add their latencies together
+    // when the answer needs both of them anyway.
+    const [database, redis] = await Promise.all([
+      check('database', () => prisma.$queryRaw`SELECT 1`),
+      check('redis', () => pingRedis()),
+    ]);
+    checks.database = database;
+    checks.redis = redis;
 
     const healthy = Object.values(checks).every(Boolean);
     res.status(healthy ? 200 : 503).json({ success: healthy, message: healthy ? 'API is ready' : 'API is not ready', checks });

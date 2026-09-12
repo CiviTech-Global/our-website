@@ -108,8 +108,24 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  refreshTokens    RefreshToken[]
-  tokens           UserToken[]
+  refreshTokens RefreshToken[]
+  tokens        UserToken[]
+
+  // ---- Marketplace --------------------------------------------------------
+  verification          UserVerification?
+  verificationsReviewed UserVerification[] @relation("VerificationReviewer")
+
+  jobPosts             JobPost[]        @relation("JobAuthor")
+  jobsReviewed         JobPost[]        @relation("JobReviewer")
+  jobApplications      JobApplication[] @relation("JobApplicant")
+  applicationsReviewed JobApplication[] @relation("ApplicationReviewer")
+
+  freelanceProjects FreelanceProject[] @relation("ProjectAuthor")
+  projectsReviewed  FreelanceProject[] @relation("ProjectReviewer")
+
+  bids             ProjectBid[]       @relation("Bidder")
+  bidsReviewed     ProjectBid[]       @relation("BidReviewer")
+  awardsMade       MarketplaceAward[] @relation("AwardedBy")
   assignedRequests InsuranceRequest[] @relation("LeadAssignee")
 
   assignedProjectRequests ProjectRequest[]   @relation("AssignedProjectRequests")
@@ -787,4 +803,438 @@ model ResumeSubmission {
   @@index([identityId])
   @@index([assignedToId])
   @@map("resume_submissions")
+}
+
+// ===========================================================================
+// Marketplace — hiring and freelance work
+//
+// Two products over three shared subsystems.
+//
+//   Jobs       An employer posts a role; users apply.
+//   Freelance  A client posts a piece of work; freelancers bid, and so can we.
+//
+//   Verification  Nobody posts or bids until an admin has seen who they are.
+//   Moderation    Every post and every bid is reviewed before it reaches the
+//                 other side. Approval is not a formality here: it is the
+//                 product, because it is what makes a listing worth reading.
+//   Award         Who won. Money is out of scope for now, so this records the
+//                 outcome rather than settling it — the row a fee, an invoice
+//                 or an escrow would later hang from.
+//
+// Deliberately NOT folded into ProjectRequest. That model is an account-less
+// stranger asking OUR company to build something, answered by one proposal
+// from us. This is a registered, verified user publishing to a market that
+// many parties bid into. Same words, different actors, different lifecycle,
+// different visibility — merging them would mean one model where half the
+// columns are null in each direction.
+// ===========================================================================
+
+/// Whether an account acts for itself or for a registered business.
+///
+/// A company supplies registration details on top of the personal identity of
+/// whoever operates the account; it never replaces it, because a company
+/// cannot be held to anything and a person can.
+enum AccountKind {
+  INDIVIDUAL
+  COMPANY
+}
+
+enum VerificationStatus {
+  /// Never submitted. The state every account starts in.
+  UNVERIFIED
+  PENDING
+  APPROVED
+  /// Refused with a reason, and re-submittable — most rejections are a blurry
+  /// photograph rather than a fraud attempt.
+  REJECTED
+}
+
+/// Where something sits on its way to being visible to the other side.
+///
+/// Shared by posts and bids so that "what is waiting for review" is one
+/// question with one answer, rather than three queues with three vocabularies.
+enum ModerationStatus {
+  DRAFT
+  PENDING_REVIEW
+  /// Sent back with a note. The author edits and resubmits; the history of
+  /// what was asked for stays on the record.
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+/// What has happened to an approved listing since it went live.
+enum ListingState {
+  OPEN
+  /// Someone was chosen. Still readable, no longer accepting anything.
+  AWARDED
+  /// Withdrawn by its author, or closed by staff.
+  CLOSED
+  EXPIRED
+}
+
+enum JobEmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  FREELANCE
+}
+
+enum JobWorkArrangement {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+/// What the poster decided about one application or bid, after staff approved
+/// it and passed it on.
+enum OfferOutcome {
+  PENDING
+  SHORTLISTED
+  ACCEPTED
+  DECLINED
+  /// Pulled by the person who sent it.
+  WITHDRAWN
+}
+
+enum VerificationDocumentKind {
+  NATIONAL_ID_CARD
+  PASSPORT
+  /// A company's registration certificate — «آگهی تأسیس» or equivalent.
+  COMPANY_REGISTRATION
+  /// Proof the operator may act for the company.
+  AUTHORITY_LETTER
+  OTHER
+}
+
+/// Who somebody is, checked by a person before they can trade on this.
+///
+/// One row per account. Identity is not per-listing: verifying the same person
+/// twice tells you nothing new and doubles the review queue.
+model UserVerification {
+  id String @id @default(cuid())
+
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind   AccountKind        @default(INDIVIDUAL)
+  status VerificationStatus @default(UNVERIFIED)
+
+  // ---- The person, always -------------------------------------------------
+  legalFirstName String    @map("legal_first_name")
+  legalLastName  String    @map("legal_last_name")
+  /// Iranian national id. Validated by utils/persian.ts before it is stored,
+  /// so a check-digit failure never reaches a reviewer's queue.
+  nationalId     String    @map("national_id")
+  birthDate      DateTime? @map("birth_date")
+  phone          String
+  province       String?
+  city           String?
+  addressLine    String?   @map("address_line")
+
+  // ---- The company, when there is one -------------------------------------
+  companyName           String? @map("company_name")
+  companyRegistrationNo String? @map("company_registration_no")
+  /// «کد اقتصادی».
+  companyEconomicCode   String? @map("company_economic_code")
+  companyRole           String? @map("company_role")
+  companyWebsite        String? @map("company_website")
+
+  // ---- Review -------------------------------------------------------------
+  submittedAt  DateTime? @map("submitted_at")
+  reviewedAt   DateTime? @map("reviewed_at")
+  reviewedById String?   @map("reviewed_by_id")
+  reviewedBy   User?     @relation("VerificationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  /// Shown to the applicant. A rejection they cannot act on is a dead end.
+  reviewNote   String?   @map("review_note")
+  internalNote String?   @map("internal_note")
+
+  documents VerificationDocument[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([status])
+  @@map("user_verifications")
+}
+
+/// An identity document. Stored through services/storage like every other
+/// upload — never in a served directory, random name, scanned before writing.
+model VerificationDocument {
+  id String @id @default(cuid())
+
+  verificationId String           @map("verification_id")
+  verification   UserVerification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  kind VerificationDocumentKind
+
+  originalName String @map("original_name")
+  storedName   String @unique @map("stored_name")
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  checksum     String
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([verificationId])
+  @@map("verification_documents")
+}
+
+/// A role somebody is hiring for.
+model JobPost {
+  id String @id @default(cuid())
+
+  /// Quotable public reference, same alphabet as the other tracking codes.
+  code String @unique
+
+  authorId String @map("author_id")
+  author   User   @relation("JobAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+  /// Denormalised from the author's verification at publish time: an employer
+  /// may verify as a company, and the listing should say which company even if
+  /// the account is later changed.
+  companyName String? @map("company_name")
+
+  employmentType  JobEmploymentType
+  workArrangement JobWorkArrangement
+  province        String?
+  city            String?
+
+  salaryMin         BigInt? @map("salary_min")
+  salaryMax         BigInt? @map("salary_max")
+  currency          String  @default("IRT")
+  salaryUndisclosed Boolean @default(false) @map("salary_undisclosed")
+
+  skills String[] @default([])
+
+  // ---- Moderation ---------------------------------------------------------
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("JobReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  /// Shown to the author when changes are requested or it is rejected.
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  // ---- Life after approval ------------------------------------------------
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
+  closesAt    DateTime?    @map("closes_at")
+
+  applications JobApplication[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
+  @@index([authorId])
+  @@map("job_posts")
+}
+
+/// Somebody putting themselves forward for a role.
+model JobApplication {
+  id String @id @default(cuid())
+
+  jobId String  @map("job_id")
+  job   JobPost @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  applicantId String @map("applicant_id")
+  applicant   User   @relation("JobApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+
+  coverLetter    String? @map("cover_letter")
+  expectedSalary BigInt? @map("expected_salary")
+
+  /// One CV, inline — the same shape ResumeSubmission uses, for the same
+  /// reason: exactly one file, so a join table would be ceremony.
+  cvOriginalName String? @map("cv_original_name")
+  cvStoredName   String? @unique @map("cv_stored_name")
+  cvMimeType     String? @map("cv_mime_type")
+  cvSizeBytes    Int?    @map("cv_size_bytes")
+  cvChecksum     String? @map("cv_checksum")
+
+  moderationStatus ModerationStatus @default(PENDING_REVIEW) @map("moderation_status")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("ApplicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  /// What the employer decided, once staff passed it on.
+  outcome OfferOutcome @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  /// One application per person per role. A second one is an edit, not a new
+  /// application, and letting both exist means the employer reads two.
+  @@unique([jobId, applicantId])
+  @@index([jobId, moderationStatus])
+  @@index([applicantId])
+  @@map("job_applications")
+}
+
+/// A piece of work put out to bid.
+model FreelanceProject {
+  id String @id @default(cuid())
+
+  code String @unique
+
+  authorId String @map("author_id")
+  author   User   @relation("ProjectAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+  companyName String? @map("company_name")
+
+  category String?
+  skills   String[] @default([])
+
+  budgetMin     BigInt? @map("budget_min")
+  budgetMax     BigInt? @map("budget_max")
+  currency      String  @default("IRT")
+  budgetUnknown Boolean @default(false) @map("budget_unknown")
+
+  deliverBy DateTime? @map("deliver_by")
+
+  /// Whether the company may put its own offer in alongside the freelancers.
+  /// The author's choice, asked at posting time, because somebody looking for
+  /// an individual should not be pitched an agency without having agreed to it.
+  openToCompanyOffer Boolean @default(true) @map("open_to_company_offer")
+
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("ProjectReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
+  closesAt    DateTime?    @map("closes_at")
+
+  attachments FreelanceAttachment[]
+  bids        ProjectBid[]
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
+  @@index([authorId])
+  @@map("freelance_projects")
+}
+
+model FreelanceAttachment {
+  id String @id @default(cuid())
+
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  originalName String @map("original_name")
+  storedName   String @unique @map("stored_name")
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  checksum     String
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([projectId])
+  @@map("freelance_attachments")
+}
+
+/// An offer to do the work.
+///
+/// Sealed: a bidder sees only their own. That is deliberate — open bidding
+/// turns a marketplace into a race to the bottom and pushes the serious
+/// bidders out of going first.
+///
+/// It reaches staff BEFORE the poster. A reviewer judges whether the number is
+/// fair for the work described and can send it back with a note, so somebody
+/// who has badly under- or over-priced gets the chance to correct it rather
+/// than simply losing or winning on a mistake.
+model ProjectBid {
+  id String @id @default(cuid())
+
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Null exactly when this is the company's own offer, which is submitted by
+  /// staff rather than by an account bidding for itself.
+  bidderId String? @map("bidder_id")
+  bidder   User?   @relation("Bidder", fields: [bidderId], references: [id], onDelete: Cascade)
+
+  /// Surfaced to the poster as the company's professional offer, so it is
+  /// never mistaken for one freelancer among many.
+  isCompanyOffer Boolean @default(false) @map("is_company_offer")
+
+  amount       BigInt
+  currency     String @default("IRT")
+  /// Working days the bidder expects to need.
+  deliveryDays Int?   @map("delivery_days")
+  message      String
+
+  /// One optional supporting file — a portfolio piece, a breakdown.
+  attachmentOriginalName String? @map("attachment_original_name")
+  attachmentStoredName   String? @unique @map("attachment_stored_name")
+  attachmentMimeType     String? @map("attachment_mime_type")
+  attachmentSizeBytes    Int?    @map("attachment_size_bytes")
+  attachmentChecksum     String? @map("attachment_checksum")
+
+  moderationStatus ModerationStatus @default(PENDING_REVIEW) @map("moderation_status")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("BidReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  /// The fairness note, shown to the BIDDER. This is the one that says "this
+  /// looks low for the scope described" and invites a revision.
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+  /// What a reviewer thinks the work is actually worth. Advisory, never
+  /// applied automatically — the price on the bid stays the bidder's own.
+  suggestedAmount  BigInt?          @map("suggested_amount")
+
+  outcome OfferOutcome @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  /// One live bid per person per project, for the same reason as applications.
+  /// The company's offer is exempt: bidderId is null there, and Postgres treats
+  /// nulls as distinct in a unique index.
+  @@unique([projectId, bidderId])
+  @@index([projectId, moderationStatus])
+  @@index([bidderId])
+  @@map("project_bids")
+}
+
+/// Who won, and on what terms.
+///
+/// Money is out of scope for now, so this settles nothing. It exists because
+/// the outcome is the thing worth recording even when no funds move, and
+/// because a fee, an invoice or an escrow later hangs off exactly this row
+/// rather than needing the history reconstructed.
+model MarketplaceAward {
+  id String @id @default(cuid())
+
+  jobApplicationId String? @unique @map("job_application_id")
+  projectBidId     String? @unique @map("project_bid_id")
+
+  /// Copied at award time. The bid's amount may later be edited or the bid
+  /// deleted; what was agreed should not move.
+  agreedAmount BigInt? @map("agreed_amount")
+  currency     String  @default("IRT")
+
+  awardedById String? @map("awarded_by_id")
+  awardedBy   User?   @relation("AwardedBy", fields: [awardedById], references: [id], onDelete: SetNull)
+
+  note String?
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@map("marketplace_awards")
 }

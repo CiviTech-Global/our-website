@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 import { logger } from '../config/logger.js';
 import { Sentry } from '../config/sentry.js';
 
@@ -28,6 +29,7 @@ interface MaybeHttpError extends Error {
 const CLIENT_ERROR_NAMES = new Set(['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError']);
 
 function shouldReportToSentry(err: Error): boolean {
+  if (err instanceof ZodError) return false;
   const statusCode = (err as MaybeHttpError).statusCode;
   if (typeof statusCode === 'number') return statusCode >= 500;
   // These carry no statusCode but are answered below as 401s — an expired
@@ -81,6 +83,24 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     const response: Record<string, unknown> = { success: false, message: err.message };
     if (err.errors) response.errors = err.errors;
     res.status(err.statusCode).json(response);
+    return;
+  }
+
+  // A schema parsed by hand rather than through validate() — which is what
+  // every multipart route does, since the structured half arrives as a JSON
+  // field rather than as the body. Without this those routes answer a bad
+  // payload with "Internal server error", telling the caller we broke when in
+  // fact they sent something invalid, and losing the per-field detail that
+  // would have told them which field.
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: err.errors.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+      })),
+    });
     return;
   }
 
