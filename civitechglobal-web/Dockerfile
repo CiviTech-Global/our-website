@@ -23,6 +23,10 @@ RUN touch /var/run/nginx.pid && \
 USER nginx
 
 EXPOSE 80
+# 127.0.0.1, not localhost. The image's nginx listens on IPv4 only
+# (`listen 80;`), while localhost resolves to [::1] first in this base image —
+# so the check connected to IPv6, got "connection refused", and reported a
+# container that was serving traffic perfectly well as unhealthy.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:80/ || exit 1
 CMD ["nginx", "-g", "daemon off;"]

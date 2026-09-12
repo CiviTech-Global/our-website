@@ -87,21 +87,60 @@
           baked into CORS_ORIGIN and into the certificate, so a wrong value
           here means an API that rejects its own front end.
 
-    - name: Check whether a stack is already deployed
-      ansible.builtin.stat:
-        path: "{{ app_root }}/docker-compose.yml"
-      register: existing_release
+    - name: Look for an existing database volume
+      # The question this answers is "is there data to lose", and the only
+      # honest signal is the volume itself.
+      #
+      # This used to stat {{ app_root }}/docker-compose.yml, which is wrong in
+      # a way that only shows up after a failed deploy: the compose files are
+      # written before anything starts, so a run that died at the image pull
+      # left them behind with no database ever created. The next deploy then
+      # saw "already deployed", tried to dump, and failed with "postgres is
+      # not accepting connections" — blocking a first deploy on the safety net
+      # for data that does not exist.
+      ansible.builtin.command:
+        cmd: docker volume ls --quiet --filter name=_postgres_data
+      register: postgres_volume
+      changed_when: false
+
+    - name: Start postgres so it can be dumped
+      # The volume can outlive the container — after a crash, or a
+      # `docker compose down`. There IS data to protect in that case, so the
+      # right move is to bring the database up and take the dump, not to skip
+      # it silently.
+      ansible.builtin.command:
+        cmd: >-
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml
+          up -d postgres
+        chdir: "{{ app_root }}"
+      changed_when: true
+      when:
+        - postgres_volume.stdout | length > 0
+        - app_pre_deploy_backup | default(true) | bool
+
+    - name: Wait for postgres to accept connections
+      ansible.builtin.command:
+        cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T postgres pg_isready -U {{ postgres_user }}
+        chdir: "{{ app_root }}"
+      register: pg_ready
+      until: pg_ready.rc == 0
+      retries: 30
+      delay: 2
+      changed_when: false
+      when:
+        - postgres_volume.stdout | length > 0
+        - app_pre_deploy_backup | default(true) | bool
 
     - name: Back up before migrating
       # Prisma migrations are forward-only — there is no `migrate down`.
       # rollback.yml can put the old image back, but nothing can put the data
-      # back except this dump. Skipped on the first deploy, when there is
-      # nothing to lose yet.
+      # back except this dump. Skipped only when there is genuinely no
+      # database yet.
       ansible.builtin.command:
         cmd: /usr/local/bin/civitech-backup.sh
       changed_when: true
       when:
-        - existing_release.stat.exists
+        - postgres_volume.stdout | length > 0
         - app_pre_deploy_backup | default(true) | bool
 
   roles:

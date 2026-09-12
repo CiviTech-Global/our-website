@@ -30,6 +30,12 @@ app_group: civitech
 # "which commit is live" unanswerable.
 #
 #   ansible-playbook deploy.yml -e app_version=<git sha>
+# Set false to deploy images that are already present on the host — a
+# locally-built first release, a registry outage, or an air-gapped install.
+# The default is true because a deploy that silently runs a stale image is
+# far worse than one that fails loudly on a missing tag.
+pull_images: true
+
 registry: ghcr.io
 registry_owner: civitech-global
 app_version: latest
@@ -98,7 +104,15 @@ phone_token_ttl_seconds: 900
 # cannot issue a certificate for a bare IP, and certbot fails when the domain
 # does not resolve to this server. Re-run nginx.yml without the flag after DNS
 # is live.
-enable_ssl: true
+# Currently FALSE: the site answers on http://62.220.123.6 because there is
+# no domain yet, and Let's Encrypt cannot issue for a bare IP address. Set
+# this to true once domain_name in inventory.ini is a hostname that resolves
+# here, then re-run nginx.yml.
+#
+# The web bundle does NOT need rebuilding when the domain changes: it reads
+# `import.meta.env.VITE_API_URL ?? '/api'`, which is origin-relative, so the
+# same image serves correctly from any hostname.
+enable_ssl: false
 # Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
 # request with a 413 before Node ever sees it.
 nginx_client_max_body_size: 2M
