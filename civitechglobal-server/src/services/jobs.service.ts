@@ -269,6 +269,64 @@ export async function apply(
 }
 
 /**
+ * Answering a reviewer who asked for changes.
+ *
+ * Without this CHANGES_REQUESTED on an application was a dead end: the note
+ * asks for something, and the unique constraint on (job, applicant) stops the
+ * applicant from simply applying again. A review that cannot be answered is
+ * just a rejection written politely.
+ *
+ * A new CV is optional — most notes are about the letter — and when one comes
+ * the old file is removed only after the row points at the new one.
+ */
+export async function reviseApplication(
+  userId: string,
+  applicationId: string,
+  input: { coverLetter?: string; expectedSalary?: bigint },
+  cv: IncomingFile | null,
+) {
+  const application = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: { id: true, applicantId: true, moderationStatus: true, cvStoredName: true },
+  });
+
+  if (!application || application.applicantId !== userId) {
+    throw new AppError('این درخواست پیدا نشد.', 404);
+  }
+  assertAuthorEditable(application.moderationStatus);
+
+  const stored = cv ? (await storeFiles([cv], RESUME_EXTENSIONS))[0] : null;
+
+  try {
+    const updated = await prisma.jobApplication.update({
+      where: { id: applicationId },
+      data: {
+        coverLetter: input.coverLetter,
+        expectedSalary: input.expectedSalary,
+        ...(stored
+          ? {
+              cvOriginalName: stored.originalName,
+              cvStoredName: stored.storedName,
+              cvMimeType: stored.mimeType,
+              cvSizeBytes: stored.sizeBytes,
+              cvChecksum: stored.checksum,
+            }
+          : {}),
+        // Back into the queue: what changed has not been judged yet.
+        moderationStatus: 'PENDING_REVIEW',
+      },
+      select: { id: true, moderationStatus: true },
+    });
+
+    if (stored && application.cvStoredName) await removeFile(application.cvStoredName);
+    return updated;
+  } catch (error) {
+    if (stored) await removeFile(stored.storedName);
+    throw error;
+  }
+}
+
+/**
  * What the employer sees — only applications a reviewer has passed on.
  *
  * This is the half of moderation that does the work: the employer's inbox
@@ -288,6 +346,35 @@ export async function listApplicationsForEmployer(userId: string, jobId: string)
       outcome: true,
       createdAt: true,
       applicant: { select: { id: true, firstName: true, lastName: true, email: true } },
+    },
+  });
+}
+
+/**
+ * What an applicant sees of their own applications.
+ *
+ * Without this somebody applies and then has nowhere to look: no record of
+ * what they applied to, no sign that a reviewer sent it back, no outcome. The
+ * bidder side has had this from the start; the applicant side needs it for the
+ * same reason.
+ *
+ * The reviewer's note is included, because it is written to the applicant.
+ * internalNote is not — that one is written about them.
+ */
+export async function listOwnApplications(userId: string) {
+  return prisma.jobApplication.findMany({
+    where: { applicantId: userId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      coverLetter: true,
+      expectedSalary: true,
+      cvOriginalName: true,
+      moderationStatus: true,
+      reviewNote: true,
+      outcome: true,
+      createdAt: true,
+      job: { select: { code: true, title: true, companyName: true, state: true } },
     },
   });
 }
@@ -388,6 +475,44 @@ export async function listJobsForReview(query: { status?: string; page: number; 
       },
     }),
     prisma.jobPost.count({ where }),
+  ]);
+
+  return { items, total, page: query.page, pageSize: query.pageSize };
+}
+
+/**
+ * The application queue.
+ *
+ * reviewApplication existed with nothing to find its subjects, so an
+ * application that reached PENDING_REVIEW stayed there: invisible to staff,
+ * and therefore never delivered to the employer either. The job it belongs to
+ * comes along, since "is this worth the employer's time" cannot be judged
+ * without knowing what the role is.
+ */
+export async function listApplicationsForReview(query: { status?: string; page: number; pageSize: number }) {
+  const where: Prisma.JobApplicationWhereInput = {
+    moderationStatus: (query.status as never) ?? 'PENDING_REVIEW',
+  };
+
+  const [items, total] = await Promise.all([
+    prisma.jobApplication.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      skip: (query.page - 1) * query.pageSize,
+      take: query.pageSize,
+      select: {
+        id: true,
+        coverLetter: true,
+        expectedSalary: true,
+        cvOriginalName: true,
+        cvStoredName: true,
+        moderationStatus: true,
+        createdAt: true,
+        applicant: { select: { id: true, firstName: true, lastName: true, email: true } },
+        job: { select: { id: true, code: true, title: true, companyName: true, description: true } },
+      },
+    }),
+    prisma.jobApplication.count({ where }),
   ]);
 
   return { items, total, page: query.page, pageSize: query.pageSize };

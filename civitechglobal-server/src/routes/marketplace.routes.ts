@@ -209,6 +209,15 @@ router.get(
 
 // ---- Applying -------------------------------------------------------------
 
+// The applicant's own side of the board: what they applied to, where it got
+// to, and any note a reviewer wrote back to them.
+router.get(
+  '/me/applications',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await jobs.listOwnApplications(req.user!.userId)));
+  }),
+);
+
 router.post(
   '/me/jobs/:id/apply',
   projectSubmitRateLimiter,
@@ -219,6 +228,18 @@ router.post(
 
     const result = await jobs.apply(req.user!.userId, param(req, 'id'), input, cv);
     successResponse(res, result, 'درخواست شما ثبت شد و پس از بررسی برای کارفرما ارسال می‌شود.', 201);
+  }),
+);
+
+router.patch(
+  '/me/applications/:id',
+  upload.single('cv'),
+  wrap(async (req, res) => {
+    const input = applicationSchema.parse(payloadOf(req));
+    const cv = req.file ? { originalName: req.file.originalname, buffer: req.file.buffer } : null;
+
+    const result = await jobs.reviseApplication(req.user!.userId, param(req, 'id'), input, cv);
+    successResponse(res, result, 'درخواست شما به‌روزرسانی و دوباره برای بررسی ارسال شد.');
   }),
 );
 
@@ -407,6 +428,15 @@ router.post(
       req.body,
     );
     successResponse(res, serialize(result), 'بررسی ثبت شد.');
+  }),
+);
+
+router.get(
+  '/admin/applications',
+  ...canModerateJobs,
+  validate({ query: listQuerySchema }),
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await jobs.listApplicationsForReview(req.query as never)));
   }),
 );
 
