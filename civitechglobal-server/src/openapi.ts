@@ -34,6 +34,13 @@ export const openApiDocument = {
     { name: 'Intake', description: 'Submissions from the public site.' },
     { name: 'Tracking', description: 'Status by quotable reference code.' },
     { name: 'Telemetry', description: 'Browser error reports.' },
+    {
+      name: 'Marketplace',
+      description:
+        'The public job and freelance boards. Approved, open listings only; posting, ' +
+        'applying and bidding all require a session and an approved verification, and are ' +
+        'therefore not part of this document.',
+    },
   ],
   paths: {
     '/health/live': {
@@ -52,6 +59,53 @@ export const openApiDocument = {
         responses: {
           200: { $ref: '#/components/responses/Ok' },
           503: { description: 'A dependency is down.' },
+        },
+      },
+    },
+    '/market/jobs': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'The job board',
+        description:
+          'Only listings that are approved and open, and never the author identity — a board ' +
+          'that names who placed each advert publishes a list of verified accounts. ' +
+          'Cache-Control: public, max-age=60, stale-while-revalidate=600. ' +
+          'Filters: search, employmentType, workArrangement, province, page, pageSize. ' +
+          'Money is a decimal string, in Toman.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
+    '/market/jobs/{code}': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'One posting, by its reference code',
+        parameters: [{ $ref: '#/components/parameters/Code' }],
+        responses: {
+          200: { $ref: '#/components/responses/Ok' },
+          404: { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
+    '/market/projects': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'The freelance board',
+        description:
+          'Approved, open projects. Each carries a count of the offers it has drawn and ' +
+          'nothing about them: bids are sealed, and a count conveys competition without ' +
+          "handing the next bidder somebody else's number to undercut. " +
+          'Filters: search, category, page, pageSize.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
+    '/market/projects/{code}': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'One project, by its reference code',
+        parameters: [{ $ref: '#/components/parameters/Code' }],
+        responses: {
+          200: { $ref: '#/components/responses/Ok' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
