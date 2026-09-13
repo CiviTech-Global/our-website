@@ -133,6 +133,12 @@ scheme: "{{ 'https' if enable_ssl | bool else 'http' }}"
 
 nginx_extra_server_names:
   - 62.220.123.6
+  # Listed before DNS resolves on purpose. nginx answers to them and the API
+  # accepts them as origins the moment the name starts pointing here, so the
+  # site is fully working — login included — without waiting on another
+  # deploy. They move to domain_name/domain_alias at the TLS cutover.
+  - rayantamaddonjahangostar.ir
+  - www.rayantamaddonjahangostar.ir
 
 # CIDRs of anything that proxies traffic to this server — a CDN's edge nodes.
 # EMPTY MEANS NGINX IS THE FIRST HOP, which is the safe default: an

@@ -68,8 +68,14 @@ services:
       # The scheme has to match too: https://x and http://x are not the same
       # origin, which is why these are built from enable_ssl rather than
       # hard-coded.
+      # Deduplicated: until the TLS cutover domain_name IS the bare IP, which
+      # also appears in nginx_extra_server_names, and a repeated origin in the
+      # list is noise in something worth being able to read at a glance.
       CORS_ORIGIN: >-
-        {{ scheme }}://{{ domain_name }}{% if domain_alias %},{{ scheme }}://{{ domain_alias }}{% endif %}{% for name in nginx_extra_server_names %},http://{{ name }}{% endfor %}
+        {{ ([scheme ~ '://' ~ domain_name]
+            + ([scheme ~ '://' ~ domain_alias] if domain_alias else [])
+            + (nginx_extra_server_names | map('regex_replace', '^', 'http://') | list))
+           | unique | list | join(',') }}
       # config/env.ts forces this true whenever NODE_ENV=production regardless,
       # but stating it keeps the intent visible in one place.
       COOKIE_SECURE: "true"
