@@ -123,6 +123,28 @@ enable_ssl: false
 # request with a 413 before Node ever sees it.
 nginx_client_max_body_size: 2M
 
+# Names this site answers to beyond domain_name and domain_alias. The bare IP
+# stays here so the address the site launched on keeps working after the domain
+# is attached — an old bookmark should not 404.
+# Derived once rather than repeated: http and https are different ORIGINS to a
+# browser, so anywhere the site states its own address has to agree with
+# whether TLS is on.
+scheme: "{{ 'https' if enable_ssl | bool else 'http' }}"
+
+nginx_extra_server_names:
+  - 62.220.123.6
+
+# CIDRs of anything that proxies traffic to this server — a CDN's edge nodes.
+# EMPTY MEANS NGINX IS THE FIRST HOP, which is the safe default: an
+# X-Forwarded-For from an untrusted source is ignored, so nobody can spoof
+# their address past the rate limiter.
+#
+# Fill this in when a CDN is put in front, and ONLY with ranges the provider
+# publishes. Getting it wrong in the permissive direction (0.0.0.0/0) would let
+# any caller claim any address; getting it wrong in the other direction just
+# means the limiter counts the CDN as one client, which is what it does today.
+nginx_trusted_proxies: []
+
 # Edge rate limits. The application's own limiter is Redis-backed and correct,
 # but every request it rejects has already been accepted, parsed, run through
 # optionalAuth (a database read whenever a token is present) and round-tripped

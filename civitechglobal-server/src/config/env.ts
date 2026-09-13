@@ -13,6 +13,22 @@ function optional(key: string, fallback: string): string {
   return value && value.trim() !== '' ? value : fallback;
 }
 
+/**
+ * A comma-separated list, trimmed, with blanks dropped.
+ *
+ * CORS_ORIGIN needs this because a site is reachable at more than one name:
+ * the apex and the www alias are different origins to a browser, and during a
+ * move to a new domain the old address has to keep working too. A single
+ * string meant the API rejected its own front end from every name but one,
+ * which presents as "login does nothing".
+ */
+export function optionalList(key: string, fallback: string): string[] {
+  return optional(key, fallback)
+    .split(',')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
 function assertNotWeak(key: string, value: string, isProduction: boolean): void {
   if (value.length >= 32) return;
 
@@ -44,7 +60,7 @@ export const env = {
   JWT_SECRET: required('JWT_SECRET'),
   JWT_REFRESH_SECRET: required('JWT_REFRESH_SECRET'),
 
-  CORS_ORIGIN: optional('CORS_ORIGIN', 'http://localhost:5173'),
+  CORS_ORIGIN: optionalList('CORS_ORIGIN', 'http://localhost:5173'),
   // Cookies must be Secure whenever the app runs in production, regardless
   // of how COOKIE_SECURE is set (misconfiguration should not silently
   // downgrade cookie security over HTTPS deployments).

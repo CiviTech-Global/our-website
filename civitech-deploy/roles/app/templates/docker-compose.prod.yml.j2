@@ -59,9 +59,17 @@ services:
       REDIS_URL: "redis://redis:6379"
       JWT_SECRET: "{{ vault_jwt_secret }}"
       JWT_REFRESH_SECRET: "{{ vault_jwt_refresh_secret }}"
-      # Single origin, with credentials. A mismatch here means the API rejects
-      # its own front end, which presents as "login does nothing".
-      CORS_ORIGIN: "{{ 'https' if enable_ssl | bool else 'http' }}://{{ domain_name }}"
+      # Every origin the front end is actually served from, comma separated.
+      # A browser treats the apex and the www alias as different origins, and
+      # during a domain move the previous address has to keep working — so a
+      # single value here means the API rejects its own front end from every
+      # name but one, which presents to a user as "login does nothing".
+      #
+      # The scheme has to match too: https://x and http://x are not the same
+      # origin, which is why these are built from enable_ssl rather than
+      # hard-coded.
+      CORS_ORIGIN: >-
+        {{ scheme }}://{{ domain_name }}{% if domain_alias %},{{ scheme }}://{{ domain_alias }}{% endif %}{% for name in nginx_extra_server_names %},http://{{ name }}{% endfor %}
       # config/env.ts forces this true whenever NODE_ENV=production regardless,
       # but stating it keeps the intent visible in one place.
       COOKIE_SECURE: "true"

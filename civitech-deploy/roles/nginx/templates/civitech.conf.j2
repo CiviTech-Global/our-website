@@ -11,6 +11,27 @@
 # request the app rejects has already been accepted, parsed, run through
 # optionalAuth (a database read whenever a token is present) and round-tripped
 # to Redis. nginx drops a flood before any of that happens, for microseconds.
+#
+# The zones below key on $binary_remote_addr, which is the CLIENT's address
+# only when nginx is the first thing the client reaches. Behind a CDN every
+# request arrives from an edge node, so without the real_ip block below the
+# whole internet shares one bucket and normal users throttle each other.
+{% if nginx_trusted_proxies %}
+# ---- Trusted proxies -------------------------------------------------------
+# The CDN in front of this server. real_ip_recursive walks X-Forwarded-For from
+# the right, skipping every address in this list, so the value that survives is
+# the first hop we did not put there ourselves — the actual visitor.
+#
+# Only addresses listed here are believed. An X-Forwarded-For from anyone else
+# is ignored, which is what stops a caller spoofing their way past a rate limit
+# by inventing a header.
+{% for cidr in nginx_trusted_proxies %}
+set_real_ip_from {{ cidr }};
+{% endfor %}
+real_ip_header    X-Forwarded-For;
+real_ip_recursive on;
+{% endif %}
+
 limit_req_zone  $binary_remote_addr zone=civitech_api:10m  rate={{ nginx_api_rate }};
 limit_req_zone  $binary_remote_addr zone=civitech_auth:10m rate={{ nginx_auth_rate }};
 limit_conn_zone $binary_remote_addr zone=civitech_conn:10m;
@@ -33,7 +54,14 @@ upstream civitech_web {
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    server_name {{ domain_name }}{% if domain_alias %} {{ domain_alias }}{% endif %};
+    # Every name this site answers to. The alias is the www form; the extras
+    # carry the address it was reachable at before a domain was attached, so a
+    # bookmark or a link in an old email keeps working through the move.
+    #
+    # Deduplicated, because before a domain is attached domain_name IS the bare
+    # IP and nginx warns about a conflicting server name listed twice.
+{% set server_names = ([domain_name] + ([domain_alias] if domain_alias else []) + nginx_extra_server_names) | unique | list %}
+    server_name {{ server_names | join(' ') }};
 
     # Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
     # request with a 413 before Node ever sees it.

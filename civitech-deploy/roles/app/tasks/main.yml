@@ -177,13 +177,19 @@
   # `docker compose logs api` first: the probe reports which dependency
   # failed, which is usually the whole answer. Otherwise recover with:
   #   ansible-playbook rollback.yml -e app_version=<previous sha>
+  #
+  # Skipped under --check, which the header advertises as the way to preview a
+  # deploy: the module does not run there, so app_api_health comes back without
+  # a status and the until: expression fails on a dict that has no such key —
+  # making the documented dry-run the one thing that could not be dry-run.
   ansible.builtin.uri:
     url: "http://127.0.0.1:{{ api_port }}/api/health/ready"
     status_code: 200
   register: app_api_health
-  until: app_api_health.status == 200
+  until: app_api_health.status | default(0) == 200
   retries: 20
   delay: 3
+  when: not ansible_check_mode
 
 - name: Record the deployed version
   # So "which commit is live" has an answer that does not require guessing,
