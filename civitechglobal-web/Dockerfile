@@ -22,7 +22,7 @@ ENV VITE_CANONICAL_ORIGIN=$VITE_CANONICAL_ORIGIN
 RUN npm run build
 
 # --- Production stage: static serving via nginx ---
-FROM nginx:1.27-alpine AS production
+FROM nginx:1.31-alpine AS production
 
 # nginx:alpine already ships an unprivileged "nginx" user; reuse it and just
 # make sure it can read the app files and write to the paths nginx needs at
