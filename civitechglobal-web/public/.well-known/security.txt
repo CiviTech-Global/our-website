@@ -6,7 +6,7 @@
 
 Contact: mailto:security@civitechglobal.com
 Preferred-Languages: fa, en
-Canonical: https://civitechglobal.com/.well-known/security.txt
+Canonical: https://rayantamaddonjahangostar.ir/.well-known/security.txt
 
 # Update this before it lapses — an expired security.txt reads as an abandoned
 # one, and researchers skip those.

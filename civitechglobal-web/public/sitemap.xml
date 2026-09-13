@@ -8,11 +8,11 @@
   listing another host is ignored.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://civitechglobal.com/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://civitechglobal.com/services</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://civitechglobal.com/start-project</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://civitechglobal.com/join</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://civitechglobal.com/about</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://civitechglobal.com/insurance</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://civitechglobal.com/contact</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/services</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/start-project</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/join</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/about</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/insurance</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://rayantamaddonjahangostar.ir/contact</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
 </urlset>

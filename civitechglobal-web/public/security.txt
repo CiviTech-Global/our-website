@@ -4,5 +4,5 @@
 
 Contact: mailto:security@civitechglobal.com
 Preferred-Languages: fa, en
-Canonical: https://civitechglobal.com/.well-known/security.txt
+Canonical: https://rayantamaddonjahangostar.ir/.well-known/security.txt
 Expires: 2027-09-10T00:00:00.000Z

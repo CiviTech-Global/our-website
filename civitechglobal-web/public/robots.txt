@@ -8,4 +8,4 @@ Disallow: /dashboard
 Disallow: /track
 Disallow: /proposal
 
-Sitemap: https://civitechglobal.com/sitemap.xml
+Sitemap: https://rayantamaddonjahangostar.ir/sitemap.xml
