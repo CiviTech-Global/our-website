@@ -6,6 +6,19 @@ COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund
 
 COPY . .
+
+# Vite inlines VITE_* at build time, and .dockerignore deliberately keeps .env
+# out of the image — so anything the bundle needs has to arrive as a build arg
+# or it silently falls back to its default.
+#
+# The canonical origin is what <link rel="canonical"> and og:url point at. Left
+# empty the app falls back to the visitor's own origin, which is right for
+# development but wrong behind a domain with a www alias: the apex and the www
+# form would each declare themselves canonical, which is the duplicate-content
+# problem the tag exists to settle.
+ARG VITE_CANONICAL_ORIGIN=""
+ENV VITE_CANONICAL_ORIGIN=$VITE_CANONICAL_ORIGIN
+
 RUN npm run build
 
 # --- Production stage: static serving via nginx ---

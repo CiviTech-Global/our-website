@@ -127,6 +127,14 @@ jobs:
             context: ./civitechglobal-web
             dockerfile: Dockerfile
             image: civitechglobal-web
+            # Vite inlines VITE_* at build time and .dockerignore keeps .env out
+            # of the image, so the bundle only learns its canonical origin from
+            # a build arg. Without it the app falls back to the visitor's own
+            # origin — and the apex and the www alias would then each claim to
+            # be canonical, which is the duplicate-content problem the tag is
+            # meant to settle.
+            build_args: |
+              VITE_CANONICAL_ORIGIN=https://rayantamaddonjahangostar.ir
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -142,6 +150,7 @@ jobs:
           push: false
           load: true
           tags: ${{ matrix.image }}:ci
+          build-args: ${{ matrix.build_args }}
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
@@ -166,6 +175,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           push: true
+          build-args: ${{ matrix.build_args }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ github.sha }}
