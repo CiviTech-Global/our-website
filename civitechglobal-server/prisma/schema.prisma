@@ -132,6 +132,29 @@ model User {
   authoredProposals       ProjectProposal[]  @relation("AuthoredProposals")
   assignedResumes         ResumeSubmission[] @relation("AssignedResumes")
 
+  // ---- Marketplace expansion ---------------------------------------------
+  //
+  // Public profile fields. Contact details (email/phone) are NEVER part of
+  // the public profile — see profile.service for what is exposed.
+
+  /// One-liner shown on the public profile and next to the author's name.
+  headline String?
+  /// Free text, ~1000 chars max (validated in the service layer).
+  bio      String?
+  website  String?
+
+  /// Staff-controlled circuit breaker: a paused user cannot post, apply, bid
+  /// or message, but their existing listings stay readable. Pausing hides the
+  /// profile entirely — see profile.service.
+  marketplacePaused Boolean   @default(false) @map("marketplace_paused")
+  pausedAt          DateTime? @map("paused_at")
+  pausedReason      String?   @map("paused_reason")
+
+  reviewsReceived MarketplaceReview[]    @relation("Reviewee")
+  reviewsGiven    MarketplaceReview[]    @relation("Rater")
+  notifications   Notification[]
+  messagesSent    MarketplaceMessage[]   @relation("MessageSender")
+
   @@index([role])
   @@index([createdAt])
   @@index([deletedAt])
@@ -908,6 +931,33 @@ enum VerificationDocumentKind {
   OTHER
 }
 
+// ===========================================================================
+// Marketplace expansion — engagement, reputation, messaging, staff ops.
+//
+// Everything here hangs off the existing marketplace models. Awards gain a
+// lifecycle (ACTIVE → COMPLETED/CANCELLED, with an optional dispute), and
+// three new subsystems anchor on them or on the review-approved anchors:
+// milestones + reviews on the award, messages on the application/bid.
+// ===========================================================================
+
+enum AwardStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum DisputeStatus {
+  NONE
+  OPEN
+  RESOLVED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+}
+
 /// Who somebody is, checked by a person before they can trade on this.
 ///
 /// One row per account. Identity is not per-listing: verifying the same person
@@ -1025,6 +1075,21 @@ model JobPost {
   publishedAt DateTime?    @map("published_at")
   closesAt    DateTime?    @map("closes_at")
 
+  /// Free-text taxonomy tag, the same convention FreelanceProject.category
+  /// already uses. Deliberately not a foreign key: the vocabulary should grow
+  /// with what people post, not require a migration per new tag.
+  category String?
+
+  /// Staff-curated prominence (not paid — there is no monetization here).
+  /// featuredAt lets "sort by recently featured" be honest.
+  featured   Boolean   @default(false)
+  featuredAt DateTime? @map("featured_at")
+
+  /// Denormalized read counter, incremented on the public detail route.
+  /// Under-counts slightly under the 60s board cache — accepted, and a read
+  /// counter that never blocks a read is worth more than an exact one.
+  viewCount Int @default(0) @map("view_count")
+
   applications JobApplication[]
 
   createdAt DateTime @default(now()) @map("createdAt")
@@ -1033,6 +1098,7 @@ model JobPost {
   @@index([moderationStatus])
   @@index([state, publishedAt])
   @@index([authorId])
+  @@index([featured, state])
   @@map("job_posts")
 }
 
@@ -1066,6 +1132,10 @@ model JobApplication {
 
   /// What the employer decided, once staff passed it on.
   outcome OfferOutcome @default(PENDING)
+
+  /// Contact opens only after staff approved the application — the thread
+  /// anchors here. See the note on MarketplaceMessage.
+  messages MarketplaceMessage[]
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
@@ -1118,6 +1188,13 @@ model FreelanceProject {
   publishedAt DateTime?    @map("published_at")
   closesAt    DateTime?    @map("closes_at")
 
+  /// Same convention as JobPost: staff-curated, never paid.
+  featured   Boolean   @default(false)
+  featuredAt DateTime? @map("featured_at")
+
+  /// See the note on JobPost.viewCount.
+  viewCount Int @default(0) @map("view_count")
+
   attachments FreelanceAttachment[]
   bids        ProjectBid[]
 
@@ -1127,6 +1204,7 @@ model FreelanceProject {
   @@index([moderationStatus])
   @@index([state, publishedAt])
   @@index([authorId])
+  @@index([featured, state])
   @@map("freelance_projects")
 }
 
@@ -1200,6 +1278,10 @@ model ProjectBid {
 
   outcome OfferOutcome @default(PENDING)
 
+  /// Contact opens only after staff approved the bid. See the note on
+  /// MarketplaceMessage.
+  messages MarketplaceMessage[]
+
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
@@ -1234,7 +1316,173 @@ model MarketplaceAward {
 
   note String?
 
+  // ---- Engagement lifecycle ------------------------------------------------
+  //
+  // Money is out of scope, so the award is a commitment record, not a
+  // settlement. The lifecycle is: ACTIVE (work happening) → COMPLETED (all
+  // milestones approved, or parties agreed there was nothing to plan) or
+  // CANCELLED. Either party can raise a dispute, which freezes completion
+  // until staff resolve it.
+
+  status      AwardStatus @default(ACTIVE)
+  completedAt DateTime?   @map("completed_at")
+
+  milestones MarketplaceMilestone[]
+  reviews    MarketplaceReview[]
+
+  disputeStatus DisputeStatus @default(NONE) @map("dispute_status")
+  disputeReason String?       @map("dispute_reason")
+  disputeOpenedAt     DateTime? @map("dispute_opened_at")
+  disputeResolvedAt   DateTime? @map("dispute_resolved_at")
+  disputeResolutionNote String? @map("dispute_resolution_note")
+
   createdAt DateTime @default(now()) @map("createdAt")
 
   @@map("marketplace_awards")
+}
+
+/// A thread is anchored to exactly one application or one bid, and opens only
+/// after staff approved that anchor — contact flows post-approval, matching
+/// the moderation philosophy that makes the board worth reading in the first
+/// place. Exactly one of applicationId/bidId is non-null; that invariant is
+/// enforced in the service layer and covered by tests (a DB check expression
+/// would be fine too, but the service is the only writer).
+model MarketplaceMessage {
+  id String @id @default(cuid())
+
+  applicationId String?         @map("application_id")
+  application   JobApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  bidId         String?         @map("bid_id")
+  bid           ProjectBid?     @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  senderId String @map("sender_id")
+  sender   User   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  /// Validated 1..2000 chars in the service layer.
+  body String
+
+  /// Set when the OTHER party reads the thread — read receipts per message,
+  /// which is all a two-party thread needs.
+  readAt DateTime? @map("read_at")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([applicationId, createdAt])
+  @@index([bidId, createdAt])
+  @@index([senderId])
+  @@map("marketplace_messages")
+}
+
+/// In-app notification. `type` is a string rather than an enum so a new kind
+/// never needs a migration — the notification service owns the vocabulary and
+/// the web client renders unknown types as a generic row.
+model Notification {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type String
+  /// Pre-rendered display text in Persian; the client treats these as opaque.
+  title String
+  body  String
+  /// A client-side route (e.g. /dashboard/projects), never an external URL.
+  link  String?
+
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("createdAt")
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+/// Ratings are two-sided and only exist after an award: one review per
+/// direction per award, enforced by the unique key. The aggregate shown on
+/// profiles is computed on read, not denormalized — a wrong cached average is
+/// worse than a computed one at this volume.
+model MarketplaceReview {
+  id String @id @default(cuid())
+
+  awardId String           @map("award_id")
+  award   MarketplaceAward @relation(fields: [awardId], references: [id], onDelete: Cascade)
+
+  raterId String @map("rater_id")
+  rater   User   @relation("Rater", fields: [raterId], references: [id], onDelete: Cascade)
+  rateeId String @map("ratee_id")
+  ratee   User   @relation("Reviewee", fields: [rateeId], references: [id], onDelete: Cascade)
+
+  /// 1..5, validated in the service layer.
+  rating Int
+  text   String?
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@unique([awardId, raterId])
+  @@index([rateeId])
+  @@map("marketplace_reviews")
+}
+
+/// Work plan after an award. Money is out of scope, so a milestone is a
+/// scope/time checkpoint only: the listing author writes the plan, the other
+/// side delivers against it with a note (and one optional supporting file),
+/// and the author approves. When every milestone is approved the award
+/// completes itself.
+model MarketplaceMilestone {
+  id String @id @default(cuid())
+
+  awardId String           @map("award_id")
+  award   MarketplaceAward @relation(fields: [awardId], references: [id], onDelete: Cascade)
+
+  /// 1, 2, 3 … within the award. Assigned by the service, never by the client.
+  order Int
+
+  title       String
+  description String?
+  dueDate     DateTime? @map("due_date")
+
+  status MilestoneStatus @default(PENDING)
+
+  deliveryNote    String?   @map("delivery_note")
+  deliveredAt     DateTime? @map("delivered_at")
+  /// One optional supporting file, stored exactly like a bid attachment:
+  /// generated name, sniffed type, never under a served directory.
+  deliveryOriginalName String? @map("delivery_original_name")
+  deliveryStoredName   String? @unique @map("delivery_stored_name")
+  deliveryMimeType     String? @map("delivery_mime_type")
+  deliverySizeBytes    Int?    @map("delivery_size_bytes")
+  deliveryChecksum     String? @map("delivery_checksum")
+
+  approvedAt   DateTime? @map("approved_at")
+  approvedById String?   @map("approved_by_id")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@unique([awardId, order])
+  @@index([awardId, status])
+  @@map("marketplace_milestones")
+}
+
+/// Every staff action that changes marketplace state outside the normal
+/// review flow: feature/unfeature, deadline extensions, user pauses, dispute
+/// resolutions. Review decisions already keep their history on the reviewed
+/// rows; this log is the cross-module "who did what, when" and is readable
+/// by SUPER_ADMIN only.
+model MarketplaceAuditEntry {
+  id String @id @default(cuid())
+
+  actorId String @map("actor_id")
+
+  /// e.g. job.featured, project.unfeatured, user.paused, award.dispute_resolved
+  action     String
+  /// job | project | user | award
+  targetType String @map("target_type")
+  targetId   String @map("target_id")
+
+  meta Json?
+
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("marketplace_audit")
 }

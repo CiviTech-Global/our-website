@@ -8,6 +8,7 @@ import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { moderationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
+import { ListingOpsPanel } from '@/components/admin/ListingOpsPanel';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -96,6 +97,10 @@ export default function ProjectQueuePage() {
                 <Badge variant={moderationVariant(row.moderationStatus)}>
                   {t.market[row.moderationStatus]}
                 </Badge>
+              </div>
+
+              <div className="mt-3">
+                <ListingOpsPanel kind="project" id={row.id} featured={row.featured} />
               </div>
 
               {row.moderationStatus === 'APPROVED' ? (

@@ -16,18 +16,38 @@ import * as freelance from '../services/freelance.service.js';
 import {
   applicationOutcomeSchema,
   applicationSchema,
+  awardReviewSchema,
   bidReviewSchema,
   bidSchema,
+  auditQuerySchema,
+  disputeResolveSchema,
+  disputeSchema,
   documentKindsSchema,
+  extendDeadlineSchema,
+  jobBoardSchema,
   jobSchema,
   jobUpdateSchema,
   listQuerySchema,
+  messageSchema,
+  milestoneDeliverSchema,
+  milestoneSchema,
+  pauseSchema,
+  profileSchema,
+  projectBoardSchema,
   projectSchema,
   projectUpdateSchema,
   reviewSchema,
   verificationReviewSchema,
   verificationSchema,
 } from '../validators/marketplace.schema.js';
+import * as board from '../services/marketplace-board.service.js';
+import * as profiles from '../services/profile.service.js';
+import * as engagement from '../services/engagement.service.js';
+import * as messaging from '../services/messaging.service.js';
+import * as notifications from '../services/notifications.service.js';
+import * as analytics from '../services/marketplace-analytics.service.js';
+import * as ops from '../services/marketplace-ops.service.js';
+import { authorize } from '../middleware/authorize.js';
 
 /**
  * The marketplace: a job board and a freelance board over a shared
@@ -48,6 +68,8 @@ const upload = multer({
 });
 
 const router = Router();
+
+const canOps = [authenticate, requirePermission(PERMISSIONS.marketplaceOps)] as const;
 
 /** BigInt does not survive JSON.stringify; money crosses as a decimal string. */
 function serialize<T>(value: T): T {
@@ -103,11 +125,33 @@ const wrap =
 // Boards change as people post, so a short cache keeps a refresh cheap without
 // making a new listing wait minutes to appear.
 const boardCache = publicCache({ maxAgeSeconds: 60, staleWhileRevalidateSeconds: 600 });
+const statsCache = publicCache({ maxAgeSeconds: 300, staleWhileRevalidateSeconds: 900 });
+
+/**
+ * The landing page's showcase numbers. Nothing personal, so it caches long —
+ * a hero-section count five minutes stale is still true enough.
+ */
+router.get(
+  '/stats',
+  statsCache,
+  wrap(async (_req, res) => {
+    successResponse(res, await board.getBoardStats());
+  }),
+);
+
+/** Staff-curated listings, newest filling any un-curated slots. */
+router.get(
+  '/featured',
+  boardCache,
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await board.getFeatured()));
+  }),
+);
 
 router.get(
   '/jobs',
   boardCache,
-  validate({ query: listQuerySchema }),
+  validate({ query: jobBoardSchema }),
   wrap(async (req, res) => {
     successResponse(res, serialize(await jobs.listPublicJobs(req.query as never)));
   }),
@@ -124,7 +168,7 @@ router.get(
 router.get(
   '/projects',
   boardCache,
-  validate({ query: listQuerySchema }),
+  validate({ query: projectBoardSchema }),
   wrap(async (req, res) => {
     successResponse(res, serialize(await freelance.listPublicProjects(req.query as never)));
   }),
@@ -138,11 +182,43 @@ router.get(
   }),
 );
 
+/**
+ * The public profile. Cached a little longer than the boards because it
+ * changes less often; a paused account must not leave a cached copy behind,
+ * so the cache stays short rather than clever.
+ */
+router.get(
+  '/profiles/:username',
+  publicCache({ maxAgeSeconds: 120, staleWhileRevalidateSeconds: 600 }),
+  wrap(async (req, res) => {
+    const profile = await profiles.getPublicProfile(param(req, 'username'));
+    if (!profile) throw new AppError('این نمایه پیدا نشد.', 404);
+    successResponse(res, serialize(profile));
+  }),
+);
+
 // ===========================================================================
 // The account acting for itself
 // ===========================================================================
 
 router.use('/me', authenticate);
+
+// ---- The account's own public profile --------------------------------------
+
+router.get(
+  '/me/profile',
+  wrap(async (req, res) => {
+    successResponse(res, await profiles.getOwnProfile(req.user!.userId));
+  }),
+);
+
+router.patch(
+  '/me/profile',
+  validate({ body: profileSchema }),
+  wrap(async (req, res) => {
+    successResponse(res, await profiles.updateOwnProfile(req.user!.userId, req.body));
+  }),
+);
 
 // ---- Verification ---------------------------------------------------------
 
@@ -358,6 +434,269 @@ router.post(
   wrap(async (req, res) => {
     const result = await freelance.acceptBid(req.user!.userId, param(req, 'id'));
     successResponse(res, serialize(result), 'این پیشنهاد پذیرفته شد.');
+  }),
+);
+
+// ---- Engagement: what happens after the deal -------------------------------
+
+router.get(
+  '/me/awards',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await engagement.listMyAwards(req.user!.userId)));
+  }),
+);
+
+router.get(
+  '/me/stats',
+  wrap(async (req, res) => {
+    successResponse(res, await profiles.getOwnStats(req.user!.userId));
+  }),
+);
+
+router.post(
+  '/me/awards/:id/milestones',
+  validate({ body: milestoneSchema }),
+  wrap(async (req, res) => {
+    const result = await engagement.addMilestone(req.user!.userId, param(req, 'id'), req.body);
+    successResponse(res, result, 'مرحله اضافه شد.', 201);
+  }),
+);
+
+router.post(
+  '/me/milestones/:id/deliver',
+  upload.single('attachment'),
+  wrap(async (req, res) => {
+    const input = milestoneDeliverSchema.parse(payloadOf(req));
+    const attachment = req.file
+      ? { originalName: req.file.originalname, buffer: req.file.buffer }
+      : null;
+    const result = await engagement.deliverMilestone(
+      req.user!.userId,
+      param(req, 'id'),
+      input.deliveryNote,
+      attachment,
+    );
+    successResponse(res, result, 'تحویل ثبت شد و در انتظار تأیید است.');
+  }),
+);
+
+router.post(
+  '/me/milestones/:id/approve',
+  wrap(async (req, res) => {
+    const result = await engagement.approveMilestone(req.user!.userId, param(req, 'id'));
+    successResponse(res, result, result.awardCompleted ? 'مرحله تأیید شد و همکاری به پایان رسید.' : 'مرحله تأیید شد.');
+  }),
+);
+
+router.post(
+  '/me/awards/:id/complete',
+  wrap(async (req, res) => {
+    const result = await engagement.completeAward(req.user!.userId, param(req, 'id'));
+    successResponse(res, result, 'همکاری با موفقیت به پایان رسید.');
+  }),
+);
+
+router.post(
+  '/me/awards/:id/review',
+  validate({ body: awardReviewSchema }),
+  wrap(async (req, res) => {
+    const result = await engagement.reviewAward(req.user!.userId, param(req, 'id'), req.body);
+    successResponse(res, result, 'امتیاز شما ثبت شد.');
+  }),
+);
+
+router.post(
+  '/me/awards/:id/dispute',
+  validate({ body: disputeSchema }),
+  wrap(async (req, res) => {
+    const result = await engagement.openDispute(req.user!.userId, param(req, 'id'), req.body.reason);
+    successResponse(res, result, 'اختلاف ثبت شد و همکاری تا بررسی کارشناسان متوقف شد.');
+  }),
+);
+
+router.post(
+  '/admin/awards/:id/resolve-dispute',
+  ...canOps,
+  validate({ body: disputeResolveSchema }),
+  wrap(async (req, res) => {
+    const result = await engagement.resolveDispute(param(req, 'id'), req.body.note);
+    await ops.audit(req.user!.userId, {
+      action: 'award.dispute_resolved',
+      targetType: 'award',
+      targetId: param(req, 'id'),
+      meta: { note: req.body.note },
+    });
+    successResponse(res, result, 'اختلاف بسته شد.');
+  }),
+);
+
+// ---- Analytics, operations and the audit trail -----------------------------
+
+router.get(
+  '/admin/disputes',
+  ...canOps,
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await engagement.listOpenDisputes()));
+  }),
+);
+
+router.get(
+  '/admin/analytics',
+  authenticate,
+  requirePermission(PERMISSIONS.analytics),
+  wrap(async (_req, res) => {
+    successResponse(res, await analytics.getMarketplaceAnalytics());
+  }),
+);
+
+router.post(
+  '/admin/jobs/:id/feature',
+  ...canOps,
+  wrap(async (req, res) => {
+    const result = await ops.setJobFeatured(req.user!.userId, param(req, 'id'), true);
+    successResponse(res, result, 'آگهی ویژه شد.');
+  }),
+);
+
+router.post(
+  '/admin/jobs/:id/unfeature',
+  ...canOps,
+  wrap(async (req, res) => {
+    const result = await ops.setJobFeatured(req.user!.userId, param(req, 'id'), false);
+    successResponse(res, result, 'آگهی از حالت ویژه خارج شد.');
+  }),
+);
+
+router.post(
+  '/admin/projects/:id/feature',
+  ...canOps,
+  wrap(async (req, res) => {
+    const result = await ops.setProjectFeatured(req.user!.userId, param(req, 'id'), true);
+    successResponse(res, result, 'پروژه ویژه شد.');
+  }),
+);
+
+router.post(
+  '/admin/projects/:id/unfeature',
+  ...canOps,
+  wrap(async (req, res) => {
+    const result = await ops.setProjectFeatured(req.user!.userId, param(req, 'id'), false);
+    successResponse(res, result, 'پروژه از حالت ویژه خارج شد.');
+  }),
+);
+
+router.post(
+  '/admin/jobs/:id/extend',
+  ...canOps,
+  validate({ body: extendDeadlineSchema }),
+  wrap(async (req, res) => {
+    const result = await ops.extendJobDeadline(req.user!.userId, param(req, 'id'), req.body.closesAt);
+    successResponse(res, serialize(result), 'مهلت آگهی تمدید شد.');
+  }),
+);
+
+router.post(
+  '/admin/projects/:id/extend',
+  ...canOps,
+  validate({ body: extendDeadlineSchema }),
+  wrap(async (req, res) => {
+    const result = await ops.extendProjectDeadline(req.user!.userId, param(req, 'id'), req.body.closesAt);
+    successResponse(res, serialize(result), 'مهلت پروژه تمدید شد.');
+  }),
+);
+
+router.post(
+  '/admin/users/:id/pause',
+  ...canOps,
+  validate({ body: pauseSchema }),
+  wrap(async (req, res) => {
+    const result = await ops.setUserPaused(req.user!.userId, param(req, 'id'), req.body.paused, req.body.reason);
+    successResponse(res, result, req.body.paused ? 'دسترسی کاربر به بازارگاه محدود شد.' : 'دسترسی کاربر بازگردانده شد.');
+  }),
+);
+
+/** The audit log answers "who did what" — SUPER_ADMIN only, by design. */
+router.get(
+  '/admin/audit',
+  authenticate,
+  authorize('SUPER_ADMIN'),
+  validate({ query: auditQuerySchema }),
+  wrap(async (req, res) => {
+    successResponse(res, await ops.listAudit(req.query as never));
+  }),
+);
+
+// ---- Messaging ---------------------------------------------------------------
+
+router.get(
+  '/me/conversations',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await messaging.listConversations(req.user!.userId)));
+  }),
+);
+
+router.get(
+  '/me/applications/:id/messages',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await messaging.listApplicationMessages(req.user!.userId, param(req, 'id'))));
+  }),
+);
+
+router.post(
+  '/me/applications/:id/messages',
+  validate({ body: messageSchema }),
+  wrap(async (req, res) => {
+    const result = await messaging.sendApplicationMessage(req.user!.userId, param(req, 'id'), req.body.body);
+    successResponse(res, result, undefined, 201);
+  }),
+);
+
+router.get(
+  '/me/bids/:id/messages',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await messaging.listBidMessages(req.user!.userId, param(req, 'id'))));
+  }),
+);
+
+router.post(
+  '/me/bids/:id/messages',
+  validate({ body: messageSchema }),
+  wrap(async (req, res) => {
+    const result = await messaging.sendBidMessage(req.user!.userId, param(req, 'id'), req.body.body);
+    successResponse(res, result, undefined, 201);
+  }),
+);
+
+// ---- Notifications ----------------------------------------------------------
+
+router.get(
+  '/me/notifications',
+  validate({ query: listQuerySchema }),
+  wrap(async (req, res) => {
+    successResponse(res, await notifications.listNotifications(req.user!.userId, req.query as never));
+  }),
+);
+
+router.get(
+  '/me/notifications/unread-count',
+  wrap(async (req, res) => {
+    successResponse(res, { count: await notifications.unreadNotificationCount(req.user!.userId) });
+  }),
+);
+
+router.post(
+  '/me/notifications/:id/read',
+  wrap(async (req, res) => {
+    await notifications.markRead(req.user!.userId, param(req, 'id'));
+    successResponse(res, { ok: true });
+  }),
+);
+
+router.post(
+  '/me/notifications/read-all',
+  wrap(async (req, res) => {
+    await notifications.markAllRead(req.user!.userId);
+    successResponse(res, { ok: true });
   }),
 );
 

@@ -16,6 +16,9 @@ import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
+import { AuthorCard } from '@/components/marketplace/AuthorCard';
+import { ListingStats } from '@/components/marketplace/ListingStats';
+import { SimilarListings } from '@/components/marketplace/SimilarListings';
 
 /**
  * One posting, and the form to answer it.
@@ -122,6 +125,16 @@ export default function JobDetailPage() {
           <Badge variant="info">{t.market[job.employmentType]}</Badge>
           <Badge>{t.market[job.workArrangement]}</Badge>
           {pay && <Badge variant="success">{pay}</Badge>}
+          {job.category && <Badge>{job.category}</Badge>}
+        </div>
+
+        <div className="mt-3">
+          <ListingStats
+            views={job.viewCount}
+            responses={job._count.applications}
+            variant="applications"
+            responsesLabel={t.market.applicationsLabel}
+          />
         </div>
 
         <p className="mt-6 whitespace-pre-line leading-7 text-text-primary">{job.description}</p>
@@ -143,6 +156,18 @@ export default function JobDetailPage() {
           </p>
         )}
       </Card>
+
+      {job.authorProfile && (
+        <div className="mt-6">
+          <AuthorCard profile={job.authorProfile} />
+        </div>
+      )}
+
+      {job.similar.length > 0 && (
+        <div className="mt-6">
+          <SimilarListings title={t.market.similarJobs} basePath="/jobs" items={job.similar} />
+        </div>
+      )}
 
       <Card className="mt-6">
         <CardHeader>

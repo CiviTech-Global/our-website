@@ -1,28 +1,39 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type {
+  AppNotification,
   ApplicationPayload,
   ApplicationQueueRow,
+  AuditEntry,
   AuthorBid,
+  AwardView,
   BidPayload,
   BidQueueRow,
+  BoardStats,
+  ConversationSummary,
   EmployerApplication,
+  FeaturedResponse,
   JobPayload,
   JobQueueRow,
   JobReviewDetail,
+  MarketplaceAnalytics,
   OwnApplication,
   OwnBid,
   OwnJob,
+  OwnMarketplaceStats,
   OwnProject,
   OwnVerification,
   Paged,
+  ProfilePayload,
   ProjectPayload,
   ProjectQueueRow,
   PublicJobDetail,
   PublicJobSummary,
+  PublicProfile,
   PublicProjectDetail,
   PublicProjectSummary,
   ReviewDecision,
+  ThreadView,
   VerificationDetail,
   VerificationDocumentKind,
   VerificationPayload,
@@ -60,6 +71,8 @@ function multipart(payload: unknown, files: Array<[string, File]> = []): FormDat
 
 // --- Public boards ---------------------------------------------------------
 
+export type JobBoardSort = 'newest' | 'salaryAsc' | 'salaryDesc' | 'closingSoon';
+
 export interface JobBoardQuery {
   page: number;
   pageSize: number;
@@ -67,13 +80,23 @@ export interface JobBoardQuery {
   employmentType?: string;
   workArrangement?: string;
   province?: string;
+  category?: string;
+  skills?: string[];
+  salaryMin?: string;
+  salaryMax?: string;
+  sort?: JobBoardSort;
 }
 
 export function usePublicJobs(query: JobBoardQuery) {
   return useQuery({
     queryKey: [...keys.jobs, query],
     queryFn: async () => {
-      const res = await api.get<Paged<PublicJobSummary>>('/market/jobs', { params: { ...query } });
+      const res = await api.get<Paged<PublicJobSummary>>('/market/jobs', {
+        // The server reads skills as one comma-separated param, not repeated
+        // keys — a plain object spread would serialize the array in a shape
+        // the zod schema refuses.
+        params: { ...query, skills: query.skills?.length ? query.skills.join(',') : undefined },
+      });
       return res.data;
     },
   });
@@ -90,11 +113,17 @@ export function usePublicJob(code: string | undefined) {
   });
 }
 
+export type ProjectBoardSort = 'newest' | 'budgetAsc' | 'budgetDesc';
+
 export interface ProjectBoardQuery {
   page: number;
   pageSize: number;
   search?: string;
   category?: string;
+  skills?: string[];
+  budgetMin?: string;
+  budgetMax?: string;
+  sort?: ProjectBoardSort;
 }
 
 export function usePublicProjects(query: ProjectBoardQuery) {
@@ -102,10 +131,36 @@ export function usePublicProjects(query: ProjectBoardQuery) {
     queryKey: [...keys.projects, query],
     queryFn: async () => {
       const res = await api.get<Paged<PublicProjectSummary>>('/market/projects', {
-        params: { ...query },
+        params: { ...query, skills: query.skills?.length ? query.skills.join(',') : undefined },
       });
       return res.data;
     },
+  });
+}
+
+// --- Landing page showcase ---------------------------------------------------
+
+/** Headline numbers for the home page band. Five-minute cache server-side. */
+export function useBoardStats() {
+  return useQuery({
+    queryKey: ['market', 'stats'],
+    queryFn: async () => {
+      const res = await api.get<BoardStats>('/market/stats');
+      return res.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Featured listings, newest filling un-curated slots. */
+export function useFeatured() {
+  return useQuery({
+    queryKey: [...keys.jobs, 'featured'],
+    queryFn: async () => {
+      const res = await api.get<FeaturedResponse>('/market/featured');
+      return res.data;
+    },
+    staleTime: 60 * 1000,
   });
 }
 
@@ -372,6 +427,338 @@ export function useReviseBid() {
       await api.patch(`/market/me/bids/${input.id}`, input.payload);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBids }),
+  });
+}
+
+// --- Engagement: awards and milestones --------------------------------------
+
+export function useMyAwards() {
+  return useQuery({
+    queryKey: ['market', 'me', 'awards'],
+    queryFn: async () => {
+      const res = await api.get<AwardView[]>('/market/me/awards');
+      return res.data;
+    },
+  });
+}
+
+export function useAddMilestone() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { awardId: string; title: string; description?: string; dueDate?: string }) => {
+      const res = await api.post(`/market/me/awards/${input.awardId}/milestones`, {
+        title: input.title,
+        description: input.description || undefined,
+        dueDate: input.dueDate || undefined,
+      });
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me', 'awards'] }),
+  });
+}
+
+export function useDeliverMilestone() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { milestoneId: string; deliveryNote: string; attachment?: File | null }) => {
+      const form = multipart({ deliveryNote: input.deliveryNote });
+      if (input.attachment) form.append('attachment', input.attachment);
+      const res = await api.post(`/market/me/milestones/${input.milestoneId}/deliver`, form);
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me', 'awards'] }),
+  });
+}
+
+export function useApproveMilestone() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (milestoneId: string) => {
+      const res = await api.post(`/market/me/milestones/${milestoneId}/approve`);
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me', 'awards'] }),
+  });
+}
+
+export function useCompleteAward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (awardId: string) => {
+      const res = await api.post(`/market/me/awards/${awardId}/complete`);
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me', 'awards'] }),
+  });
+}
+
+export function useReviewAward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { awardId: string; rating: number; text?: string }) => {
+      const res = await api.post(`/market/me/awards/${input.awardId}/review`, {
+        rating: input.rating,
+        text: input.text || undefined,
+      });
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market'] }),
+  });
+}
+
+export function useOpenDispute() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { awardId: string; reason: string }) => {
+      const res = await api.post(`/market/me/awards/${input.awardId}/dispute`, { reason: input.reason });
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me', 'awards'] }),
+  });
+}
+
+// --- The account's own dashboard numbers ------------------------------------
+
+export function useOwnMarketplaceStats(enabled: boolean) {
+  return useQuery({
+    queryKey: ['market', 'me', 'stats'],
+    queryFn: async () => {
+      const res = await api.get<OwnMarketplaceStats>('/market/me/stats');
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+// --- Staff: analytics, audit, operations -------------------------------------
+
+export function useMarketplaceAnalytics(enabled: boolean) {
+  return useQuery({
+    queryKey: ['market', 'admin', 'analytics'],
+    queryFn: async () => {
+      const res = await api.get<MarketplaceAnalytics>('/market/admin/analytics');
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+export function useFeatureListing() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { kind: 'job' | 'project'; id: string; featured: boolean }) => {
+      const res = await api.post(`/market/admin/${input.kind === 'job' ? 'jobs' : 'projects'}/${input.id}/${input.featured ? 'feature' : 'unfeature'}`);
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market'] }),
+  });
+}
+
+export function useExtendDeadline() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { kind: 'job' | 'project'; id: string; closesAt: string }) => {
+      const res = await api.post(`/market/admin/${input.kind === 'job' ? 'jobs' : 'projects'}/${input.id}/extend`, {
+        closesAt: input.closesAt,
+      });
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market'] }),
+  });
+}
+
+export function usePauseUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { userId: string; paused: boolean; reason?: string }) => {
+      const res = await api.post(`/market/admin/users/${input.userId}/pause`, {
+        paused: input.paused,
+        reason: input.reason,
+      });
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market'] }),
+  });
+}
+
+export interface OpenDisputeRow {
+  awardId: string;
+  listing: { code: string; title: string };
+  kind: 'job' | 'project';
+  disputeReason: string | null;
+  disputeOpenedAt: string | null;
+  agreedAmount: string | null;
+  currency: string;
+}
+
+export function useOpenDisputes(enabled: boolean) {
+  return useQuery({
+    queryKey: ['market', 'admin', 'disputes'],
+    queryFn: async () => {
+      const res = await api.get<OpenDisputeRow[]>('/market/admin/disputes');
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+export function useResolveDispute() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { awardId: string; note: string }) => {
+      const res = await api.post(`/market/admin/awards/${input.awardId}/resolve-dispute`, { note: input.note });
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market'] }),
+  });
+}
+
+export interface AuditQuery {
+  page: number;
+  pageSize: number;
+  action?: string;
+  targetType?: string;
+}
+
+export function useAuditLog(query: AuditQuery, enabled: boolean) {
+  return useQuery({
+    queryKey: ['market', 'admin', 'audit', query],
+    queryFn: async () => {
+      const res = await api.get<Paged<AuditEntry>>('/market/admin/audit', { params: { ...query } });
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+// --- Messaging and notifications ---------------------------------------------
+
+export function useConversations() {
+  return useQuery({
+    queryKey: ['market', 'me', 'conversations'],
+    queryFn: async () => {
+      const res = await api.get<ConversationSummary[]>('/market/me/conversations');
+      return res.data;
+    },
+  });
+}
+
+export type ThreadKind = 'a' | 'b';
+
+export function useThread(kind: ThreadKind | undefined, threadId: string | undefined) {
+  return useQuery({
+    queryKey: ['market', 'me', 'thread', kind, threadId],
+    queryFn: async () => {
+      const res = await api.get<ThreadView>(`/market/me/${kind === 'a' ? 'applications' : 'bids'}/${threadId}/messages`);
+      return res.data;
+    },
+    enabled: Boolean(kind && threadId),
+    refetchInterval: 15_000,
+  });
+}
+
+export function useSendMessage(kind: ThreadKind | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { threadId: string; body: string }) => {
+      const res = await api.post(`/market/me/${kind === 'a' ? 'applications' : 'bids'}/${input.threadId}/messages`, {
+        body: input.body,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['market', 'me', 'thread'] });
+      qc.invalidateQueries({ queryKey: ['market', 'me', 'conversations'] });
+    },
+  });
+}
+
+export function useNotifications(page: number) {
+  return useQuery({
+    queryKey: ['market', 'me', 'notifications', page],
+    queryFn: async () => {
+      const res = await api.get<Paged<AppNotification> & { unreadCount: number }>('/market/me/notifications', {
+        params: { page, pageSize: 20 },
+      });
+      return res.data;
+    },
+  });
+}
+
+/** The bell badge. Polls — notifications are convenience, not realtime. */
+export function useUnreadCounts() {
+  return useQuery({
+    queryKey: ['market', 'me', 'unread'],
+    queryFn: async () => {
+      const [notifications, conversations] = await Promise.all([
+        api.get<{ count: number }>('/market/me/notifications/unread-count'),
+        api.get<ConversationSummary[]>('/market/me/conversations'),
+      ]);
+      return {
+        notifications: notifications.data.count,
+        messages: conversations.data.reduce((sum, thread) => sum + thread.unreadCount, 0),
+      };
+    },
+    refetchInterval: 30_000,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/market/me/notifications/${id}/read`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me'] }),
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await api.post('/market/me/notifications/read-all');
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me'] }),
+  });
+}
+
+// --- Profiles ----------------------------------------------------------------
+
+export function usePublicProfile(username: string | undefined) {
+  return useQuery({
+    queryKey: ['market', 'profiles', username],
+    queryFn: async () => {
+      const res = await api.get<PublicProfile>(`/market/profiles/${username!}`);
+      return res.data;
+    },
+    enabled: Boolean(username),
+    retry: false,
+  });
+}
+
+/** The account's own public profile fields, for the settings form defaults. */
+export function useOwnProfile(enabled = true) {
+  return useQuery({
+    queryKey: ['market', 'me', 'profile'],
+    queryFn: async () => {
+      const res = await api.get<{ username: string | null; headline: string | null; bio: string | null; website: string | null }>(
+        '/market/me/profile',
+      );
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: ProfilePayload) => {
+      const res = await api.patch('/market/me/profile', payload);
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['market'] }),
   });
 }
 

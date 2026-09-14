@@ -11,6 +11,7 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { verificationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
+import { UserPauseControl } from '@/components/admin/UserPauseControl';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -92,7 +93,7 @@ export default function VerificationQueuePage() {
                 </div>
               </div>
 
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button
                   size="sm"
                   variant="outline"
@@ -100,6 +101,7 @@ export default function VerificationQueuePage() {
                 >
                   {openId === row.id ? t.common.close : t.market.review}
                 </Button>
+                <UserPauseControl userId={row.user.id} paused={row.user.marketplacePaused ?? false} />
               </div>
 
               {openId === row.id && <VerificationDetailPanel id={row.id} />}

@@ -15,6 +15,8 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
+import { RatingStars } from '@/components/marketplace/RatingStars';
+import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -354,6 +356,21 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
                       {bid.bidder?.firstName} {bid.bidder?.lastName}
                     </p>
                   )}
+                  {!bid.isCompanyOffer && bid.bidderProfile && (
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                      <Link
+                        to={`/profiles/${bid.bidderProfile.username}`}
+                        className="font-medium text-brand-600 hover:underline"
+                      >
+                        @{bid.bidderProfile.username}
+                      </Link>
+                      {bid.bidderProfile.verified && <VerifiedBadge />}
+                      <RatingStars
+                        avg={bid.bidderProfile.ratingAvg}
+                        count={bid.bidderProfile.ratingCount}
+                      />
+                    </div>
+                  )}
                   <p className="mt-0.5 text-sm text-text-secondary">
                     {formatMoney(bid.amount, locale)} {t.market.currency}
                     {bid.deliveryDays
@@ -369,6 +386,16 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
               )}
 
               <p className="mt-2 whitespace-pre-line text-sm text-text-primary">{bid.message}</p>
+
+              {!bid.isCompanyOffer && (
+                <div className="mt-3">
+                  <Link to={`/dashboard/messages/b/${bid.id}`}>
+                    <Button size="sm" variant="outline">
+                      {t.market.sendMessageCta}
+                    </Button>
+                  </Link>
+                </div>
+              )}
 
               {bid.outcome === 'PENDING' && (
                 <div className="mt-3">

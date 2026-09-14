@@ -10,6 +10,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useSendVerificationEmail } from '@/api/accountRecovery';
+import { useOwnMarketplaceStats, useOwnVerification } from '@/api/marketplace';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/Button';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -25,6 +26,8 @@ export default function DashboardPage() {
   const sendVerification = useSendVerificationEmail();
   useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
+  const { data: stats } = useOwnMarketplaceStats(Boolean(user));
+  const { data: verification } = useOwnVerification(Boolean(user));
 
   const hasPhone = Boolean(user?.phone);
   const completion = hasPhone ? 100 : 66;
@@ -107,6 +110,38 @@ export default function DashboardPage() {
         </AnimatedSection>
       </div>
 
+      {stats && (
+        <AnimatedSection delay={0.18} className="mt-8">
+          <h2 className="text-lg font-semibold text-text-primary">{t.meStats.sectionTitle}</h2>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <StatLink to="/dashboard/jobs" label={t.meStats.listings} value={stats.listings.total} />
+            <StatLink to="/dashboard/jobs" label={t.meStats.views} value={stats.listings.views} />
+            <StatLink to="/dashboard/applications" label={t.meStats.applications} value={stats.applications.total} />
+            <StatLink to="/dashboard/bids" label={t.meStats.bids} value={stats.bids.total} />
+            <StatLink to="/dashboard/awards" label={t.meStats.wonAwards} value={stats.awards.won} />
+            <StatLink
+              to="/dashboard/messages"
+              label={t.meStats.unreadMessages}
+              value={stats.unread.messages + stats.unread.notifications}
+            />
+          </div>
+        </AnimatedSection>
+      )}
+
+      {verification && verification.status !== 'APPROVED' && (
+        <AnimatedSection delay={0.19} className="mt-6">
+          <Card className="flex flex-wrap items-center gap-3 border-brand-amber-500/40">
+            <ShieldCheck className="size-5 shrink-0 text-brand-amber-500" aria-hidden="true" />
+            <p className="min-w-0 flex-1 text-sm text-text-secondary">{t.meStats.verificationNudge}</p>
+            <Link to="/dashboard/verification">
+              <Button type="button" variant="secondary">
+                {t.market.verificationTitle}
+              </Button>
+            </Link>
+          </Card>
+        </AnimatedSection>
+      )}
+
       {/* Submissions are tracked by code, not tied to an account, so there is no
           list of "your requests" to show here. Links to the things an account
           holder actually came to do are more use than an empty table. */}
@@ -131,6 +166,17 @@ export default function DashboardPage() {
         </div>
       </AnimatedSection>
     </div>
+  );
+}
+
+function StatLink({ to, label, value }: { to: string; label: string; value: number }) {
+  return (
+    <Link to={to} className="block transition-transform hover:-translate-y-0.5">
+      <Card className="flex h-full flex-col gap-1">
+        <span className="text-xl font-bold text-text-primary">{value}</span>
+        <span className="text-xs text-text-secondary">{label}</span>
+      </Card>
+    </Link>
   );
 }
 

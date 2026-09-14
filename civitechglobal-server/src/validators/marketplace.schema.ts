@@ -88,6 +88,16 @@ export const verificationSchema = z
  * kind we do not recognise has made a mistake, and should be told which field
  * it was in.
  */
+/**
+ * The public profile fields. All optional — clearing a field is setting it to
+ * an empty string, which the service normalises back to null.
+ */
+export const profileSchema = z.object({
+  headline: trimmed(120).optional(),
+  bio: trimmed(1000).optional(),
+  website: z.union([z.literal(''), z.string().trim().url('نشانی معتبر نیست')]).optional(),
+});
+
 export const documentKindsSchema = z
   .array(z.enum(['NATIONAL_ID_CARD', 'PASSPORT', 'COMPANY_REGISTRATION', 'AUTHORITY_LETTER', 'OTHER']))
   .max(MAX_DOCUMENTS, 'تعداد مدارک بیش از حد مجاز است');
@@ -105,6 +115,8 @@ export const verificationReviewSchema = z.object({
 export const jobSchema = z.object({
   title: required(5, 160, 'عنوان آگهی الزامی است'),
   description: required(50, 10_000, 'شرح آگهی باید کامل‌تر باشد'),
+  /// Free-text taxonomy tag, the same convention as project.category.
+  category: trimmed(80).optional(),
   employmentType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'FREELANCE']),
   workArrangement: z.enum(['ONSITE', 'HYBRID', 'REMOTE']),
   province: trimmed(80).optional(),
@@ -169,6 +181,53 @@ export const bidReviewSchema = reviewSchema.extend({
   suggestedAmount: optionalMoney,
 });
 
+// ---------------------------------------------------------------------------
+// Engagement: milestones, reviews, disputes
+// ---------------------------------------------------------------------------
+
+export const milestoneSchema = z.object({
+  title: required(2, 160, 'عنوان مرحله الزامی است'),
+  description: trimmed(2000).optional(),
+  dueDate: isoDate.optional(),
+});
+
+export const milestoneDeliverSchema = z.object({
+  deliveryNote: required(1, 2000, 'توضیح تحویل الزامی است'),
+});
+
+export const awardReviewSchema = z.object({
+  rating: z.number().int().min(1, 'امتیاز باید بین ۱ تا ۵ باشد').max(5, 'امتیاز باید بین ۱ تا ۵ باشد'),
+  text: trimmed(1000).optional(),
+});
+
+export const disputeSchema = z.object({
+  reason: required(10, 2000, 'شرح اختلاف را بنویسید (حداقل ۱۰ نویسه)'),
+});
+
+export const disputeResolveSchema = z.object({
+  note: required(2, 2000, 'نتیجهٔ بررسی را بنویسید'),
+});
+
+export const extendDeadlineSchema = z.object({
+  closesAt: isoDate,
+});
+
+export const pauseSchema = z.object({
+  paused: z.boolean(),
+  reason: trimmed(500).optional(),
+});
+
+export const auditQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  action: trimmed(80).optional(),
+  targetType: z.enum(['job', 'project', 'user', 'award']).optional(),
+});
+
+export const messageSchema = z.object({
+  body: required(1, 2000, 'متن پیام الزامی است'),
+});
+
 export const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(20),
@@ -178,4 +237,51 @@ export const listQuerySchema = z.object({
   employmentType: trimmed(40).optional(),
   workArrangement: trimmed(40).optional(),
   province: trimmed(80).optional(),
+});
+
+/**
+ * The public job board query. Money arrives as digit strings and becomes
+ * BigInt here, like every other money field — query params are strings on the
+ * wire regardless, so the wire format is identical to the body's.
+ */
+export const jobBoardSchema = listQuerySchema.extend({
+  skills: z
+    .string()
+    .trim()
+    .max(200)
+    .transform((value) => {
+      const parts = value
+        .split(',')
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+      // Duplicates add nothing to a hasSome filter but burn query-plan
+      // cache for no reason; cap after deduping so a repeat cannot push a
+      // distinct skill off the end.
+      return [...new Set(parts)].slice(0, 10);
+    })
+    .optional(),
+  salaryMin: optionalMoney,
+  salaryMax: optionalMoney,
+  sort: z.enum(['newest', 'salaryAsc', 'salaryDesc', 'closingSoon']).default('newest'),
+});
+
+export const projectBoardSchema = listQuerySchema.extend({
+  skills: z
+    .string()
+    .trim()
+    .max(200)
+    .transform((value) => {
+      const parts = value
+        .split(',')
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+      // Duplicates add nothing to a hasSome filter but burn query-plan
+      // cache for no reason; cap after deduping so a repeat cannot push a
+      // distinct skill off the end.
+      return [...new Set(parts)].slice(0, 10);
+    })
+    .optional(),
+  budgetMin: optionalMoney,
+  budgetMax: optionalMoney,
+  sort: z.enum(['newest', 'budgetAsc', 'budgetDesc']).default('newest'),
 });

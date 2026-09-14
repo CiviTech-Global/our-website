@@ -42,6 +42,15 @@ export const PERMISSIONS = {
   jobs: 'jobs',
   /** Moderating freelance projects and the bids on them. */
   freelance: 'freelance',
+
+  /**
+   * Marketplace operations outside the review flow: featuring listings,
+   * extending deadlines, pausing accounts, resolving disputes, reading the
+   * audit log. Deliberately separate from the three moderation keys —
+   * "is this advert worth publishing" and "should this account be paused"
+   * are different judgements and usually different desks.
+   */
+  marketplaceOps: 'marketplace-ops',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

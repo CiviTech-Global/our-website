@@ -5,6 +5,7 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
 import { formatRange, moderationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
+import { ListingOpsPanel } from '@/components/admin/ListingOpsPanel';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -156,6 +157,10 @@ function JobReviewPanel({ id }: { id: string }) {
           ))}
         </div>
       )}
+
+      <div className="mt-4">
+        <ListingOpsPanel kind="job" id={id} featured={data.featured} />
+      </div>
 
       <ReviewActions
         isPending={review.isPending}

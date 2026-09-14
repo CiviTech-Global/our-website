@@ -16,6 +16,9 @@ import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
+import { AuthorCard } from '@/components/marketplace/AuthorCard';
+import { ListingStats } from '@/components/marketplace/ListingStats';
+import { SimilarListings } from '@/components/marketplace/SimilarListings';
 
 /**
  * One project, and the form to bid on it.
@@ -112,6 +115,15 @@ export default function FreelanceProjectDetailPage() {
           {budget && <Badge variant="success">{budget}</Badge>}
         </div>
 
+        <div className="mt-3">
+          <ListingStats
+            views={project.viewCount}
+            responses={project._count.bids}
+            variant="bids"
+            responsesLabel={t.market.bidCount}
+          />
+        </div>
+
         <p className="mt-6 whitespace-pre-line leading-7 text-text-primary">{project.description}</p>
 
         {project.skills.length > 0 && (
@@ -152,6 +164,22 @@ export default function FreelanceProjectDetailPage() {
           </p>
         )}
       </Card>
+
+      {project.authorProfile && (
+        <div className="mt-6">
+          <AuthorCard profile={project.authorProfile} />
+        </div>
+      )}
+
+      {project.similar.length > 0 && (
+        <div className="mt-6">
+          <SimilarListings
+            title={t.market.similarProjects}
+            basePath="/projects"
+            items={project.similar}
+          />
+        </div>
+      )}
 
       <Card className="mt-6">
         <CardHeader>

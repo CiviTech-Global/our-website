@@ -4,6 +4,7 @@ import { ChevronDown, Menu, X, Sun, Moon, Languages, LogOut, ExternalLink } from
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useTheme } from '@/contexts/ThemeProvider';
 import { useAuth } from '@/contexts/AuthProvider';
+import { NotificationBell } from '@/components/account/NotificationBell';
 import { cn } from '@/lib/utils';
 
 export interface SidebarItem {
@@ -35,6 +36,11 @@ export interface DashboardShellProps {
   title: string;
   items: SidebarEntry[];
   children: ReactNode;
+  /**
+   * Where the notification bell links to. Only shells with a notifications
+   * page pass this — the admin area has none yet, so it gets no bell.
+   */
+  notificationsLink?: string;
 }
 
 /** react-router decides this for a NavLink; a group header has to ask. */
@@ -62,7 +68,7 @@ function readCollapsed(): string[] {
 }
 
 /** Shared shell for the user and admin dashboards: RTL-aware sidebar + topbar. */
-export function DashboardShell({ title, items, children }: DashboardShellProps) {
+export function DashboardShell({ title, items, children, notificationsLink }: DashboardShellProps) {
   const { t, locale, toggleLocale } = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
@@ -172,6 +178,7 @@ export function DashboardShell({ title, items, children }: DashboardShellProps) 
           </div>
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+            {notificationsLink && <NotificationBell to={notificationsLink} />}
             <a
               href="/"
               target="_blank"

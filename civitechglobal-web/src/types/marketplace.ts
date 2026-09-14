@@ -41,6 +41,199 @@ export interface Paged<T> {
   pageSize: number;
 }
 
+// --- Board showcase ----------------------------------------------------------
+
+/**
+ * The public face of an author, when they have chosen a username. Real names
+ * and contact details are never part of this shape — see the server's
+ * profile.service for the privacy rules. Null on listings whose author has
+ * not opted into a public profile; the board stays anonymous for them.
+ */
+export interface AuthorProfile {
+  username: string;
+  headline: string | null;
+  verified: boolean;
+  ratingAvg: number;
+  ratingCount: number;
+}
+
+export interface BoardStats {
+  openJobs: number;
+  openProjects: number;
+  awardsGiven: number;
+  verifiedUsers: number;
+}
+
+export type FeaturedJob = Omit<PublicJobSummary, 'publishedAt'>;
+
+export type FeaturedProject = Omit<PublicProjectSummary, 'publishedAt'>;
+
+export interface FeaturedResponse {
+  jobs: FeaturedJob[];
+  projects: FeaturedProject[];
+}
+
+// --- The account's own dashboard numbers ------------------------------------
+
+export interface OwnMarketplaceStats {
+  listings: { total: number; views: number };
+  applications: { total: number; byOutcome: Record<string, number> };
+  bids: { total: number; byOutcome: Record<string, number> };
+  awards: { won: number };
+  unread: { notifications: number; messages: number };
+}
+
+// --- Staff: analytics, audit, operations -------------------------------------
+
+export interface MarketplaceAnalytics {
+  queues: Record<string, Record<string, number>>;
+  awards: {
+    total: number;
+    byStatus: Record<string, number>;
+    completed: number;
+    openDisputes: number;
+    completionRate: number | null;
+  };
+  featured: { jobs: number; projects: number };
+  reviewSpeedHours: Record<string, number | null>;
+  weeklyTrend: Array<{ week: string; jobs: number; projects: number }>;
+  topCategories: Array<{ value: string; total: number }>;
+  topSkills: Array<{ value: string; total: number }>;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  meta: unknown;
+  createdAt: string;
+  actor: { id: string; firstName: string; lastName: string; email: string } | null;
+}
+
+// --- Messaging and notifications ---------------------------------------------
+
+export interface ConversationSummary {
+  threadId: string;
+  kind: 'application' | 'bid';
+  listingTitle: string;
+  listingCode: string;
+  path: string;
+  counterpart: AuthorProfile | null;
+  counterpartName: string | null;
+  lastMessage: { body: string; createdAt: string; mine: boolean } | null;
+  unreadCount: number;
+}
+
+export interface ThreadView {
+  anchor: { kind: 'application' | 'bid'; listingTitle: string; listingCode: string; path: string };
+  messages: Array<{
+    id: string;
+    body: string;
+    senderId: string;
+    readAt: string | null;
+    createdAt: string;
+    mine: boolean;
+  }>;
+}
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+// --- Engagement: awards, milestones, reviews, disputes ----------------------
+
+export type AwardStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+export type DisputeStatus = 'NONE' | 'OPEN' | 'RESOLVED';
+export type MilestoneStatus = 'PENDING' | 'IN_REVIEW' | 'APPROVED';
+
+export interface AwardMilestone {
+  id: string;
+  order: number;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  status: MilestoneStatus;
+  deliveryNote: string | null;
+  deliveredAt: string | null;
+  deliveryOriginalName: string | null;
+  approvedAt: string | null;
+}
+
+/** One collaboration the user is a party to, from /market/me/awards. */
+export interface AwardView {
+  award: {
+    id: string;
+    status: AwardStatus;
+    agreedAmount: string | null;
+    currency: string;
+    completedAt: string | null;
+    disputeStatus: DisputeStatus;
+    disputeReason: string | null;
+    disputeOpenedAt: string | null;
+    jobApplicationId: string | null;
+    projectBidId: string | null;
+  };
+  kind: 'job' | 'project';
+  listing: { code: string; title: string };
+  authorId: string;
+  counterpartyId: string | null;
+  myRole: 'author' | 'counterparty';
+  counterpartyProfile: AuthorProfile | null;
+  milestones: AwardMilestone[];
+  myReview: { rating: number; text: string | null } | null;
+  theirReview: { rating: number; text: string | null } | null;
+}
+
+// --- Public profiles --------------------------------------------------------
+
+/** What an account that chose a username shows the world. */
+export interface PublicProfile {
+  username: string;
+  headline: string | null;
+  bio: string | null;
+  website: string | null;
+  companyName: string | null;
+  verified: boolean;
+  ratingAvg: number;
+  ratingCount: number;
+  joinedAt: string;
+  jobs: Array<{
+    code: string;
+    title: string;
+    employmentType: JobEmploymentType;
+    state: ListingState;
+    publishedAt: string | null;
+  }>;
+  projects: Array<{
+    code: string;
+    title: string;
+    category: string | null;
+    state: ListingState;
+    publishedAt: string | null;
+  }>;
+  reviews: Array<{
+    rating: number;
+    text: string | null;
+    createdAt: string;
+    role: 'employer' | 'applicant' | 'client' | 'freelancer';
+    listingCode: string;
+    listingTitle: string;
+  }>;
+}
+
+export interface ProfilePayload {
+  headline?: string;
+  bio?: string;
+  website?: string;
+}
+
 // --- Verification ----------------------------------------------------------
 
 /** Field for field what the server's verificationSchema accepts. */
@@ -81,6 +274,8 @@ export interface PublicJobSummary {
   code: string;
   title: string;
   companyName: string | null;
+  category: string | null;
+  featured: boolean;
   employmentType: JobEmploymentType;
   workArrangement: JobWorkArrangement;
   province: string | null;
@@ -90,17 +285,22 @@ export interface PublicJobSummary {
   salaryUndisclosed: boolean;
   currency: string;
   publishedAt: string | null;
+  authorProfile: AuthorProfile | null;
 }
 
 export interface PublicJobDetail extends PublicJobSummary {
   description: string;
   skills: string[];
   closesAt: string | null;
+  viewCount: number;
+  _count: { applications: number };
+  similar: Array<{ code: string; title: string; category: string | null; employmentType: JobEmploymentType }>;
 }
 
 export interface JobPayload {
   title: string;
   description: string;
+  category?: string;
   employmentType: JobEmploymentType;
   workArrangement: JobWorkArrangement;
   province?: string;
@@ -151,6 +351,7 @@ export interface EmployerApplication {
   outcome: OfferOutcome;
   createdAt: string;
   applicant: { id: string; firstName: string; lastName: string; email: string };
+  applicantProfile: AuthorProfile | null;
 }
 
 // --- Freelance projects ----------------------------------------------------
@@ -161,6 +362,7 @@ export interface PublicProjectSummary {
   title: string;
   companyName: string | null;
   category: string | null;
+  featured: boolean;
   budgetMin: string | null;
   budgetMax: string | null;
   budgetUnknown: boolean;
@@ -168,6 +370,7 @@ export interface PublicProjectSummary {
   publishedAt: string | null;
   /** How many have bid. Never who, never how much — the bids are sealed. */
   _count: { bids: number };
+  authorProfile: AuthorProfile | null;
 }
 
 export interface PublicProjectDetail extends PublicProjectSummary {
@@ -175,7 +378,10 @@ export interface PublicProjectDetail extends PublicProjectSummary {
   skills: string[];
   deliverBy: string | null;
   openToCompanyOffer: boolean;
+  closesAt: string | null;
+  viewCount: number;
   attachments: Array<{ id: string; originalName: string; sizeBytes: number }>;
+  similar: Array<{ code: string; title: string; category: string | null }>;
 }
 
 export interface ProjectPayload {
@@ -234,6 +440,7 @@ export interface AuthorBid {
   outcome: OfferOutcome;
   createdAt: string;
   bidder: { id: string; firstName: string; lastName: string } | null;
+  bidderProfile: AuthorProfile | null;
 }
 
 // --- The queues ------------------------------------------------------------
@@ -246,7 +453,13 @@ export interface VerificationQueueRow {
   legalLastName: string;
   companyName: string | null;
   submittedAt: string;
-  user: { id: string; email: string; firstName: string; lastName: string };
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    marketplacePaused?: boolean;
+  };
 }
 
 export interface VerificationDetail extends VerificationQueueRow {
@@ -276,6 +489,7 @@ export interface JobQueueRow {
   code: string;
   title: string;
   companyName: string | null;
+  featured: boolean;
   moderationStatus: ModerationStatus;
   submittedAt: string | null;
   author: { id: string; email: string; firstName: string; lastName: string };
@@ -299,6 +513,7 @@ export interface JobReviewDetail extends JobQueueRow {
   internalNote: string | null;
   publishedAt: string | null;
   createdAt: string;
+  featured: boolean;
   reviewedBy: { id: string; firstName: string; lastName: string } | null;
   _count: { applications: number };
 }
@@ -319,6 +534,7 @@ export interface ProjectQueueRow {
   code: string;
   title: string;
   companyName: string | null;
+  featured: boolean;
   moderationStatus: ModerationStatus;
   submittedAt: string | null;
   author: { id: string; email: string; firstName: string; lastName: string };

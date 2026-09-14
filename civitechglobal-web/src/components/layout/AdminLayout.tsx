@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 import {
+  BarChart3,
   Briefcase,
   ClipboardList,
   Code2,
@@ -9,6 +10,7 @@ import {
   FileText,
   FolderKanban,
   Gavel,
+  ScrollText,
   Settings,
   Shield,
   ShieldCheck,
@@ -101,8 +103,26 @@ export function AdminLayout() {
               },
             ]
           : []),
+        ...(can('analytics')
+          ? [
+              {
+                to: '/admin/marketplace',
+                label: t.analytics.title,
+                icon: <BarChart3 className="size-4" />,
+              },
+            ]
+          : []),
       ],
     },
+    ...(user?.role === 'SUPER_ADMIN'
+      ? [
+          {
+            to: '/admin/audit',
+            label: t.audit.title,
+            icon: <ScrollText className="size-4" />,
+          },
+        ]
+      : []),
     {
       id: 'administration',
       label: t.admin.groupAdministration,

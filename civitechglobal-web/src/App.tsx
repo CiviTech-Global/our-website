@@ -23,6 +23,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/public/ForgotPasswordPage'
 const ResetPasswordPage = lazy(() => import('@/pages/public/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/public/VerifyEmailPage'));
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
+const PublicProfilePage = lazy(() => import('@/pages/public/ProfilePage'));
 
 // Route-split: the insurance section carries the catalog, the dynamic form and
 // the OTP step, none of which the landing page needs in its bundle.
@@ -57,6 +58,10 @@ const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
 const MyBidsPage = lazy(() => import('@/pages/dashboard/MyBidsPage'));
+const MyAwardsPage = lazy(() => import('@/pages/dashboard/MyAwardsPage'));
+const ConversationsPage = lazy(() => import('@/pages/dashboard/ConversationsPage'));
+const ConversationThreadPage = lazy(() => import('@/pages/dashboard/ConversationThreadPage'));
+const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage'));
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/DashboardPage'));
 const RequestsPage = lazy(() => import('@/pages/admin/RequestsPage'));
@@ -65,6 +70,8 @@ const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
 const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
+const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
+const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
 const ApplicationQueuePage = lazy(() => import('@/pages/admin/ApplicationQueuePage'));
 const ProjectQueuePage = lazy(() => import('@/pages/admin/ProjectQueuePage'));
 const BidQueuePage = lazy(() => import('@/pages/admin/BidQueuePage'));
@@ -178,6 +185,7 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route path="/profiles/:username" element={<PublicProfilePage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -251,6 +259,38 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <MyBidsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="awards"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyAwardsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="messages"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ConversationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="messages/:kind/:threadId"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ConversationThreadPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <NotificationsPage />
             </Suspense>
           }
         />
@@ -381,6 +421,22 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <BidQueuePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="marketplace"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MarketplaceAnalyticsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="audit"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AuditLogPage />
             </Suspense>
           }
         />

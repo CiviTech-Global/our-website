@@ -16,6 +16,8 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
+import { RatingStars } from '@/components/marketplace/RatingStars';
+import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -374,6 +376,21 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
                     {application.applicant.firstName} {application.applicant.lastName}
                   </p>
                   <p className="ltr text-xs text-text-muted">{application.applicant.email}</p>
+                  {application.applicantProfile && (
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                      <Link
+                        to={`/profiles/${application.applicantProfile.username}`}
+                        className="font-medium text-brand-600 hover:underline"
+                      >
+                        @{application.applicantProfile.username}
+                      </Link>
+                      {application.applicantProfile.verified && <VerifiedBadge />}
+                      <RatingStars
+                        avg={application.applicantProfile.ratingAvg}
+                        count={application.applicantProfile.ratingCount}
+                      />
+                    </div>
+                  )}
                 </div>
                 <Badge variant={outcomeVariant(application.outcome)}>
                   {t.market[application.outcome]}
@@ -400,6 +417,11 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
               )}
 
               <div className="mt-3 flex flex-wrap gap-2">
+                <Link to={`/dashboard/messages/a/${application.id}`}>
+                  <Button size="sm" variant="outline">
+                    {t.market.sendMessageCta}
+                  </Button>
+                </Link>
                 <Button size="sm" variant="outline" onClick={() => void decide(application.id, 'SHORTLISTED')}>
                   {t.market.shortlist}
                 </Button>

@@ -62,15 +62,38 @@ export const openApiDocument = {
         },
       },
     },
+    '/market/stats': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'Headline marketplace numbers for the landing page',
+        description:
+          'Open jobs, open projects, awards given and verified users. ' +
+          'Cache-Control: public, max-age=300, stale-while-revalidate=900.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
+    '/market/featured': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'Featured and newest listings for the landing page',
+        description:
+          'Staff-curated featured jobs and projects, newest approved listings filling any ' +
+          'un-curated slots. Cache-Control: public, max-age=60, stale-while-revalidate=600.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
     '/market/jobs': {
       get: {
         tags: ['Marketplace'],
         summary: 'The job board',
         description:
-          'Only listings that are approved and open, and never the author identity — a board ' +
-          'that names who placed each advert publishes a list of verified accounts. ' +
+          'Only listings that are approved and open. Author identity flows through the public ' +
+          'profile: listings whose author has chosen a username carry an authorProfile card, ' +
+          'the rest stay anonymous by design. ' +
           'Cache-Control: public, max-age=60, stale-while-revalidate=600. ' +
-          'Filters: search, employmentType, workArrangement, province, page, pageSize. ' +
+          'Filters: search, employmentType, workArrangement, province, category, skills ' +
+          '(comma list), salaryMin/salaryMax (range overlap, undisclosed salaries excluded), ' +
+          'sort (newest | salaryAsc | salaryDesc | closingSoon); featured always sorts first. ' +
           'Money is a decimal string, in Toman.',
         responses: { 200: { $ref: '#/components/responses/Ok' } },
       },
@@ -94,7 +117,9 @@ export const openApiDocument = {
           'Approved, open projects. Each carries a count of the offers it has drawn and ' +
           'nothing about them: bids are sealed, and a count conveys competition without ' +
           "handing the next bidder somebody else's number to undercut. " +
-          'Filters: search, category, page, pageSize.',
+          'Filters: search, category, skills (comma list), budgetMin/budgetMax (range overlap, ' +
+          'undisclosed budgets excluded), sort (newest | budgetAsc | budgetDesc); featured ' +
+          'always sorts first. Money is a decimal string, in Toman.',
         responses: { 200: { $ref: '#/components/responses/Ok' } },
       },
     },
@@ -103,6 +128,30 @@ export const openApiDocument = {
         tags: ['Marketplace'],
         summary: 'One project, by its reference code',
         parameters: [{ $ref: '#/components/parameters/Code' }],
+        responses: {
+          200: { $ref: '#/components/responses/Ok' },
+          404: { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
+    '/market/profiles/{username}': {
+      get: {
+        tags: ['Marketplace'],
+        summary: 'A public profile, by username',
+        description:
+          'What an account that chose a username shows the world: handle, headline, ' +
+          'verification state, reputation, public listings and received reviews. No email, ' +
+          'phone or real name, and paused accounts are not here. 404 otherwise. ' +
+          'Cache-Control: public, max-age=120, stale-while-revalidate=600.',
+        parameters: [
+          {
+            name: 'username',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'The self-chosen handle, without the leading @.',
+          },
+        ],
         responses: {
           200: { $ref: '#/components/responses/Ok' },
           404: { $ref: '#/components/responses/NotFound' },

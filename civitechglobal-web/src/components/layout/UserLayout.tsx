@@ -1,10 +1,13 @@
 import { Outlet } from 'react-router';
 import {
+  Bell,
   Briefcase,
   FileText,
   FolderKanban,
   Gavel,
+  Handshake,
   LayoutDashboard,
+  MessagesSquare,
   ShieldCheck,
   Store,
   UserCircle,
@@ -43,12 +46,19 @@ export function UserLayout() {
           icon: <FolderKanban className="size-4" />,
         },
         { to: '/dashboard/bids', label: t.market.myBids, icon: <Gavel className="size-4" /> },
+        {
+          to: '/dashboard/awards',
+          label: t.market.myAwards,
+          icon: <Handshake className="size-4" />,
+        },
       ],
     },
+    { to: '/dashboard/messages', label: t.market.messagesNav, icon: <MessagesSquare className="size-4" /> },
+    { to: '/dashboard/notifications', label: t.market.notificationsNav, icon: <Bell className="size-4" /> },
   ];
 
   return (
-    <DashboardShell title={t.common.brand} items={items}>
+    <DashboardShell title={t.common.brand} items={items} notificationsLink="/dashboard/notifications">
       <Outlet />
     </DashboardShell>
   );

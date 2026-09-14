@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { documentKindsSchema, verificationSchema } from './marketplace.schema.js';
+import {
+  documentKindsSchema,
+  jobBoardSchema,
+  projectBoardSchema,
+  verificationSchema,
+} from './marketplace.schema.js';
 
 const valid = {
   kind: 'INDIVIDUAL' as const,
@@ -80,5 +85,60 @@ describe('verificationSchema', () => {
       companyRegistrationNo: '12345',
     });
     expect(named.success).toBe(true);
+  });
+});
+
+describe('jobBoardSchema', () => {
+  it('defaults the sort to newest and leaves money undefined', () => {
+    const parsed = jobBoardSchema.parse({});
+
+    expect(parsed.sort).toBe('newest');
+    expect(parsed.salaryMin).toBeUndefined();
+    expect(parsed.salaryMax).toBeUndefined();
+    expect(parsed.skills).toBeUndefined();
+  });
+
+  it('coerces salary bounds to BigInt from digit strings', () => {
+    const parsed = jobBoardSchema.parse({ salaryMin: '10000000', salaryMax: '50000000' });
+
+    expect(parsed.salaryMin).toBe(BigInt(10_000_000));
+    expect(parsed.salaryMax).toBe(BigInt(50_000_000));
+  });
+
+  it('refuses a salary that is not a plain digit string', () => {
+    expect(jobBoardSchema.safeParse({ salaryMin: '10,000,000' }).success).toBe(false);
+    expect(jobBoardSchema.safeParse({ salaryMin: '-5' }).success).toBe(false);
+    expect(jobBoardSchema.safeParse({ salaryMin: '12.5' }).success).toBe(false);
+  });
+
+  it('refuses a sort it does not know', () => {
+    expect(jobBoardSchema.safeParse({ sort: 'titleAz' }).success).toBe(false);
+  });
+
+  it('splits the comma skills list, trims, drops empties and caps at ten', () => {
+    const parsed = jobBoardSchema.parse({ skills: ' react, ,  node ,react,extra1,extra2,extra3,extra4,extra5,extra6,extra7,extra8,extra9,extra10 ' });
+
+    expect(parsed.skills).toEqual(['react', 'node', 'extra1', 'extra2', 'extra3', 'extra4', 'extra5', 'extra6', 'extra7', 'extra8']);
+  });
+
+  it('turns an all-empty skills string into an empty list', () => {
+    expect(jobBoardSchema.parse({ skills: ' , , ' }).skills).toEqual([]);
+  });
+});
+
+describe('projectBoardSchema', () => {
+  it('coerces budget bounds to BigInt and defaults the sort', () => {
+    const parsed = projectBoardSchema.parse({ budgetMin: '20000000' });
+
+    expect(parsed.budgetMin).toBe(BigInt(20_000_000));
+    expect(parsed.sort).toBe('newest');
+  });
+
+  it('refuses a budget bound that is not digits', () => {
+    expect(projectBoardSchema.safeParse({ budgetMax: 'about five million' }).success).toBe(false);
+  });
+
+  it('refuses a sort it does not know', () => {
+    expect(projectBoardSchema.safeParse({ sort: 'closingSoon' }).success).toBe(false);
   });
 });

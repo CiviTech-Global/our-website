@@ -2,6 +2,7 @@ import type { Prisma, VerificationDocumentKind } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { notifySafely } from './notifications.service.js';
 import { isValidNationalId, normalizeIranMobile } from '../utils/persian.js';
 import { removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
 
@@ -201,6 +202,22 @@ export async function assertVerified(userId: string): Promise<void> {
   throw new AppError(message, 403);
 }
 
+/**
+ * The staff circuit breaker. Paused accounts cannot post, apply, bid or
+ * message; their existing listings stay readable so a reader is not punished
+ * for something the author did. SUPER_ADMIN bypass does not apply here — a
+ * pause is an operational act, not a permission.
+ */
+export async function assertMarketplaceAllowed(userId: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { marketplacePaused: true },
+  });
+  if (user?.marketplacePaused) {
+    throw new AppError('دسترسی شما به بازارگاه موقتاً محدود شده است.', 403);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Review
 // ---------------------------------------------------------------------------
@@ -224,7 +241,7 @@ export async function listForReview(query: { status?: string; page: number; page
         legalLastName: true,
         companyName: true,
         submittedAt: true,
-        user: { select: { id: true, email: true } },
+        user: { select: { id: true, email: true, marketplacePaused: true } },
       },
     }),
     prisma.userVerification.count({ where }),
@@ -299,7 +316,17 @@ export async function review(
     },
   });
 
-  // There is no audit table yet, and "who approved this identity?" is a
+    notifySafely(existing.userId, {
+    type: 'verification.decision',
+    title: decision === 'APPROVED' ? 'احراز هویت تأیید شد' : 'احراز هویت تأیید نشد',
+    body:
+      decision === 'APPROVED'
+        ? 'هویت شما تأیید شد و دسترسی کامل بازارگاه برای شما فعال است.'
+        : `اطلاعات ارسالی تأیید نشد${notes.reviewNote ? `: ${notes.reviewNote.slice(0, 120)}` : '.'}`,
+    link: '/dashboard/verification',
+  });
+
+// There is no audit table yet, and "who approved this identity?" is a
   // question somebody will eventually need answered.
   logger.info(
     { verificationId: id, subjectUserId: existing.userId, from: existing.status, to: decision, actorId: reviewer.userId },

@@ -18,6 +18,7 @@ import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { HeroMotif } from '@/components/home/HeroMotif';
+import { MarketplaceShowcase } from '@/components/home/MarketplaceShowcase';
 
 export default function HomePage() {
   const { t, locale } = useLocale();
@@ -105,6 +106,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Marketplace: live boards, featured listings, and how it works. */}
+      <MarketplaceShowcase />
 
       {/* Insurance: one service, stated once, and easy to find. */}
       <section className="py-12">
