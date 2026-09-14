@@ -71,12 +71,23 @@ server {
     include /etc/nginx/civitech_security_headers;
 
     # ---- TLS policy --------------------------------------------------------
-    # Effective once certbot adds `listen 443 ssl`. Kept here as well as in
-    # certbot's own include so the policy survives that include changing.
+    # Effective once certbot adds `listen 443 ssl`. Stated here as well as in
+    # certbot's own include so the protocol floor survives that include
+    # changing.
+    #
+    # ssl_session_cache and ssl_session_timeout are deliberately NOT set here.
+    # certbot's nginx installer inserts its own pair into this server block and
+    # refuses to proceed when it finds different values already present:
+    #
+    #   tried to insert directive "ssl_session_cache shared:le_nginx_SSL:10m"
+    #   but found conflicting "ssl_session_cache shared:SSL:10m"
+    #
+    # It fails AFTER the certificate has been issued, so the effect is a valid
+    # certificate on disk that nginx is never told about — the site stays on
+    # plain HTTP and looks like certbot failed outright. Leaving the session
+    # cache to certbot costs nothing: its values are the same shape as these.
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers off;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_timeout 1d;
 
     # ---- Compression -------------------------------------------------------
     # The web container gzips too; this covers proxied API responses, which it

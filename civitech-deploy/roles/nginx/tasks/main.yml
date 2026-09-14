@@ -111,7 +111,24 @@
   changed_when: "'Successfully received certificate' in nginx_certbot_result.stdout"
   when: enable_ssl | bool
 
-- name: Enable HTTP/2 on the TLS listener
+- name: Read the installed nginx version
+  # The HTTP/2 syntax changed in 1.25.1, and the two spellings are not
+  # interchangeable: the modern `http2 on;` is an unknown directive to an
+  # older nginx and makes `nginx -t` fail outright, which takes the site down
+  # on reload rather than merely leaving HTTP/2 off.
+  #
+  # Ubuntu 20.04 and 22.04 both ship 1.18, 24.04 ships 1.24 — so on every LTS
+  # this role is likely to meet, the OLD spelling is the correct one.
+  ansible.builtin.command: nginx -v
+  register: nginx_version_raw
+  changed_when: false
+  check_mode: false
+
+- name: Work out which HTTP/2 spelling this nginx understands
+  ansible.builtin.set_fact:
+    nginx_version: "{{ nginx_version_raw.stderr | regex_search('nginx/([0-9.]+)', '\\1') | first }}"
+
+- name: Enable HTTP/2 on the TLS listener (nginx 1.25.1 and newer)
   # certbot writes `listen 443 ssl;` and stops there. HTTP/2 is the single
   # largest latency win available to an audience far from the server, and it
   # is one directive.
@@ -121,7 +138,41 @@
     insertafter: 'listen 443 ssl'
     line: "    http2 on;"
     state: present
-  when: enable_ssl | bool
+  when:
+    - enable_ssl | bool
+    - nginx_version is version('1.25.1', '>=')
+  notify: Reload nginx
+
+- name: Remove a modern http2 directive an older nginx cannot parse
+  # Self-healing rather than a one-off cleanup: a config written while the
+  # role believed it was talking to a newer nginx leaves `http2 on;` behind,
+  # and that single line makes `nginx -t` fail — so every later run of this
+  # role would abort at validation until somebody edited the file by hand.
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/sites-available/civitech
+    regexp: '^\s*http2\s+on;'
+    state: absent
+  when:
+    - enable_ssl | bool
+    - nginx_version is version('1.25.1', '<')
+  notify: Reload nginx
+
+- name: Enable HTTP/2 on the TLS listener (nginx older than 1.25.1)
+  # The pre-1.25.1 spelling is a parameter on the listen directive itself, so
+  # this rewrites the line certbot wrote rather than adding one after it.
+  #
+  # The tail is captured rather than assumed to be just `;`. certbot writes
+  # `listen 443 ssl; # managed by Certbot` and, for the v6 listener,
+  # `listen [::]:443 ssl ipv6only=on; # managed by Certbot` — so anchoring on a
+  # semicolon at end of line matches neither, and the task silently did
+  # nothing while the play reported HTTP/2 as enabled.
+  ansible.builtin.replace:
+    path: /etc/nginx/sites-available/civitech
+    regexp: '^(\s*listen\s+(?:\[::\]:)?443 ssl)(?! http2)(.*)$'
+    replace: '\1 http2\2'
+  when:
+    - enable_ssl | bool
+    - nginx_version is version('1.25.1', '<')
   notify: Reload nginx
 
 - name: Confirm the renewal timer is active

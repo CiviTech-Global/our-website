@@ -118,7 +118,7 @@ phone_token_ttl_seconds: 900
 # The web bundle does NOT need rebuilding when the domain changes: it reads
 # `import.meta.env.VITE_API_URL ?? '/api'`, which is origin-relative, so the
 # same image serves correctly from any hostname.
-enable_ssl: false
+enable_ssl: true
 # Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
 # request with a 413 before Node ever sees it.
 nginx_client_max_body_size: 2M
@@ -132,13 +132,17 @@ nginx_client_max_body_size: 2M
 scheme: "{{ 'https' if enable_ssl | bool else 'http' }}"
 
 nginx_extra_server_names:
+  # The address the site launched on, kept so an old bookmark still reaches
+  # something. It is not a certificate name and cannot be one — Let's Encrypt
+  # does not issue for bare IPs — so after the redirect certbot installs, a
+  # visitor arriving here lands on https://62.220.123.6 and sees a name
+  # mismatch. That is the expected end state: the domain is the address now.
+  #
+  # The domain and its www alias were listed here while DNS was propagating.
+  # They are domain_name and domain_alias as of the cutover, so keeping them
+  # would only add http:// duplicates to CORS_ORIGIN for origins that redirect
+  # to https before a browser can ever send them.
   - 62.220.123.6
-  # Listed before DNS resolves on purpose. nginx answers to them and the API
-  # accepts them as origins the moment the name starts pointing here, so the
-  # site is fully working — login included — without waiting on another
-  # deploy. They move to domain_name/domain_alias at the TLS cutover.
-  - rayantamaddonjahangostar.ir
-  - www.rayantamaddonjahangostar.ir
 
 # CIDRs of anything that proxies traffic to this server — a CDN's edge nodes.
 # EMPTY MEANS NGINX IS THE FIRST HOP, which is the safe default: an
