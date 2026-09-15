@@ -482,18 +482,46 @@ const fa = {
     formEmail: 'ایمیل',
     formMessage: 'پیام شما',
     formSubmit: 'ارسال پیام',
-    formNote: 'پیام شما ثبت می‌شود و در اولین فرصت پاسخ می‌دهیم.',
-    formSuccess: 'پیام شما آماده ارسال است.',
+    formNote:
+      'پس از ثبت، یک کد پیگیری به شما داده می‌شود. پاسخ را با همان کد در همین صفحه می‌بینید.',
+    formSuccess: 'پیام شما ثبت شد.',
+    formSubject: 'موضوع',
+    formEmailHint: 'برای شناسایی پیام شماست؛ پاسخ ایمیل نمی‌شود.',
+
+    // The code, and the fact that it is the only way back.
+    issuedTitle: 'پیام شما ثبت شد',
+    issuedBody: 'برای دیدن پاسخ، این کد پیگیری را نگه دارید و در همین صفحه وارد کنید.',
+    issuedWarning: 'این کد فقط همین یک بار نمایش داده می‌شود. آن را یادداشت کنید.',
+    copyCode: 'کپی کد پیگیری',
+    codeCopied: 'کد پیگیری کپی شد.',
+    sendAnother: 'ارسال پیام دیگر',
+
+    // Looking a ticket up.
+    trackTitle: 'پیگیری پیام',
+    trackBody: 'کد پیگیری خود را وارد کنید تا وضعیت و پاسخ را ببینید.',
+    trackPlaceholder: 'کد ۱۰ رقمی',
+    trackNotFound: 'پیامی با این کد پیدا نشد.',
+    noSubject: 'بدون موضوع',
+    noReplyYet: 'هنوز پاسخی ثبت نشده است. به‌زودی بررسی می‌شود.',
+    staffReply: 'پشتیبانی',
+    statuses: {
+      OPEN: 'در انتظار پاسخ',
+      ANSWERED: 'پاسخ داده شد',
+      CLOSED: 'بسته‌شده',
+    },
+
+    // The inbox side.
+    reply: 'پاسخ',
+    replyPlaceholder: 'پاسخ خود را بنویسید. مخاطب آن را با کد پیگیری می‌بیند.',
+    replySent: 'پاسخ ثبت شد.',
+    sendReply: 'ثبت پاسخ',
+    close: 'بستن تیکت',
+    reopen: 'بازکردن دوباره',
+    trackingCode: 'کد پیگیری',
+    filterAll: 'همه',
     infoTitle: 'راه‌های ارتباطی',
     infoEmail: 'ایمیل',
     infoTelegram: 'تلگرام',
-    companyTitle: 'مشخصات شرکت',
-    companyLegalNameLabel: 'نام ثبتی',
-    companyRegNoLabel: 'شمارهٔ ثبت',
-    companyNationalIdLabel: 'شناسهٔ ملی',
-    companyAddressLabel: 'نشانی',
-    companyPhoneLabel: 'تلفن',
-    companyPending: 'در انتظار تکمیل',
     inboxTitle: 'پیام‌های تماس',
     inboxSubtitle: 'پیام‌های دریافتی از فرم تماس',
     inboxEmpty: 'پیامی دریافت نشده است.',
@@ -1146,6 +1174,7 @@ const fa = {
     privacy: 'حریم خصوصی',
     terms: 'قوانین و مقررات',
     rights: 'تمامی حقوق محفوظ است.',
+    credit: 'طراحی و پیاده‌سازی توسط محمد خلیل‌زاده از رایان تمدن جهان گستر',
   },
 };
 

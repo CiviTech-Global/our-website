@@ -1,26 +1,41 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCheck, Mail, MailOpen } from 'lucide-react';
+import { CheckCheck, Mail, MailOpen, RotateCcw, Send } from 'lucide-react';
 import { api } from '@/config/api';
+import { apiMessage } from '@/lib/apiMessage';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useToast } from '@/contexts/ToastContext';
 import { formatDate } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
+import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import { TextArea } from '@/components/ui/TextArea';
+
+type TicketStatus = 'OPEN' | 'ANSWERED' | 'CLOSED';
+
+interface Reply {
+  id: string;
+  body: string;
+  createdAt: string;
+  author: { firstName: string; lastName: string } | null;
+}
 
 interface ContactMessage {
   id: string;
+  trackingCode: string;
+  status: TicketStatus;
   name: string;
   email: string;
   subject: string | null;
   message: string;
   readAt: string | null;
-  handledAt: string | null;
   createdAt: string;
+  replies: Reply[];
 }
 
 interface Inbox {
@@ -29,40 +44,59 @@ interface Inbox {
   pageSize: number;
   total: number;
   unread: number;
+  open: number;
 }
 
 const PAGE_SIZE = 20;
+const STATUSES: TicketStatus[] = ['OPEN', 'ANSWERED', 'CLOSED'];
+
+const STATUS_VARIANT: Record<TicketStatus, 'info' | 'success' | 'default'> = {
+  OPEN: 'info',
+  ANSWERED: 'success',
+  CLOSED: 'default',
+};
 
 /**
- * The contact-form inbox.
+ * The contact inbox, which is now a ticket queue.
  *
- * Messages used to go nowhere — the form opened a `mailto:` link — so this is
- * the other half of making that form real: somewhere for a message to be read,
- * and a record that it was.
+ * Replying used to mean opening a mail client, because nothing here could
+ * send. It still cannot send — but it no longer needs to: the reply is written
+ * here and the sender reads it by quoting their tracking code. That makes this
+ * page the only place an answer exists, which is why the reply box is part of
+ * every ticket rather than hidden behind a detail view.
  */
 export default function MessagesPage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.contact.inboxTitle);
+  const { showToast } = useToast();
   const qc = useQueryClient();
+
   const [page, setPage] = useState(1);
-  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [status, setStatus] = useState<TicketStatus | 'ALL'>('ALL');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['contact', 'inbox', page, unreadOnly],
+    queryKey: ['contact', 'inbox', page, status],
     queryFn: async () => {
       const res = await api.get<Inbox>('/contact', {
-        params: { page, pageSize: PAGE_SIZE, unread: unreadOnly ? 'true' : undefined },
+        params: {
+          page,
+          pageSize: PAGE_SIZE,
+          status: status === 'ALL' ? undefined : status,
+        },
       });
       return res.data;
     },
   });
 
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['contact', 'inbox'] });
+
   const update = useMutation({
-    mutationFn: async (input: { id: string; read?: boolean; handled?: boolean }) => {
+    mutationFn: async (input: { id: string; read?: boolean; status?: TicketStatus }) => {
       const { id, ...body } = input;
       await api.patch(`/contact/${id}`, body);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['contact', 'inbox'] }),
+    onSuccess: invalidate,
+    onError: (error) => showToast(apiMessage(error, t.common.error), 'error'),
   });
 
   return (
@@ -72,21 +106,25 @@ export default function MessagesPage() {
           <h1 className="text-2xl font-bold text-text-primary">{t.contact.inboxTitle}</h1>
           <p className="mt-1 text-sm text-text-secondary">
             {t.contact.inboxSubtitle}
-            {data && data.unread > 0 && ` · ${data.unread} ${t.contact.inboxUnread}`}
+            {data && data.open > 0 && ` · ${data.open} ${t.contact.statuses.OPEN}`}
           </p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
-          <input
-            type="checkbox"
-            checked={unreadOnly}
-            onChange={(e) => {
-              setUnreadOnly(e.target.checked);
-              setPage(1);
-            }}
-            className="size-4 accent-[var(--color-brand-green-500)]"
-          />
-          {t.contact.inboxUnreadOnly}
-        </label>
+        <Select
+          className="w-auto"
+          value={status}
+          aria-label={t.admin.status}
+          onChange={(e) => {
+            setStatus(e.target.value as TicketStatus | 'ALL');
+            setPage(1);
+          }}
+        >
+          <option value="ALL">{t.contact.filterAll}</option>
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {t.contact.statuses[s]}
+            </option>
+          ))}
+        </Select>
       </div>
 
       {isLoading && (
@@ -95,9 +133,7 @@ export default function MessagesPage() {
         </div>
       )}
 
-      {!isLoading && data && data.items.length === 0 && (
-        <EmptyState title={t.contact.inboxEmpty} />
-      )}
+      {!isLoading && data?.items.length === 0 && <EmptyState title={t.contact.inboxEmpty} />}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((message) => (
@@ -112,10 +148,15 @@ export default function MessagesPage() {
                   {message.subject && (
                     <p className="mt-0.5 text-sm text-text-secondary">{message.subject}</p>
                   )}
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    {t.contact.trackingCode}: <span className="ltr font-mono">{message.trackingCode}</span>
+                  </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
                   {!message.readAt && <Badge variant="info">{t.contact.inboxUnread}</Badge>}
-                  {message.handledAt && <Badge variant="success">{t.contact.inboxHandled}</Badge>}
+                  <Badge variant={STATUS_VARIANT[message.status]}>
+                    {t.contact.statuses[message.status]}
+                  </Badge>
                   <span className="text-xs text-text-muted">
                     {formatDate(message.createdAt, locale)}
                   </span>
@@ -126,37 +167,58 @@ export default function MessagesPage() {
                 {message.message}
               </p>
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              {message.replies.length > 0 && (
+                <ul className="mt-3 flex flex-col gap-2">
+                  {message.replies.map((r) => (
+                    <li
+                      key={r.id}
+                      className="rounded-lg border border-brand-green-500/40 bg-brand-green-50/40 p-3 dark:bg-brand-green-900/10"
+                    >
+                      <p className="whitespace-pre-wrap text-sm text-text-primary">{r.body}</p>
+                      <p className="mt-2 text-xs text-text-muted">
+                        {r.author ? `${r.author.firstName} ${r.author.lastName}` : t.contact.staffReply}
+                        {' · '}
+                        {formatDate(r.createdAt, locale)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <ReplyBox messageId={message.id} onReplied={invalidate} />
+
+              <div className="mt-3 flex flex-wrap gap-2">
                 <Button
                   type="button"
                   variant="ghost"
+                  size="sm"
                   onClick={() => update.mutate({ id: message.id, read: !message.readAt })}
                 >
-                  {message.readAt ? (
-                    <Mail className="size-4" />
-                  ) : (
-                    <MailOpen className="size-4" />
-                  )}
+                  {message.readAt ? <Mail className="size-4" /> : <MailOpen className="size-4" />}
                   {message.readAt ? t.contact.inboxMarkUnread : t.contact.inboxMarkRead}
                 </Button>
-                {!message.handledAt && (
+
+                {message.status === 'CLOSED' ? (
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => update.mutate({ id: message.id, handled: true, read: true })}
+                    size="sm"
+                    onClick={() => update.mutate({ id: message.id, status: 'ANSWERED' })}
+                  >
+                    <RotateCcw className="size-4" />
+                    {t.contact.reopen}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => update.mutate({ id: message.id, status: 'CLOSED', read: true })}
                   >
                     <CheckCheck className="size-4" />
-                    {t.contact.inboxMarkHandled}
+                    {t.contact.close}
                   </Button>
                 )}
-                {/* Replying happens in a mail client: there is no outbound mail
-                    service configured, and pretending otherwise would lose
-                    replies the same way the form used to lose messages. */}
-                <a href={`mailto:${message.email}`} className="ms-auto">
-                  <Button type="button" variant="secondary">
-                    {t.contact.infoEmail}
-                  </Button>
-                </a>
               </div>
             </Card>
           </li>
@@ -170,6 +232,50 @@ export default function MessagesPage() {
           onPageChange={setPage}
         />
       )}
+    </div>
+  );
+}
+
+/** Writing the answer. Posting it is what makes the ticket ANSWERED. */
+function ReplyBox({ messageId, onReplied }: { messageId: string; onReplied: () => void }) {
+  const { t } = useLocale();
+  const { showToast } = useToast();
+  const [body, setBody] = useState('');
+
+  const send = useMutation({
+    mutationFn: async () => {
+      await api.post(`/contact/${messageId}/reply`, { body: body.trim() });
+    },
+    onSuccess: () => {
+      setBody('');
+      showToast(t.contact.replySent, 'success');
+      onReplied();
+    },
+    onError: (error) => showToast(apiMessage(error, t.common.error), 'error'),
+  });
+
+  return (
+    <div className="mt-4 border-t border-border-default pt-3">
+      <TextArea
+        rows={3}
+        value={body}
+        placeholder={t.contact.replyPlaceholder}
+        aria-label={t.contact.reply}
+        onChange={(e) => setBody(e.target.value)}
+      />
+      <Button
+        type="button"
+        size="sm"
+        className="mt-2"
+        // An empty reply would still flip the ticket to ANSWERED, telling the
+        // sender to come and read nothing.
+        disabled={body.trim().length === 0}
+        isLoading={send.isPending}
+        onClick={() => send.mutate()}
+      >
+        <Send className="size-4" aria-hidden="true" />
+        {t.contact.sendReply}
+      </Button>
     </div>
   );
 }

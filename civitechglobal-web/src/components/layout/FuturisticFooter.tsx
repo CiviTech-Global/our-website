@@ -67,12 +67,19 @@ export function FuturisticFooter() {
             </div>
           </div>
 
-          <div className="mt-8 border-t border-border-subtle pt-4 text-center text-xs text-text-muted">
-            © {year}{' '}
-            {t.common.brand.includes(t.common.legalName)
-              ? t.common.brand
-              : `${t.common.brand} (${t.common.legalName})`}
-            . {t.footer.rights}
+          <div className="mt-8 flex flex-col items-center gap-1 border-t border-border-subtle pt-4 text-center text-xs text-text-muted">
+            <p>
+              © {year}{' '}
+              {t.common.brand.includes(t.common.legalName)
+                ? t.common.brand
+                : `${t.common.brand} (${t.common.legalName})`}
+              . {t.footer.rights}
+            </p>
+            {/* Its own line rather than appended to the copyright: the two say
+                different things — one is a legal notice about the company, the
+                other is attribution for the work. Run together they read as a
+                single sentence that is neither. */}
+            <p>{t.footer.credit}</p>
           </div>
         </div>
       </div>

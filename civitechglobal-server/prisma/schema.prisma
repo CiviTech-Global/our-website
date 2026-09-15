@@ -111,6 +111,9 @@ model User {
   refreshTokens RefreshToken[]
   tokens        UserToken[]
 
+  /// Contact tickets this account has answered.
+  contactReplies ContactReply[] @relation("ContactReplyAuthor")
+
   // ---- Marketplace --------------------------------------------------------
   verification          UserVerification?
   verificationsReviewed UserVerification[] @relation("VerificationReviewer")
@@ -723,8 +726,31 @@ model ProjectProposal {
 /// enquiry existed only if the visitor's machine had a mail client configured
 /// and they went through with sending it. Anything else was lost silently,
 /// which is the worst way to lose a customer.
+/// Where a contact ticket has got to.
+///
+/// There is no email in this deployment, so the status IS the communication:
+/// a visitor learns their message was answered by looking it up, not by
+/// receiving anything. That makes the transition to ANSWERED the moment the
+/// reply becomes visible, which is why it is set by the reply itself rather
+/// than toggled separately.
+enum TicketStatus {
+  /// Received, nobody has replied yet.
+  OPEN
+  /// A member of staff has written a reply the visitor can now read.
+  ANSWERED
+  /// Finished. Still readable by tracking code; no further replies expected.
+  CLOSED
+}
+
 model ContactMessage {
   id String @id @default(cuid())
+
+  /// What the visitor quotes to read the answer. There is no email out of
+  /// this system, so this code is the ONLY way back to their own message —
+  /// it is shown once on submission and cannot be recovered from here.
+  trackingCode String @unique @map("tracking_code")
+
+  status TicketStatus @default(OPEN)
 
   name      String
   email     String
@@ -741,12 +767,41 @@ model ContactMessage {
   handledAt     DateTime? @map("handled_at")
   internalNotes String?   @map("internal_notes")
 
+  replies ContactReply[]
+
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
   @@index([createdAt])
   @@index([emailHash])
+  @@index([status, createdAt])
   @@map("contact_messages")
+}
+
+/// One staff answer on a contact ticket.
+///
+/// Staff-authored only. The visitor has no account and no session — they hold
+/// a tracking code, which is enough to read but deliberately not enough to
+/// write, since anyone who saw the code over somebody's shoulder would
+/// otherwise be able to post as them.
+model ContactReply {
+  id String @id @default(cuid())
+
+  messageId String         @map("message_id")
+  message   ContactMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  body String
+
+  /// Who wrote it. Nullable so the reply survives the account being removed —
+  /// the visitor's record of what they were told should not disappear with a
+  /// staff departure.
+  authorId String? @map("author_id")
+  author   User?   @relation("ContactReplyAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([messageId, createdAt])
+  @@map("contact_replies")
 }
 
 // ===========================================================================

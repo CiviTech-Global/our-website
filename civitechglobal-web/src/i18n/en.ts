@@ -484,18 +484,46 @@ const en: typeof fa = {
     formEmail: 'Email',
     formMessage: 'Your message',
     formSubmit: 'Send message',
-    formNote: 'Your message is recorded and we will reply as soon as we can.',
-    formSuccess: 'Your message is ready to send.',
+    formNote:
+      'You will be given a tracking code. The reply appears on this page when you enter it.',
+    formSuccess: 'Your message was received.',
+    formSubject: 'Subject',
+    formEmailHint: 'It identifies your message. No reply is emailed.',
+
+    // The code, and the fact that it is the only way back.
+    issuedTitle: 'Your message was received',
+    issuedBody: 'Keep this tracking code. Enter it on this page to read the reply.',
+    issuedWarning: 'This code is shown once. Write it down.',
+    copyCode: 'Copy the tracking code',
+    codeCopied: 'Tracking code copied.',
+    sendAnother: 'Send another message',
+
+    // Looking a ticket up.
+    trackTitle: 'Track a message',
+    trackBody: 'Enter your tracking code to see its status and any reply.',
+    trackPlaceholder: '10-character code',
+    trackNotFound: 'No message found with that code.',
+    noSubject: 'No subject',
+    noReplyYet: 'No reply yet. We will look at it shortly.',
+    staffReply: 'Support',
+    statuses: {
+      OPEN: 'Awaiting reply',
+      ANSWERED: 'Answered',
+      CLOSED: 'Closed',
+    },
+
+    // The inbox side.
+    reply: 'Reply',
+    replyPlaceholder: 'Write your reply. The sender reads it with their tracking code.',
+    replySent: 'Reply saved.',
+    sendReply: 'Send reply',
+    close: 'Close ticket',
+    reopen: 'Reopen',
+    trackingCode: 'Tracking code',
+    filterAll: 'All',
     infoTitle: 'Get in touch',
     infoEmail: 'Email',
     infoTelegram: 'Telegram',
-    companyTitle: 'Company details',
-    companyLegalNameLabel: 'Registered name',
-    companyRegNoLabel: 'Registration number',
-    companyNationalIdLabel: 'National company ID',
-    companyAddressLabel: 'Address',
-    companyPhoneLabel: 'Telephone',
-    companyPending: 'To be confirmed',
     inboxTitle: 'Contact messages',
     inboxSubtitle: 'Messages received through the contact form',
     inboxEmpty: 'No messages yet.',
@@ -1147,6 +1175,7 @@ const en: typeof fa = {
     privacy: 'Privacy policy',
     terms: 'Terms of service',
     rights: 'All rights reserved.',
+    credit: 'Designed and implemented by Mohammad Khalilzadeh from Rayan Tamaddon Jahan Gostar',
   },
 };
 
