@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type { AdminDashboardStats } from '@/types/requests';
 import type { AdminRole, AdminUserListItem, CreateAdminInput, Permission } from '@/types/admin';
-import type { PaginatedResponse } from '@/types/requests';
+import type { Paged } from '@/types/api';
 
 export function useAdminDashboard() {
   return useQuery({
@@ -18,7 +18,7 @@ export function useAdminUsers(page: number, limit: number) {
   return useQuery({
     queryKey: ['admin', 'users', { page, limit }],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<AdminUserListItem>>('/admin/users', {
+      const res = await api.get<Paged<AdminUserListItem>>('/admin/users', {
         params: { page, limit },
       });
       return res.data;

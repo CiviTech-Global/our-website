@@ -1,4 +1,5 @@
 import { prisma } from '../config/database.js';
+import { toPage } from '../utils/page.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -67,7 +68,7 @@ export async function listNotifications(
     prisma.notification.count({ where: { ...where, readAt: null } }),
   ]);
 
-  return { items, total, unreadCount, page: query.page, pageSize: query.pageSize };
+  return { ...toPage(items, total, query.page, query.pageSize), unreadCount };
 }
 
 export function unreadNotificationCount(userId: string) {

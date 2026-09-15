@@ -36,12 +36,15 @@ describe('envelope', () => {
     expect(res.data).toEqual({ id: 7 });
   });
 
-  it('flattens pagination meta alongside the rows', async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({ success: true, data: [1, 2], meta: { total: 2, page: 1 } })
-    );
-    const res = await api.get<{ data: number[]; total: number }>('/things');
-    expect(res.data).toEqual({ data: [1, 2], total: 2, page: 1 });
+  it('hands back a page of rows exactly as the server sent it', async () => {
+    // Lists carry their own counts inside data. The envelope used to have a
+    // fourth field, meta, that this flattened into the payload — two shapes
+    // for one idea, and a caller had to know which endpoint produced which.
+    const page = { items: [1, 2], page: 1, pageSize: 20, total: 2, totalPages: 1 };
+    fetchMock.mockResolvedValueOnce(jsonResponse({ success: true, data: page }));
+
+    const res = await api.get<typeof page>('/things');
+    expect(res.data).toEqual(page);
   });
 
   it('passes through a body that is not enveloped', async () => {

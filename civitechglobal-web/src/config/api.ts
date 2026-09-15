@@ -84,15 +84,17 @@ function buildUrl(url: string, params?: RequestConfig['params']): string {
 }
 
 /**
- * The server wraps every response as `{ success, message, data, meta? }`.
- * Unwrapping here lets the rest of the app treat the result as the payload —
- * a plain object or array, or `{ data, total, page, limit }` when the server
- * sent pagination meta.
+ * The server wraps every response as `{ success, message, data }`. Unwrapping
+ * here lets the rest of the app treat the result as the payload itself.
+ *
+ * There used to be a fourth field, `meta`, which some list endpoints used for
+ * their page counts and which this function spread into the payload. Every list
+ * now answers with those counts inside `data` as a Paged<T>, so the special
+ * case is gone along with the two envelope shapes it existed to reconcile.
  */
 function unwrap(body: unknown): unknown {
   if (body && typeof body === 'object' && 'success' in body && 'data' in body) {
-    const envelope = body as { data: unknown; meta?: Record<string, unknown> };
-    return envelope.meta ? { data: envelope.data, ...envelope.meta } : envelope.data;
+    return (body as { data: unknown }).data;
   }
   return body;
 }

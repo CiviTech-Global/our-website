@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Paged } from '@/types/api';
 import { api } from '@/config/api';
 import type {
   AdminProjectDetail,
@@ -89,12 +90,7 @@ export function useAdminProjects(params: { page: number; pageSize: number; statu
   return useQuery({
     queryKey: ['projects', 'admin', params],
     queryFn: async () => {
-      const res = await api.get<{
-        items: AdminProjectSummary[];
-        page: number;
-        pageSize: number;
-        total: number;
-      }>('/projects/admin/requests', {
+      const res = await api.get<Paged<AdminProjectSummary>>('/projects/admin/requests', {
         params: {
           page: params.page,
           pageSize: params.pageSize,

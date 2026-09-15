@@ -2,12 +2,11 @@ import type { Request, Response, NextFunction } from 'express';
 import * as adminService from '../services/admin.service.js';
 import * as identityService from '../services/identity-admin.service.js';
 import { ALL_PERMISSIONS } from '../auth/permissions.js';
-import { paginatedResponse, successResponse } from '../utils/apiResponse.js';
+import { successResponse } from '../utils/apiResponse.js';
 
 export async function getUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const result = await adminService.getUsers(req.query);
-    paginatedResponse(res, result.users, result.total, result.page, result.limit);
+    successResponse(res, await adminService.getUsers(req.query));
   } catch (error) {
     next(error);
   }

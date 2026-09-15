@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Paged } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCheck, Mail, MailOpen, RotateCcw, Send } from 'lucide-react';
 import { api } from '@/config/api';
@@ -38,14 +39,8 @@ interface ContactMessage {
   replies: Reply[];
 }
 
-interface Inbox {
-  items: ContactMessage[];
-  page: number;
-  pageSize: number;
-  total: number;
-  unread: number;
-  open: number;
-}
+/** A page of tickets, plus the two counts the tabs above the list show. */
+type Inbox = Paged<ContactMessage> & { unread: number; open: number };
 
 const PAGE_SIZE = 20;
 const STATUSES: TicketStatus[] = ['OPEN', 'ANSWERED', 'CLOSED'];
@@ -228,7 +223,7 @@ export default function MessagesPage() {
       {data && data.total > PAGE_SIZE && (
         <Pagination
           page={page}
-          totalPages={Math.ceil(data.total / PAGE_SIZE)}
+          totalPages={data.totalPages}
           onPageChange={setPage}
         />
       )}

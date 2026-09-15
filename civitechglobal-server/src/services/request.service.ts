@@ -1,4 +1,5 @@
 import type { LeadStatus, Prisma, Role } from '@prisma/client';
+import { toPage } from '../utils/page.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { insuranceRequestRepository } from '../database/prisma/repositories/insurance-request.repository.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
@@ -41,7 +42,7 @@ export async function getAllRequests(query: RequestListQuery, principal: Request
     insuranceRequestRepository.count({ where: scopedWhere }),
   ]);
 
-  return { requests, total, page, limit };
+  return toPage(requests, total, page, limit);
 }
 
 export interface RequestDetail {

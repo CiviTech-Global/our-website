@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -62,12 +63,12 @@ export async function listAudit(query: {
   });
   const actorById = new Map(actors.map((actor) => [actor.id, actor]));
 
-  return {
-    items: items.map((entry) => ({ ...entry, actor: actorById.get(entry.actorId) ?? null })),
+  return toPage(
+    items.map((entry) => ({ ...entry, actor: actorById.get(entry.actorId) ?? null })),
     total,
-    page: query.page,
-    pageSize: query.pageSize,
-  };
+    query.page,
+    query.pageSize,
+  );
 }
 
 // ---------------------------------------------------------------------------

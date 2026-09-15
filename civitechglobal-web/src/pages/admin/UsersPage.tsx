@@ -100,7 +100,7 @@ export default function UsersPage() {
       )}
 
       <ul className="flex flex-col gap-3">
-        {data?.data.map((account) => (
+        {data?.items.map((account) => (
           <li key={account.id}>
             <AccountCard
               account={account}
@@ -114,7 +114,7 @@ export default function UsersPage() {
       {total > PAGE_SIZE && (
         <Pagination
           page={page}
-          totalPages={Math.ceil(total / PAGE_SIZE)}
+          totalPages={data?.totalPages ?? 1}
           onPageChange={setPage}
         />
       )}

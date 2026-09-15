@@ -1,4 +1,5 @@
 import type { Prisma, VerificationDocumentKind } from '@prisma/client';
+import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -247,7 +248,7 @@ export async function listForReview(query: { status?: string; page: number; page
     prisma.userVerification.count({ where }),
   ]);
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }
 
 export async function getForReview(id: string) {

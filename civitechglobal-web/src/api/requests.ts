@@ -1,9 +1,9 @@
+import type { Paged } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type {
   InsuranceRequest,
   LeadStatus,
-  PaginatedResponse,
   RequestDetail,
   RequestSource,
   RequestStats,
@@ -31,7 +31,7 @@ export function useRequests({ page, limit, status, source, productSlug }: UseReq
   return useQuery({
     queryKey: ['requests', { page, limit, status, source, productSlug }],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<InsuranceRequest>>('/requests', {
+      const res = await api.get<Paged<InsuranceRequest>>('/requests', {
         params: {
           page,
           limit,

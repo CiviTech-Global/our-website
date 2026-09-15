@@ -259,7 +259,7 @@ export default function JobsPage() {
         <div className="mt-6">
           <Pagination
             page={page}
-            totalPages={Math.ceil(data.total / PAGE_SIZE)}
+            totalPages={data.totalPages}
             onPageChange={setPage}
           />
         </div>

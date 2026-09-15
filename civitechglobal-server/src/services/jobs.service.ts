@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { generateTrackingCode } from './insurance-request.service.js';
@@ -221,7 +222,7 @@ export async function listPublicJobs(query: JobQuery) {
     authorProfile: profiles.get(authorId) ?? null,
   }));
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }
 
 export async function getPublicJob(code: string) {
@@ -695,7 +696,7 @@ export async function listJobsForReview(query: { status?: string; page: number; 
     prisma.jobPost.count({ where }),
   ]);
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }
 
 /**
@@ -733,7 +734,7 @@ export async function listApplicationsForReview(query: { status?: string; page: 
     prisma.jobApplication.count({ where }),
   ]);
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }
 
 /** An applicant's CV, for the reviewer holding the application. */

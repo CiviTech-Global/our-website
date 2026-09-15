@@ -217,7 +217,7 @@ export default function ResumeDetailPage() {
               onChange={(e) => setAssignedToId(e.target.value)}
             >
               <option value="">{t.join.unassigned}</option>
-              {users?.data.map((member) => (
+              {users?.items.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.firstName} {member.lastName}
                 </option>

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as requestService from '../services/request.service.js';
-import { successResponse, paginatedResponse } from '../utils/apiResponse.js';
+import { successResponse } from '../utils/apiResponse.js';
 import type { RequestListQuery } from '../validators/request.schema.js';
 
 function principalFrom(req: Request): requestService.RequestingPrincipal {
@@ -9,11 +9,10 @@ function principalFrom(req: Request): requestService.RequestingPrincipal {
 
 export async function getAllRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const result = await requestService.getAllRequests(
-      req.query as unknown as RequestListQuery,
-      principalFrom(req),
+    successResponse(
+      res,
+      await requestService.getAllRequests(req.query as unknown as RequestListQuery, principalFrom(req)),
     );
-    paginatedResponse(res, result.requests, result.total, result.page, result.limit);
   } catch (error) {
     next(error);
   }

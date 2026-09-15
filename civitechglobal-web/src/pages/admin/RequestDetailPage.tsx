@@ -239,7 +239,7 @@ export default function RequestDetailPage() {
               onChange={(e) => handleAssign(e.target.value || null)}
             >
               <option value="">{t.admin.unassigned}</option>
-              {users?.data.map((member) => (
+              {users?.items.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.firstName} {member.lastName}
                 </option>

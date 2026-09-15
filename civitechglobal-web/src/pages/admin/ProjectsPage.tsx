@@ -143,7 +143,7 @@ export default function ProjectsPage() {
       {data && data.total > PAGE_SIZE && (
         <Pagination
           page={page}
-          totalPages={Math.ceil(data.total / PAGE_SIZE)}
+          totalPages={data.totalPages}
           onPageChange={setPage}
         />
       )}

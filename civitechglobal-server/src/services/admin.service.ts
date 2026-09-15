@@ -2,6 +2,7 @@ import type { Role } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
 import { getPaginationParams } from '../utils/pagination.js';
+import { toPage } from '../utils/page.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { emailLookupHash, revokeAllUserRefreshTokens } from './auth.service.js';
 import { hashPassword } from '../utils/password.js';
@@ -31,12 +32,12 @@ export async function getUsers(query: { page?: number | string; limit?: number |
     userRepository.count(),
   ]);
 
-  return {
-    users: users.map(({ deletedAt, ...user }) => ({ ...user, isActive: !deletedAt })),
+  return toPage(
+    users.map(({ deletedAt, ...user }) => ({ ...user, isActive: !deletedAt })),
     total,
     page,
     limit,
-  };
+  );
 }
 
 export async function getRoles() {

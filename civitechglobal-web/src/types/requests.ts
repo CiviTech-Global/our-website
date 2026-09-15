@@ -90,12 +90,6 @@ export interface RequestStats {
   cancelled: number;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-}
 
 /** A queue's size, and how much of it is still waiting on us. */
 export interface IntakeCount {

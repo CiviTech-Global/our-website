@@ -1,4 +1,5 @@
 import { prisma } from '../config/database.js';
+import { toPage } from '../utils/page.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { sha256Hex } from '../utils/hash.js';
 import { generateTrackingCode, isUniqueViolation } from './insurance-request.service.js';
@@ -122,7 +123,7 @@ export async function listTickets(query: {
     prisma.contactMessage.count({ where: { status: 'OPEN' } }),
   ]);
 
-  return { items, page: query.page, pageSize: query.pageSize, total, unread, open };
+  return { ...toPage(items, total, query.page, query.pageSize), unread, open };
 }
 
 /**

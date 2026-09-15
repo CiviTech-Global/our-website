@@ -34,12 +34,10 @@ export type VerificationDocumentKind =
 
 export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
 
-export interface Paged<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+// Every list in the API shares one shape; it lives in types/api.ts because the
+// marketplace is not the only thing that paginates. Re-exported so the many
+// marketplace types importing it from here keep working.
+export type { Paged } from './api';
 
 // --- Board showcase ----------------------------------------------------------
 

@@ -111,7 +111,7 @@ export default function JobQueuePage() {
       {data && data.total > PAGE_SIZE && (
         <Pagination
           page={page}
-          totalPages={Math.ceil(data.total / PAGE_SIZE)}
+          totalPages={data.totalPages}
           onPageChange={setPage}
         />
       )}

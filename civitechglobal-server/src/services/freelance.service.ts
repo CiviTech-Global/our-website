@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { generateTrackingCode } from './insurance-request.service.js';
@@ -203,7 +204,7 @@ export async function listPublicProjects(query: ProjectBoardQuery) {
     authorProfile: profiles.get(authorId) ?? null,
   }));
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }
 
 export async function getPublicProject(code: string) {
@@ -684,7 +685,7 @@ export async function listProjectsForReview(query: {
     prisma.freelanceProject.count({ where }),
   ]);
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }
 
 /** One project attachment, for a reviewer to look at. */
@@ -733,5 +734,5 @@ export async function listBidsForReview(query: { page: number; pageSize: number 
     prisma.projectBid.count({ where }),
   ]);
 
-  return { items, total, page: query.page, pageSize: query.pageSize };
+  return toPage(items, total, query.page, query.pageSize);
 }

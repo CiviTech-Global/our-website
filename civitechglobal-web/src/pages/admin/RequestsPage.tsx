@@ -84,7 +84,7 @@ export default function RequestsPage() {
   ];
 
   const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = data?.totalPages ?? 1;
 
   return (
     <div>
@@ -133,7 +133,7 @@ export default function RequestsPage() {
         <>
           <Table
             columns={columns}
-            data={data?.data ?? []}
+            data={data?.items ?? []}
             rowKey={(row) => row.id}
             isLoading={isLoading}
             emptyMessage={t.common.noResults}
