@@ -126,6 +126,15 @@ services:
   # No bot service. The base compose file does not define one either; see the
   # note there. Nothing Telegram-based is deployed.
 
+  clamav:
+    # Bounded like everything else. The signature database is the bulk of it
+    # and lives in memory once loaded; 2G leaves room for it to grow without
+    # letting a runaway scan take the host down with it.
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
   web:
     build: !reset null
     image: {{ image_web }}

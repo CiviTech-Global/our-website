@@ -67,7 +67,7 @@
   # air-gapped install. Everything after this point is identical either way,
   # so the skip changes what is fetched, never what is run.
   ansible.builtin.command:
-    cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+    cmd: docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml pull
     chdir: "{{ app_root }}"
   changed_when: true
   when: pull_images | default(true) | bool
@@ -87,7 +87,7 @@
 - name: Start the data services
   ansible.builtin.command:
     cmd: >-
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml
       up -d postgres redis
     chdir: "{{ app_root }}"
   changed_when: true
@@ -95,7 +95,7 @@
 - name: Wait for Postgres to accept connections
   ansible.builtin.command:
     cmd: >-
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml
       exec -T postgres pg_isready -U {{ postgres_user }}
     chdir: "{{ app_root }}"
   register: app_pg_ready
@@ -117,7 +117,7 @@
   # never generates, prompts, or resets.
   ansible.builtin.command:
     cmd: >-
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml
       run --rm migrate
     chdir: "{{ app_root }}"
   changed_when: true
@@ -137,7 +137,7 @@
   # exactly this reason.
   ansible.builtin.command:
     cmd: >-
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml
       run --rm --entrypoint node api dist/seed.js
     chdir: "{{ app_root }}"
   changed_when: true
@@ -152,7 +152,7 @@
   # is how a rotated vault value reaches the database.
   ansible.builtin.command:
     cmd: >-
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml
       exec -T postgres psql -U {{ postgres_user }} -d {{ postgres_db }}
       -c "ALTER ROLE {{ db_app_user }} WITH LOGIN PASSWORD '{{ vault_db_app_password }}'"
     chdir: "{{ app_root }}"
@@ -163,7 +163,7 @@
 - name: Start the whole stack
   ansible.builtin.command:
     cmd: >-
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml
+      docker compose {{ compose_profiles }} -f docker-compose.yml -f docker-compose.prod.yml
       up -d --remove-orphans
     chdir: "{{ app_root }}"
   changed_when: true

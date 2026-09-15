@@ -198,7 +198,22 @@ email_domain: ""
 #
 # Turning it on also means starting the container:
 #   docker compose --profile scanning up -d clamav
-malware_scanner: none
+# 'clamav' starts the scanner alongside the stack and makes every upload pass
+# through it before a byte is written. 'none' accepts unscanned uploads and the
+# API refuses to start on it in production unless MALWARE_SCANNER_ALLOW_NONE
+# says so explicitly — which is the point: skipping the scanner is a decision
+# somebody has to make out loud.
+#
+# The scanner fails CLOSED. An unreachable clamd refuses the upload rather than
+# waving it through, so a scanner that dies takes uploads down instead of
+# silently stopping doing its job.
+malware_scanner: clamav
+
+# docker compose runs the scanner only when its profile is selected, so the
+# flag is derived from the switch above rather than set separately — the two
+# cannot drift into "MALWARE_SCANNER=clamav with no clamav running", which
+# fails closed and takes every upload down.
+compose_profiles: "{{ '--profile scanning' if malware_scanner == 'clamav' else '' }}"
 
 # ---- Backups ---------------------------------------------------------------
 backup_dir: /var/backups/civitech
