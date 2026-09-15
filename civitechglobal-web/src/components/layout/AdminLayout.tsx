@@ -17,6 +17,7 @@ import {
   Store,
   UserPlus,
   Users,
+  UsersRound,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -133,6 +134,12 @@ export function AdminLayout() {
           : []),
         ...(can('users')
           ? [{ to: '/admin/roles', label: t.admin.roles, icon: <Shield className="size-4" /> }]
+          : []),
+        // Super admin only, and deliberately not behind a grantable
+        // permission: who represents the company on its own page is not a
+        // module of work to delegate.
+        ...(user?.role === 'SUPER_ADMIN'
+          ? [{ to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound className="size-4" /> }]
           : []),
       ],
     },

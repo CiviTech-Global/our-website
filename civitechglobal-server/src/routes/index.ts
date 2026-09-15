@@ -6,6 +6,7 @@ import insuranceRoutes from './insurance.routes.js';
 import adminRoutes from './admin.routes.js';
 import projectRoutes from './project.routes.js';
 import contactRoutes from './contact.routes.js';
+import teamRoutes from './team.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
 import resumeRoutes from './resume.routes.js';
@@ -28,6 +29,9 @@ router.use('/insurance', insuranceRoutes);
 router.use('/projects', projectRoutes);
 // Public contact form, and the inbox behind it.
 router.use('/contact', contactRoutes);
+
+// The public "تیم ما" page, and the super admin's control over it.
+router.use('/team', teamRoutes);
 // Talent intake: CV in, tracking code out, and the pile behind it.
 router.use('/resumes', resumeRoutes);
 // One box for any tracking code, whichever intake issued it.

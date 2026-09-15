@@ -118,6 +118,18 @@ export const ACCEPTED_EXTENSIONS = ALLOWED.map((a) => a.ext);
  * include them is an intake nobody chose the rules for.
  */
 export const RESUME_EXTENSIONS = ['pdf', 'docx', 'tex'] as const;
+
+/**
+ * What a photograph may be. Narrower than the general allowlist for the same
+ * reason RESUME_EXTENSIONS is: a staff portrait that arrives as a spreadsheet
+ * is a mistake, and accepting it because the general list happens to permit it
+ * is an intake nobody chose the rules for.
+ *
+ * No SVG, deliberately — it is a document format that executes script, and
+ * these are rendered in an <img> on a public page.
+ */
+export const IMAGE_EXTENSIONS = ['png', 'jpg', 'webp'] as const;
+export const IMAGE_ACCEPT_ATTRIBUTE = IMAGE_EXTENSIONS.map((e) => `.${e}`).join(',');
 export const RESUME_ACCEPT_ATTRIBUTE = RESUME_EXTENSIONS.map((e) => `.${e}`).join(',');
 
 /** The `accept` attribute for the file input, so the browser filters too. */

@@ -44,6 +44,7 @@ const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
 // The marketplace. Split out as its own set: the boards carry their own
 // filters, forms and money formatting, and none of it belongs in the bundle a
 // visitor downloads to read the landing page.
+const TeamPage = lazy(() => import('@/pages/public/TeamPage'));
 const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
 const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
 const FreelanceProjectsPage = lazy(() => import('@/pages/public/FreelanceProjectsPage'));
@@ -68,6 +69,7 @@ const RequestsPage = lazy(() => import('@/pages/admin/RequestsPage'));
 const RequestDetailPage = lazy(() => import('@/pages/admin/RequestDetailPage'));
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
+const AdminTeamPage = lazy(() => import('@/pages/admin/TeamPage'));
 const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
@@ -186,6 +188,14 @@ export default function App() {
           }
         />
         <Route path="/profiles/:username" element={<PublicProfilePage />} />
+        <Route
+          path="/team"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <TeamPage />
+            </Suspense>
+          }
+        />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -381,6 +391,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <RolesPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="team"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AdminTeamPage />
             </Suspense>
           }
         />

@@ -726,6 +726,56 @@ model ProjectProposal {
 /// enquiry existed only if the visitor's machine had a mail client configured
 /// and they went through with sending it. Anything else was lost silently,
 /// which is the worst way to lose a customer.
+/// A colleague on the public "تیم ما" page.
+///
+/// Ordered by an explicit integer rather than by name or join date, because
+/// the order on that page is an editorial decision — who leads the list says
+/// something — and it is the super admin's to make.
+model TeamMember {
+  id String @id @default(cuid())
+
+  name  String
+  /// Job title, shown under the name.
+  title String
+  /// A short paragraph. Optional: a member with nothing written yet should
+  /// appear with their name and photograph rather than not at all.
+  bio   String?
+
+  /// An optional grouping — a department or squad. The page renders one flat
+  /// list when nothing uses this, and groups when something does, so adding
+  /// teams later costs nothing and having none costs nothing either.
+  team String?
+
+  /// The portrait. Stored through the attachment service like every other
+  /// upload, so it is type-sniffed, malware-scanned and given a random name
+  /// rather than the one the browser sent.
+  photoStoredName   String? @map("photo_stored_name")
+  photoOriginalName String? @map("photo_original_name")
+  photoMimeType     String? @map("photo_mime_type")
+
+  /// Optional ways to reach them. A public page, so these are the professional
+  /// ones only — no personal phone number has a place here.
+  email    String?
+  linkedin String?
+  github   String?
+  website  String?
+
+  /// Position in the list. Not unique: reordering swaps values and a unique
+  /// constraint would make the intermediate state illegal, forcing every move
+  /// through a temporary sentinel for no benefit.
+  displayOrder Int @default(0) @map("display_order")
+
+  /// Off means written but not yet shown. Somebody joining next month can be
+  /// prepared in advance without appearing early.
+  published Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([published, displayOrder])
+  @@map("team_members")
+}
+
 /// Where a contact ticket has got to.
 ///
 /// There is no email in this deployment, so the status IS the communication:

@@ -27,6 +27,7 @@ type NavKey =
   | 'track'
   | 'jobs'
   | 'freelance'
+  | 'team'
   | 'contact';
 
 interface NavLinkItem {
@@ -77,6 +78,7 @@ const NAV_ENTRIES: NavEntry[] = [
     key: 'companyMenu',
     items: [
       { to: '/about', key: 'about' },
+      { to: '/team', key: 'team' },
       { to: '/join', key: 'joinUs' },
       { to: '/contact', key: 'contact' },
     ],
