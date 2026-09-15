@@ -27,7 +27,10 @@ const PUBLIC = resolve(HERE, '..', 'public');
  * Must match the deployment. A sitemap listing another host is ignored
  * outright, so this is read from the same variable the canonical tags use.
  */
-const ORIGIN = (process.env.VITE_CANONICAL_ORIGIN ?? 'https://rayantamaddonjahangostar.ir').replace(
+// `||`, not `??`: the Docker build declares the variable with an empty default,
+// so a nullish check would accept '' and emit a sitemap of relative URLs, which
+// is not a sitemap at all.
+const ORIGIN = (process.env.VITE_CANONICAL_ORIGIN || 'https://rayantamaddonjahangostar.ir').replace(
   /\/+$/,
   ''
 );
