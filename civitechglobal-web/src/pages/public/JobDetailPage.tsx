@@ -5,7 +5,10 @@ import { useApply, useOwnVerification, usePublicJob } from '@/api/marketplace';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
-import { useDocumentTitle } from '@/lib/documentTitle';
+import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTitle';
+import { breadcrumbSchema, jobPostingSchema } from '@/lib/structuredData';
+import { localeHref } from '@/i18n/localePath';
+import { LOCALE_TAGS } from '@/i18n/locales';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { formatRange } from '@/lib/marketplace';
@@ -42,7 +45,34 @@ export default function JobDetailPage() {
   const [cv, setCv] = useState<File | null>(null);
   const [done, setDone] = useState(false);
 
-  useDocumentTitle(job?.title ?? t.market.jobsTitle);
+  /**
+   * A job opening is the one page here with a search surface of its own:
+   * Google's job panel reads JobPosting markup directly, and a listing without
+   * it is a plain blue link next to competitors that appear as cards.
+   */
+  const jsonLd = job
+    ? [
+        jobPostingSchema(job, {
+          origin: CANONICAL_ORIGIN,
+          url: `${CANONICAL_ORIGIN}${localeHref(locale, `/jobs/${job.code}`)}`,
+          locale: LOCALE_TAGS[locale],
+          siteName: SITE_NAME.en,
+        }),
+        breadcrumbSchema(CANONICAL_ORIGIN, [
+          { name: t.nav.home, path: localeHref(locale, '/') },
+          { name: t.market.jobsTitle, path: localeHref(locale, '/jobs') },
+          { name: job.title, path: localeHref(locale, `/jobs/${job.code}`) },
+        ]),
+      ].filter((entry): entry is object => entry !== null)
+    : undefined;
+
+  useDocumentTitle(job?.title ?? t.market.jobsTitle, {
+    // The posting's own text, trimmed to what a result will show. Falling back
+    // to the board's description would give every opening the same summary.
+    description: job?.description.replace(/s+/g, ' ').slice(0, 155) ?? t.seo.jobs,
+    type: 'article',
+    jsonLd,
+  });
 
   if (isLoading) {
     return (

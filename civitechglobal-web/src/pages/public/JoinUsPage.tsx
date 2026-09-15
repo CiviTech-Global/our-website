@@ -23,7 +23,7 @@ const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/
 
 export default function JoinUsPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.join.title);
+  useDocumentTitle(t.join.title, { description: t.seo.join });
   const submit = useSubmitResume();
 
   const [form, setForm] = useState({

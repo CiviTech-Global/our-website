@@ -17,7 +17,7 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
  */
 export default function TeamPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.team.title);
+  useDocumentTitle(t.team.title, { description: t.seo.team });
 
   const { data, isLoading } = useTeam();
 

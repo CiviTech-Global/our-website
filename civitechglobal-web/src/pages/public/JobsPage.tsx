@@ -37,7 +37,7 @@ const ARRANGEMENT: JobWorkArrangement[] = ['ONSITE', 'HYBRID', 'REMOTE'];
  */
 export default function JobsPage() {
   const { t, locale } = useLocale();
-  useDocumentTitle(t.market.jobsTitle);
+  useDocumentTitle(t.market.jobsTitle, { description: t.seo.jobs });
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

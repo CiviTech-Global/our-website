@@ -1,76 +1,138 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
-import { LocaleProvider } from '@/i18n/LocaleProvider';
-import { useDocumentTitle } from './documentTitle';
+import { MemoryRouter } from 'react-router';
+import { LocaleProvider, type Locale } from '@/i18n/LocaleProvider';
+import { CANONICAL_ORIGIN, useDocumentTitle, type PageMeta } from './documentTitle';
 
-function Page({ title }: { title?: string }) {
-  useDocumentTitle(title);
+function Page({ title, meta }: { title?: string; meta?: PageMeta }) {
+  useDocumentTitle(title, meta);
   return null;
 }
 
-function renderAt(path: string, title?: string) {
-  render(
-    <LocaleProvider>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="*" element={<Page title={title} />} />
-        </Routes>
-      </MemoryRouter>
-    </LocaleProvider>
+function at(path: string, options: { locale?: Locale; title?: string; meta?: PageMeta } = {}) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <LocaleProvider locale={options.locale}>
+        <Page title={options.title} meta={options.meta} />
+      </LocaleProvider>
+    </MemoryRouter>
   );
 }
 
-const canonical = () =>
-  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.getAttribute('href');
-const ogUrl = () =>
-  document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.getAttribute('content');
+// Whatever the build declares — a hard-coded origin here would pass locally
+// and fail the moment the deployment's canonical origin is configured.
+const origin = CANONICAL_ORIGIN;
 
-describe('useDocumentTitle', () => {
-  it('names the tab after the page', () => {
-    renderAt('/services', 'Services');
+function links(rel: string) {
+  return [...document.head.querySelectorAll<HTMLLinkElement>(`link[rel="${rel}"]`)].map((l) => ({
+    href: l.getAttribute('href'),
+    hreflang: l.getAttribute('hreflang'),
+  }));
+}
 
-    expect(document.title).toContain('Services');
+function meta(key: string) {
+  return document.head
+    .querySelector(`meta[name="${key}"], meta[property="${key}"]`)
+    ?.getAttribute('content');
+}
+
+beforeEach(() => {
+  document.head.innerHTML = '';
+  document.title = '';
+});
+
+afterEach(() => {
+  document.head.innerHTML = '';
+});
+
+describe('page head', () => {
+  it('titles the page after the route, not the site alone', () => {
+    at('/about', { title: 'About' });
+    expect(document.title).toContain('About');
   });
 
-  /**
-   * The reason the canonical is set here rather than in index.html. The HTML
-   * shell is byte-identical for every route of a single-page app, so one
-   * static tag would have /services declare itself a duplicate of the home
-   * page — and a search engine that believes it drops /services from the
-   * index. A wrong canonical is worse than none.
-   */
-  it('points the canonical at the route being viewed, not the home page', () => {
-    renderAt('/services', 'Services');
-
-    expect(canonical()).toMatch(/\/services$/);
-    expect(canonical()).not.toMatch(/\.ir\/$/);
+  it('points the canonical link at this route, not the home page', () => {
+    at('/services');
+    // A single static canonical in index.html would have every route declaring
+    // itself a duplicate of "/", and a search engine that believes it drops
+    // the rest of the site.
+    expect(links('canonical')).toEqual([{ href: `${origin}/services`, hreflang: null }]);
   });
 
-  it('sets og:url to the same address, so a shared link matches', () => {
-    renderAt('/about', 'About');
-
-    expect(ogUrl()).toBe(canonical());
-    expect(ogUrl()).toMatch(/\/about$/);
+  it('puts the language prefix in the canonical of a translated page', () => {
+    at('/services', { locale: 'de' });
+    expect(links('canonical')).toEqual([{ href: `${origin}/de/services`, hreflang: null }]);
   });
 
-  /**
-   * ?ref=x is the same page. Listing each variant as its own URL splits one
-   * page's ranking across copies of itself.
-   */
-  it('drops the query string, which does not make a different page', () => {
-    renderAt('/services?ref=newsletter&utm_source=x', 'Services');
+  it('names every language for the route, plus a default', () => {
+    at('/about', { locale: 'en' });
 
-    expect(canonical()).toMatch(/\/services$/);
-    expect(canonical()).not.toContain('?');
+    expect(links('alternate')).toEqual([
+      { href: `${origin}/about`, hreflang: 'fa-IR' },
+      { href: `${origin}/en/about`, hreflang: 'en' },
+      { href: `${origin}/tr/about`, hreflang: 'tr-TR' },
+      { href: `${origin}/de/about`, hreflang: 'de-DE' },
+      { href: `${origin}/fr/about`, hreflang: 'fr-FR' },
+      { href: `${origin}/es/about`, hreflang: 'es-ES' },
+      { href: `${origin}/about`, hreflang: 'x-default' },
+    ]);
   });
 
-  it('writes exactly one canonical tag however many times it runs', () => {
-    renderAt('/', 'Home');
-    renderAt('/about', 'About');
-    renderAt('/contact', 'Contact');
+  it('gives each page its own description', () => {
+    at('/services', { meta: { description: 'What we build.' } });
+    expect(meta('description')).toBe('What we build.');
+    expect(meta('og:description')).toBe('What we build.');
+  });
 
-    expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
-    expect(document.querySelectorAll('meta[property="og:url"]')).toHaveLength(1);
+  it('keeps signed-in areas out of the index without being told', () => {
+    at('/admin/users', { title: 'Users' });
+
+    // Derived from the path rather than declared per page: sixty screens each
+    // remembering to opt out is sixty chances to forget, and the cost of
+    // forgetting is a signed-in view in a search result.
+    expect(meta('robots')).toBe('noindex, nofollow');
+    expect(links('alternate')).toEqual([]);
+  });
+
+  it('keeps a tracking-code page out of the index', () => {
+    at('/track', { title: 'Track' });
+    expect(meta('robots')).toBe('noindex, nofollow');
+  });
+
+  it('indexes ordinary public routes', () => {
+    at('/about');
+    expect(meta('robots')).toBeUndefined();
+  });
+
+  it('does not leave the previous page description behind', () => {
+    const first = at('/services', { meta: { description: 'What we build.' } });
+    first.unmount();
+    at('/about', { meta: { description: 'Who we are.' } });
+
+    // Tags are cleared and rewritten rather than edited in place. Leaving one
+    // behind is how a search engine ends up with the wrong summary for half a
+    // site.
+    expect(
+      [...document.head.querySelectorAll('meta[name="description"]')].map((m) =>
+        m.getAttribute('content')
+      )
+    ).toEqual(['Who we are.']);
+  });
+
+  it('writes structured data as JSON-LD', () => {
+    at('/jobs/ABC', { meta: { jsonLd: { '@type': 'JobPosting', title: 'Engineer' } } });
+
+    const script = document.head.querySelector('script[type="application/ld+json"]');
+    expect(JSON.parse(script?.textContent ?? '{}')).toMatchObject({ title: 'Engineer' });
+  });
+
+  it('declares the page language and the ones it is also published in', () => {
+    at('/about', { locale: 'fr' });
+    expect(meta('og:locale')).toBe('fr_FR');
+    expect(
+      [...document.head.querySelectorAll('meta[property="og:locale:alternate"]')].map((m) =>
+        m.getAttribute('content')
+      )
+    ).toEqual(['fa_IR', 'en_US', 'tr_TR', 'de_DE', 'es_ES']);
   });
 });

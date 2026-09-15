@@ -27,7 +27,7 @@ const PAGE_SIZE = 20;
  */
 export default function FreelanceProjectsPage() {
   const { t, locale } = useLocale();
-  useDocumentTitle(t.market.projectsTitle);
+  useDocumentTitle(t.market.projectsTitle, { description: t.seo.freelance });
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

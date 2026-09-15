@@ -55,7 +55,7 @@ const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/
 
 export default function StartProjectPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.nav.startProject);
+  useDocumentTitle(t.nav.startProject, { description: t.seo.startProject });
   const submit = useSubmitProjectRequest();
 
   const [form, setForm] = useState({

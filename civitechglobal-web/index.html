@@ -15,25 +15,32 @@
       Per-page titles are set at runtime by useDocumentTitle — this one is the
       fallback shown before React mounts, and to any crawler that does not run
       scripts.
+
+      Every tag below carries data-head, which is the marker the head manager
+      owns: it clears that set and writes its own on mount. So these are the
+      pre-render fallback, and never a second description left competing with
+      the real one once the app is running.
     -->
     <title>رایان تمدن جهان گستر</title>
     <meta
+      data-head
       name="description"
       content="رایان تمدن جهان گستر — شرکت مهندسی نرم‌افزار: طراحی و توسعهٔ نرم‌افزار سفارشی، پلتفرم‌های سازمانی و پروژه‌های متن‌باز."
     />
-    <meta name="author" content="رایان تمدن جهان گستر (Rayan Tamaddon Jahan Gostar)" />
+    <meta data-head name="author" content="رایان تمدن جهان گستر (Rayan Tamaddon Jahan Gostar)" />
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="رایان تمدن جهان گستر" />
-    <meta property="og:title" content="رایان تمدن جهان گستر | Rayan Tamaddon Jahan Gostar" />
+    <meta data-head property="og:type" content="website" />
+    <meta data-head property="og:site_name" content="رایان تمدن جهان گستر" />
+    <meta data-head property="og:title" content="رایان تمدن جهان گستر | Rayan Tamaddon Jahan Gostar" />
     <meta
+      data-head
       property="og:description"
       content="شرکت مهندسی نرم‌افزار: طراحی و توسعهٔ نرم‌افزار سفارشی، پلتفرم‌های سازمانی و پروژه‌های متن‌باز."
     />
-    <meta property="og:image" content="/favicon.png" />
-    <meta property="og:locale" content="fa_IR" />
-    <meta property="og:locale:alternate" content="en_US" />
-    <meta name="twitter:card" content="summary" />
+    <meta data-head property="og:image" content="/favicon.png" />
+    <meta data-head property="og:locale" content="fa_IR" />
+    <meta data-head property="og:locale:alternate" content="en_US" />
+    <meta data-head name="twitter:card" content="summary" />
   </head>
   <body>
     <div id="root"></div>

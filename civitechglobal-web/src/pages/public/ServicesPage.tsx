@@ -17,7 +17,7 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function ServicesPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.nav.services);
+  useDocumentTitle(t.nav.services, { description: t.seo.services });
 
   const softwareServices = [
     { icon: Code2, title: t.services.software1Title, desc: t.services.software1Desc, glow: 'green' as const },

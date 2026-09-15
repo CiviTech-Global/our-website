@@ -21,7 +21,7 @@ function matches(query: string, ...haystack: string[]): boolean {
 
 export default function InsurancePage() {
   const { t, locale } = useLocale();
-  useDocumentTitle(t.nav.insurance);
+  useDocumentTitle(t.nav.insurance, { description: t.seo.insurance });
   const { data: catalog, isLoading, isError } = useInsuranceCatalog();
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);

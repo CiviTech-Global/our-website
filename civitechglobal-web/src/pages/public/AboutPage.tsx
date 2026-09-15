@@ -6,7 +6,7 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 export default function AboutPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.nav.about);
+  useDocumentTitle(t.nav.about, { description: t.seo.about });
 
   const values = [
     { icon: Sparkles, title: t.about.value1Title, desc: t.about.value1Desc },

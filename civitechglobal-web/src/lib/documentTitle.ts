@@ -1,13 +1,9 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { localeAlternates, localeHref } from '@/i18n/localePath';
+import { DEFAULT_LOCALE, LOCALE_TAGS, OG_LOCALES } from '@/i18n/locales';
 
-/**
- * The registered name, per locale.
- *
- * English carries the trading name alongside it; Persian is the registered name
- * alone, which is what people here recognise.
- */
 /**
  * The name in the tab.
  *
@@ -29,61 +25,176 @@ export const SITE_NAME = {
  * declare itself canonical for production. It falls back to the current origin,
  * which is right for local development.
  */
-const CANONICAL_ORIGIN: string =
-  import.meta.env.VITE_CANONICAL_ORIGIN ?? (typeof window === 'undefined' ? '' : window.location.origin);
+export const CANONICAL_ORIGIN: string =
+  import.meta.env.VITE_CANONICAL_ORIGIN ??
+  (typeof window === 'undefined' ? '' : window.location.origin);
 
 /**
- * Points the canonical and og:url tags at the current route.
+ * Marks the tags this module owns.
  *
- * This has to happen per route rather than in index.html, and that is the
- * whole reason it lives here. The HTML shell is byte-identical for every page
- * of a single-page app, so one static <link rel="canonical"> would have every
- * route declaring itself a duplicate of the home page — and a search engine
- * that believes it drops /services, /about and the rest from its index
- * entirely. A wrong canonical is considerably worse than none.
- *
- * The query string is deliberately dropped: ?ref= and friends are the same
- * page, and listing each variant as its own URL splits a page's ranking across
- * copies of itself.
+ * Every one is removed and rewritten on each route change. Editing them in
+ * place instead means a tag the previous page added and this one does not —
+ * a description, an hreflang set, a piece of structured data — survives into a
+ * page it does not describe, which is how a search engine ends up with the
+ * wrong summary for half a site.
  */
-function setCanonical(pathname: string): void {
-  if (!CANONICAL_ORIGIN) return;
-  const href = `${CANONICAL_ORIGIN}${pathname}`;
+const OWNED = 'data-head';
 
-  const link =
-    document.querySelector<HTMLLinkElement>('link[rel="canonical"]') ??
-    document.head.appendChild(Object.assign(document.createElement('link'), { rel: 'canonical' }));
-  link.href = href;
+/**
+ * Routes that must never be indexed, matched by prefix.
+ *
+ * Derived from the path rather than declared page by page, because the list of
+ * private screens runs to dozens and the cost of one of them forgetting is a
+ * signed-in view, or somebody's tracking code, sitting in a search result. A
+ * new admin page is covered the moment it is routed.
+ *
+ * This mirrors robots.txt, plus the credential screens. The two do different
+ * jobs and both are needed: robots.txt asks a crawler not to fetch the page,
+ * and a noindex tag is what keeps it out of the index when somebody links to
+ * it anyway.
+ */
+const PRIVATE_PREFIXES = ['/admin', '/dashboard', '/track', '/proposal', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email'];
 
-  let og = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
-  if (!og) {
-    og = document.createElement('meta');
-    // setAttribute, not a property assignment: `property` is an Open Graph
-    // attribute and not a member of HTMLMetaElement, so assigning it sets a
-    // stray JS field that never reaches the markup.
-    og.setAttribute('property', 'og:url');
-    document.head.appendChild(og);
-  }
-  og.content = href;
+function isPrivatePath(pathname: string): boolean {
+  return PRIVATE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+export interface PageMeta {
+  /** The one-sentence summary a search result shows. */
+  description?: string;
+  /**
+   * Forces a page out of the index. Private areas are already excluded by
+   * their path, so this is for a public route that should not be indexed —
+   * an error page, say.
+   */
+  noindex?: boolean;
+  /** Open Graph type; `article` for a job or a project, `website` otherwise. */
+  type?: 'website' | 'article';
+  /** Absolute or root-relative image for a shared link. */
+  image?: string;
+  /** JSON-LD for this page. One object or several. */
+  jsonLd?: object | object[];
+}
+
+function clearOwned(): void {
+  document.head.querySelectorAll(`[${OWNED}]`).forEach((node) => node.remove());
+}
+
+function addMeta(attr: 'name' | 'property', key: string, content: string): void {
+  const meta = document.createElement('meta');
+  // setAttribute, not a property assignment: `property` is an Open Graph
+  // attribute and not a member of HTMLMetaElement, so assigning it sets a
+  // stray JS field that never reaches the markup.
+  meta.setAttribute(attr, key);
+  meta.setAttribute('content', content);
+  meta.setAttribute(OWNED, '');
+  document.head.appendChild(meta);
+}
+
+function addLink(rel: string, href: string, hreflang?: string): void {
+  const link = document.createElement('link');
+  link.setAttribute('rel', rel);
+  link.setAttribute('href', href);
+  if (hreflang) link.setAttribute('hreflang', hreflang);
+  link.setAttribute(OWNED, '');
+  document.head.appendChild(link);
 }
 
 /**
- * Names the tab after the page you are on, and tells search engines which URL
- * that page really lives at.
+ * Titles the page and writes everything a search engine and a link preview
+ * read off it.
  *
- * A single-page app changes route without touching `document.title`, so every
- * page shared, bookmarked or sitting in a browser's history list was previously
- * indistinguishable from the home page.
+ * All of it has to happen per route rather than in index.html, and that is the
+ * whole reason this exists. The HTML shell is byte-identical for every page of
+ * a single-page app, so one static canonical link would have every route
+ * declaring itself a duplicate of the home page — and a search engine that
+ * believes it drops /services, /about and the rest from its index entirely. The
+ * same shell is why every page otherwise shares one description: the summary
+ * under every result would describe the home page.
+ *
+ * `useLocation` reports the path with the language prefix already stripped,
+ * because the prefix is the router's basename. So one route string addresses
+ * the page in all six languages, which is exactly what the alternate set needs.
  */
-export function useDocumentTitle(title?: string) {
-  const { locale } = useLocale();
+export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
+  const { locale, t } = useLocale();
   const { pathname } = useLocation();
+  const { description, type = 'website', image = '/favicon.png', jsonLd } = meta;
+  const noindex = meta.noindex === true || isPrivatePath(pathname);
+
+  // The options object is rebuilt on every render by every caller, so the
+  // effect keys off its fields rather than its identity.
+  const jsonLdKey = jsonLd ? JSON.stringify(jsonLd) : '';
 
   useEffect(() => {
-    const site = locale === 'fa' ? SITE_NAME.fa : SITE_NAME.en;
-    document.title = title ? `${title} — ${site}` : site;
-    setCanonical(pathname);
-    // Deliberately not restored on unmount: the next page sets its own title,
-    // and putting the old one back first makes the tab flicker.
-  }, [title, locale, pathname]);
+    const site = locale === DEFAULT_LOCALE ? SITE_NAME.fa : SITE_NAME.en;
+    const fullTitle = title ? `${title} — ${site}` : site;
+    const summary = description ?? t.home.heroSubtitle;
+
+    document.title = fullTitle;
+    clearOwned();
+
+    addMeta('name', 'description', summary);
+
+    if (noindex) {
+      // A signed-in area or a one-time link. robots.txt asks a crawler not to
+      // fetch the page; this is what keeps it out of the index when somebody
+      // links to it anyway, which robots.txt alone does not.
+      addMeta('name', 'robots', 'noindex, nofollow');
+    }
+
+    if (!CANONICAL_ORIGIN) return;
+
+    // The query string is deliberately dropped: ?ref= and friends are the same
+    // page, and listing each variant as its own URL splits a page's ranking
+    // across copies of itself.
+    const canonical = `${CANONICAL_ORIGIN}${localeHref(locale, pathname)}`;
+    addLink('canonical', canonical);
+
+    if (!noindex) {
+      /**
+       * Which address serves which language.
+       *
+       * Without this a search engine has six pages of near-identical structure
+       * and no statement that they are the same page in different languages —
+       * so it picks one, treats the rest as thin duplicates, and a German
+       * search never surfaces the German page. x-default names where to send
+       * a reader whose language is not among them.
+       */
+      for (const alternate of localeAlternates(pathname)) {
+        addLink('alternate', `${CANONICAL_ORIGIN}${alternate.href}`, LOCALE_TAGS[alternate.locale]);
+      }
+      addLink('alternate', `${CANONICAL_ORIGIN}${localeHref(DEFAULT_LOCALE, pathname)}`, 'x-default');
+    }
+
+    addMeta('property', 'og:url', canonical);
+    addMeta('property', 'og:title', fullTitle);
+    addMeta('property', 'og:description', summary);
+    addMeta('property', 'og:type', type);
+    addMeta('property', 'og:site_name', site);
+    addMeta('property', 'og:image', image.startsWith('http') ? image : `${CANONICAL_ORIGIN}${image}`);
+    addMeta('property', 'og:locale', OG_LOCALES[locale]);
+    for (const alternate of localeAlternates(pathname)) {
+      if (alternate.locale !== locale) {
+        addMeta('property', 'og:locale:alternate', OG_LOCALES[alternate.locale]);
+      }
+    }
+
+    addMeta('name', 'twitter:card', image === '/favicon.png' ? 'summary' : 'summary_large_image');
+    addMeta('name', 'twitter:title', fullTitle);
+    addMeta('name', 'twitter:description', summary);
+
+    if (jsonLdKey) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = jsonLdKey;
+      script.setAttribute(OWNED, '');
+      document.head.appendChild(script);
+    }
+
+    // Deliberately not restored on unmount: the next page sets its own, and
+    // putting the old one back first makes the tab flicker.
+  }, [title, locale, pathname, description, noindex, type, image, jsonLdKey, t]);
 }

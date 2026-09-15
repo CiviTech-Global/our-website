@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import fa from './fa';
 import en from './en';
 import tr from './tr';
@@ -6,6 +6,7 @@ import de from './de';
 import fr from './fr';
 import es from './es';
 import { withFallback } from './merge';
+import { navigateToLocale } from './localePath';
 import {
   DEFAULT_LOCALE,
   DIRECTIONS,
@@ -59,25 +60,40 @@ function storedLocale(): Locale | null {
   }
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => storedLocale() ?? DEFAULT_LOCALE);
-
-  /** True once somebody has picked, which stops the detector overriding them. */
-  const [chosen, setChosen] = useState(() => storedLocale() !== null);
-
+/**
+ * The language is whatever the URL says.
+ *
+ * `locale` is not state here, and that is the point: with one address per
+ * language, the address already holds the answer, and a second copy in a
+ * useState is a chance for the two to disagree — a page reading German while
+ * its canonical link, its hreflang set and the URL in the address bar all say
+ * French.
+ */
+export function LocaleProvider({
+  children,
+  locale = DEFAULT_LOCALE,
+}: {
+  children: ReactNode;
+  /** Normally the language the URL declares; defaults to the site's own. */
+  locale?: Locale;
+}) {
   /**
-   * Ask the server where this visitor is, once, on a first visit only.
+   * Send a first-time visitor to their own language, once.
    *
-   * Only the server can see the IP, and only the server sees Accept-Language —
-   * the browser hands neither to JavaScript, and navigator.languages is not a
-   * substitute: it would answer before the server does and then be corrected,
-   * which is a visible flash into a third language on every first visit.
+   * Only the server sees the IP and the Accept-Language header; the browser
+   * hands neither to JavaScript, and navigator.languages is not a substitute
+   * because it would answer before the server does and then be corrected — a
+   * visible flip into a third language on every first visit.
    *
-   * It is skipped entirely once a choice exists, because a site that keeps
-   * overriding what you picked is worse than one that guessed wrong once.
+   * It runs only at the unprefixed root, and only when nobody has chosen on
+   * this device. Somewhere like `/de/services` the visitor is already at an
+   * explicit address — arriving from a search result, a shared link or a
+   * crawler — and second-guessing that would make a link mean different things
+   * for different people.
    */
   useEffect(() => {
-    if (chosen) return;
+    if (locale !== DEFAULT_LOCALE) return;
+    if (storedLocale() !== null) return;
 
     const controller = new AbortController();
     const base = import.meta.env.VITE_API_URL ?? '/api';
@@ -87,30 +103,36 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         const response = await fetch(`${base}/v1/i18n/detect`, { signal: controller.signal });
         if (!response.ok) return;
         const body = (await response.json()) as { data?: { locale?: string } };
-        if (isLocale(body.data?.locale)) setLocaleState(body.data.locale);
+        const detected = body.data?.locale;
+        if (isLocale(detected) && detected !== DEFAULT_LOCALE) navigateToLocale(detected);
       } catch {
-        // Offline, blocked, or aborted. The browser's own guess already
-        // applied, so there is nothing to recover from.
+        // Offline, blocked, or aborted. The default language is already on
+        // screen, so there is nothing to recover from.
       }
     })();
 
     return () => controller.abort();
-  }, [chosen]);
+  }, [locale]);
 
   useEffect(() => {
     document.documentElement.dir = DIRECTIONS[locale];
     document.documentElement.lang = LOCALE_TAGS[locale];
   }, [locale]);
 
-  const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
-    setChosen(true);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // The choice still applies for this session.
-    }
-  }, []);
+  const setLocale = useCallback(
+    (next: Locale) => {
+      if (next === locale) return;
+      try {
+        // Remembered so the detector does not undo the choice on the next
+        // visit to the root.
+        window.localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // The navigation below still applies for this visit.
+      }
+      navigateToLocale(next);
+    },
+    [locale],
+  );
 
   const value = useMemo<LocaleContextValue>(
     () => ({ locale, dir: DIRECTIONS[locale], t: DICTIONARIES[locale], setLocale }),

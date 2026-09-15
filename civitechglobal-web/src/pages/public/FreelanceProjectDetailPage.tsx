@@ -41,7 +41,10 @@ export default function FreelanceProjectDetailPage() {
   const [message, setMessage] = useState('');
   const [done, setDone] = useState(false);
 
-  useDocumentTitle(project?.title ?? t.market.projectsTitle);
+  useDocumentTitle(project?.title ?? t.market.projectsTitle, {
+    description: project?.description.replace(/s+/g, ' ').slice(0, 155) ?? t.seo.freelance,
+    type: 'article',
+  });
 
   if (isLoading) {
     return (

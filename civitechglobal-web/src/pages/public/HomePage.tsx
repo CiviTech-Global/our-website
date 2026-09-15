@@ -13,7 +13,9 @@ import {
   Users,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useDocumentTitle } from '@/lib/documentTitle';
+import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTitle';
+import { organizationSchema, websiteSchema } from '@/lib/structuredData';
+import { LOCALE_TAGS } from '@/i18n/locales';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
@@ -22,7 +24,24 @@ import { MarketplaceShowcase } from '@/components/home/MarketplaceShowcase';
 
 export default function HomePage() {
   const { t, locale } = useLocale();
-  useDocumentTitle(undefined);
+  const siteName = locale === 'fa' ? SITE_NAME.fa : SITE_NAME.en;
+
+  useDocumentTitle(undefined, {
+    description: t.seo.home,
+    // Stated once, on the one page that is unambiguously about the company
+    // rather than about something it published. Repeating an Organization
+    // block on every page does not strengthen it.
+    jsonLd: [
+      organizationSchema({
+        name: siteName,
+        legalName: t.common.legalName,
+        description: t.seo.home,
+        origin: CANONICAL_ORIGIN,
+        logo: '/favicon.png',
+      }),
+      websiteSchema({ name: siteName, origin: CANONICAL_ORIGIN, locale: LOCALE_TAGS[locale] }),
+    ],
+  });
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   const features = [

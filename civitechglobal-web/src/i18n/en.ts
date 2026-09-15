@@ -1199,6 +1199,27 @@ const en: typeof fa = {
     unauthorized: 'Unauthorized',
     endpointUnavailable: 'This section is not yet available from the server.',
   },
+/**
+   * What a search result shows under the link.
+   *
+   * Written for the person reading the result page, not for a keyword counter:
+   * each one says what the page is and why you would open it, in roughly 120 to
+   * 155 characters — past that Google truncates mid-sentence, and a cut-off
+   * summary reads as neglect.
+   */
+  seo: {
+    home: 'Rayan Tamaddon Jahan Gostar is a software engineering company: custom software, web and mobile apps, civic technology platforms and open-source work.',
+    about: 'Who we are and how we work — an engineering team built on open source, community contribution and an open door for people starting out.',
+    services: 'What we build: custom software, web and mobile applications, civic technology platforms, data and analytics, alongside insurance services.',
+    contact: 'Send a message and get a tracking code. Read the reply with that code on the same page — no email address needed.',
+    insurance: 'Apply for insurance online with a verified phone number and a tracking code, plus expert guidance on choosing the right plan.',
+    jobs: 'Open engineering, data and product roles at Rayan Tamaddon Jahan Gostar and the organisations we work with.',
+    freelance: 'Open freelance projects to bid on, each with its scope, budget range and deadline stated before you propose.',
+    team: 'The people building this platform — the engineers, designers and collaborators at Rayan Tamaddon Jahan Gostar.',
+    join: 'Send us your CV. There is room here for juniors and for people changing career into software.',
+    startProject: 'Describe your project and we will come back with a clear estimate and a technical proposal.',
+  },
+
   footer: {
     tagline: 'Digital insurance solutions built on technology and trust.',
     links: 'Quick links',

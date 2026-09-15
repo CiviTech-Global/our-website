@@ -102,3 +102,20 @@ export const COUNTRY_LOCALE: Record<string, Locale> = {
   PA: 'es',
   UY: 'es',
 };
+
+/**
+ * The form Open Graph wants: language and region joined by an underscore.
+ *
+ * Facebook, LinkedIn and the rest reject a bare BCP 47 tag here, so this is a
+ * separate map rather than a transformation of LOCALE_TAGS — English needs a
+ * region invented for it (`en_US`) that would be wrong to assert in `<html
+ * lang>`, where plain `en` is the honest answer.
+ */
+export const OG_LOCALES: Record<Locale, string> = {
+  fa: 'fa_IR',
+  en: 'en_US',
+  tr: 'tr_TR',
+  de: 'de_DE',
+  fr: 'fr_FR',
+  es: 'es_ES',
+};

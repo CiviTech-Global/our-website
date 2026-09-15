@@ -61,7 +61,7 @@ const STATUS_VARIANT: Record<TicketStatus, 'default' | 'success' | 'info'> = {
  */
 export default function ContactPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.nav.contact);
+  useDocumentTitle(t.nav.contact, { description: t.seo.contact });
   const { showToast } = useToast();
 
   const [issuedCode, setIssuedCode] = useState<string | null>(null);
