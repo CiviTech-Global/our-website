@@ -802,6 +802,9 @@ const en: typeof fa = {
       "This list depends on an API endpoint not yet implemented by the backend service. It will show a clean empty state if it 404s.",
     rolesEndpointNote:
       'Role management depends on API endpoints not yet provided by the backend service.',
+    noAccessTitle: 'You do not have access',
+    noAccessBody: 'This section has not been granted to your account. Ask a super admin if you need it.',
+    noAccessSuperAdmin: 'This section is for super admins only.',
     role: 'Role',
     permissions: 'Permissions',
     createdOn: 'Created on',

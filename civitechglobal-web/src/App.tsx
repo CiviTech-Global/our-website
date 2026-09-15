@@ -4,6 +4,7 @@ import { PublicLayout } from '@/components/layout/PublicLayout';
 import { UserLayout } from '@/components/layout/UserLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { RequirePermission } from '@/components/layout/RequirePermission';
 import { Spinner } from '@/components/ui/Spinner';
 
 // HomePage stays eager: it is the landing route, and lazy-loading the first
@@ -251,25 +252,31 @@ export default function App() {
         <Route
           path="applications"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <MyApplicationsPage />
-            </Suspense>
+            <RequirePermission permission="jobs">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <MyApplicationsPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="projects"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <MyProjectsPage />
-            </Suspense>
+            <RequirePermission permission="projects">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <MyProjectsPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="bids"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <MyBidsPage />
-            </Suspense>
+            <RequirePermission permission="freelance">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <MyBidsPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
@@ -283,9 +290,11 @@ export default function App() {
         <Route
           path="messages"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <ConversationsPage />
-            </Suspense>
+            <RequirePermission permission="messages">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ConversationsPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
@@ -325,9 +334,11 @@ export default function App() {
         <Route
           path="requests"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <RequestsPage />
-            </Suspense>
+            <RequirePermission permission="insurance">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <RequestsPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
@@ -341,17 +352,21 @@ export default function App() {
         <Route
           path="resumes"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <AdminResumesPage />
-            </Suspense>
+            <RequirePermission permission="resumes">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminResumesPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="resumes/:id"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <AdminResumeDetailPage />
-            </Suspense>
+            <RequirePermission permission="resumes">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminResumeDetailPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
@@ -365,57 +380,71 @@ export default function App() {
         <Route
           path="projects/:id"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <ProjectDetailPage />
-            </Suspense>
+            <RequirePermission permission="projects">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ProjectDetailPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="requests/:id"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <RequestDetailPage />
-            </Suspense>
+            <RequirePermission permission="insurance">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <RequestDetailPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="users"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <UsersPage />
-            </Suspense>
+            <RequirePermission permission="users">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <UsersPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="roles"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <RolesPage />
-            </Suspense>
+            <RequirePermission permission="users">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <RolesPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="team"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <AdminTeamPage />
-            </Suspense>
+            <RequirePermission superAdminOnly>
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminTeamPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="verifications"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <VerificationQueuePage />
-            </Suspense>
+            <RequirePermission permission="verification">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <VerificationQueuePage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="job-postings"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <JobQueuePage />
-            </Suspense>
+            <RequirePermission permission="jobs">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <JobQueuePage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
@@ -429,9 +458,11 @@ export default function App() {
         <Route
           path="freelance-projects"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <ProjectQueuePage />
-            </Suspense>
+            <RequirePermission permission="freelance">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ProjectQueuePage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
@@ -445,17 +476,21 @@ export default function App() {
         <Route
           path="marketplace"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <MarketplaceAnalyticsPage />
-            </Suspense>
+            <RequirePermission permission="analytics">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <MarketplaceAnalyticsPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
         <Route
           path="audit"
           element={
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <AuditLogPage />
-            </Suspense>
+            <RequirePermission superAdminOnly>
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AuditLogPage />
+              </Suspense>
+            </RequirePermission>
           }
         />
       </Route>
