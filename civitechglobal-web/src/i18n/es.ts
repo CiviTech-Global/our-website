@@ -1,0 +1,213 @@
+import type { PartialTranslations } from './merge';
+
+/**
+ * Español.
+ *
+ * Partial by design — see tr.ts. The public surface is translated; the deeper
+ * authenticated flows fall back to English.
+ *
+ * Neutral Latin-American Spanish rather than peninsular: the country list that
+ * routes visitors here is overwhelmingly Latin America, and "ustedes" reads
+ * naturally on both sides of the Atlantic where "vosotros" does not.
+ *
+ * NOT reviewed by a native speaker. The marketing copy wants a professional
+ * pass before commercial use.
+ */
+const es: PartialTranslations = {
+  common: {
+    brand: 'Rayan Tamaddon Jahan Gostar | CiviTech Global',
+    legalName: 'Rayan Tamaddon Jahan Gostar',
+    loading: 'Cargando...',
+    error: 'Algo salió mal',
+    retry: 'Reintentar',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    edit: 'Editar',
+    delete: 'Eliminar',
+    view: 'Ver',
+    close: 'Cerrar',
+    search: 'Buscar',
+    filter: 'Filtrar',
+    all: 'Todos',
+    submit: 'Enviar',
+    back: 'Atrás',
+    next: 'Siguiente',
+    previous: 'Anterior',
+    page: 'Página',
+    of: 'de',
+    noResults: 'No se encontraron resultados',
+    comingSoon: 'Próximamente',
+    yes: 'Sí',
+    no: 'No',
+    file: {
+      preview: 'Ver archivo',
+      download: 'Descargar',
+      notPreviewable: 'Este tipo de archivo no puede mostrarse en el navegador. Descárguelo para abrirlo.',
+    },
+    date: {
+      choose: 'Elegir una fecha',
+      today: 'Hoy',
+      clear: 'Borrar la fecha',
+      jalali: 'Calendario iraní',
+      gregorian: 'Calendario gregoriano',
+    },
+  },
+
+  nav: {
+    insurance: 'Seguros',
+    track: 'Seguimiento de solicitud',
+    marketplaceMenu: 'Mercado',
+    jobs: 'Empleos',
+    freelance: 'Proyectos freelance',
+    team: 'Nuestro equipo',
+    home: 'Inicio',
+    servicesMenu: 'Servicios',
+    companyMenu: 'Empresa',
+    about: 'Acerca de',
+    services: 'Servicios',
+    startProject: 'Iniciar un proyecto',
+    joinUs: 'Enviar tu CV',
+    contact: 'Contacto',
+    login: 'Iniciar sesión',
+    register: 'Crear cuenta',
+    dashboard: 'Panel',
+    admin: 'Administración',
+    logout: 'Cerrar sesión',
+    profile: 'Perfil',
+    viewSite: 'Ver el sitio',
+  },
+
+  theme: { light: 'Modo claro', dark: 'Modo oscuro' },
+
+  home: {
+    heroEyebrow: 'Empresa de ingeniería de software',
+    heroTitle: 'Construimos el futuro de la tecnología cívica',
+    heroCtaPrimary: 'Qué hacemos',
+    heroCtaSecondary: 'Contáctenos',
+    whatWeDoTitle: 'Qué hacemos',
+    whatWeDoSubtitle: 'Ingeniería de software, desde la arquitectura hasta el despliegue y el soporte',
+    feature0Title: 'Desarrollo de software a medida',
+    feature0Desc: 'Aplicaciones construidas en torno a sus procesos y objetivos, desde la consultoría hasta la puesta en marcha.',
+    feature1Title: 'Aplicaciones web y móviles',
+    feature1Desc: 'Experiencias web y móviles rápidas, escalables y fáciles de usar.',
+    feature2Title: 'Plataformas de tecnología cívica',
+    feature2Desc: 'Plataformas que acortan la distancia entre las instituciones, las organizaciones y las personas a las que sirven.',
+    feature3Title: 'Datos y analítica',
+    feature3Desc: 'Convertir datos en bruto en tableros e información que facilitan las decisiones.',
+    howWeWorkTitle: 'Cómo trabajamos',
+    howWeWorkSubtitle: 'Código abierto, impulsado por la comunidad y abierto a quienes empiezan',
+    work0Title: 'Código abierto',
+    work0Desc: 'Publicamos abiertamente buena parte de lo que construimos, para que otros puedan apoyarse en ello.',
+    work1Title: 'Impulsado por la comunidad',
+    work1Desc: 'Nuestros equipos trabajan con funciones definidas, junto a una comunidad global de colaboradores.',
+    work2Title: 'Formar ingenieros',
+    work2Desc: 'Mantenemos abierta la puerta de entrada al sector para juniors y personas que cambian de carrera.',
+    alsoTitle: 'Junto a la ingeniería',
+    alsoInsuranceTitle: 'Servicios de seguros',
+    alsoInsuranceCta: 'Ver seguros',
+    ctaTitle: '¿Tiene un proyecto en mente?',
+    ctaSubtitle: 'Escríbanos para trabajar juntos, para consultoría técnica o para sumarse al equipo.',
+  },
+
+  about: {
+    title: 'Acerca de nosotros',
+    subtitle: 'Construimos software que simplifica la vida de las personas y el trabajo de las organizaciones.',
+    missionTitle: 'Nuestra misión',
+    visionTitle: 'Nuestra visión',
+    valuesTitle: 'Nuestros valores',
+    value1Title: 'Innovación',
+    value1Desc: 'Entendemos un problema desde la raíz y luego construimos algo nuevo para resolverlo.',
+    value2Title: 'Transparencia',
+    value2Desc: 'Describimos nuestro trabajo, nuestras decisiones y nuestros límites tal como son.',
+    value3Title: 'Comunidad',
+    value3Desc: 'Construimos de forma abierta y con otros, no en aislamiento.',
+    value4Title: 'Excelencia',
+    value4Desc: 'Preferimos hacer buena ingeniería antes que entregar rápido.',
+    legalNote: 'CiviTech Global es la marca internacional de Rayan Tamaddon Jahan Gostar.',
+  },
+
+  services: {
+    title: 'Qué construimos',
+    subtitle: 'La ingeniería de software en el centro, con algunos servicios alrededor',
+    groupSoftwareTitle: 'Desarrollo de software',
+    groupSoftwareSubtitle: 'Soluciones a medida, de la idea al lanzamiento',
+    groupInsuranceTitle: 'Servicios de seguros',
+    software1Title: 'Desarrollo de software a medida',
+    software1Desc: 'Aplicaciones construidas en torno a sus procesos, desde la consultoría hasta la puesta en marcha.',
+    software2Title: 'Aplicaciones web y móviles',
+    software2Desc: 'Experiencias web y móviles rápidas, escalables y fáciles de usar.',
+    software3Title: 'Plataformas de tecnología cívica',
+    software3Desc: 'Plataformas que conectan administraciones, organizaciones y ciudadanos.',
+    software4Title: 'Datos y analítica',
+    software4Desc: 'Convertir datos en bruto en tableros e información útil.',
+    service1Title: 'Asesoría personal en seguros',
+    service1Desc: 'Orientación experta para elegir el plan adecuado.',
+    service2Title: 'Solicitudes de seguro en línea',
+    service2Desc: 'Solicite desde este sitio, con un teléfono verificado y un código de seguimiento.',
+    service3Title: 'Seguimiento en línea',
+    service3Desc: 'Consulte el estado de su solicitud desde su panel.',
+    service4Title: 'Soporte dedicado',
+    service4Desc: 'Nuestro equipo de soporte está listo para responder sus preguntas.',
+  },
+
+  contact: {
+    title: 'Contáctenos',
+    subtitle: '¿Tiene una pregunta? Con gusto le ayudamos.',
+    formName: 'Nombre completo',
+    formEmail: 'Correo electrónico',
+    formMessage: 'Su mensaje',
+    formSubmit: 'Enviar mensaje',
+    formNote:
+      'Recibirá un código de seguimiento. La respuesta aparece en esta página cuando lo introduce.',
+    formSuccess: 'Su mensaje fue recibido.',
+    formSubject: 'Asunto',
+    formEmailHint: 'Sirve para identificar su mensaje; la respuesta no se envía por correo.',
+    issuedTitle: 'Su mensaje fue recibido',
+    issuedBody: 'Guarde este código de seguimiento. Introdúzcalo en esta página para leer la respuesta.',
+    issuedWarning: 'Este código se muestra una sola vez. Anótelo.',
+    copyCode: 'Copiar el código de seguimiento',
+    codeCopied: 'Código de seguimiento copiado.',
+    sendAnother: 'Enviar otro mensaje',
+    trackTitle: 'Seguimiento de mensaje',
+    trackBody: 'Introduzca su código de seguimiento para ver el estado y la respuesta.',
+    trackPlaceholder: 'Código de 10 caracteres',
+    trackNotFound: 'No se encontró ningún mensaje con ese código.',
+    noSubject: 'Sin asunto',
+    noReplyYet: 'Todavía no hay respuesta. La revisaremos en breve.',
+    staffReply: 'Soporte',
+    statuses: { OPEN: 'Esperando respuesta', ANSWERED: 'Respondido', CLOSED: 'Cerrado' },
+    infoTitle: 'Cómo contactarnos',
+    infoBody:
+      'No publicamos una dirección de correo. Envíe su mensaje con el formulario y lea la respuesta con su código de seguimiento.',
+    trackingCode: 'Código de seguimiento',
+  },
+
+  team: {
+    title: 'Nuestro equipo',
+    subtitle: 'Las personas que construyen esto.',
+    empty: 'Todavía no se han añadido integrantes.',
+    emailLabel: 'Correo electrónico',
+    websiteLabel: 'Sitio web',
+  },
+
+  errors: {
+    notFoundTitle: 'Página no encontrada',
+    notFoundBody: 'La página que busca no existe.',
+    goHome: 'Volver al inicio',
+    networkError: 'No se pudo conectar con el servidor',
+    unauthorized: 'No autorizado',
+    endpointUnavailable: 'Esta sección aún no está disponible en el servidor.',
+  },
+
+  footer: {
+    tagline: 'Soluciones digitales de seguros construidas sobre tecnología y confianza.',
+    links: 'Enlaces rápidos',
+    legal: 'Legal',
+    privacy: 'Política de privacidad',
+    terms: 'Términos del servicio',
+    rights: 'Todos los derechos reservados.',
+    credit: 'Diseñado e implementado por Mohammad Khalilzadeh, de Rayan Tamaddon Jahan Gostar',
+  },
+};
+
+export default es;

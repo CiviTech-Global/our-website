@@ -2,7 +2,6 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import {
   ChevronDown,
-  Languages,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -12,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { LocalePicker } from '@/components/layout/LocalePicker';
 import { useTheme } from '@/contexts/ThemeProvider';
 import { useAuth } from '@/contexts/AuthProvider';
 import { Button } from '@/components/ui/Button';
@@ -87,7 +87,7 @@ const NAV_ENTRIES: NavEntry[] = [
 ];
 
 export function FuturisticNavbar() {
-  const { t, locale, toggleLocale } = useLocale();
+  const { t } = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -160,9 +160,7 @@ export function FuturisticNavbar() {
         </ul>
 
         <div className="hidden items-center gap-1 md:flex lg:gap-1.5">
-          <IconToggle onClick={toggleLocale} label={t.locale[locale === 'fa' ? 'en' : 'fa']}>
-            <Languages className="size-4" aria-hidden="true" />
-          </IconToggle>
+          <LocalePicker />
           <IconToggle onClick={toggleTheme} label={theme === 'dark' ? t.theme.light : t.theme.dark}>
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </IconToggle>
@@ -239,10 +237,7 @@ export function FuturisticNavbar() {
           </ul>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-subtle pt-3">
-            <Button variant="ghost" size="md" onClick={toggleLocale}>
-              <Languages className="size-4" />
-              {t.locale[locale === 'fa' ? 'en' : 'fa']}
-            </Button>
+            <LocalePicker variant="inline" className="w-full" />
             <Button variant="ghost" size="md" onClick={toggleTheme}>
               {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               {theme === 'dark' ? t.theme.light : t.theme.dark}

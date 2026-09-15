@@ -19,8 +19,6 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
-const CONTACT_EMAIL = 'info@civitechglobal.com';
-
 const contactSchema = z.object({
   name: z.string().min(1, 'auth.required'),
   email: z.string().min(1, 'auth.required').email('auth.invalidEmail'),
@@ -144,20 +142,15 @@ export default function ContactPage() {
           <div className="flex h-full flex-col gap-6">
             <TrackTicket />
 
+            {/* No address is published, because none would be read. The form
+                and the tracking code are the whole channel, and saying so is
+                more honest than an inbox nobody empties. */}
             <Card>
-              <h2 className="mb-3 text-lg font-semibold text-text-primary">{t.contact.infoTitle}</h2>
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="flex items-center gap-3 rounded-lg border border-border-default p-3 transition-colors hover:border-brand-green-500/40"
-              >
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
                 <Mail className="size-5 text-brand-green-500" aria-hidden="true" />
-                <div className="min-w-0">
-                  <p className="text-sm text-text-muted">{t.contact.infoEmail}</p>
-                  <p className="ltr truncate text-start text-sm font-medium text-text-primary">
-                    {CONTACT_EMAIL}
-                  </p>
-                </div>
-              </a>
+                {t.contact.infoTitle}
+              </h2>
+              <p className="text-sm text-text-secondary">{t.contact.infoBody}</p>
             </Card>
           </div>
         </AnimatedSection>

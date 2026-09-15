@@ -10,13 +10,13 @@ vi.mock('@/contexts/AuthProvider', () => ({
 vi.mock('@/contexts/ThemeProvider', () => ({
   useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
 }));
-vi.mock('@/i18n/LocaleProvider', () => ({
+vi.mock('@/i18n/LocaleProvider', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/i18n/LocaleProvider')>()),
   useLocale: () => ({
     locale: 'en',
-    toggleLocale: vi.fn(),
+    setLocale: vi.fn(),
     t: {
       common: { brand: 'Brand' },
-      locale: { fa: 'FA', en: 'EN' },
       theme: { light: 'Light', dark: 'Dark' },
       nav: {
         servicesMenu: 'Services menu',

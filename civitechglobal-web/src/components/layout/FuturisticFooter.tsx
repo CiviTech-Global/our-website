@@ -26,10 +26,17 @@ export function FuturisticFooter() {
               {!t.common.brand.includes(t.common.legalName) && (
                 <p className="mt-1 text-xs text-text-muted">{t.common.legalName}</p>
               )}
+              {/* A route, not an address. There is no mailbox behind any
+                  address we could print, and one that bounces reads as being
+                  ignored — the contact form is the actual channel. */}
               <div className="mt-4 flex items-center gap-3">
-                <SocialLink href="mailto:info@civitechglobal.com" label="Email">
+                <Link
+                  to="/contact"
+                  aria-label={t.nav.contact}
+                  className="flex size-9 items-center justify-center rounded-lg border border-border-default text-text-secondary transition-colors hover:border-brand-green-500/50 hover:text-brand-green-500"
+                >
                   <MailIcon />
-                </SocialLink>
+                </Link>
               </div>
             </div>
 
@@ -84,20 +91,6 @@ export function FuturisticFooter() {
         </div>
       </div>
     </footer>
-  );
-}
-
-function SocialLink({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={label}
-      className="flex size-9 items-center justify-center rounded-lg border border-border-default text-text-secondary transition-colors hover:border-brand-green-500/50 hover:text-brand-green-500"
-    >
-      {children}
-    </a>
   );
 }
 

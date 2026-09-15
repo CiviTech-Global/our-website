@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import type { Locale } from '@/i18n/locales';
 import { useConversations } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
@@ -43,7 +44,7 @@ export default function ConversationsPage() {
   );
 }
 
-function ConversationRow({ thread, locale }: { thread: ConversationSummary; locale: 'fa' | 'en' }) {
+function ConversationRow({ thread, locale }: { thread: ConversationSummary; locale: Locale }) {
   const { t } = useLocale();
 
   return (

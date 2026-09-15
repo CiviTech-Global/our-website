@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { Locale } from '@/i18n/locales';
 import { Link } from 'react-router';
 import { ArrowLeft, ArrowRight, FileText, PenLine, SearchCheck, Star, Trophy, Users } from 'lucide-react';
 import { useBoardStats, useFeatured } from '@/api/marketplace';
@@ -21,7 +22,7 @@ import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
  */
 
 /** Counts up from zero the first time the band scrolls into view. */
-function CountUp({ value, locale }: { value: number; locale: 'fa' | 'en' }) {
+function CountUp({ value, locale }: { value: number; locale: Locale }) {
   const [display, setDisplay] = useState(0);
   const frame = useRef<number>(0);
 

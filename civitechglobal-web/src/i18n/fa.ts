@@ -64,10 +64,6 @@ const fa = {
     light: 'حالت روشن',
     dark: 'حالت تیره',
   },
-  locale: {
-    fa: 'فارسی',
-    en: 'English',
-  },
   home: {
     heroEyebrow: 'شرکت مهندسی نرم‌افزار',
     heroTitle: 'ساخت آیندهٔ فناوری شهروندی',
@@ -520,6 +516,7 @@ const fa = {
     reopen: 'بازکردن دوباره',
     trackingCode: 'کد پیگیری',
     filterAll: 'همه',
+    infoBody: 'در حال حاضر آدرس ایمیلی منتشر نمی‌کنیم. پیام خود را از همین فرم بفرستید و پاسخ را با کد پیگیری ببینید.',
     infoTitle: 'راه‌های ارتباطی',
     infoEmail: 'ایمیل',
     infoTelegram: 'تلگرام',

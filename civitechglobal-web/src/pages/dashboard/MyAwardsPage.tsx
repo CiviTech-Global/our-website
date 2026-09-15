@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import type { Locale } from '@/i18n/locales';
 import { Link } from 'react-router';
 import { AlertTriangle, CheckCircle2, Flag, Plus } from 'lucide-react';
 import {
@@ -59,7 +60,7 @@ export default function MyAwardsPage() {
   );
 }
 
-function AwardCard({ award, locale }: { award: AwardView; locale: 'fa' | 'en' }) {
+function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
   const { t } = useLocale();
   const active = award.award.status === 'ACTIVE';
   const listPath = award.kind === 'job' ? '/jobs' : '/projects';

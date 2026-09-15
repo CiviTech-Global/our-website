@@ -66,10 +66,6 @@ const en: typeof fa = {
     light: 'Light mode',
     dark: 'Dark mode',
   },
-  locale: {
-    fa: 'فارسی',
-    en: 'English',
-  },
   home: {
     heroEyebrow: 'Software engineering company',
     heroTitle: 'Building the future of civic technology',
@@ -522,6 +518,7 @@ const en: typeof fa = {
     reopen: 'Reopen',
     trackingCode: 'Tracking code',
     filterAll: 'All',
+    infoBody: 'We do not publish an email address. Send your message with the form and read the reply with your tracking code.',
     infoTitle: 'Get in touch',
     infoEmail: 'Email',
     infoTelegram: 'Telegram',

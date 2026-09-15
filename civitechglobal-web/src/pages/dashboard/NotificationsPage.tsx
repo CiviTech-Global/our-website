@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Locale } from '@/i18n/locales';
 import { Link } from 'react-router';
 import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -81,7 +82,7 @@ function NotificationRow({
   onMarkRead,
 }: {
   notification: AppNotification;
-  locale: 'fa' | 'en';
+  locale: Locale;
   onMarkRead: () => void;
 }) {
   const { t } = useLocale();

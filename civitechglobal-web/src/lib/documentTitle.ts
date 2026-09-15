@@ -8,6 +8,15 @@ import { useLocale } from '@/i18n/LocaleProvider';
  * English carries the trading name alongside it; Persian is the registered name
  * alone, which is what people here recognise.
  */
+/**
+ * The name in the tab.
+ *
+ * Only Persian differs: the company's own name is written in Persian script for
+ * Persian readers, and every other language gets the romanised form plus the
+ * international brand. A German or Turkish title carrying Persian script would
+ * be unreadable to the person it is for, so those fall to English rather than
+ * to the local dictionary.
+ */
 export const SITE_NAME = {
   fa: 'رایان تمدن جهان گستر',
   en: 'Rayan Tamaddon Jahan Gostar | CiviTech Global',
@@ -71,7 +80,7 @@ export function useDocumentTitle(title?: string) {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    const site = SITE_NAME[locale];
+    const site = locale === 'fa' ? SITE_NAME.fa : SITE_NAME.en;
     document.title = title ? `${title} — ${site}` : site;
     setCanonical(pathname);
     // Deliberately not restored on unmount: the next page sets its own title,

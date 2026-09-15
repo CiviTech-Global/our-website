@@ -4,7 +4,7 @@
 # found something, tell us before telling anyone else and we will work with
 # you on a disclosure timeline.
 
-Contact: mailto:security@civitechglobal.com
+Contact: https://rayantamaddonjahangostar.ir/contact
 Preferred-Languages: fa, en
 Canonical: https://rayantamaddonjahangostar.ir/.well-known/security.txt
 

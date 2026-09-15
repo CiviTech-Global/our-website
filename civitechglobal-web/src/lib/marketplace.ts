@@ -1,7 +1,7 @@
 import type { BadgeVariant } from '@/components/ui/Badge';
 import type fa from '@/i18n/fa';
 import type { ListingState, ModerationStatus, OfferOutcome, VerificationStatus } from '@/types/marketplace';
-import { toPersianDigits } from '@/i18n/utils';
+import { LOCALE_TAGS, type Locale } from '@/i18n/locales';
 
 /**
  * Money on the boards.
@@ -15,13 +15,17 @@ import { toPersianDigits } from '@/i18n/utils';
  * is — insurance premiums, project quotes, proposals. Labelling these as rial
  * would understate every figure on both boards by a factor of ten.
  */
-export function formatMoney(value: string | null | undefined, locale: 'fa' | 'en'): string | null {
+export function formatMoney(value: string | null | undefined, locale: Locale): string | null {
   if (!value) return null;
   const digits = value.replace(/[^0-9]/g, '');
   if (!digits) return null;
 
-  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, locale === 'fa' ? '٬' : ',');
-  return locale === 'fa' ? toPersianDigits(grouped) : grouped;
+  // BigInt, not Number: these are Toman amounts that routinely run past what a
+  // double holds exactly, and a price is the last thing that should be quietly
+  // rounded. Intl then supplies each language's own grouping — the Persian
+  // thousands mark and Persian digits, the German full stop, the French narrow
+  // space — which a hand-inserted comma could not.
+  return new Intl.NumberFormat(LOCALE_TAGS[locale]).format(BigInt(digits));
 }
 
 /**
@@ -34,7 +38,7 @@ export function formatMoney(value: string | null | undefined, locale: 'fa' | 'en
 export function formatRange(
   min: string | null | undefined,
   max: string | null | undefined,
-  locale: 'fa' | 'en',
+  locale: Locale,
   t: typeof fa
 ): string | null {
   const low = formatMoney(min, locale);

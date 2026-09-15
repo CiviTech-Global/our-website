@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Locale } from '@/i18n/locales';
 import { useParams, useNavigate } from 'react-router';
 import { AlertTriangle, ArrowRight, ArrowLeft, Globe, Send } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -308,7 +309,7 @@ function toLocalInput(iso: string | null | undefined): string {
 }
 
 /** Bot and web rows both store the option code; render the human label. */
-function contactTimeLabel(value: string | null | undefined, locale: 'fa' | 'en'): string {
+function contactTimeLabel(value: string | null | undefined, locale: Locale): string {
   const labels: Record<string, { fa: string; en: string }> = {
     morning: { fa: 'صبح (۹ تا ۱۲)', en: 'Morning (9–12)' },
     noon: { fa: 'ظهر (۱۲ تا ۱۶)', en: 'Midday (12–16)' },
@@ -317,7 +318,11 @@ function contactTimeLabel(value: string | null | undefined, locale: 'fa' | 'en')
   };
   if (!value) return '—';
   // Pre-refactor rows stored the Persian word itself; show it as it was saved.
-  return labels[value]?.[locale] ?? value;
+  //
+  // These four are hard-coded rather than dictionary keys, so there is nothing
+  // to translate into the newer languages; they fall to English, which is what
+  // an admin reading a request in German would otherwise get anyway.
+  return labels[value]?.[locale === 'fa' ? 'fa' : 'en'] ?? value;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {

@@ -2,7 +2,7 @@
 # RFC 9116 standard says to look. This copy exists for people and crawlers
 # that still check the site root.
 
-Contact: mailto:security@civitechglobal.com
+Contact: https://rayantamaddonjahangostar.ir/contact
 Preferred-Languages: fa, en
 Canonical: https://rayantamaddonjahangostar.ir/.well-known/security.txt
 Expires: 2027-09-10T00:00:00.000Z

@@ -1,7 +1,8 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
-import { ChevronDown, Menu, X, Sun, Moon, Languages, LogOut, ExternalLink } from 'lucide-react';
+import { ChevronDown, Menu, X, Sun, Moon, LogOut, ExternalLink } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { LocalePicker } from '@/components/layout/LocalePicker';
 import { useTheme } from '@/contexts/ThemeProvider';
 import { useAuth } from '@/contexts/AuthProvider';
 import { NotificationBell } from '@/components/account/NotificationBell';
@@ -69,7 +70,7 @@ function readCollapsed(): string[] {
 
 /** Shared shell for the user and admin dashboards: RTL-aware sidebar + topbar. */
 export function DashboardShell({ title, items, children, notificationsLink }: DashboardShellProps) {
-  const { t, locale, toggleLocale } = useLocale();
+  const { t, locale } = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -188,14 +189,7 @@ export function DashboardShell({ title, items, children, notificationsLink }: Da
               <ExternalLink className="size-4 shrink-0" />
               <span className="hidden sm:inline">{t.nav.viewSite}</span>
             </a>
-            <button
-              type="button"
-              onClick={toggleLocale}
-              aria-label="Toggle language"
-              className="flex size-11 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-200 hover:text-text-primary"
-            >
-              <Languages className="size-4" />
-            </button>
+            <LocalePicker triggerClassName="size-11 hover:bg-surface-200" />
             <button
               type="button"
               onClick={toggleTheme}
