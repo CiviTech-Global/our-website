@@ -10,6 +10,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useSendVerificationEmail } from '@/api/accountRecovery';
+import { isApiError } from '@/config/api';
 import { useOwnMarketplaceStats, useOwnVerification } from '@/api/marketplace';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/Button';
@@ -61,8 +62,13 @@ export default function DashboardPage() {
                 try {
                   await sendVerification.mutateAsync();
                   showToast(t.auth.verifyBannerSent, 'success');
-                } catch {
-                  showToast(t.common.error, 'error');
+                } catch (error) {
+                  // The server explains a 501 here by naming the contact form,
+                  // which is more use than "something went wrong".
+                  showToast(
+                    isApiError(error) ? error.message : t.common.error,
+                    'error'
+                  );
                 }
               }}
             >

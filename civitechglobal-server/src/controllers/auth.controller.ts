@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { canSendEmail } from '../services/email/index.js';
 import * as authService from '../services/auth.service.js';
 import * as recoveryService from '../services/account-recovery.service.js';
 import * as mfaService from '../services/mfa.service.js';
@@ -172,7 +173,28 @@ export async function updateMe(req: Request, res: Response, next: NextFunction):
   }
 }
 
+/**
+ * 501, not 503.
+ *
+ * 503 says "try again shortly", and a client that believes it will retry
+ * forever against a deployment that has never had a mail service. 501 says the
+ * server does not implement what was asked, which is the accurate statement,
+ * and the message names the route that does work: the contact form issues a
+ * tracking code and needs no mailbox at either end.
+ */
+function emailUnavailable(): AppError {
+  return new AppError(
+    'در حال حاضر امکان ارسال ایمیل وجود ندارد. برای بازیابی حساب، از فرم تماس استفاده کنید؛ ' +
+      'کد رهگیری دریافت می‌کنید و پاسخ را در همان صفحه می‌بینید.',
+    501,
+  );
+}
+
 export async function forgotPassword(req: Request, res: Response, next: NextFunction) {
+  // Checked before the lookup, so this cannot become a way to learn which
+  // addresses have accounts: it answers the same way for every input.
+  if (!canSendEmail()) return next(emailUnavailable());
+
   try {
     await recoveryService.requestPasswordReset(req.body.email as string);
   } catch (error) {
@@ -199,6 +221,8 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
 }
 
 export async function sendVerificationEmail(req: Request, res: Response, next: NextFunction) {
+  if (!canSendEmail()) return next(emailUnavailable());
+
   try {
     await recoveryService.sendVerificationEmail(req.user!.userId);
     successResponse(res, null, 'پیوند تأیید برای شما ارسال شد.');

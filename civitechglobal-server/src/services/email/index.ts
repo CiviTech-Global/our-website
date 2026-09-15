@@ -27,6 +27,29 @@ export interface EmailProvider {
   send(message: EmailMessage): Promise<void>;
 }
 
+/**
+ * A deployment with no mail service at all.
+ *
+ * This is the honest description of where the site stands: no provider
+ * account, no verified sending domain, no address published anywhere. Before
+ * this existed the production configuration named a real provider with a
+ * stand-in API key, so asking for a password reset answered "we have sent you
+ * a link" and then logged a delivery failure — a dead end that looks like a
+ * working feature, which is the worst of both.
+ *
+ * Sending throws, so nothing silently believes a message went out. The routes
+ * that would have sent one check `canSendEmail()` first and say plainly that
+ * the route is unavailable, pointing at the contact form, which issues a
+ * tracking code and needs no mailbox.
+ */
+class NoEmailProvider implements EmailProvider {
+  readonly name = 'none';
+
+  async send(): Promise<void> {
+    throw new Error('This deployment has no email provider configured (EMAIL_PROVIDER=none).');
+  }
+}
+
 class ConsoleEmailProvider implements EmailProvider {
   readonly name = 'console';
 
@@ -110,6 +133,8 @@ class MailgunProvider implements EmailProvider {
 function build(): EmailProvider {
   const name = env.EMAIL_PROVIDER.toLowerCase();
 
+  if (name === 'none') return new NoEmailProvider();
+
   if (name === 'console') {
     if (env.isProduction) {
       // Logging reset links to stdout instead of emailing them would look like
@@ -117,7 +142,8 @@ function build(): EmailProvider {
       // the links would sit in the log aggregator, each one a live credential.
       throw new Error(
         'FATAL: EMAIL_PROVIDER=console is not permitted in production. ' +
-          'Set EMAIL_PROVIDER to resend or mailgun and supply EMAIL_API_KEY and EMAIL_FROM.',
+          'Set EMAIL_PROVIDER to resend or mailgun and supply EMAIL_API_KEY and EMAIL_FROM, ' +
+          'or to none if this deployment genuinely cannot send email.',
       );
     }
     return new ConsoleEmailProvider();
@@ -134,7 +160,7 @@ function build(): EmailProvider {
       return new MailgunProvider(env.EMAIL_API_KEY, env.EMAIL_DOMAIN, env.EMAIL_FROM);
     default:
       throw new Error(
-        `Unknown EMAIL_PROVIDER "${env.EMAIL_PROVIDER}" (expected: console, resend, mailgun)`,
+        `Unknown EMAIL_PROVIDER "${env.EMAIL_PROVIDER}" (expected: none, console, resend, mailgun)`,
       );
   }
 }
@@ -145,4 +171,15 @@ let provider: EmailProvider | undefined;
 export function emailProvider(): EmailProvider {
   provider ??= build();
   return provider;
+}
+
+/**
+ * Whether this deployment can deliver a message at all.
+ *
+ * Asked before anything promises to send one. A feature that depends on a
+ * mailbox should refuse out loud on a site with no mail service rather than
+ * accept the request and quietly drop it.
+ */
+export function canSendEmail(): boolean {
+  return emailProvider().name !== 'none';
 }

@@ -108,12 +108,20 @@ export const env = {
   //
   // Same arrangement as SMS below: 'console' logs the message instead of
   // sending it, which is the development default and the only provider that
-  // needs no account. Production must name a real one; see
-  // `services/email/index.ts` for the guard that enforces that.
+  // needs no account. Production must name a real one — or 'none', which says
+  // this deployment has no mail service and makes the features that need one
+  // refuse out loud instead of accepting a request they cannot fulfil. See
+  // `services/email/index.ts`.
   EMAIL_PROVIDER: optional('EMAIL_PROVIDER', 'console'),
   EMAIL_API_KEY: optional('EMAIL_API_KEY', ''),
-  /** The From line. Must be an address on a domain the provider has verified. */
-  EMAIL_FROM: optional('EMAIL_FROM', 'no-reply@civitechglobal.com'),
+  /**
+   * The From line. Must be an address on a domain the provider has verified.
+   *
+   * Empty by default: there is no mailbox to name until somebody sets up a
+   * provider, and a plausible-looking default is a bounce address that nobody
+   * notices is wrong. build() requires it for every real provider.
+   */
+  EMAIL_FROM: optional('EMAIL_FROM', ''),
   /** Mailgun only: the sending domain. */
   EMAIL_DOMAIN: optional('EMAIL_DOMAIN', ''),
 

@@ -568,6 +568,10 @@ const en: typeof fa = {
     forgotSentBody: 'If an account exists for that address, a password reset link is on its way.',
     forgotSentHint: 'If nothing arrives, check your spam folder or the address you entered.',
     backToLogin: 'Back to login',
+    emailUnavailableTitle: 'We cannot email you yet',
+    emailUnavailableBody:
+      'This site has no mail service, so we cannot send a reset link. Send a message through the contact form instead — you will get a tracking code, and the reply appears on that page.',
+    emailUnavailableCta: 'Go to the contact form',
 
     resetTitle: 'Choose a new password',
     resetSubtitle: 'Pick a new password for your account.',

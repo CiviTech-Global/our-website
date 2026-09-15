@@ -181,11 +181,23 @@ storage_region: us-east-1
 
 # ---- Email -------------------------------------------------------------------
 #
-# Password reset and address verification. config/env.ts refuses to start on
-# EMAIL_PROVIDER=console in production, for the same reason it refuses a console
-# SMS provider: links logged to stdout are live credentials sitting in a log.
-email_provider: resend
-email_from: no-reply@{{ domain_name }}
+# Password reset and address verification.
+#
+# 'none' says this deployment has no mail service, which is the truth today:
+# there is no provider account and no verified sending domain. The routes that
+# would send a message answer 501 and point at the contact form, which issues a
+# tracking code and needs no mailbox.
+#
+# It was 'resend' with a stand-in API key, which is strictly worse than 'none':
+# asking for a password reset answered "we have sent you a link" and then logged
+# a delivery failure — a dead end that looks like a working feature.
+#
+# When a provider account exists, set this to resend or mailgun, put the key in
+# vault.yml as vault_email_api_key, and set email_from to an address on a domain
+# that provider has verified. config/env.ts still refuses 'console' in
+# production: links logged to stdout are live credentials sitting in a log.
+email_provider: none
+email_from: ""
 email_domain: ""
 
 # ---- Malware scanning --------------------------------------------------------

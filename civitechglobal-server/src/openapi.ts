@@ -23,7 +23,7 @@ export const openApiDocument = {
       'Public endpoints for the insurance catalog, the software-project, CV and contact ' +
       'intakes, and tracking. Administrative endpoints require a session and are not ' +
       'described here.',
-    contact: { name: 'Security disclosures', email: 'security@civitechglobal.com' },
+    contact: { name: 'Security disclosures', url: 'https://rayantamaddonjahangostar.ir/contact' },
   },
   servers: [
     { url: '/api/v1', description: 'Versioned. Use this.' },
@@ -95,7 +95,7 @@ export const openApiDocument = {
           '(comma list), salaryMin/salaryMax (range overlap, undisclosed salaries excluded), ' +
           'sort (newest | salaryAsc | salaryDesc | closingSoon); featured always sorts first. ' +
           'Money is a decimal string, in Toman.',
-        responses: { 200: { $ref: '#/components/responses/Ok' } },
+        responses: { 200: { $ref: '#/components/responses/Paged' } },
       },
     },
     '/market/jobs/{code}': {
@@ -120,7 +120,7 @@ export const openApiDocument = {
           'Filters: search, category, skills (comma list), budgetMin/budgetMax (range overlap, ' +
           'undisclosed budgets excluded), sort (newest | budgetAsc | budgetDesc); featured ' +
           'always sorts first. Money is a decimal string, in Toman.',
-        responses: { 200: { $ref: '#/components/responses/Ok' } },
+        responses: { 200: { $ref: '#/components/responses/Paged' } },
       },
     },
     '/market/projects/{code}': {
@@ -286,6 +286,17 @@ export const openApiDocument = {
         },
       },
     },
+    '/i18n/detect': {
+      get: {
+        tags: ['Catalog'],
+        summary: 'Which language to open in',
+        description:
+          'For a visitor who has not chosen one. Answers from the country the request came ' +
+          'from, falling back to Accept-Language and then to Persian, and says in `source` ' +
+          'which of the three decided. Depends on the caller, so it is never cached.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
     '/client-errors': {
       post: {
         tags: ['Telemetry'],
@@ -318,6 +329,20 @@ export const openApiDocument = {
       },
     },
     schemas: {
+      Page: {
+        type: 'object',
+        description:
+          'Every list answers in this shape, inside `data`. `totalPages` is computed by the ' +
+          'server so a client never has to divide by a page size the server did not agree to.',
+        required: ['items', 'page', 'pageSize', 'total', 'totalPages'],
+        properties: {
+          items: { type: 'array', items: {} },
+          page: { type: 'integer', minimum: 1 },
+          pageSize: { type: 'integer', minimum: 1 },
+          total: { type: 'integer', minimum: 0 },
+          totalPages: { type: 'integer', minimum: 1 },
+        },
+      },
       Envelope: {
         type: 'object',
         description: 'Every response, success or failure, has this shape.',
@@ -353,6 +378,19 @@ export const openApiDocument = {
       NotFound: {
         description: 'No such record.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/Envelope' } } },
+      },
+      Paged: {
+        description: 'A page of rows, with the counts a pager needs.',
+        content: {
+          'application/json': {
+            schema: {
+              allOf: [
+                { $ref: '#/components/schemas/Envelope' },
+                { type: 'object', properties: { data: { $ref: '#/components/schemas/Page' } } },
+              ],
+            },
+          },
+        },
       },
       RateLimited: {
         description:

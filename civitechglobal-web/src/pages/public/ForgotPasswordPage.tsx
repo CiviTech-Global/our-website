@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router';
-import { MailCheck } from 'lucide-react';
+import { MailCheck, MailWarning } from 'lucide-react';
 import { z } from 'zod';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
 import { useForgotPassword } from '@/api/accountRecovery';
+import { isApiError } from '@/config/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
@@ -25,6 +26,15 @@ export default function ForgotPasswordPage() {
   const forgot = useForgotPassword();
   const [sent, setSent] = useState(false);
 
+  /**
+   * The one failure worth showing.
+   *
+   * A deployment with no mail service answers 501 here. Folding that into the
+   * "we sent you a link" screen would be the dead end this replaced: a
+   * confirmation for a message nobody sent, and a person waiting on it.
+   */
+  const [emailUnavailable, setEmailUnavailable] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -32,11 +42,36 @@ export default function ForgotPasswordPage() {
   } = useForm<Values>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: Values) {
-    // Deliberately no error branch on "unknown address": the server answers
+    // Still no error branch on "unknown address": the server answers
     // identically either way, so the page must too — otherwise the screen
-    // becomes the way to ask whether somebody has an account here.
-    await forgot.mutateAsync(values.email).catch(() => {});
+    // becomes the way to ask whether somebody has an account here. 501 is
+    // different: it does not depend on the address, so showing it leaks
+    // nothing.
+    try {
+      await forgot.mutateAsync(values.email);
+    } catch (error) {
+      if (isApiError(error) && error.status === 501) {
+        setEmailUnavailable(true);
+        return;
+      }
+    }
     setSent(true);
+  }
+
+  if (emailUnavailable) {
+    return (
+      <AuthCard title={t.auth.emailUnavailableTitle} subtitle={t.auth.emailUnavailableBody}>
+        <MailWarning className="mx-auto size-12 text-brand-amber-500" aria-hidden="true" />
+        <Link to="/contact" className="mt-6 block">
+          <Button className="w-full">{t.auth.emailUnavailableCta}</Button>
+        </Link>
+        <Link to="/login" className="mt-3 block">
+          <Button variant="secondary" className="w-full">
+            {t.auth.backToLogin}
+          </Button>
+        </Link>
+      </AuthCard>
+    );
   }
 
   if (sent) {

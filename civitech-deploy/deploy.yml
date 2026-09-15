@@ -65,6 +65,36 @@
           leaves every applicant unable to submit.
       no_log: true
 
+    - name: Refuse to deploy a mail provider that cannot deliver
+      # Either this deployment has a working provider, or it says out loud that
+      # it has none. What is not allowed is the state this was in: a real
+      # provider named, with a stand-in API key behind it — which answers "we
+      # have sent you a link" and then logs a delivery failure, one locked-out
+      # user at a time.
+      #
+      # email_provider: none is a supported answer. The routes that would send
+      # a message then refuse with 501 and point at the contact form, which
+      # issues a tracking code and needs no mailbox.
+      ansible.builtin.assert:
+        that:
+          - email_provider in ['none', 'resend', 'mailgun']
+          - >-
+            email_provider == 'none'
+            or (
+              vault_email_api_key is defined
+              and (vault_email_api_key | length) > 0
+              and not (vault_email_api_key | string).startswith('REPLACE_ME')
+              and (email_from | length) > 0
+            )
+          - email_provider != 'mailgun' or (email_domain | length) > 0
+        fail_msg: >-
+          email_provider names a real provider but the credentials behind it
+          are missing or still templated. Put a real key in vault.yml as
+          vault_email_api_key and set email_from to an address on a domain the
+          provider has verified — or set email_provider to none, which is the
+          honest answer while there is no mail service.
+      no_log: true
+
     - name: Refuse to deploy an unpinned build
       # `latest` deploys whatever CI pushed most recently, which makes
       # rollback impossible and "which commit is live" unanswerable. Override
