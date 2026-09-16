@@ -1,4 +1,5 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
+import { toPage } from '../utils/page.js';
 import multer from 'multer';
 import type { z } from 'zod';
 import { prisma } from '../config/database.js';
@@ -149,7 +150,7 @@ router.get('/admin', async (req, res, next) => {
       prisma.resumeSubmission.count({ where }),
     ]);
 
-    successResponse(res, serialize({ items, page, pageSize, total }));
+    successResponse(res, serialize(toPage(items, total, page, pageSize)));
   } catch (error) {
     next(error);
   }

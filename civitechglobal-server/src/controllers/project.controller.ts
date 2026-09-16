@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { successResponse } from '../utils/apiResponse.js';
@@ -128,7 +129,7 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
       prisma.projectRequest.count({ where }),
     ]);
 
-    successResponse(res, serialize({ items: rows, page, pageSize, total }));
+    successResponse(res, serialize(toPage(rows, total, page, pageSize)));
   } catch (error) {
     next(error);
   }
