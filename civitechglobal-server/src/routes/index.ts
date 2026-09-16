@@ -7,6 +7,7 @@ import adminRoutes from './admin.routes.js';
 import projectRoutes from './project.routes.js';
 import contactRoutes from './contact.routes.js';
 import teamRoutes from './team.routes.js';
+import showcaseRoutes from './showcase.routes.js';
 import i18nRoutes from './i18n.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
@@ -33,6 +34,9 @@ router.use('/contact', contactRoutes);
 
 // The public "تیم ما" page, and the super admin's control over it.
 router.use('/team', teamRoutes);
+
+// The customers club, the partners page and the projects page.
+router.use('/showcase', showcaseRoutes);
 
 // Which language to open in, for a visitor who has not chosen one.
 router.use('/i18n', i18nRoutes);

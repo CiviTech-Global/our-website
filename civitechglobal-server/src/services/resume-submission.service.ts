@@ -31,6 +31,18 @@ export interface ResumeInput {
   province?: string;
   birthYear?: number;
   coverNote?: string;
+  track?: 'JOB' | 'VOLUNTEER' | 'INTERNSHIP';
+  discipline?: 'FRONTEND' | 'BACKEND' | 'FULLSTACK' | 'MOBILE' | 'DEVOPS' | 'DATA' | 'QA' | 'UI_UX' | 'OTHER';
+  hoursPerWeek?: number;
+  availableFrom?: Date;
+  durationMonths?: number;
+  arrangement?: 'ONSITE' | 'HYBRID' | 'REMOTE';
+  university?: string;
+  fieldOfStudy?: string;
+  skills?: string[];
+  githubUrl?: string;
+  portfolioUrl?: string;
+  linkedinUrl?: string;
 }
 
 export interface ResumeResult {
@@ -67,8 +79,12 @@ export async function submitResume(input: ResumeInput, files: IncomingFile[]): P
       if (!identity.trusted) {
         // The whole history, not just the last 24 hours: the two-day lifetime
         // cap cannot be decided from a rolling window.
+        //
+        // Per track: somebody who sent a job CV last week and now applies to
+        // the internship programme is doing two different things, and the
+        // allowance exists to stop repetition, not to make them choose one.
         const history = await tx.resumeSubmission.findMany({
-          where: { identityId: identity.id },
+          where: { identityId: identity.id, track: input.track ?? 'JOB' },
           select: { createdAt: true },
         });
         assertRate(
@@ -110,6 +126,18 @@ async function createWithUniqueTrackingCode(
           province: input.province,
           birthYear: input.birthYear,
           coverNote: input.coverNote,
+          track: input.track ?? 'JOB',
+          discipline: input.discipline,
+          hoursPerWeek: input.hoursPerWeek,
+          availableFrom: input.availableFrom,
+          durationMonths: input.durationMonths,
+          arrangement: input.arrangement,
+          university: input.university,
+          fieldOfStudy: input.fieldOfStudy,
+          skills: input.skills ?? [],
+          githubUrl: input.githubUrl,
+          portfolioUrl: input.portfolioUrl,
+          linkedinUrl: input.linkedinUrl,
           resumeOriginalName: stored.originalName,
           resumeStoredName: stored.storedName,
           resumeMimeType: stored.mimeType,
@@ -136,6 +164,7 @@ export async function trackResume(trackingCode: string) {
     where: { trackingCode: trackingCode.trim().toUpperCase() },
     select: {
       trackingCode: true,
+      track: true,
       status: true,
       createdAt: true,
       updatedAt: true,
@@ -146,6 +175,7 @@ export async function trackResume(trackingCode: string) {
 
   return {
     trackingCode: row.trackingCode,
+    track: row.track,
     status: row.status,
     submittedAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -159,7 +189,10 @@ export async function trackResume(trackingCode: string) {
  * attaching a file is a bad way to find out. This lets the form say so on blur
  * of the email field instead.
  */
-export async function describeResumeAllowance(email: string) {
+export async function describeResumeAllowance(
+  email: string,
+  track: 'JOB' | 'VOLUNTEER' | 'INTERNSHIP' = 'JOB',
+) {
   const identity = await prisma.clientIdentity.findUnique({
     where: { emailHash: sha256Hex(normalizeEmail(email)) },
     select: { id: true, trusted: true, blocked: true },
@@ -170,7 +203,7 @@ export async function describeResumeAllowance(email: string) {
   }
 
   const history = await prisma.resumeSubmission.findMany({
-    where: { identityId: identity.id },
+    where: { identityId: identity.id, track },
     select: { createdAt: true },
   });
   const days = new Set(history.map((row) => localDayKey(row.createdAt)));

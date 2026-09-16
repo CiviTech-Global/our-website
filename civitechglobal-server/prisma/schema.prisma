@@ -153,10 +153,10 @@ model User {
   pausedAt          DateTime? @map("paused_at")
   pausedReason      String?   @map("paused_reason")
 
-  reviewsReceived MarketplaceReview[]    @relation("Reviewee")
-  reviewsGiven    MarketplaceReview[]    @relation("Rater")
+  reviewsReceived MarketplaceReview[]  @relation("Reviewee")
+  reviewsGiven    MarketplaceReview[]  @relation("Rater")
   notifications   Notification[]
-  messagesSent    MarketplaceMessage[]   @relation("MessageSender")
+  messagesSent    MarketplaceMessage[] @relation("MessageSender")
 
   @@index([role])
   @@index([createdAt])
@@ -741,10 +741,14 @@ model TeamMember {
   /// appear with their name and photograph rather than not at all.
   bio   String?
 
-  /// An optional grouping — a department or squad. The page renders one flat
-  /// list when nothing uses this, and groups when something does, so adding
-  /// teams later costs nothing and having none costs nothing either.
-  team String?
+  /// Which section of the page this member appears under. Optional: a member
+  /// with no section is listed after the sections, and a company with no
+  /// sections at all gets one clean list.
+  ///
+  /// SetNull rather than Cascade: deleting a section is a decision about the
+  /// page's structure, and it must never delete the people who were in it.
+  sectionId String?      @map("section_id")
+  section   TeamSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
 
   /// The portrait. Stored through the attachment service like every other
   /// upload, so it is type-sniffed, malware-scanned and given a random name
@@ -773,7 +777,154 @@ model TeamMember {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([published, displayOrder])
+  @@index([sectionId])
   @@map("team_members")
+}
+
+/// A heading on the "تیم ما" page — leadership, engineering, design.
+///
+/// A table rather than the free-text label members used to carry: a label is
+/// retyped per member, so "Engineering" and "engineering " became two
+/// departments, renaming one meant editing every member in it, and there was
+/// no way to put sections in an order other than whoever happened to be first.
+model TeamSection {
+  id String @id @default(cuid())
+
+  name        String
+  /// A line under the heading. Optional.
+  description String?
+
+  displayOrder Int @default(0) @map("display_order")
+
+  members TeamMember[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([displayOrder])
+  @@map("team_sections")
+}
+
+// ---------------------------------------------------------------------------
+// Showcase: who we work for, who we work with, and what we have built.
+// ---------------------------------------------------------------------------
+
+enum OrganizationKind {
+  /// Listed in "باشگاه مشتریان".
+  CUSTOMER
+  /// Listed on the partners page.
+  PARTNER
+}
+
+enum PartnershipType {
+  TECHNOLOGY
+  STRATEGIC
+  ACADEMIC
+  RESELLER
+  COMMUNITY
+  OTHER
+}
+
+/// A customer or a partner, as the company chooses to present them.
+///
+/// One table for both because they are the same record — a name, a logo, a
+/// link, a sentence — and an organisation that starts as a customer and
+/// becomes a partner is a change of kind, not a copy between tables.
+model ShowcaseOrganization {
+  id String @id @default(cuid())
+
+  kind OrganizationKind
+
+  name        String
+  description String?
+  industry    String?
+  website     String?
+
+  /// Stored through the attachment service like every other upload:
+  /// type-sniffed, malware-scanned, and saved under a generated name.
+  logoStoredName   String? @map("logo_stored_name")
+  logoOriginalName String? @map("logo_original_name")
+  logoMimeType     String? @map("logo_mime_type")
+
+  /// "Best customers": shown first and larger. Partners use it the same way.
+  featured  Boolean @default(false)
+  /// False for a former customer or a partnership that has ended — still worth
+  /// listing, but not presented as current.
+  active    Boolean @default(true)
+  /// The year the relationship began, Gregorian.
+  sinceYear Int?    @map("since_year")
+
+  /// Partners only; ignored for customers.
+  partnershipType PartnershipType? @map("partnership_type")
+
+  /// A quote, if they gave one. Only ever published with their agreement, which
+  /// is why it is a field an admin fills in rather than anything collected.
+  testimonialQuote  String? @map("testimonial_quote")
+  testimonialAuthor String? @map("testimonial_author")
+  testimonialRole   String? @map("testimonial_role")
+
+  displayOrder Int     @default(0) @map("display_order")
+  /// Off means prepared but not shown — an agreement not yet signed.
+  published    Boolean @default(true)
+
+  projects ShowcaseProject[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([kind, published, displayOrder])
+  @@map("showcase_organizations")
+}
+
+enum ShowcaseProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  LAUNCHED
+  MAINTAINED
+  ARCHIVED
+}
+
+/// A project on the "our projects" page. Editorial, like the team page: what
+/// appears and what it says is a decision, not a feed of every engagement.
+model ShowcaseProject {
+  id String @id @default(cuid())
+
+  title       String
+  /// One or two sentences for the card.
+  summary     String
+  /// The longer account, for the expanded view.
+  description String?
+  category    String?
+
+  status       ShowcaseProjectStatus @default(IN_PROGRESS)
+  technologies String[]              @default([])
+
+  coverStoredName   String? @map("cover_stored_name")
+  coverOriginalName String? @map("cover_original_name")
+  coverMimeType     String? @map("cover_mime_type")
+
+  projectUrl    String? @map("project_url")
+  repositoryUrl String? @map("repository_url")
+
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  /// The customer it was built for, when that customer is listed and agreed to
+  /// be named. SetNull: removing a customer from the club does not unbuild the
+  /// project.
+  clientId String?               @map("client_id")
+  client   ShowcaseOrganization? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  featured     Boolean @default(false)
+  displayOrder Int     @default(0) @map("display_order")
+  published    Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([published, status, displayOrder])
+  @@index([clientId])
+  @@map("showcase_projects")
 }
 
 /// Where a contact ticket has got to.
@@ -862,6 +1013,31 @@ model ContactReply {
 // not this one — so a submission stands on its own.
 // ===========================================================================
 
+/// Which programme a CV was sent to.
+///
+/// Volunteers and interns go through the same intake as job applicants — the
+/// same identity, upload checks, tracking codes and queue — because it is the
+/// same problem. What differs is what we need to know, which is the handful of
+/// nullable fields on the submission, and which pile it sits in.
+enum TalentTrack {
+  JOB
+  VOLUNTEER
+  INTERNSHIP
+}
+
+/// The kind of engineering work somebody wants to do with us.
+enum TalentDiscipline {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+  MOBILE
+  DEVOPS
+  DATA
+  QA
+  UI_UX
+  OTHER
+}
+
 enum ResumeStatus {
   /// Received, nobody has read it yet.
   RECEIVED
@@ -902,6 +1078,25 @@ model ResumeSubmission {
   /// Anything they want to say that the CV does not.
   coverNote String? @map("cover_note")
 
+  // ---- Programme -----------------------------------------------------------
+  //
+  // Empty for an ordinary job CV. Filled in by the volunteer and internship
+  // form, which asks what a placement actually turns on: what kind of work,
+  // how many hours, from when, for how long.
+  track          TalentTrack         @default(JOB)
+  discipline     TalentDiscipline?
+  hoursPerWeek   Int?                @map("hours_per_week")
+  availableFrom  DateTime?           @map("available_from")
+  durationMonths Int?                @map("duration_months")
+  arrangement    JobWorkArrangement?
+  /// Where they study or studied, and what — interns are usually students.
+  university     String?
+  fieldOfStudy   String?             @map("field_of_study")
+  skills         String[]            @default([])
+  githubUrl      String?             @map("github_url")
+  portfolioUrl   String?             @map("portfolio_url")
+  linkedinUrl    String?             @map("linkedin_url")
+
   // ---- The file ----------------------------------------------------------
   //
   // Exactly one, stored the same way project attachments are: outside any
@@ -930,6 +1125,7 @@ model ResumeSubmission {
   @@index([createdAt])
   @@index([identityId])
   @@index([assignedToId])
+  @@index([track, status])
   @@map("resume_submissions")
 }
 
@@ -1435,11 +1631,11 @@ model MarketplaceAward {
   milestones MarketplaceMilestone[]
   reviews    MarketplaceReview[]
 
-  disputeStatus DisputeStatus @default(NONE) @map("dispute_status")
-  disputeReason String?       @map("dispute_reason")
-  disputeOpenedAt     DateTime? @map("dispute_opened_at")
-  disputeResolvedAt   DateTime? @map("dispute_resolved_at")
-  disputeResolutionNote String? @map("dispute_resolution_note")
+  disputeStatus         DisputeStatus @default(NONE) @map("dispute_status")
+  disputeReason         String?       @map("dispute_reason")
+  disputeOpenedAt       DateTime?     @map("dispute_opened_at")
+  disputeResolvedAt     DateTime?     @map("dispute_resolved_at")
+  disputeResolutionNote String?       @map("dispute_resolution_note")
 
   createdAt DateTime @default(now()) @map("createdAt")
 
@@ -1487,7 +1683,7 @@ model Notification {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type String
+  type  String
   /// Pre-rendered display text in Persian; the client treats these as opaque.
   title String
   body  String
@@ -1547,15 +1743,15 @@ model MarketplaceMilestone {
 
   status MilestoneStatus @default(PENDING)
 
-  deliveryNote    String?   @map("delivery_note")
-  deliveredAt     DateTime? @map("delivered_at")
+  deliveryNote         String?   @map("delivery_note")
+  deliveredAt          DateTime? @map("delivered_at")
   /// One optional supporting file, stored exactly like a bid attachment:
   /// generated name, sniffed type, never under a served directory.
-  deliveryOriginalName String? @map("delivery_original_name")
-  deliveryStoredName   String? @unique @map("delivery_stored_name")
-  deliveryMimeType     String? @map("delivery_mime_type")
-  deliverySizeBytes    Int?    @map("delivery_size_bytes")
-  deliveryChecksum     String? @map("delivery_checksum")
+  deliveryOriginalName String?   @map("delivery_original_name")
+  deliveryStoredName   String?   @unique @map("delivery_stored_name")
+  deliveryMimeType     String?   @map("delivery_mime_type")
+  deliverySizeBytes    Int?      @map("delivery_size_bytes")
+  deliveryChecksum     String?   @map("delivery_checksum")
 
   approvedAt   DateTime? @map("approved_at")
   approvedById String?   @map("approved_by_id")

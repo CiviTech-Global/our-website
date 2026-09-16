@@ -12,7 +12,7 @@ import { requestedDisposition, serveStoredFile } from '../services/file-response
 import * as team from '../services/team.service.js';
 
 /**
- * The public "تیم ما" page, and the super admin's control over it.
+ * The public "تیم ما" page, its sections, and the super admin's control over both.
  *
  * Who appears on the company's own page, in what order, is not a moderation
  * decision that gets delegated per module — it is the company describing
@@ -32,12 +32,18 @@ const memberSchema = z.object({
   name: trimmed(120).min(2, 'نام الزامی است'),
   title: trimmed(160).min(2, 'سمت الزامی است'),
   bio: trimmed(2000).optional(),
-  team: trimmed(80).optional(),
+  // Null takes a member out of their section; absent leaves it as it was.
+  sectionId: z.string().trim().min(1).nullable().optional(),
   email: z.union([z.literal(''), z.string().trim().toLowerCase().email('ایمیل معتبر نیست')]).optional(),
   linkedin: optionalUrl,
   github: optionalUrl,
   website: optionalUrl,
   published: z.coerce.boolean().optional(),
+});
+
+const sectionSchema = z.object({
+  name: trimmed(120).min(2, 'نام بخش الزامی است'),
+  description: trimmed(500).optional(),
 });
 
 const reorderSchema = z.object({
@@ -113,6 +119,24 @@ router.get(
 
 router.use(authenticate, authorize('SUPER_ADMIN'));
 
+/**
+ * The same portrait for staff, published or not — so a photograph can be
+ * checked before the member it belongs to goes live. Fetched as a blob by the
+ * admin page, since an <img> sends no Authorization header.
+ */
+router.get('/admin/photo/:id', async (req, res, next) => {
+  try {
+    const photo = await team.getPhoto(param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(photo.storedName), {
+      mimeType: photo.mimeType,
+      originalName: photo.originalName,
+      disposition: 'inline',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/admin', async (_req, res, next) => {
   try {
     successResponse(res, await team.listAll());
@@ -146,6 +170,47 @@ router.post('/admin/reorder', validate(reorderSchema), async (req, res, next) =>
   try {
     await team.reorder(req.body.ids as string[]);
     successResponse(res, { ok: true }, 'ترتیب ذخیره شد.');
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- Sections --------------------------------------------------------------
+//
+// Two path segments, so none of these can be captured by the single-segment
+// /admin/:id member routes on either side of them.
+
+router.post('/admin/sections', validate(sectionSchema), async (req, res, next) => {
+  try {
+    successResponse(res, await team.createSection(req.body), 'بخش جدید اضافه شد.', 201);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/admin/sections/reorder', validate(reorderSchema), async (req, res, next) => {
+  try {
+    await team.reorderSections(req.body.ids as string[]);
+    successResponse(res, { ok: true }, 'ترتیب بخش‌ها ذخیره شد.');
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch('/admin/sections/:id', validate(sectionSchema.partial()), async (req, res, next) => {
+  try {
+    successResponse(res, await team.updateSection(param(req, 'id'), req.body), 'بخش به‌روزرسانی شد.');
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/admin/sections/:id', async (req, res, next) => {
+  try {
+    await team.removeSection(param(req, 'id'));
+    // Members stay: the foreign key is SetNull. Saying so here is what stops
+    // the person who clicked delete from worrying that it took people with it.
+    successResponse(res, { ok: true }, 'بخش حذف شد. اعضای آن بدون بخش در صفحه باقی ماندند.');
   } catch (error) {
     next(error);
   }

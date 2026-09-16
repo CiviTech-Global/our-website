@@ -16,6 +16,7 @@ import * as resumeService from '../services/resume-submission.service.js';
 import {
   resumeAllowanceSchema,
   resumeSubmissionSchema,
+  resumeTrackSchema,
   updateResumeStatusSchema,
 } from '../validators/resume.schema.js';
 
@@ -101,8 +102,8 @@ router.post(
   validate(resumeAllowanceSchema),
   async (req, res, next) => {
     try {
-      const { email } = req.body as z.infer<typeof resumeAllowanceSchema>;
-      successResponse(res, await resumeService.describeResumeAllowance(email));
+      const { email, track } = req.body as z.infer<typeof resumeAllowanceSchema>;
+      successResponse(res, await resumeService.describeResumeAllowance(email, track));
     } catch (error) {
       next(error);
     }
@@ -128,8 +129,14 @@ router.get('/admin', async (req, res, next) => {
   try {
     const page = Math.max(1, Number(req.query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize ?? 20)));
-    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-    const where = status ? { status: status as never } : {};
+    // Parsed, not cast: an unknown value here used to reach Prisma as an enum
+    // it could not match, which is a 500 for what is really a bad query string.
+    const status = updateResumeStatusSchema.shape.status.safeParse(req.query.status);
+    const track = resumeTrackSchema.safeParse(req.query.track);
+    const where = {
+      ...(status.success ? { status: status.data } : {}),
+      ...(track.success ? { track: track.data } : {}),
+    };
 
     const [items, total] = await Promise.all([
       prisma.resumeSubmission.findMany({
@@ -142,6 +149,9 @@ router.get('/admin', async (req, res, next) => {
           trackingCode: true,
           fullName: true,
           city: true,
+          track: true,
+          discipline: true,
+          hoursPerWeek: true,
           status: true,
           matchedRole: true,
           createdAt: true,

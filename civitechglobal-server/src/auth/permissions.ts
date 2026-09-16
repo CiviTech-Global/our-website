@@ -51,6 +51,14 @@ export const PERMISSIONS = {
    * are different judgements and usually different desks.
    */
   marketplaceOps: 'marketplace-ops',
+
+  /**
+   * The company's showcase: the customers club, the partners page and the
+   * projects page. Grantable, unlike the team page — keeping a logo list and a
+   * portfolio current is ordinary editorial work that a super admin may well
+   * hand to marketing, whereas who represents the company as its people is not.
+   */
+  showcase: 'showcase',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

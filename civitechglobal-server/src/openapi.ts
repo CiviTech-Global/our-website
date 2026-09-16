@@ -34,6 +34,7 @@ export const openApiDocument = {
     { name: 'Intake', description: 'Submissions from the public site.' },
     { name: 'Tracking', description: 'Status by quotable reference code.' },
     { name: 'Telemetry', description: 'Browser error reports.' },
+    { name: 'Showcase', description: 'The team, customers, partners and projects pages. Cacheable.' },
     {
       name: 'Marketplace',
       description:
@@ -284,6 +285,45 @@ export const openApiDocument = {
           200: { $ref: '#/components/responses/Ok' },
           404: { $ref: '#/components/responses/NotFound' },
         },
+      },
+    },
+    '/team': {
+      get: {
+        tags: ['Showcase'],
+        summary: 'The team page',
+        description:
+          'Published members, arranged: `sections` in their order, each with its members, then ' +
+          '`unsectioned`. Sections with nobody published are omitted. Photographs are API paths.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
+    '/showcase/customers': {
+      get: {
+        tags: ['Showcase'],
+        summary: 'The customers club',
+        description:
+          'Published customers: current before former, featured first within each. `logoUrl` is an ' +
+          'API path; `projectCount` counts only published projects.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
+    '/showcase/partners': {
+      get: {
+        tags: ['Showcase'],
+        summary: 'Partners',
+        description: 'Published partners, ordered as customers are, with a `partnershipType`.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
+      },
+    },
+    '/showcase/projects': {
+      get: {
+        tags: ['Showcase'],
+        summary: 'Our projects',
+        description:
+          'Published projects, featured first. `filter=current` (planning, in progress, maintained) ' +
+          'or `filter=completed` (launched, archived). A client is named only while its own ' +
+          'listing is published.',
+        responses: { 200: { $ref: '#/components/responses/Ok' } },
       },
     },
     '/i18n/detect': {

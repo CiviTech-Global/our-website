@@ -32,12 +32,46 @@ export const resumeSubmissionSchema = z.object({
     .optional(),
 
   coverNote: trimmed(3000).optional(),
+
+  // ---- Programme ----------------------------------------------------------
+  //
+  // Absent for a job CV. The volunteer and internship form sends the track and
+  // the questions a placement turns on; refine() below makes the ones that
+  // matter required for those two tracks only.
+  track: z.enum(['JOB', 'VOLUNTEER', 'INTERNSHIP']).default('JOB'),
+  discipline: z
+    .enum(['FRONTEND', 'BACKEND', 'FULLSTACK', 'MOBILE', 'DEVOPS', 'DATA', 'QA', 'UI_UX', 'OTHER'])
+    .optional(),
+  // A week has 168 hours; anything claiming more than a full-time week is a typo.
+  hoursPerWeek: z.number().int().min(1, 'ساعت در هفته معتبر نیست').max(60, 'ساعت در هفته معتبر نیست').optional(),
+  availableFrom: z.coerce.date().optional(),
+  durationMonths: z.number().int().min(1).max(24).optional(),
+  arrangement: z.enum(['ONSITE', 'HYBRID', 'REMOTE']).optional(),
+  university: trimmed(160).optional(),
+  fieldOfStudy: trimmed(160).optional(),
+  skills: z.array(trimmed(40).min(1)).max(30).optional(),
+  githubUrl: z.string().trim().url('نشانی معتبر نیست').max(300).optional(),
+  portfolioUrl: z.string().trim().url('نشانی معتبر نیست').max(300).optional(),
+  linkedinUrl: z.string().trim().url('نشانی معتبر نیست').max(300).optional(),
+}).superRefine((value, ctx) => {
+  if (value.track === 'JOB') return;
+  // The two answers a placement cannot be planned without. Everything else is
+  // helpful, and asking for it as mandatory would lose applicants who have not
+  // decided yet how many months they can give.
+  if (!value.discipline) {
+    ctx.addIssue({ code: 'custom', path: ['discipline'], message: 'زمینهٔ فعالیت را انتخاب کنید' });
+  }
+  if (!value.hoursPerWeek) {
+    ctx.addIssue({ code: 'custom', path: ['hoursPerWeek'], message: 'تعداد ساعت در هفته را وارد کنید' });
+  }
 });
 
 export type ResumeSubmissionPayload = z.infer<typeof resumeSubmissionSchema>;
 
 export const resumeAllowanceSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
+  // The allowance is per track, so the question has to name one.
+  track: z.enum(['JOB', 'VOLUNTEER', 'INTERNSHIP']).default('JOB'),
 });
 
 export const updateResumeStatusSchema = z.object({
@@ -60,3 +94,5 @@ export const updateResumeStatusSchema = z.object({
    */
   assignedToId: z.string().trim().min(1).nullable().optional(),
 });
+
+export const resumeTrackSchema = z.enum(['JOB', 'VOLUNTEER', 'INTERNSHIP']);
