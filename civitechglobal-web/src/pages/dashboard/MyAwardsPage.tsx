@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import type { Locale } from '@/i18n/locales';
 import { Link } from 'react-router';
@@ -44,8 +45,8 @@ export default function MyAwardsPage() {
   const { data, isLoading } = useMyAwards();
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-page font-semibold text-app-text">{t.market.myAwards}</h1>
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.myAwards} description={t.app.memberDescriptions.myAwards} className="mb-2" />
 
       {isLoading && (
         <div className="flex justify-center py-16">

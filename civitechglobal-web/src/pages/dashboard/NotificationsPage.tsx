@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import type { Locale } from '@/i18n/locales';
 import { Link } from 'react-router';
@@ -30,20 +31,20 @@ export default function NotificationsPage() {
   const markAll = useMarkAllNotificationsRead();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-page font-semibold text-app-text">{t.market.notificationsNav}</h1>
-        {data && data.unreadCount > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            isLoading={markAll.isPending}
-            onClick={() => markAll.mutate()}
-          >
-            {t.market.markAllRead}
-          </Button>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.market.notificationsNav}
+        description={t.app.memberDescriptions.notifications}
+        className="mb-2"
+        actions={
+          data &&
+          data.unreadCount > 0 && (
+            <Button variant="outline" isLoading={markAll.isPending} onClick={() => markAll.mutate()}>
+              {t.market.markAllRead}
+            </Button>
+          )
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">

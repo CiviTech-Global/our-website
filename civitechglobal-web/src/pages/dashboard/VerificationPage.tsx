@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useOwnVerification, useSubmitVerification } from '@/api/marketplace';
@@ -148,11 +149,8 @@ export default function VerificationPage() {
   }
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <div>
-        <h1 className="text-page font-semibold text-app-text">{t.market.verificationTitle}</h1>
-        <p className="mt-1 text-body text-app-text-3">{t.market.verificationIntro}</p>
-      </div>
+    <div className="flex max-w-3xl flex-col gap-4">
+      <PageHeader title={t.market.verificationTitle} description={t.market.verificationIntro} className="mb-2" />
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">

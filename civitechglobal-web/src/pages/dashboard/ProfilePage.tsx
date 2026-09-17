@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useNavigate } from 'react-router';
 import { LogOut } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -47,7 +48,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-3xl">
+      <PageHeader title={t.dashboard.profile} description={t.app.memberDescriptions.profile} />
       <AnimatedSection>
         <Card>
           <CardHeader>

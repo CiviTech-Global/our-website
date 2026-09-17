@@ -1,201 +1,296 @@
 import { Link } from 'react-router';
 import {
-  ArrowLeft,
+  Briefcase,
   CheckCircle2,
-  CircleUserRound,
+  ChevronRight,
+  Circle,
+  Clock,
   Code2,
+  Eye,
+  FileText,
+  Gavel,
+  Handshake,
   MailWarning,
+  MessagesSquare,
   PackageSearch,
-  ShieldCheck,
   UserPlus,
 } from 'lucide-react';
 import { useSendVerificationEmail } from '@/api/accountRecovery';
-import { isApiError } from '@/config/api';
 import { useOwnMarketplaceStats, useOwnVerification } from '@/api/marketplace';
-import { useToast } from '@/contexts/ToastContext';
-import { Button } from '@/components/ui/Button';
-import { useLocale } from '@/i18n/LocaleProvider';
-import { useDocumentTitle } from '@/lib/documentTitle';
+import { isApiError } from '@/config/api';
 import { useAuth } from '@/contexts/AuthProvider';
-import { Card } from '@/components/ui/Card';
+import { useToast } from '@/contexts/ToastContext';
+import { useLocale } from '@/i18n/LocaleProvider';
+import { toPersianDigits } from '@/i18n/utils';
+import { useDocumentTitle } from '@/lib/documentTitle';
+import { PageHeader } from '@/components/app/PageHeader';
+import { DetailList, Panel } from '@/components/app/Panel';
+import { StatCard, StatGrid } from '@/components/app/StatCard';
 import { Badge } from '@/components/ui/Badge';
-import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
 
+type StepState = 'done' | 'pending' | 'todo';
+
+interface SetupStep {
+  id: string;
+  label: string;
+  state: StepState;
+  to?: string;
+}
+
+/**
+ * The member home.
+ *
+ * Built on the same pattern as the admin home so the two panels read as one
+ * product: a row of figures that each open the screen they summarise, then a
+ * main column and a side column of panels.
+ *
+ * The profile-completion bar, "account status: active" and "role" cards this
+ * replaced each answered a question nobody arrives asking. "Getting set up"
+ * answers the one they do — what do I still need to do before I can use the
+ * marketplace — as a checklist with a link beside each open step. Once every
+ * step is done the panel is not shown at all: a finished checklist is noise.
+ */
 export default function DashboardPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { showToast } = useToast();
   const sendVerification = useSendVerificationEmail();
   useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
-  const { data: stats } = useOwnMarketplaceStats(Boolean(user));
+  const { data: stats, isLoading: statsLoading } = useOwnMarketplaceStats(Boolean(user));
   const { data: verification } = useOwnVerification(Boolean(user));
 
-  const hasPhone = Boolean(user?.phone);
-  const completion = hasPhone ? 100 : 66;
+  const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : value.toLocaleString('en'));
+
+  const steps: SetupStep[] = [
+    {
+      id: 'phone',
+      label: t.app.setupPhone,
+      state: user?.phone ? 'done' : 'todo',
+      to: '/dashboard/profile',
+    },
+    {
+      id: 'email',
+      label: t.app.setupEmail,
+      // Undefined means the server does not report it; not a step we can show.
+      state: user?.emailVerified === false ? 'todo' : 'done',
+    },
+    {
+      id: 'identity',
+      label: t.app.setupIdentity,
+      state:
+        verification?.status === 'APPROVED'
+          ? 'done'
+          : verification?.status === 'PENDING'
+            ? 'pending'
+            : 'todo',
+      to: '/dashboard/verification',
+    },
+  ];
+  const doneCount = steps.filter((step) => step.state === 'done').length;
+
+  const greeting = user
+    ? `${t.dashboard.welcome}${locale === 'fa' ? '،' : ','} ${user.firstName}`
+    : t.dashboard.welcome;
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <AnimatedSection>
-        <h1 className="text-page font-semibold text-app-text">
-          {t.dashboard.welcome}, {user?.firstName}
-        </h1>
-      </AnimatedSection>
+    <div>
+      <PageHeader
+        title={greeting}
+        description={t.app.memberOverviewDescription}
+        summary={
+          <StatGrid columns={5}>
+            <StatCard
+              label={t.meStats.listings}
+              value={stats?.listings.total}
+              loading={statsLoading}
+              icon={Briefcase}
+              to="/dashboard/jobs"
+              hint={
+                stats && (
+                  <span className="inline-flex items-center gap-1">
+                    <Eye className="size-3" aria-hidden="true" />
+                    {number(stats.listings.views)}
+                  </span>
+                )
+              }
+            />
+            <StatCard
+              label={t.meStats.applications}
+              value={stats?.applications.total}
+              loading={statsLoading}
+              icon={FileText}
+              to="/dashboard/applications"
+            />
+            <StatCard
+              label={t.meStats.bids}
+              value={stats?.bids.total}
+              loading={statsLoading}
+              icon={Gavel}
+              to="/dashboard/bids"
+            />
+            <StatCard
+              label={t.meStats.wonAwards}
+              value={stats?.awards.won}
+              loading={statsLoading}
+              icon={Handshake}
+              to="/dashboard/awards"
+              tone="positive"
+            />
+            <StatCard
+              label={t.meStats.unreadMessages}
+              value={stats ? stats.unread.messages + stats.unread.notifications : undefined}
+              loading={statsLoading}
+              icon={MessagesSquare}
+              to="/dashboard/messages"
+              tone={stats && stats.unread.messages + stats.unread.notifications > 0 ? 'attention' : 'neutral'}
+            />
+          </StatGrid>
+        }
+      />
 
       {/* Only while it matters. A banner that stays after the thing is done is
           how people learn to stop reading banners. */}
       {user?.emailVerified === false && (
-        <AnimatedSection delay={0.02} className="mt-6">
-          <Card className="flex flex-wrap items-center gap-3 border-status-warning-border">
-            <MailWarning
-              className="size-5 shrink-0 text-status-warning"
-              aria-hidden="true"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-body font-medium text-app-text">{t.auth.verifyBannerTitle}</p>
-              <p className="mt-0.5 text-body text-app-text-3">{t.auth.verifyBannerBody}</p>
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              isLoading={sendVerification.isPending}
-              onClick={async () => {
-                try {
-                  await sendVerification.mutateAsync();
-                  showToast(t.auth.verifyBannerSent, 'success');
-                } catch (error) {
-                  // The server explains a 501 here by naming the contact form,
-                  // which is more use than "something went wrong".
-                  showToast(
-                    isApiError(error) ? error.message : t.common.error,
-                    'error'
-                  );
-                }
-              }}
-            >
-              {t.auth.verifyBannerAction}
-            </Button>
-          </Card>
-        </AnimatedSection>
-      )}
-
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <AnimatedSection delay={0.05}>
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <CircleUserRound className="size-6 text-app-primary" aria-hidden="true" />
-              <span className="text-body font-medium text-app-text-3">{completion}%</span>
-            </div>
-            <p className="text-body font-medium text-app-text">{t.dashboard.profileCompletionTitle}</p>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-app-fill">
-              <div
-                className="h-full rounded-full bg-app-primary transition-all"
-                style={{ width: `${completion}%` }}
-              />
-            </div>
-          </Card>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.1}>
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <CheckCircle2 className="size-6 text-app-primary" aria-hidden="true" />
-              <Badge variant="success">{t.dashboard.accountStatusActive}</Badge>
-            </div>
-            <p className="text-body font-medium text-app-text">{t.dashboard.accountStatusTitle}</p>
-          </Card>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.15}>
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <ShieldCheck className="size-6 text-status-warning" aria-hidden="true" />
-              <Badge variant="info">{user?.role}</Badge>
-            </div>
-            <p className="text-body font-medium text-app-text">{t.dashboard.roleTitle}</p>
-          </Card>
-        </AnimatedSection>
-      </div>
-
-      {stats && (
-        <AnimatedSection delay={0.18} className="mt-8">
-          <h2 className="text-title-sm font-semibold text-app-text">{t.meStats.sectionTitle}</h2>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <StatLink to="/dashboard/jobs" label={t.meStats.listings} value={stats.listings.total} />
-            <StatLink to="/dashboard/jobs" label={t.meStats.views} value={stats.listings.views} />
-            <StatLink to="/dashboard/applications" label={t.meStats.applications} value={stats.applications.total} />
-            <StatLink to="/dashboard/bids" label={t.meStats.bids} value={stats.bids.total} />
-            <StatLink to="/dashboard/awards" label={t.meStats.wonAwards} value={stats.awards.won} />
-            <StatLink
-              to="/dashboard/messages"
-              label={t.meStats.unreadMessages}
-              value={stats.unread.messages + stats.unread.notifications}
-            />
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded border border-status-warning-border bg-status-warning-bg px-4 py-3">
+          <MailWarning className="size-5 shrink-0 text-status-warning" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="text-body font-medium text-app-text">{t.auth.verifyBannerTitle}</p>
+            <p className="text-body text-app-text-3">{t.auth.verifyBannerBody}</p>
           </div>
-        </AnimatedSection>
-      )}
-
-      {verification && verification.status !== 'APPROVED' && (
-        <AnimatedSection delay={0.19} className="mt-6">
-          <Card className="flex flex-wrap items-center gap-3 border-status-warning-border">
-            <ShieldCheck className="size-5 shrink-0 text-status-warning" aria-hidden="true" />
-            <p className="min-w-0 flex-1 text-body text-app-text-3">{t.meStats.verificationNudge}</p>
-            <Link to="/dashboard/verification">
-              <Button type="button" variant="secondary">
-                {t.market.verificationTitle}
-              </Button>
-            </Link>
-          </Card>
-        </AnimatedSection>
-      )}
-
-      {/* Submissions are tracked by code, not tied to an account, so there is no
-          list of "your requests" to show here. Links to the things an account
-          holder actually came to do are more use than an empty table. */}
-      <AnimatedSection delay={0.2} className="mt-8">
-        <h2 className="text-title-sm font-semibold text-app-text">{t.dashboard.quickActions}</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <QuickAction
-            to="/start-project"
-            icon={<Code2 className="size-5" aria-hidden="true" />}
-            label={t.nav.startProject}
-          />
-          <QuickAction
-            to="/join"
-            icon={<UserPlus className="size-5" aria-hidden="true" />}
-            label={t.join.title}
-          />
-          <QuickAction
-            to="/track"
-            icon={<PackageSearch className="size-5" aria-hidden="true" />}
-            label={t.nav.track}
-          />
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={sendVerification.isPending}
+            onClick={async () => {
+              try {
+                await sendVerification.mutateAsync();
+                showToast(t.auth.verifyBannerSent, 'success');
+              } catch (error) {
+                // The server explains a 501 here by naming the contact form,
+                // which is more use than "something went wrong".
+                showToast(isApiError(error) ? error.message : t.common.error, 'error');
+              }
+            }}
+          >
+            {t.auth.verifyBannerAction}
+          </Button>
         </div>
-      </AnimatedSection>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
+          {doneCount < steps.length && (
+            <Panel
+              title={t.app.setupTitle}
+              actions={
+                <span className="text-label text-app-text-3">
+                  {t.app.setupProgress
+                    .replace('{done}', number(doneCount))
+                    .replace('{total}', number(steps.length))}
+                </span>
+              }
+              flush
+            >
+              {/* A thin progress rule under the header: the checklist below is
+                the detail, this is the glance. */}
+              <div className="h-1 bg-app-fill" aria-hidden="true">
+                <div
+                  className="h-full bg-app-primary transition-[width]"
+                  style={{ width: `${(doneCount / steps.length) * 100}%` }}
+                />
+              </div>
+              <ol className="divide-y divide-app-border-light">
+                {steps.map((step) => (
+                  <li key={step.id} className="flex items-center gap-3 px-4 py-3">
+                    <StepIcon state={step.state} />
+                    <span
+                      className={cn(
+                        'min-w-0 flex-1 text-body',
+                        step.state === 'done'
+                          ? 'text-app-text-3 line-through decoration-app-text-4'
+                          : 'text-app-text'
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                    {step.state === 'done' && <Badge variant="success">{t.app.setupDone}</Badge>}
+                    {step.state === 'pending' && <Badge variant="warning">{t.app.setupPending}</Badge>}
+                    {step.state === 'todo' && step.to && (
+                      <Link to={step.to}>
+                        <Button variant="outline" size="sm">
+                          {t.app.setupAction}
+                        </Button>
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </Panel>
+          )}
+
+          <Panel title={t.dashboard.quickActions} flush>
+            <ul className="grid grid-cols-1 divide-y divide-app-border-light sm:grid-cols-3 sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse">
+              <QuickAction to="/start-project" icon={<Code2 />} label={t.nav.startProject} />
+              <QuickAction to="/join" icon={<UserPlus />} label={t.join.title} />
+              <QuickAction to="/track" icon={<PackageSearch />} label={t.nav.track} />
+            </ul>
+          </Panel>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-4">
+          <Panel title={t.app.accountTitle} viewAll={{ to: '/dashboard/profile', label: t.nav.profile }}>
+            <DetailList
+              columns={2}
+              items={[
+                {
+                  label: t.admin.fullName,
+                  value: user ? `${user.firstName} ${user.lastName}` : null,
+                  wide: true,
+                },
+                { label: t.auth.email, value: user ? <span dir="ltr">{user.email}</span> : null, wide: true },
+                { label: t.dashboard.roleTitle, value: user ? t.app.roles[user.role] : null },
+                {
+                  label: t.dashboard.accountStatusTitle,
+                  value: (
+                    <Badge variant="success" dot>
+                      {t.dashboard.accountStatusActive}
+                    </Badge>
+                  ),
+                },
+              ]}
+            />
+          </Panel>
+        </div>
+      </div>
     </div>
   );
 }
 
-function StatLink({ to, label, value }: { to: string; label: string; value: number }) {
-  return (
-    <Link to={to} className="block transition-transform hover:-translate-y-0.5">
-      <Card className="flex h-full flex-col gap-1">
-        <span className="text-title font-semibold text-app-text">{value}</span>
-        <span className="text-label text-app-text-3">{label}</span>
-      </Card>
-    </Link>
-  );
+function StepIcon({ state }: { state: StepState }) {
+  if (state === 'done') {
+    return <CheckCircle2 className="size-5 shrink-0 text-status-success" aria-hidden="true" />;
+  }
+  if (state === 'pending') {
+    return <Clock className="size-5 shrink-0 text-status-warning" aria-hidden="true" />;
+  }
+  return <Circle className="size-5 shrink-0 text-app-text-4" aria-hidden="true" />;
 }
 
 function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
   return (
-    <Link to={to} className="block rounded transition-transform hover:-translate-y-0.5">
-      <Card className="flex h-full items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded bg-app-primary-soft text-app-primary">
+    <li>
+      <Link
+        to={to}
+        className="group flex h-full items-center gap-3 px-4 py-3.5 hover:bg-app-hover focus-visible:bg-app-hover focus-visible:outline-none"
+      >
+        <span className="flex size-8 shrink-0 items-center justify-center rounded border border-app-border-light bg-app-subtle text-app-icon [&_svg]:size-4 group-hover:text-app-primary">
           {icon}
         </span>
         <span className="min-w-0 flex-1 truncate text-body font-medium text-app-text">{label}</span>
-        <ArrowLeft className="size-4 shrink-0 text-app-text-4 ltr:rotate-180" aria-hidden="true" />
-      </Card>
-    </Link>
+        <ChevronRight className="size-4 shrink-0 text-app-text-4 rtl:rotate-180" aria-hidden="true" />
+      </Link>
+    </li>
   );
 }

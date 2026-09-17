@@ -1,7 +1,8 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import type { Locale } from '@/i18n/locales';
-import { useParams, useNavigate } from 'react-router';
-import { AlertTriangle, ArrowRight, ArrowLeft, Globe, Send } from 'lucide-react';
+import { useParams } from 'react-router';
+import { AlertTriangle, Globe, Send } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import {
@@ -13,7 +14,7 @@ import {
 import { useAdminUsers } from '@/api/admin';
 import { apiMessage } from '@/lib/apiMessage';
 import { useToast } from '@/contexts/ToastContext';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -26,7 +27,6 @@ import type { LeadStatus } from '@/types/requests';
 export default function RequestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, locale } = useLocale();
-  const navigate = useNavigate();
   const { showToast } = useToast();
   const { data: detail, isLoading, isError } = useRequest(id);
   const updateStatus = useUpdateRequestStatus(id ?? '');
@@ -34,7 +34,6 @@ export default function RequestDetailPage() {
   const scheduleCallback = useScheduleCallback(id ?? '');
   const { data: users } = useAdminUsers(1, 100);
   const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
-  const BackIcon = locale === 'fa' ? ArrowRight : ArrowLeft;
 
   if (isLoading) {
     return (
@@ -85,34 +84,22 @@ export default function RequestDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <button
-        type="button"
-        onClick={() => navigate('/admin/requests')}
-        className="mb-4 inline-flex items-center gap-1.5 text-body text-app-text-3 hover:text-app-text"
-      >
-        <BackIcon className="size-4" aria-hidden="true" />
-        {t.common.back}
-      </button>
-
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>{request.fullName}</CardTitle>
-          <div className="flex items-center gap-2">
+    <div className="max-w-4xl">
+      <PageHeader
+        title={request.fullName}
+        titleAdornment={
+          <>
+            <Badge variant={leadStatusBadgeVariant(request.status)}>{leadStatusLabel(t, request.status)}</Badge>
             <Badge variant="default">
-              {request.source === 'WEB' ? (
-                <Globe className="me-1 size-3" aria-hidden="true" />
-              ) : (
-                <Send className="me-1 size-3" aria-hidden="true" />
-              )}
+              {request.source === 'WEB' ? <Globe aria-hidden="true" /> : <Send aria-hidden="true" />}
               {request.source === 'WEB' ? t.admin.sourceWeb : t.admin.sourceTelegram}
             </Badge>
-            <Badge variant={leadStatusBadgeVariant(request.status)}>
-              {leadStatusLabel(t, request.status)}
-            </Badge>
-          </div>
-        </CardHeader>
+          </>
+        }
+        description={<span className="ltr font-mono">{request.trackingCode}</span>}
+      />
 
+      <Card>
         <div className="mb-6 rounded border border-app-border-light bg-app-subtle p-4">
           <p className="text-label text-app-text-4">{categoryLabel ?? t.admin.category}</p>
           <p className="mt-0.5 text-body-lg font-semibold text-app-text">

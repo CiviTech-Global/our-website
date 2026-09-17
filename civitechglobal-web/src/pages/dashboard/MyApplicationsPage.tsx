@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { useOwnApplications, useReviseApplication } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -33,8 +34,8 @@ export default function MyApplicationsPage() {
   const [revising, setRevising] = useState<OwnApplication | null>(null);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-page font-semibold text-app-text">{t.market.myApplications}</h1>
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.myApplications} description={t.app.memberDescriptions.myApplications} className="mb-2" />
 
       {isLoading && (
         <div className="flex justify-center py-16">

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
-import { ArrivalsChart, niceCeiling } from './ArrivalsChart';
+import { ArrivalsChart } from './ArrivalsChart';
+import { niceCeiling } from './chart-scale';
 
 describe('niceCeiling', () => {
   it('rounds the busiest day up to a clean axis value', () => {

@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/app/PageHeader';
+import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import { Eye } from 'lucide-react';
 import {
@@ -18,7 +20,6 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FilePreview } from '@/components/ui/FilePreview';
 import { Pagination } from '@/components/ui/Pagination';
-import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import type { VerificationStatus } from '@/types/marketplace';
 
@@ -43,26 +44,20 @@ export default function VerificationQueuePage() {
   const { data, isLoading } = useVerificationQueue({ page, pageSize: PAGE_SIZE, status });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-page font-semibold text-app-text">{t.market.queueVerifications}</h1>
-        <Select
-          className="w-auto"
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.queueVerifications} description={t.app.queueDescriptions.verification} className="mb-2" />
+      <Toolbar>
+        <SegmentedControl<VerificationStatus>
+          label={t.app.filterByStatus}
           value={status}
-          aria-label={t.market.verificationStatus}
-          onChange={(e) => {
-            setStatus(e.target.value as VerificationStatus);
+          segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
+          onChange={(value) => {
+            setStatus(value);
             setPage(1);
             setOpenId(null);
           }}
-        >
-          {STATUSES.map((value) => (
-            <option key={value} value={value}>
-              {t.market[value]}
-            </option>
-          ))}
-        </Select>
-      </div>
+        />
+      </Toolbar>
 
       {isLoading && (
         <div className="flex justify-center py-16">

@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/app/PageHeader';
+import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import type { Paged } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -13,7 +15,6 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
-import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
 
@@ -95,32 +96,28 @@ export default function MessagesPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-page font-semibold text-app-text">{t.contact.inboxTitle}</h1>
-          <p className="mt-1 text-body text-app-text-3">
-            {t.contact.inboxSubtitle}
-            {data && data.open > 0 && ` · ${data.open} ${t.contact.statuses.OPEN}`}
-          </p>
-        </div>
-        <Select
-          className="w-auto"
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.contact.inboxTitle} description={t.contact.inboxSubtitle} className="mb-2" />
+      <Toolbar>
+        <SegmentedControl<TicketStatus | 'ALL'>
+          label={t.app.filterByStatus}
           value={status}
-          aria-label={t.admin.status}
-          onChange={(e) => {
-            setStatus(e.target.value as TicketStatus | 'ALL');
+          onChange={(value) => {
+            setStatus(value);
             setPage(1);
           }}
-        >
-          <option value="ALL">{t.contact.filterAll}</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {t.contact.statuses[s]}
-            </option>
-          ))}
-        </Select>
-      </div>
+          segments={[
+            { value: 'ALL', label: t.contact.filterAll },
+            // The open count rides on its own filter, where the reader looks
+            // for it, rather than trailing the page description.
+            ...STATUSES.map((s) => ({
+              value: s,
+              label: t.contact.statuses[s],
+              count: s === 'OPEN' && data && data.open > 0 ? data.open : undefined,
+            })),
+          ]}
+        />
+      </Toolbar>
 
       {isLoading && (
         <div className="flex justify-center py-16">

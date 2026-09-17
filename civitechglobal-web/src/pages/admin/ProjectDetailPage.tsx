@@ -1,7 +1,8 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { apiMessage } from '@/lib/apiMessage';
-import { Link, useParams } from 'react-router';
-import { ChevronLeft, Eye, FileText, Paperclip, Send, ShieldAlert } from 'lucide-react';
+import { useParams } from 'react-router';
+import { Eye, FileText, Paperclip, Send, ShieldAlert } from 'lucide-react';
 import {
   projectAttachmentUrl,
   useAdminProject,
@@ -71,61 +72,52 @@ export default function ProjectDetailPage() {
   const draft = data.proposals.find((p) => p.status === 'DRAFT') ?? null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <Link
-        to="/admin/projects"
-        className="inline-flex w-fit items-center gap-1 text-body text-app-text-3 hover:text-app-primary"
-      >
-        <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-        {t.proposal.adminTitle}
-      </Link>
-
-      {/* Header ---------------------------------------------------------- */}
-      <Card>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-title font-semibold text-app-text">{data.title}</h1>
-            <p className="mt-1 text-body text-app-text-4">
-              <span className="ltr font-mono">{data.trackingCode}</span>
-              {' · '}
-              {formatDate(data.createdAt, locale)}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-4">
+      {/* The breadcrumb trail leads back to the list; the header carries the
+          record's identity and the one control that acts on all of it. */}
+      <PageHeader
+        title={data.title}
+        className="mb-2"
+        titleAdornment={
+          <>
+            <Badge variant={projectStatusBadgeVariant(data.status)}>{projectStatusLabel(t, data.status)}</Badge>
             {data.ndaRequired && (
               <Badge variant="warning">
-                <ShieldAlert className="me-1 inline size-3.5" aria-hidden="true" />
+                <ShieldAlert aria-hidden="true" />
                 {t.proposal.ndaRequested}
               </Badge>
             )}
-            <Badge variant={projectStatusBadgeVariant(data.status)}>
-              {projectStatusLabel(t, data.status)}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-wrap items-end gap-3">
-          <FormField label={t.admin.status} htmlFor="status" className="w-52">
-            <Select
-              id="status"
-              value={data.status}
-              onChange={async (e) => {
-                await updateStatus.mutateAsync({
-                  status: e.target.value as ProjectRequestStatus,
-                });
-                showToast(t.admin.statusUpdated, 'success');
-                refetch();
-              }}
-            >
-              {PROJECT_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {projectStatusLabel(t, s)}
-                </option>
-              ))}
-            </Select>
-          </FormField>
-        </div>
-      </Card>
+          </>
+        }
+        description={
+          <>
+            <span className="ltr font-mono">{data.trackingCode}</span>
+            {' · '}
+            {formatDate(data.createdAt, locale)}
+          </>
+        }
+        actions={
+          <Select
+            id="status"
+            aria-label={t.admin.status}
+            className="w-auto min-w-48"
+            value={data.status}
+            onChange={async (e) => {
+              await updateStatus.mutateAsync({
+                status: e.target.value as ProjectRequestStatus,
+              });
+              showToast(t.admin.statusUpdated, 'success');
+              refetch();
+            }}
+          >
+            {PROJECT_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {projectStatusLabel(t, s)}
+              </option>
+            ))}
+          </Select>
+        }
+      />
 
       {/* Contact and identity -------------------------------------------- */}
       <Card>

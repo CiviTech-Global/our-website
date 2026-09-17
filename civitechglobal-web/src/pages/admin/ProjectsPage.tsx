@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Paperclip } from 'lucide-react';
@@ -105,29 +106,30 @@ export default function ProjectsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-page font-semibold text-app-text">{t.proposal.adminTitle}</h1>
-          <p className="mt-1 text-body text-app-text-3">{t.proposal.adminSubtitle}</p>
-        </div>
-        <Select
-          value={status}
-          className="w-auto"
-          aria-label={t.admin.status}
-          onChange={(e) => {
-            setStatus(e.target.value as ProjectRequestStatus | 'ALL');
-            setPage(1);
-          }}
-        >
-          <option value="ALL">{t.common.all}</option>
-          {PROJECT_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {projectStatusLabel(t, s)}
-            </option>
-          ))}
-        </Select>
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.proposal.adminTitle}
+        description={t.proposal.adminSubtitle}
+        className="mb-2"
+        actions={
+          <Select
+            value={status}
+            className="w-auto min-w-44"
+            aria-label={t.admin.status}
+            onChange={(e) => {
+              setStatus(e.target.value as ProjectRequestStatus | 'ALL');
+              setPage(1);
+            }}
+          >
+            <option value="ALL">{t.common.all}</option>
+            {PROJECT_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {projectStatusLabel(t, s)}
+              </option>
+            ))}
+          </Select>
+        }
+      />
 
       <Card className="p-0">
         <Table

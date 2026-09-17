@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { Building2 } from 'lucide-react';
 import { useBidQueue, useReviewBid } from '@/api/marketplace';
@@ -39,11 +40,8 @@ export default function BidQueuePage() {
   const days = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-page font-semibold text-app-text">{t.market.queueBids}</h1>
-        <p className="mt-1 text-body text-app-text-3">{t.market.fairnessHint}</p>
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.queueBids} description={t.market.fairnessHint} className="mb-2" />
 
       {isLoading && (
         <div className="flex justify-center py-16">

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { ShieldCheck, UserPlus, Users as UsersIcon } from 'lucide-react';
 import {
@@ -63,19 +64,20 @@ export default function UsersPage() {
   const total = data?.total ?? 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-page font-semibold text-app-text">{t.admin.users}</h1>
-          <p className="mt-1 text-body text-app-text-3">{t.access.pageSubtitle}</p>
-        </div>
-        {isSuperAdmin && (
-          <Button type="button" onClick={() => setCreating((open) => !open)}>
-            <UserPlus className="size-4" />
-            {t.access.newAdmin}
-          </Button>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.admin.users}
+        description={t.access.pageSubtitle}
+        className="mb-2"
+        actions={
+          isSuperAdmin && (
+            <Button type="button" onClick={() => setCreating((open) => !open)}>
+              <UserPlus className="size-4" />
+              {t.access.newAdmin}
+            </Button>
+          )
+        }
+      />
 
       {creating && isSuperAdmin && (
         <CreateAdminForm

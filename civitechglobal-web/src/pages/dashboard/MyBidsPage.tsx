@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useOwnBids, useReviseBid } from '@/api/marketplace';
@@ -36,8 +37,8 @@ export default function MyBidsPage() {
   const days = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-page font-semibold text-app-text">{t.market.myBids}</h1>
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.myBids} description={t.app.memberDescriptions.myBids} className="mb-2" />
 
       {isLoading && (
         <div className="flex justify-center py-16">

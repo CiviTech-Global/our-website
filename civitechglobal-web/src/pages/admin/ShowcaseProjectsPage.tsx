@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Code2, Eye, EyeOff, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import {
@@ -58,18 +59,22 @@ export default function ShowcaseProjectsPage() {
   const [confirming, setConfirming] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="max-w-2xl">
-          <h1 className="text-page font-semibold text-app-text">{t.showcase.adminProjectsTitle}</h1>
-          <p className="mt-1 text-body text-app-text-3">{t.showcase.adminProjectsSubtitle}</p>
-          <p className="mt-1 text-label text-app-text-4">{t.showcase.orderNote}</p>
-        </div>
-        <Button onClick={() => setEditing('new')}>
-          <Plus className="size-4" aria-hidden="true" />
-          {t.showcase.addProject}
-        </Button>
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.showcase.adminProjectsTitle}
+        className="mb-2"
+        description={
+          <>
+            {t.showcase.adminProjectsSubtitle} {t.showcase.orderNote}
+          </>
+        }
+        actions={
+          <Button onClick={() => setEditing('new')}>
+            <Plus className="size-4" aria-hidden="true" />
+            {t.showcase.addProject}
+          </Button>
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">

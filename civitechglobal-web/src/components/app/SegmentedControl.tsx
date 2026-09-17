@@ -72,9 +72,11 @@ export function SegmentedControl<T extends string>({
 }
 
 /** A row of filters above a list: controls on one side, a result count or secondary action on the other. */
-export function Toolbar({ children, end }: { children: ReactNode; end?: ReactNode }) {
+export function Toolbar({ children, end, className }: { children: ReactNode; end?: ReactNode; className?: string }) {
+  // No outer margin: pages space their blocks with a gap, and a margin here
+  // would add to it on every screen that uses one.
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className={cn('flex flex-wrap items-center justify-between gap-3', className)}>
       <div className="flex min-w-0 flex-wrap items-center gap-2">{children}</div>
       {end && <div className="flex shrink-0 items-center gap-2">{end}</div>}
     </div>

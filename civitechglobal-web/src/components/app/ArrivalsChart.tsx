@@ -3,21 +3,12 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { LOCALE_TAGS } from '@/i18n/locales';
 import { toPersianDigits } from '@/i18n/utils';
 import { cn } from '@/lib/utils';
+import { niceCeiling } from './chart-scale';
 
 export interface ArrivalsPoint {
   /** yyyy-mm-dd, UTC. */
   day: string;
   count: number;
-}
-
-/** 1, 2, 5, 10, 20, 50… — the smallest clean ceiling at or above the busiest day. */
-export function niceCeiling(max: number): number {
-  if (max <= 0) return 4;
-  const magnitude = 10 ** Math.floor(Math.log10(max));
-  for (const step of [1, 2, 4, 5, 10]) {
-    if (step * magnitude >= max) return step * magnitude;
-  }
-  return 10 * magnitude;
 }
 
 /**

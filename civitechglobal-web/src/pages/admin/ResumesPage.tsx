@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/app/PageHeader';
+import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Eye } from 'lucide-react';
@@ -74,48 +76,48 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
   const update = useUpdateResumeStatus();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-page font-semibold text-app-text">{title}</h1>
-          <p className="mt-1 text-body text-app-text-3">
-            {programme ? t.volunteer.adminSubtitle : t.join.adminSubtitle}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-        {programme && (
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={title}
+        description={programme ? t.volunteer.adminSubtitle : t.join.adminSubtitle}
+        className="mb-2"
+      />
+      <Toolbar
+        end={
           <Select
-            value={programmeFilter}
-            className="w-auto"
-            aria-label={t.volunteer.programme}
+            value={status}
+            className="w-auto min-w-40"
+            aria-label={t.admin.status}
             onChange={(e) => {
-              setProgrammeFilter(e.target.value as ProgrammeFilter);
+              setStatus(e.target.value as ResumeStatus | 'ALL');
               setPage(1);
             }}
           >
-            <option value="VOLUNTEER,INTERNSHIP">{t.volunteer.bothTracks}</option>
-            <option value="INTERNSHIP">{t.volunteer.tracks.INTERNSHIP}</option>
-            <option value="VOLUNTEER">{t.volunteer.tracks.VOLUNTEER}</option>
+            <option value="ALL">{t.common.all}</option>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {t.join.statuses[s]}
+              </option>
+            ))}
           </Select>
+        }
+      >
+        {programme && (
+          <SegmentedControl<ProgrammeFilter>
+            label={t.volunteer.programme}
+            value={programmeFilter}
+            onChange={(value) => {
+              setProgrammeFilter(value);
+              setPage(1);
+            }}
+            segments={[
+              { value: 'VOLUNTEER,INTERNSHIP', label: t.volunteer.bothTracks },
+              { value: 'INTERNSHIP', label: t.volunteer.tracks.INTERNSHIP },
+              { value: 'VOLUNTEER', label: t.volunteer.tracks.VOLUNTEER },
+            ]}
+          />
         )}
-        <Select
-          value={status}
-          className="w-auto"
-          aria-label={t.admin.status}
-          onChange={(e) => {
-            setStatus(e.target.value as ResumeStatus | 'ALL');
-            setPage(1);
-          }}
-        >
-          <option value="ALL">{t.common.all}</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {t.join.statuses[s]}
-            </option>
-          ))}
-        </Select>
-        </div>
-      </div>
+      </Toolbar>
 
       {isLoading && (
         <div className="flex justify-center py-16">

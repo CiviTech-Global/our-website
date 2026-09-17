@@ -1,6 +1,7 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { ChevronLeft, Eye, Mail, Phone } from 'lucide-react';
+import { Eye, Mail, Phone } from 'lucide-react';
 import { resumeFileUrl, useAdminResume, useUpdateResumeStatus } from '@/api/resumes';
 import { FilePreview } from '@/components/ui/FilePreview';
 import { useAdminUsers } from '@/api/admin';
@@ -114,31 +115,24 @@ export default function ResumeDetailPage() {
       : 'normal';
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6">
-      <Link
-        to={isProgramme ? '/admin/programme' : '/admin/resumes'}
-        className="inline-flex w-fit items-center gap-1 text-body text-app-text-3 hover:text-app-text"
-      >
-        <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-        {isProgramme ? t.volunteer.adminTitle : t.join.adminTitle}
-      </Link>
+    <div className="flex max-w-5xl flex-col gap-4">
+      <PageHeader
+        title={data.fullName}
+        className="mb-2"
+        titleAdornment={<Badge variant="info">{t.join.statuses[data.status]}</Badge>}
+        description={
+          <>
+            <span className="ltr font-mono">{data.trackingCode}</span>
+            {` · ${formatDate(data.createdAt, locale)}`}
+          </>
+        }
+      />
 
       {/* Who, and how to reach them ---------------------------------------- */}
       <Card>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-title font-semibold text-app-text">{data.fullName}</h1>
-            <p className="mt-1 text-label text-app-text-4">
-              <span className="ltr font-mono">{data.trackingCode}</span>
-              {` · ${formatDate(data.createdAt, locale)}`}
-            </p>
-          </div>
-          <Badge variant="info">{t.join.statuses[data.status]}</Badge>
-        </div>
-
         {/* Contact first, and as links: the point of this screen is reaching
             the applicant, so it should take one click rather than a copy. */}
-        <div className="mt-5 flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4">
           <a
             href={`mailto:${data.email}`}
             className="inline-flex items-center gap-2 text-body font-medium text-app-primary hover:underline"

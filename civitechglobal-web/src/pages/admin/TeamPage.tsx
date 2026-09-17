@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff, FolderPlus, Pencil, Plus, Trash2, UserRound } from 'lucide-react';
 import {
@@ -79,10 +80,7 @@ export default function AdminTeamPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-page font-semibold text-app-text">{t.team.adminTitle}</h1>
-        <p className="mt-1 text-body text-app-text-3">{t.team.adminSubtitle}</p>
-      </div>
+      <PageHeader title={t.team.adminTitle} description={t.team.adminSubtitle} className="mb-0" />
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -129,7 +127,8 @@ export default function AdminTeamPage() {
                     )}
                   </div>
                   <Badge>
-                    {section._count.members} {t.team.sectionMembers}
+                    {section._count.members}{' '}
+                    {section._count.members === 1 ? t.team.sectionMembersOne : t.team.sectionMembers}
                   </Badge>
                   <Button size="sm" variant="outline" onClick={() => setEditingSection(section)}>
                     <Pencil className="size-4" aria-hidden="true" />

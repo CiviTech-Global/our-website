@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Globe, Send } from 'lucide-react';
@@ -88,10 +89,11 @@ export default function RequestsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-page font-semibold text-app-text">{t.admin.requests}</h1>
-
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+      <PageHeader
+        title={t.admin.requests}
+        description={t.app.intakeDescriptions.insurance}
+        actions={
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <div className="w-full sm:w-44">
             <Select
               aria-label={t.admin.filterBySource}
@@ -125,7 +127,8 @@ export default function RequestsPage() {
             </Select>
           </div>
         </div>
-      </div>
+        }
+      />
 
       {isError ? (
         <Card className="border-status-error-border text-body text-app-text-3">{t.errors.networkError}</Card>

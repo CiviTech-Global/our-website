@@ -80,5 +80,17 @@ export function StatCard({ label, value, icon: Icon, hint, tone = 'neutral', to,
 /** A responsive row of stat cards: two across on a phone, up to `columns` on a wide screen. */
 export function StatGrid({ children, columns = 4 }: { children: ReactNode; columns?: 3 | 4 | 5 | 6 }) {
   const wide = { 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6' }[columns];
-  return <div className={cn('grid grid-cols-2 gap-3 sm:gap-4', wide)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        'grid grid-cols-2 gap-3 sm:gap-4',
+        // An odd card out on the two-column phone layout spans the row rather
+        // than sitting half-width beside nothing.
+        '[&>*:last-child:nth-child(odd)]:col-span-2 lg:[&>*:last-child:nth-child(odd)]:col-span-1',
+        wide
+      )}
+    >
+      {children}
+    </div>
+  );
 }

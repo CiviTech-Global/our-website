@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Plus, Users } from 'lucide-react';
@@ -120,16 +121,20 @@ export default function MyJobsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-page font-semibold text-app-text">{t.market.myJobs}</h1>
-        {isVerified && (
-          <Button onClick={() => setIsFormOpen(true)}>
-            <Plus className="size-4" aria-hidden="true" />
-            {t.market.newJob}
-          </Button>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.market.myJobs}
+        description={t.app.memberDescriptions.myJobs}
+        className="mb-2"
+        actions={
+          isVerified && (
+            <Button onClick={() => setIsFormOpen(true)}>
+              <Plus className="size-4" aria-hidden="true" />
+              {t.market.newJob}
+            </Button>
+          )
+        }
+      />
 
       {!isVerified && (
         <Card>

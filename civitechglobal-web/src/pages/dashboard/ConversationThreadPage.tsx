@@ -1,6 +1,7 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ExternalLink, Send } from 'lucide-react';
 import { useSendMessage, useThread, type ThreadKind } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -69,18 +70,18 @@ export default function ConversationThreadPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link
-          to="/dashboard/messages"
-          className="inline-flex items-center gap-1.5 text-body text-app-text-3 hover:text-app-text"
-        >
-          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
-          {t.market.backToMessages}
-        </Link>
-        <Link to={data.anchor.path} className="text-body text-brand-600 hover:underline">
-          {data.anchor.listingTitle}
-        </Link>
-      </div>
+      <PageHeader
+        title={data.anchor.listingTitle}
+        className="mb-0"
+        actions={
+          <Link to={data.anchor.path}>
+            <Button variant="outline">
+              <ExternalLink aria-hidden="true" />
+              {t.common.view}
+            </Button>
+          </Link>
+        }
+      />
 
       <Card className="flex flex-col gap-3">
         {data.messages.length === 0 && (

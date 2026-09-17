@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { useAuditLog } from '@/api/marketplace';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -43,9 +44,12 @@ export default function AuditLogPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-page font-semibold text-app-text">{t.audit.title}</h1>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.audit.title}
+        description={t.app.queueDescriptions.audit}
+        className="mb-2"
+        actions={
         <Select
           className="w-auto"
           value={action}
@@ -62,7 +66,8 @@ export default function AuditLogPage() {
             </option>
           ))}
         </Select>
-      </div>
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">

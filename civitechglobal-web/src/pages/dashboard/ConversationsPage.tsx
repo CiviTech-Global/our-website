@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { Link } from 'react-router';
 import type { Locale } from '@/i18n/locales';
 import { useConversations } from '@/api/marketplace';
@@ -22,8 +23,8 @@ export default function ConversationsPage() {
   const { data, isLoading } = useConversations();
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-page font-semibold text-app-text">{t.market.messagesNav}</h1>
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.messagesNav} description={t.app.memberDescriptions.messages} className="mb-2" />
 
       {isLoading && (
         <div className="flex justify-center py-16">

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/app/PageHeader';
 import { Shield } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
@@ -19,8 +20,7 @@ export default function RolesPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-page font-semibold text-app-text">{t.admin.roles}</h1>
-      <p className="mb-4 text-label text-app-text-4">{t.admin.rolesEndpointNote}</p>
+      <PageHeader title={t.admin.roles} description={t.admin.rolesEndpointNote} />
 
       {isLoading && (
         <div className="flex justify-center py-16">

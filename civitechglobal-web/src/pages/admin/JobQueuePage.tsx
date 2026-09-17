@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/app/PageHeader';
+import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import { useJobForReview, useJobQueue, useReviewJob } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -11,7 +13,6 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
-import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import type { ModerationStatus } from '@/types/marketplace';
 
@@ -41,26 +42,20 @@ export default function JobQueuePage() {
   const { data, isLoading } = useJobQueue({ page, pageSize: PAGE_SIZE, status });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-page font-semibold text-app-text">{t.market.queueJobs}</h1>
-        <Select
-          className="w-auto"
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t.market.queueJobs} description={t.app.queueDescriptions.jobPosts} className="mb-2" />
+      <Toolbar>
+        <SegmentedControl<ModerationStatus>
+          label={t.app.filterByStatus}
           value={status}
-          aria-label={t.admin.status}
-          onChange={(e) => {
-            setStatus(e.target.value as ModerationStatus);
+          segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
+          onChange={(value) => {
+            setStatus(value);
             setPage(1);
             setOpenId(null);
           }}
-        >
-          {STATUSES.map((value) => (
-            <option key={value} value={value}>
-              {t.market[value]}
-            </option>
-          ))}
-        </Select>
-      </div>
+        />
+      </Toolbar>
 
       {isLoading && (
         <div className="flex justify-center py-16">

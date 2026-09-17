@@ -1,3 +1,6 @@
+import { AlertTriangle, CheckCircle2, Handshake, Star } from 'lucide-react';
+import { StatCard, StatGrid } from '@/components/app/StatCard';
+import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -54,21 +57,32 @@ export default function MarketplaceAnalyticsPage() {
   const maxWeekly = Math.max(1, ...data.weeklyTrend.map((week) => week.jobs + week.projects));
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-page font-semibold text-app-text">{t.analytics.title}</h1>
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label={t.analytics.totalAwards} value={digits(data.awards.total)} />
-        <StatCard
-          label={t.analytics.completionRate}
-          value={data.awards.completionRate === null ? '—' : `${digits(data.awards.completionRate)}٪`}
-        />
-        <StatCard label={t.analytics.openDisputes} value={digits(data.awards.openDisputes)} />
-        <StatCard
-          label={t.analytics.featuredListings}
-          value={digits(data.featured.jobs + data.featured.projects)}
-        />
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t.analytics.title}
+        className="mb-2"
+        summary={
+          <StatGrid columns={4}>
+            <StatCard label={t.analytics.totalAwards} value={digits(data.awards.total)} icon={Handshake} />
+            <StatCard
+              label={t.analytics.completionRate}
+              value={data.awards.completionRate === null ? '—' : `${digits(data.awards.completionRate)}٪`}
+              icon={CheckCircle2}
+            />
+            <StatCard
+              label={t.analytics.openDisputes}
+              value={digits(data.awards.openDisputes)}
+              icon={AlertTriangle}
+              tone={data.awards.openDisputes > 0 ? 'critical' : 'neutral'}
+            />
+            <StatCard
+              label={t.analytics.featuredListings}
+              value={digits(data.featured.jobs + data.featured.projects)}
+              icon={Star}
+            />
+          </StatGrid>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
@@ -236,11 +250,3 @@ function DisputeRow({ dispute }: { dispute: OpenDisputeRow }) {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <Card className="flex flex-col gap-1">
-      <span className="text-label text-app-text-4">{label}</span>
-      <span className="text-page font-semibold text-app-text">{value}</span>
-    </Card>
-  );
-}
