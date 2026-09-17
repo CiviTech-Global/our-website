@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { toPersianDigits } from '@/i18n/utils';
 import { Button } from './Button';
+import { useSurface } from './surface';
 
 export interface PaginationProps {
   page: number;
@@ -11,6 +12,7 @@ export interface PaginationProps {
 
 export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
   const { t, locale } = useLocale();
+  const app = useSurface() === 'app';
   if (totalPages <= 1) return null;
 
   const format = (n: number) => (locale === 'fa' ? toPersianDigits(n) : String(n));
@@ -27,7 +29,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         {locale === 'fa' ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
         <span className="hidden sm:inline">{t.common.previous}</span>
       </Button>
-      <span className="whitespace-nowrap text-sm text-text-secondary">
+      <span className={app ? 'whitespace-nowrap text-body text-app-text-3' : 'whitespace-nowrap text-sm text-text-secondary'}>
         {t.common.page} {format(page)} {t.common.of} {format(totalPages)}
       </span>
       <Button

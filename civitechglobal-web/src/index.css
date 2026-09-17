@@ -109,6 +109,73 @@
   --color-glow-blue: #22d3ee;
   --color-glow-purple: #c084fc;
 
+  /* ---- Application surface -------------------------------------------------
+   *
+   * The dashboards (user, admin, super admin) are a work tool, not a landing
+   * page, and are styled as one: a calm neutral canvas, 1px borders instead of
+   * shadows, a 4px radius, and a fixed type scale. The glass and glow above
+   * stay on the public site, where they belong.
+   *
+   * Taken from the VerifyWise design system and translated to Tailwind tokens,
+   * so a component asks for `border-app-border` rather than a hex value and dark
+   * mode is a change of token, not of component. */
+  --color-app-canvas: #fcfcfd;
+  --color-app-panel: #ffffff;
+  --color-app-subtle: #f9fafb;
+  --color-app-fill: #f2f4f7;
+  --color-app-hover: #f5f6f8;
+  --color-app-border: #d0d5dd;
+  --color-app-border-light: #eaecf0;
+  --color-app-text: #1c2130;
+  --color-app-text-2: #344054;
+  --color-app-text-3: #475467;
+  --color-app-text-4: #838c99;
+  --color-app-icon: #667085;
+  /* Primary actions use the deep brand green: white text on the brighter
+     brand-green-500 is 2.5:1, which fails WCAG AA for a button label. */
+  --color-app-primary: #047857;
+  --color-app-primary-hover: #065f46;
+  --color-app-primary-soft: #ecfdf5;
+  --color-app-rail: #1b2230;
+  --color-app-rail-2: #151b27;
+
+  --color-status-success: #079455;
+  --color-status-success-bg: #ecfdf3;
+  --color-status-success-border: #abefc6;
+  --color-status-warning: #b54708;
+  --color-status-warning-bg: #fffaeb;
+  --color-status-warning-border: #fedf89;
+  --color-status-error: #d92d20;
+  --color-status-error-bg: #fef3f2;
+  --color-status-error-border: #fecdca;
+  --color-status-info: #175cd3;
+  --color-status-info-bg: #eff8ff;
+  --color-status-info-border: #b2ddff;
+  --color-status-neutral: #344054;
+  --color-status-neutral-bg: #f2f4f7;
+  --color-status-neutral-border: #eaecf0;
+
+  /* The only sizes the application surface uses. Named for their job so a
+     page title cannot drift to 22px on one screen and 26px on the next. */
+  --text-caption: 11px;
+  --text-caption--line-height: 1.4;
+  --text-label: 12px;
+  --text-label--line-height: 1.5;
+  --text-body: 13px;
+  --text-body--line-height: 1.5;
+  --text-body-lg: 14px;
+  --text-body-lg--line-height: 1.5;
+  --text-title-sm: 16px;
+  --text-title-sm--line-height: 1.4;
+  --text-title: 18px;
+  --text-title--line-height: 1.4;
+  --text-page: 20px;
+  --text-page--line-height: 1.3;
+  --text-metric: 24px;
+  --text-metric--line-height: 1.2;
+
+  --shadow-app-float: 0 4px 24px -4px rgba(16, 24, 40, 0.08), 0 3px 3px -3px rgba(16, 24, 40, 0.03);
+
   --animate-fade-up: fade-up 0.6s ease-out both;
 
   @keyframes fade-up {
@@ -145,6 +212,42 @@
   --color-border-default: #1e2535;
   --color-border-strong: #2d3444;
   --color-border-subtle: #121826;
+
+  --color-app-canvas: #0b0f17;
+  --color-app-panel: #111722;
+  --color-app-subtle: #141b28;
+  --color-app-fill: #1a2231;
+  --color-app-hover: #172030;
+  --color-app-border: #2a3344;
+  --color-app-border-light: #1f2837;
+  --color-app-text: #f2f4f7;
+  --color-app-text-2: #d0d5dd;
+  --color-app-text-3: #98a2b3;
+  --color-app-text-4: #667085;
+  --color-app-icon: #98a2b3;
+  --color-app-primary: #059669;
+  --color-app-primary-hover: #047857;
+  --color-app-primary-soft: rgba(16, 185, 129, 0.12);
+  --color-app-rail: #070a10;
+  --color-app-rail-2: #05070c;
+
+  --color-status-success: #47cd89;
+  --color-status-success-bg: rgba(23, 178, 106, 0.12);
+  --color-status-success-border: rgba(23, 178, 106, 0.3);
+  --color-status-warning: #fdb022;
+  --color-status-warning-bg: rgba(247, 144, 9, 0.12);
+  --color-status-warning-border: rgba(247, 144, 9, 0.3);
+  --color-status-error: #f97066;
+  --color-status-error-bg: rgba(240, 68, 56, 0.12);
+  --color-status-error-border: rgba(240, 68, 56, 0.3);
+  --color-status-info: #53b1fd;
+  --color-status-info-bg: rgba(46, 144, 250, 0.12);
+  --color-status-info-border: rgba(46, 144, 250, 0.3);
+  --color-status-neutral: #d0d5dd;
+  --color-status-neutral-bg: rgba(152, 162, 179, 0.12);
+  --color-status-neutral-border: rgba(152, 162, 179, 0.24);
+
+  --shadow-app-float: 0 8px 28px -6px rgba(0, 0, 0, 0.55), 0 3px 3px -3px rgba(0, 0, 0, 0.3);
 }
 
 html {

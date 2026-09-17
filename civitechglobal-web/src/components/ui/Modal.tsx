@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { usePresence } from '@/lib/motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSurface } from './surface';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
   // Holds the dialog in the tree while it animates out; `state` picks the
   // enter or leave keyframe.
   const { mounted, state } = usePresence(isOpen);
+  const app = useSurface() === 'app';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -67,7 +69,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className={cn(
-          'absolute inset-0 bg-surface-950/60 backdrop-blur-sm',
+          app ? 'absolute inset-0 bg-[#0c111d]/45' : 'absolute inset-0 bg-surface-950/60 backdrop-blur-sm',
           state === 'entering' ? 'ct-fade-in' : 'ct-fade-out'
         )}
         onClick={onClose}
@@ -79,14 +81,26 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         className={cn(
-          'glass relative z-10 w-full max-w-lg rounded-xl p-6 shadow-soft-lg',
+          app
+            ? // A dialog is the one place a dashboard uses a shadow: it floats.
+              // Scrolls inside itself, so a long form never runs off the screen.
+              'relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded border border-app-border bg-app-panel text-body text-app-text-2 shadow-app-float'
+            : 'glass relative z-10 w-full max-w-lg rounded-xl p-6 shadow-soft-lg',
           state === 'entering' ? 'ct-pop-in' : 'ct-pop-out',
           className
         )}
       >
-            <div className="mb-4 flex items-center justify-between">
+            <div
+              className={cn(
+                'flex items-center justify-between',
+                app ? 'shrink-0 border-b border-app-border-light px-6 py-4' : 'mb-4'
+              )}
+            >
               {title && (
-                <h2 id="modal-title" className="text-lg font-semibold text-text-primary">
+                <h2
+                  id="modal-title"
+                  className={app ? 'text-title-sm font-semibold text-app-text' : 'text-lg font-semibold text-text-primary'}
+                >
                   {title}
                 </h2>
               )}
@@ -94,12 +108,16 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="ms-auto rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-surface-200 dark:hover:bg-surface-300"
+                className={
+                  app
+                    ? 'ms-auto flex size-7 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text'
+                    : 'ms-auto rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-surface-200 dark:hover:bg-surface-300'
+                }
               >
-                <X className="size-5" aria-hidden="true" />
+                <X className={app ? 'size-4' : 'size-5'} aria-hidden="true" />
               </button>
             </div>
-        {children}
+        {app ? <div className="min-h-0 overflow-y-auto px-6 py-5">{children}</div> : children}
       </div>
     </div>,
     document.body

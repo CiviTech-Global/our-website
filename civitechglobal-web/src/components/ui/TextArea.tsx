@@ -1,5 +1,7 @@
 import { forwardRef, type TextareaHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
+import { fieldClasses } from './Input';
+import { useSurface } from './surface';
 
 export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   invalid?: boolean;
@@ -7,18 +9,13 @@ export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ({ className, invalid, rows = 4, ...props }, ref) => {
+    const app = useSurface() === 'app';
     return (
       <textarea
         ref={ref}
         rows={rows}
         aria-invalid={invalid || undefined}
-        className={cn(
-          'w-full rounded-xl border bg-surface-50 px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted',
-          'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green-500/50',
-          invalid ? 'border-brand-red-500' : 'border-border-default',
-          'disabled:cursor-not-allowed disabled:opacity-50',
-          className
-        )}
+        className={cn(fieldClasses(app, invalid), app ? 'px-3 py-2' : 'px-3.5 py-2.5', className)}
         {...props}
       />
     );

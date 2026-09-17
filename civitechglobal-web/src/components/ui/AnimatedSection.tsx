@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useInView } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import { useSurface } from './surface';
 
 export interface AnimatedSectionProps {
   children: ReactNode;
@@ -23,6 +24,14 @@ export function AnimatedSection({
   as: Component = 'div',
 }: AnimatedSectionProps) {
   const { ref, inView } = useInView<HTMLDivElement>();
+  const app = useSurface() === 'app';
+
+  // Inside the dashboards content appears, it does not perform. A reveal on
+  // every card is delight on a landing page and delay in a tool opened fifty
+  // times a day.
+  if (app) {
+    return <Component className={className}>{children}</Component>;
+  }
 
   return (
     <Component

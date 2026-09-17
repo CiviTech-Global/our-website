@@ -6,6 +6,8 @@ export interface TableColumn<T> {
   header: string;
   render: (row: T) => ReactNode;
   className?: string;
+  /** Right-aligned in LTR, left in RTL — for numbers and row actions. */
+  align?: 'start' | 'end';
 }
 
 export interface TableProps<T> {
@@ -15,45 +17,70 @@ export interface TableProps<T> {
   emptyMessage?: string;
   isLoading?: boolean;
   onRowClick?: (row: T) => void;
+  /** Describes a clickable row to assistive technology, e.g. "Open request". */
+  rowLabel?: (row: T) => string;
 }
 
-/** Generic, RTL-aware data table. Uses logical text-start alignment throughout. */
-export function Table<T>({ columns, data, rowKey, emptyMessage, isLoading, onRowClick }: TableProps<T>) {
+/**
+ * The dashboards' data table. RTL-aware, with logical alignment throughout.
+ *
+ * Styled for scanning a long list: an uppercase 12px header on a faint band,
+ * 13px cells, hairline row dividers and a hover tint. Only used inside the
+ * application, so it does not switch on surface.
+ *
+ * A clickable row is also a keyboard target — Enter or Space opens it — because
+ * a row that only responds to a mouse is a list a keyboard user cannot open.
+ */
+export function Table<T>({
+  columns,
+  data,
+  rowKey,
+  emptyMessage,
+  isLoading,
+  onRowClick,
+  rowLabel,
+}: TableProps<T>) {
+  const alignClass = (col: TableColumn<T>) => (col.align === 'end' ? 'text-end' : 'text-start');
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-border-default">
+    <div className="overflow-x-auto rounded border border-app-border bg-app-panel">
       {/*
-       * min-w ensures columns keep a readable width instead of being squeezed/wrapped
-       * on narrow viewports — that forces this wrapper's overflow-x-auto to actually
-       * kick in (a horizontal scroll confined to the table) rather than the table
-       * silently shrinking to fit and mangling cell content.
+       * min-w keeps columns at a readable width instead of squeezing them on a
+       * narrow screen, so the wrapper scrolls horizontally rather than the
+       * cells wrapping into illegibility.
        */}
-      <table className="w-full min-w-[640px] text-start text-sm">
-        <thead className="bg-surface-200/60 text-text-secondary">
-          <tr>
+      <table className="w-full min-w-[640px] border-collapse text-body">
+        <thead>
+          <tr className="border-b border-app-border bg-app-subtle">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={cn('whitespace-nowrap px-4 py-3 text-start font-medium', col.className)}
+                scope="col"
+                className={cn(
+                  'whitespace-nowrap px-3 py-2.5 text-label font-medium uppercase tracking-wide text-app-text-3',
+                  alignClass(col),
+                  col.className
+                )}
               >
                 {col.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border-subtle">
+        <tbody>
           {isLoading &&
             Array.from({ length: 5 }).map((_, i) => (
-              <tr key={`skeleton-${i}`}>
+              <tr key={`skeleton-${i}`} className="border-b border-app-border-light last:border-b-0">
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3">
-                    <div className="h-4 w-full max-w-32 animate-pulse rounded bg-surface-300" />
+                  <td key={col.key} className="px-3 py-3">
+                    <div className="h-3.5 w-full max-w-32 animate-pulse rounded bg-app-fill" />
                   </td>
                 ))}
               </tr>
             ))}
           {!isLoading && data.length === 0 && (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-10 text-center text-text-muted">
+              <td colSpan={columns.length} className="px-3 py-12 text-center text-app-text-3">
                 {emptyMessage ?? 'No results'}
               </td>
             </tr>
@@ -63,13 +90,29 @@ export function Table<T>({ columns, data, rowKey, emptyMessage, isLoading, onRow
               <tr
                 key={rowKey(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onRowClick(row);
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={onRowClick ? 0 : undefined}
+                aria-label={onRowClick && rowLabel ? rowLabel(row) : undefined}
                 className={cn(
-                  'text-text-primary',
-                  onRowClick && 'cursor-pointer transition-colors hover:bg-surface-200/50'
+                  'border-b border-app-border-light text-app-text-2 last:border-b-0',
+                  onRowClick &&
+                    'cursor-pointer hover:bg-app-hover focus-visible:bg-app-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-primary/40'
                 )}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={cn('whitespace-nowrap px-4 py-3', col.className)}>
+                  <td
+                    key={col.key}
+                    className={cn('whitespace-nowrap px-3 py-3', alignClass(col), col.className)}
+                  >
                     {col.render(row)}
                   </td>
                 ))}
