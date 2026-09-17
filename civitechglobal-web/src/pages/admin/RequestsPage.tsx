@@ -32,7 +32,7 @@ export default function RequestsPage() {
       header: t.admin.source,
       render: (row) => (
         <span
-          className="inline-flex items-center gap-1.5 text-text-secondary"
+          className="inline-flex items-center gap-1.5 text-app-text-3"
           title={row.source === 'WEB' ? t.admin.sourceWeb : t.admin.sourceTelegram}
         >
           {row.source === 'WEB' ? (
@@ -56,7 +56,7 @@ export default function RequestsPage() {
           {/* Whether the number was proved reachable decides how much faith to
               put in it before spending a call on it. */}
           {row.phoneVerified && (
-            <span className="text-brand-green-500" title={t.admin.phoneVerified} aria-label={t.admin.phoneVerified}>
+            <span className="text-app-primary" title={t.admin.phoneVerified} aria-label={t.admin.phoneVerified}>
               ✓
             </span>
           )}
@@ -89,7 +89,7 @@ export default function RequestsPage() {
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-text-primary">{t.admin.requests}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.admin.requests}</h1>
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <div className="w-full sm:w-44">
@@ -128,7 +128,7 @@ export default function RequestsPage() {
       </div>
 
       {isError ? (
-        <Card className="border-brand-red-500/30 text-sm text-text-secondary">{t.errors.networkError}</Card>
+        <Card className="border-status-error-border text-body text-app-text-3">{t.errors.networkError}</Card>
       ) : (
         <>
           <Table
@@ -141,7 +141,7 @@ export default function RequestsPage() {
           />
           {total > 0 && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-text-muted">
+              <p className="text-body text-app-text-4">
                 {locale === 'fa' ? toPersianDigits(total) : total} {t.admin.requests}
               </p>
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />

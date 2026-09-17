@@ -30,3 +30,45 @@ export interface AdminRole {
   permissions: string[];
   isSystem?: boolean;
 }
+
+/** A queue's size, and how much of it is waiting on staff. */
+export interface QueueCount {
+  open: number;
+  total: number;
+}
+
+export type QueueKey =
+  | 'projects'
+  | 'resumes'
+  | 'programme'
+  | 'insurance'
+  | 'messages'
+  | 'verification'
+  | 'jobPosts'
+  | 'applications'
+  | 'freelanceProjects'
+  | 'bids'
+  | 'disputes';
+
+export type ActivityKind = 'project' | 'resume' | 'programme' | 'insurance' | 'message';
+
+export interface ActivityItem {
+  kind: ActivityKind;
+  id: string;
+  title: string;
+  status: string;
+  createdAt: string;
+}
+
+/**
+ * What is waiting for the signed-in member of staff, limited to the modules
+ * they can open. A queue they were not granted is absent, not zero.
+ */
+export interface Workload {
+  permissions: Permission[];
+  queues: Partial<Record<QueueKey, QueueCount>>;
+  users?: { total: number; staff: number };
+  showcase?: { customers: number; partners: number; projects: number; hidden: number };
+  recent: ActivityItem[];
+  trend: Array<{ day: string; count: number }>;
+}

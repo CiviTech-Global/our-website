@@ -66,8 +66,8 @@ export default function UsersPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary">{t.admin.users}</h1>
-          <p className="mt-1 text-sm text-text-secondary">{t.access.pageSubtitle}</p>
+          <h1 className="text-page font-semibold text-app-text">{t.admin.users}</h1>
+          <p className="mt-1 text-body text-app-text-3">{t.access.pageSubtitle}</p>
         </div>
         {isSuperAdmin && (
           <Button type="button" onClick={() => setCreating((open) => !open)}>
@@ -161,10 +161,10 @@ function AccountCard({
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-medium text-text-primary">
+          <p className="font-medium text-app-text">
             {account.firstName} {account.lastName}
           </p>
-          <p className="ltr mt-0.5 text-xs text-text-muted">{account.email}</p>
+          <p className="ltr mt-0.5 text-label text-app-text-4">{account.email}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {account.isActive === false && <Badge variant="danger">{t.access.deactivated}</Badge>}
@@ -175,26 +175,26 @@ function AccountCard({
         </div>
       </div>
 
-      <p className="mt-2 text-xs text-text-muted">
+      <p className="mt-2 text-label text-app-text-4">
         {t.admin.createdOn}: {formatDate(account.createdAt, locale)}
       </p>
 
       {isSuperAdmin ? (
-        <p className="mt-4 text-sm text-text-secondary">{t.access.superAdminNote}</p>
+        <p className="mt-4 text-body text-app-text-3">{t.access.superAdminNote}</p>
       ) : isCustomer ? (
-        <p className="mt-4 text-sm text-text-secondary">{t.access.customerNote}</p>
+        <p className="mt-4 text-body text-app-text-3">{t.access.customerNote}</p>
       ) : (
-        <div className="mt-4 border-t border-border-subtle pt-4">
-          <p className="mb-2 text-xs text-text-muted">{t.access.modules}</p>
+        <div className="mt-4 border-t border-app-border-light pt-4">
+          <p className="mb-2 text-label text-app-text-4">{t.access.modules}</p>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {catalogue.map((permission) => (
               <label
                 key={permission}
-                className="flex items-center gap-2 text-sm text-text-primary"
+                className="flex items-center gap-2 text-body text-app-text"
               >
                 <input
                   type="checkbox"
-                  className="size-4 rounded border-border-default accent-brand-green-500"
+                  className="size-4 rounded border-app-border-light accent-[var(--color-app-primary)]"
                   checked={current.includes(permission)}
                   disabled={!canEdit || setPermissions.isPending}
                   onChange={(event) =>
@@ -274,8 +274,8 @@ function CreateAdminForm({
 
   return (
     <Card>
-      <h2 className="mb-1 text-sm font-semibold text-text-primary">{t.access.newAdmin}</h2>
-      <p className="mb-4 text-sm text-text-secondary">{t.access.newAdminHint}</p>
+      <h2 className="mb-1 text-body font-semibold text-app-text">{t.access.newAdmin}</h2>
+      <p className="mb-4 text-body text-app-text-3">{t.access.newAdminHint}</p>
 
       <form
         className="flex flex-col gap-4"
@@ -335,13 +335,13 @@ function CreateAdminForm({
         </div>
 
         <div>
-          <p className="mb-2 text-xs text-text-muted">{t.access.modules}</p>
+          <p className="mb-2 text-label text-app-text-4">{t.access.modules}</p>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {catalogue.map((permission) => (
-              <label key={permission} className="flex items-center gap-2 text-sm text-text-primary">
+              <label key={permission} className="flex items-center gap-2 text-body text-app-text">
                 <input
                   type="checkbox"
-                  className="size-4 rounded border-border-default accent-brand-green-500"
+                  className="size-4 rounded border-app-border-light accent-[var(--color-app-primary)]"
                   checked={permissions.includes(permission)}
                   onChange={(event) =>
                     setPermissions((prev) =>
@@ -356,11 +356,11 @@ function CreateAdminForm({
             ))}
           </div>
           {/* Granting nothing is a legitimate starting point, not a mistake. */}
-          <p className="mt-2 text-xs text-text-muted">{t.access.noModulesNote}</p>
+          <p className="mt-2 text-label text-app-text-4">{t.access.noModulesNote}</p>
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-brand-red-500">
+          <p role="alert" className="text-body text-status-error">
             {error}
           </p>
         )}

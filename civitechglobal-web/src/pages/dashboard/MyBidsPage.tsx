@@ -37,7 +37,7 @@ export default function MyBidsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary">{t.market.myBids}</h1>
+      <h1 className="text-page font-semibold text-app-text">{t.market.myBids}</h1>
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -53,13 +53,13 @@ export default function MyBidsPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{bid.project.title}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="font-medium text-app-text">{bid.project.title}</p>
+                  <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr font-mono">{bid.project.code}</span>
                     {' · '}
                     {formatDate(bid.createdAt, locale)}
                   </p>
-                  <p className="mt-1 text-sm text-text-secondary">
+                  <p className="mt-1 text-body text-app-text-3">
                     {formatMoney(bid.amount, locale)} {t.market.currency}
                     {bid.deliveryDays ? ` · ${days(bid.deliveryDays)} ${t.market.deliveryDays}` : ''}
                   </p>
@@ -75,22 +75,22 @@ export default function MyBidsPage() {
               </div>
 
               {bid.reviewNote && (
-                <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-                  <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-                  <p className="mt-1 text-sm text-text-primary">{bid.reviewNote}</p>
+                <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+                  <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+                  <p className="mt-1 text-body text-app-text">{bid.reviewNote}</p>
                 </div>
               )}
 
               {bid.suggestedAmount && (
-                <div className="mt-3 rounded-lg border border-brand-amber-500/40 bg-brand-amber-50/60 p-3 dark:bg-brand-amber-900/20">
-                  <p className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
+                <div className="mt-3 rounded border border-status-warning-border bg-status-warning-bg p-3">
+                  <p className="flex items-center gap-1.5 text-label font-medium text-app-text-3">
                     <Lightbulb className="size-3.5" aria-hidden="true" />
                     {t.market.suggestedAmount}
                   </p>
-                  <p className="mt-1 text-sm font-medium text-text-primary">
+                  <p className="mt-1 text-body font-medium text-app-text">
                     {formatMoney(bid.suggestedAmount, locale)} {t.market.currency}
                   </p>
-                  <p className="mt-1 text-xs text-text-muted">{t.market.suggestedAmountHint}</p>
+                  <p className="mt-1 text-label text-app-text-4">{t.market.suggestedAmountHint}</p>
                 </div>
               )}
 
@@ -141,9 +141,9 @@ function ReviseBidModal({ bid, onClose }: { bid: OwnBid; onClose: () => void }) 
   return (
     <Modal isOpen onClose={onClose} title={t.market.revise}>
       {bid.reviewNote && (
-        <div className="mb-4 rounded-lg border border-border-default bg-surface-200 p-3">
-          <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-          <p className="mt-1 text-sm text-text-primary">{bid.reviewNote}</p>
+        <div className="mb-4 rounded border border-app-border-light bg-app-fill p-3">
+          <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+          <p className="mt-1 text-body text-app-text">{bid.reviewNote}</p>
         </div>
       )}
 

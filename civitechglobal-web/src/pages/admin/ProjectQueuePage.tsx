@@ -51,7 +51,7 @@ export default function ProjectQueuePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.queueProjects}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.queueProjects}</h1>
         <Select
           className="w-auto"
           value={status}
@@ -83,13 +83,13 @@ export default function ProjectQueuePage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{row.title}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="font-medium text-app-text">{row.title}</p>
+                  <p className="mt-0.5 text-label text-app-text-4">
                     {row.companyName && `${row.companyName} · `}
                     <span className="ltr font-mono">{row.code}</span>
                     {row.submittedAt && ` · ${formatDate(row.submittedAt, locale)}`}
                   </p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="mt-0.5 text-label text-app-text-4">
                     {t.market.submittedBy}: {row.author.firstName} {row.author.lastName}{' '}
                     <span className="ltr">({row.author.email})</span>
                   </p>
@@ -163,7 +163,7 @@ function CompanyOfferModal({ projectId, onClose }: { projectId: string; onClose:
 
   return (
     <Modal isOpen onClose={onClose} title={t.market.placeCompanyOffer}>
-      <p className="mb-4 text-sm text-text-muted">{t.market.companyOfferHint}</p>
+      <p className="mb-4 text-body text-app-text-4">{t.market.companyOfferHint}</p>
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="grid gap-4 sm:grid-cols-2">

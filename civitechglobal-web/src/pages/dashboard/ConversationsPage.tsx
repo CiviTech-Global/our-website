@@ -23,7 +23,7 @@ export default function ConversationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary">{t.market.messagesNav}</h1>
+      <h1 className="text-page font-semibold text-app-text">{t.market.messagesNav}</h1>
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -52,24 +52,24 @@ function ConversationRow({ thread, locale }: { thread: ConversationSummary; loca
       <Card
         className={
           thread.unreadCount > 0
-            ? 'border-brand-green-500/50 transition hover:border-brand-green-500'
+            ? 'border-app-primary/40 transition hover:border-app-primary'
             : 'transition hover:border-brand-400'
         }
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-text-primary">
+              <span className="font-medium text-app-text">
                 {thread.counterpartName ?? t.market.noProfileLabel}
               </span>
               {thread.counterpart?.verified && <VerifiedBadge />}
-              <span className="text-xs text-text-muted">
+              <span className="text-label text-app-text-4">
                 {thread.kind === 'application' ? t.market.awardKindJob : t.market.awardKindProject}:{' '}
                 {thread.listingTitle}
               </span>
             </div>
             {thread.lastMessage && (
-              <p className="mt-1 truncate text-sm text-text-secondary">
+              <p className="mt-1 truncate text-body text-app-text-3">
                 {thread.lastMessage.mine ? `${t.market.youPrefix}: ` : ''}
                 {thread.lastMessage.body}
               </p>
@@ -77,12 +77,12 @@ function ConversationRow({ thread, locale }: { thread: ConversationSummary; loca
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             {thread.lastMessage && (
-              <span className="text-xs text-text-muted">
+              <span className="text-label text-app-text-4">
                 {formatDate(thread.lastMessage.createdAt, locale)}
               </span>
             )}
             {thread.unreadCount > 0 && (
-              <span className="flex min-w-5 items-center justify-center rounded-full bg-brand-green-500 px-1.5 text-xs font-semibold text-white">
+              <span className="flex min-w-5 items-center justify-center rounded-full bg-app-primary px-1.5 text-label font-semibold text-white">
                 {thread.unreadCount}
               </span>
             )}

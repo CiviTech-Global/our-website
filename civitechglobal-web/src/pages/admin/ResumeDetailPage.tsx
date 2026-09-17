@@ -79,7 +79,7 @@ export default function ResumeDetailPage() {
   if (isError || !data) {
     return (
       <Card>
-        <p className="text-sm text-text-secondary">{t.join.adminNotFound}</p>
+        <p className="text-body text-app-text-3">{t.join.adminNotFound}</p>
         <Link to="/admin/resumes" className="mt-4 inline-block">
           <Button variant="secondary">{t.common.back}</Button>
         </Link>
@@ -117,7 +117,7 @@ export default function ResumeDetailPage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <Link
         to={isProgramme ? '/admin/programme' : '/admin/resumes'}
-        className="inline-flex w-fit items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
+        className="inline-flex w-fit items-center gap-1 text-body text-app-text-3 hover:text-app-text"
       >
         <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
         {isProgramme ? t.volunteer.adminTitle : t.join.adminTitle}
@@ -127,8 +127,8 @@ export default function ResumeDetailPage() {
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-text-primary">{data.fullName}</h1>
-            <p className="mt-1 text-xs text-text-muted">
+            <h1 className="text-title font-semibold text-app-text">{data.fullName}</h1>
+            <p className="mt-1 text-label text-app-text-4">
               <span className="ltr font-mono">{data.trackingCode}</span>
               {` · ${formatDate(data.createdAt, locale)}`}
             </p>
@@ -141,14 +141,14 @@ export default function ResumeDetailPage() {
         <div className="mt-5 flex flex-wrap gap-4">
           <a
             href={`mailto:${data.email}`}
-            className="inline-flex items-center gap-2 text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+            className="inline-flex items-center gap-2 text-body font-medium text-app-primary hover:underline"
           >
             <Mail className="size-4" aria-hidden="true" />
             <span className="ltr">{data.email}</span>
           </a>
           <a
             href={`tel:${data.phone}`}
-            className="inline-flex items-center gap-2 text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+            className="inline-flex items-center gap-2 text-body font-medium text-app-primary hover:underline"
           >
             <Phone className="size-4" aria-hidden="true" />
             <span className="ltr">{data.phone}</span>
@@ -161,8 +161,8 @@ export default function ResumeDetailPage() {
           <Field label={t.join.updatedAt} value={formatDate(data.updatedAt, locale)} />
         </dl>
 
-        <div className="mt-5 border-t border-border-subtle pt-4">
-          <p className="mb-2 text-xs text-text-muted">{t.identity.title}</p>
+        <div className="mt-5 border-t border-app-border-light pt-4">
+          <p className="mb-2 text-label text-app-text-4">{t.identity.title}</p>
           <IdentityStandingControl
             identityId={data.identity.id}
             standing={standing}
@@ -175,7 +175,7 @@ export default function ResumeDetailPage() {
       {isProgramme && (
         <Card>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-text-primary">{t.volunteer.sectionPlacement}</h2>
+            <h2 className="text-body font-semibold text-app-text">{t.volunteer.sectionPlacement}</h2>
             <Badge variant="success">{t.volunteer.tracks[data.track]}</Badge>
           </div>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -205,10 +205,10 @@ export default function ResumeDetailPage() {
 
           {data.skills.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs text-text-muted">{t.volunteer.skills}</p>
+              <p className="text-label text-app-text-4">{t.volunteer.skills}</p>
               <ul className="mt-1 flex flex-wrap gap-1.5">
                 {data.skills.map((skill) => (
-                  <li key={skill} className="rounded-md border border-border-default px-2 py-0.5 text-xs text-text-primary">
+                  <li key={skill} className="rounded-md border border-app-border-light px-2 py-0.5 text-label text-app-text">
                     {skill}
                   </li>
                 ))}
@@ -218,7 +218,7 @@ export default function ResumeDetailPage() {
 
           {(data.githubUrl || data.portfolioUrl || data.linkedinUrl) && (
             <div className="mt-4">
-              <p className="text-xs text-text-muted">{t.volunteer.links}</p>
+              <p className="text-label text-app-text-4">{t.volunteer.links}</p>
               <div className="mt-1 flex flex-wrap gap-4">
                 {(
                   [
@@ -236,7 +236,7 @@ export default function ResumeDetailPage() {
                       // Applicant-supplied links: never hand them the opener
                       // or the admin URL they were clicked from.
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+                      className="text-body font-medium text-app-primary hover:underline"
                     >
                       {label}
                     </a>
@@ -249,29 +249,29 @@ export default function ResumeDetailPage() {
 
       {/* The CV and anything they wrote ------------------------------------ */}
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-text-primary">{t.join.sectionResume}</h2>
+        <h2 className="mb-4 text-body font-semibold text-app-text">{t.join.sectionResume}</h2>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" variant="secondary" onClick={() => setIsPreviewOpen(true)}>
             <Eye className="size-4" />
             {t.common.file.preview}
           </Button>
-          <span className="ltr text-xs text-text-muted">
+          <span className="ltr text-label text-app-text-4">
             {data.resumeOriginalName} · {(data.resumeSizeBytes / 1024).toFixed(0)} kB
           </span>
         </div>
 
         {data.coverNote && (
           <div className="mt-5">
-            <p className="text-xs text-text-muted">{t.join.coverNote}</p>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-text-primary">{data.coverNote}</p>
+            <p className="text-label text-app-text-4">{t.join.coverNote}</p>
+            <p className="mt-1 whitespace-pre-wrap text-body text-app-text">{data.coverNote}</p>
           </div>
         )}
       </Card>
 
       {/* Handling ---------------------------------------------------------- */}
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-text-primary">{t.join.adminHandling}</h2>
+        <h2 className="mb-4 text-body font-semibold text-app-text">{t.join.adminHandling}</h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t.admin.status} htmlFor="resume-status">
@@ -356,8 +356,8 @@ export default function ResumeDetailPage() {
 function Field({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <dt className="text-xs text-text-muted">{label}</dt>
-      <dd className="mt-1 text-sm text-text-primary">{value || '—'}</dd>
+      <dt className="text-label text-app-text-4">{label}</dt>
+      <dd className="mt-1 text-body text-app-text">{value || '—'}</dd>
     </div>
   );
 }

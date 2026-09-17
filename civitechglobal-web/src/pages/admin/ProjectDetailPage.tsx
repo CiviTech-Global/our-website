@@ -63,7 +63,7 @@ export default function ProjectDetailPage() {
       </div>
     );
   }
-  if (!data) return <p className="text-text-muted">{t.common.error}</p>;
+  if (!data) return <p className="text-app-text-4">{t.common.error}</p>;
 
   const money = (value: string | null) =>
     value ? `${formatThousands(value)} ${t.project.currency}` : '—';
@@ -74,7 +74,7 @@ export default function ProjectDetailPage() {
     <div className="flex flex-col gap-6">
       <Link
         to="/admin/projects"
-        className="inline-flex w-fit items-center gap-1 text-sm text-text-secondary hover:text-brand-green-500"
+        className="inline-flex w-fit items-center gap-1 text-body text-app-text-3 hover:text-app-primary"
       >
         <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
         {t.proposal.adminTitle}
@@ -84,8 +84,8 @@ export default function ProjectDetailPage() {
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-text-primary">{data.title}</h1>
-            <p className="mt-1 text-sm text-text-muted">
+            <h1 className="text-title font-semibold text-app-text">{data.title}</h1>
+            <p className="mt-1 text-body text-app-text-4">
               <span className="ltr font-mono">{data.trackingCode}</span>
               {' · '}
               {formatDate(data.createdAt, locale)}
@@ -129,7 +129,7 @@ export default function ProjectDetailPage() {
 
       {/* Contact and identity -------------------------------------------- */}
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-text-primary">{t.project.sectionYou}</h2>
+        <h2 className="mb-4 text-body font-semibold text-app-text">{t.project.sectionYou}</h2>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t.project.contactName} value={data.contactName} />
           <Field label={t.project.contactRole} value={data.contactRole} />
@@ -141,8 +141,8 @@ export default function ProjectDetailPage() {
 
         {/* How many briefs this (email, phone) pair has filed. A first-time
             enquiry and a tenth one deserve different reading. */}
-        <div className="mt-4 border-t border-border-subtle pt-4">
-          <p className="mb-2 text-xs text-text-muted">
+        <div className="mt-4 border-t border-app-border-light pt-4">
+          <p className="mb-2 text-label text-app-text-4">
             {t.proposal.identitySeen
               .replace('{n}', String(data.identity.requestCount))
               .replace('{date}', formatDate(data.identity.createdAt, locale))}
@@ -158,7 +158,7 @@ export default function ProjectDetailPage() {
 
       {/* The brief -------------------------------------------------------- */}
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-text-primary">{t.proposal.theBrief}</h2>
+        <h2 className="mb-4 text-body font-semibold text-app-text">{t.proposal.theBrief}</h2>
         <Block label={t.project.summary} value={data.summary} />
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Block label={t.project.goals} value={data.goals} />
@@ -169,7 +169,7 @@ export default function ProjectDetailPage() {
           <Block label={t.project.clientNotes} value={data.clientNotes} />
         </div>
 
-        <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-border-subtle pt-4 sm:grid-cols-4">
+        <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-app-border-light pt-4 sm:grid-cols-4">
           <Field label={t.project.projectType} value={t.project.types[data.projectType]} />
           <Field label={t.project.urgency} value={t.project.urgencies[data.urgency]} />
           <Field label={t.project.engagement} value={t.project.engagements[data.engagementModel]} />
@@ -200,20 +200,20 @@ export default function ProjectDetailPage() {
       {/* Attachments ------------------------------------------------------ */}
       {data.attachments.length > 0 && (
         <Card>
-          <h2 className="mb-3 text-sm font-semibold text-text-primary">
+          <h2 className="mb-3 text-body font-semibold text-app-text">
             {t.project.sectionFiles} ({data.attachments.length})
           </h2>
           <ul className="flex flex-col gap-2">
             {data.attachments.map((file) => (
               <li
                 key={file.id}
-                className="flex items-center gap-3 rounded-lg border border-border-default p-2.5 text-sm"
+                className="flex items-center gap-3 rounded border border-app-border-light p-2.5 text-body"
               >
-                <Paperclip className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-text-primary">
+                <Paperclip className="size-4 shrink-0 text-app-text-4" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-app-text">
                   {file.originalName}
                 </span>
-                <span className="shrink-0 text-xs text-text-muted">
+                <span className="shrink-0 text-label text-app-text-4">
                   {(file.sizeBytes / 1024).toFixed(0)} KB
                 </span>
                 <Button
@@ -232,7 +232,7 @@ export default function ProjectDetailPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-text-muted">{t.proposal.attachmentWarning}</p>
+          <p className="mt-3 text-label text-app-text-4">{t.proposal.attachmentWarning}</p>
 
           {previewing && (
             <FilePreview
@@ -247,7 +247,7 @@ export default function ProjectDetailPage() {
       {/* Proposals -------------------------------------------------------- */}
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-text-primary">{t.proposal.proposals}</h2>
+          <h2 className="text-body font-semibold text-app-text">{t.proposal.proposals}</h2>
           {!composerOpen && (
             <Button type="button" onClick={() => setComposerOpen(true)}>
               {draft ? t.proposal.editDraft : t.proposal.newProposal}
@@ -256,22 +256,22 @@ export default function ProjectDetailPage() {
         </div>
 
         {data.proposals.length === 0 && !composerOpen && (
-          <p className="text-sm text-text-muted">{t.proposal.noneYet}</p>
+          <p className="text-body text-app-text-4">{t.proposal.noneYet}</p>
         )}
 
         <ul className="flex flex-col gap-3">
           {data.proposals.map((proposal) => (
             <li
               key={proposal.id}
-              className="flex flex-wrap items-center gap-3 rounded-lg border border-border-default p-3"
+              className="flex flex-wrap items-center gap-3 rounded border border-app-border-light p-3"
             >
-              <span className="text-sm font-medium text-text-primary">v{proposal.version}</span>
+              <span className="text-body font-medium text-app-text">v{proposal.version}</span>
               <Badge variant={proposal.status === 'SENT' ? 'info' : 'default'}>
                 {t.proposal.proposalStatuses[proposal.status]}
               </Badge>
-              <span className="text-sm text-text-secondary">{money(proposal.priceLikely)}</span>
+              <span className="text-body text-app-text-3">{money(proposal.priceLikely)}</span>
               {proposal.pertHours !== null && (
-                <span className="text-xs text-text-muted">
+                <span className="text-label text-app-text-4">
                   {proposal.pertHours} {t.proposal.hours}
                 </span>
               )}
@@ -339,8 +339,8 @@ export default function ProjectDetailPage() {
 function Field({ label, value, ltr }: { label: string; value: string | null; ltr?: boolean }) {
   return (
     <div>
-      <dt className="text-xs text-text-muted">{label}</dt>
-      <dd className={`mt-0.5 text-sm text-text-primary ${ltr ? 'ltr text-start' : ''}`}>
+      <dt className="text-label text-app-text-4">{label}</dt>
+      <dd className={`mt-0.5 text-body text-app-text ${ltr ? 'ltr text-start' : ''}`}>
         {value || '—'}
       </dd>
     </div>
@@ -351,8 +351,8 @@ function Block({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
     <div>
-      <p className="text-xs text-text-muted">{label}</p>
-      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-text-secondary">{value}</p>
+      <p className="text-label text-app-text-4">{label}</p>
+      <p className="mt-1 whitespace-pre-wrap text-body leading-6 text-app-text-3">{value}</p>
     </div>
   );
 }
@@ -451,7 +451,7 @@ function ProposalComposer({
   }
 
   return (
-    <div className="mt-5 flex flex-col gap-4 border-t border-border-subtle pt-5">
+    <div className="mt-5 flex flex-col gap-4 border-t border-app-border-light pt-5">
       <FormField label={t.proposal.scope} htmlFor="scopeSummary" hint={t.proposal.scopeHint}>
         <TextArea
           id="scopeSummary"
@@ -520,9 +520,9 @@ function ProposalComposer({
           />
         </FormField>
         <div className="flex flex-col justify-end">
-          <p className="text-xs text-text-muted">{t.proposal.pert}</p>
-          <p className="text-lg font-semibold text-text-primary">
-            {pert ?? '—'} <span className="text-xs font-normal">{t.proposal.hours}</span>
+          <p className="text-label text-app-text-4">{t.proposal.pert}</p>
+          <p className="text-title-sm font-semibold text-app-text">
+            {pert ?? '—'} <span className="text-label font-normal">{t.proposal.hours}</span>
           </p>
         </div>
       </div>
@@ -582,12 +582,12 @@ function ProposalComposer({
         </FormField>
       )}
 
-      <label className="flex items-center gap-2 text-sm text-text-secondary">
+      <label className="flex items-center gap-2 text-body text-app-text-3">
         <input
           type="checkbox"
           checked={form.discoveryRequired}
           onChange={(e) => set('discoveryRequired', e.target.checked)}
-          className="size-4 accent-[var(--color-brand-green-500)]"
+          className="size-4 accent-[var(--color-app-primary)]"
         />
         {t.proposal.discoveryRequired}
       </label>
@@ -663,7 +663,7 @@ function ProposalComposer({
       </FormField>
 
       {error && (
-        <p className="text-sm text-brand-red-500" role="alert">
+        <p className="text-body text-status-error" role="alert">
           {error}
         </p>
       )}

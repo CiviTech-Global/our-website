@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type { AdminDashboardStats } from '@/types/requests';
-import type { AdminRole, AdminUserListItem, CreateAdminInput, Permission } from '@/types/admin';
+import type { AdminRole, AdminUserListItem, CreateAdminInput, Permission, Workload } from '@/types/admin';
 import type { Paged } from '@/types/api';
 
 export function useAdminDashboard() {
@@ -11,6 +11,27 @@ export function useAdminDashboard() {
       const res = await api.get<AdminDashboardStats>('/admin/dashboard');
       return res.data;
     },
+  });
+}
+
+/**
+ * What is waiting for the signed-in member of staff.
+ *
+ * Feeds the sidebar's count chips and the overview, so it refreshes on its own
+ * every minute and when the tab regains focus: a queue count that only updates
+ * on a full reload is a count nobody trusts.
+ */
+export function useWorkload(enabled = true) {
+  return useQuery({
+    queryKey: ['admin', 'workload'],
+    queryFn: async () => {
+      const res = await api.get<Workload>('/admin/dashboard/workload');
+      return res.data;
+    },
+    enabled,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+    staleTime: 30_000,
   });
 }
 

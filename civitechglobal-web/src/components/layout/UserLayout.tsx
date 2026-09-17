@@ -6,6 +6,7 @@ import {
   FolderKanban,
   Gavel,
   Handshake,
+  Inbox,
   LayoutDashboard,
   MessagesSquare,
   ShieldCheck,
@@ -13,53 +14,84 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { DashboardShell, type SidebarEntry } from './DashboardShell';
+import { useUnreadCounts } from '@/api/marketplace';
+import { AppShell } from '@/components/app/AppShell';
+import type { NavModule } from '@/components/app/navigation';
 
+/**
+ * The account holder's panel.
+ *
+ * Three modules: the account itself, the marketplace activity it carries, and
+ * the conversations that activity produces. Verification sits with the account
+ * rather than the marketplace because it is a fact about the person — it only
+ * happens to be the door into posting and bidding.
+ */
 export function UserLayout() {
   const { t } = useLocale();
+  const { data: unread } = useUnreadCounts();
 
-  // Grouped once the marketplace arrived: six links in a flat rail read as six
-  // equally important places, when in fact four of them are one activity and
-  // verification is the door into it.
-  const items: SidebarEntry[] = [
-    { to: '/dashboard', label: t.dashboard.overview, icon: <LayoutDashboard className="size-4" />, end: true },
-    { to: '/dashboard/profile', label: t.dashboard.profile, icon: <UserCircle className="size-4" /> },
+  const modules: NavModule[] = [
     {
-      to: '/dashboard/verification',
-      label: t.market.verificationTitle,
-      icon: <ShieldCheck className="size-4" />,
+      id: 'home',
+      label: t.app.home,
+      icon: <LayoutDashboard />,
+      sections: [
+        {
+          id: 'main',
+          items: [
+            { to: '/dashboard', label: t.dashboard.overview, icon: <LayoutDashboard />, end: true },
+            { to: '/dashboard/profile', label: t.dashboard.profile, icon: <UserCircle /> },
+            { to: '/dashboard/verification', label: t.market.verificationTitle, icon: <ShieldCheck /> },
+          ],
+        },
+      ],
     },
     {
       id: 'marketplace',
       label: t.market.groupMarketplace,
-      icon: <Store className="size-4" />,
-      items: [
-        { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase className="size-4" /> },
+      icon: <Store />,
+      sections: [
         {
-          to: '/dashboard/applications',
-          label: t.market.myApplications,
-          icon: <FileText className="size-4" />,
-        },
-        {
-          to: '/dashboard/projects',
-          label: t.market.myProjects,
-          icon: <FolderKanban className="size-4" />,
-        },
-        { to: '/dashboard/bids', label: t.market.myBids, icon: <Gavel className="size-4" /> },
-        {
-          to: '/dashboard/awards',
-          label: t.market.myAwards,
-          icon: <Handshake className="size-4" />,
+          id: 'main',
+          items: [
+            { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase /> },
+            { to: '/dashboard/applications', label: t.market.myApplications, icon: <FileText /> },
+            { to: '/dashboard/projects', label: t.market.myProjects, icon: <FolderKanban /> },
+            { to: '/dashboard/bids', label: t.market.myBids, icon: <Gavel /> },
+            { to: '/dashboard/awards', label: t.market.myAwards, icon: <Handshake /> },
+          ],
         },
       ],
     },
-    { to: '/dashboard/messages', label: t.market.messagesNav, icon: <MessagesSquare className="size-4" /> },
-    { to: '/dashboard/notifications', label: t.market.notificationsNav, icon: <Bell className="size-4" /> },
+    {
+      id: 'inbox',
+      label: t.app.inbox,
+      icon: <Inbox />,
+      sections: [
+        {
+          id: 'main',
+          items: [
+            {
+              to: '/dashboard/messages',
+              label: t.market.messagesNav,
+              icon: <MessagesSquare />,
+              count: unread?.messages,
+            },
+            {
+              to: '/dashboard/notifications',
+              label: t.market.notificationsNav,
+              icon: <Bell />,
+              count: unread?.notifications,
+            },
+          ],
+        },
+      ],
+    },
   ];
 
   return (
-    <DashboardShell title={t.common.brand} items={items} notificationsLink="/dashboard/notifications">
+    <AppShell panel="user" modules={modules} notificationsLink="/dashboard/notifications">
       <Outlet />
-    </DashboardShell>
+    </AppShell>
   );
 }

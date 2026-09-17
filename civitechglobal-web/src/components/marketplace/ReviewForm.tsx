@@ -41,7 +41,7 @@ export function ReviewForm({ awardId }: ReviewFormProps) {
   }
 
   if (done) {
-    return <p className="text-sm text-brand-green-600">{t.market.reviewSubmitted}</p>;
+    return <p className="text-body text-app-primary">{t.market.reviewSubmitted}</p>;
   }
 
   return (
@@ -64,7 +64,7 @@ export function ReviewForm({ awardId }: ReviewFormProps) {
                     'size-6',
                     value <= rating
                       ? 'fill-amber-400 text-amber-400'
-                      : 'fill-transparent text-surface-300 dark:text-surface-200',
+                      : 'fill-transparent text-app-border',
                   )}
                 />
               </button>

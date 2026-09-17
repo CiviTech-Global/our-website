@@ -58,7 +58,7 @@ export function ReviewActions({ onReview, isPending, children }: ReviewActionsPr
   }
 
   return (
-    <div className="mt-4 flex flex-col gap-3 border-t border-border-default pt-4">
+    <div className="mt-4 flex flex-col gap-3 border-t border-app-border-light pt-4">
       {children}
 
       <FormField label={t.market.reviewNoteLabel}>

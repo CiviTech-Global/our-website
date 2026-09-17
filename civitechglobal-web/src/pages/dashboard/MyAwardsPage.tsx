@@ -45,7 +45,7 @@ export default function MyAwardsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary">{t.market.myAwards}</h1>
+      <h1 className="text-page font-semibold text-app-text">{t.market.myAwards}</h1>
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -72,7 +72,7 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
           <div className="flex flex-wrap items-center gap-2">
             <Link
               to={`${listPath}/${award.listing.code}`}
-              className="text-lg font-semibold text-text-primary hover:underline"
+              className="text-title-sm font-semibold text-app-text hover:underline"
             >
               {award.listing.title}
             </Link>
@@ -91,7 +91,7 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
                 : t.market[`award${award.award.status}` as 'awardActive']}
             </Badge>
           </div>
-          <p className="mt-1 text-sm text-text-secondary">
+          <p className="mt-1 text-body text-app-text-3">
             {award.myRole === 'author' ? t.market.awardRoleAuthor : t.market.awardRoleCounterparty}
             {award.award.agreedAmount && (
               <>
@@ -101,7 +101,7 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
             )}
           </p>
           {award.counterpartyProfile && (
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-body">
               <Link
                 to={`/profiles/${award.counterpartyProfile.username}`}
                 className="font-medium text-brand-600 hover:underline"
@@ -120,7 +120,7 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
       </div>
 
       {award.award.disputeStatus === 'OPEN' && (
-        <div className="flex items-start gap-2 rounded-lg bg-brand-red-100 p-3 text-sm text-brand-red-700 dark:bg-brand-red-900/40 dark:text-brand-red-300">
+        <div className="flex items-start gap-2 rounded border border-status-error-border bg-status-error-bg p-3 text-body text-status-error">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
           <div>
             <p className="font-medium">{t.market.disputeOpenBadge}</p>
@@ -131,7 +131,7 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
 
       {award.milestones.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-medium text-text-secondary">{t.market.milestones}</h2>
+          <h2 className="mb-3 text-body font-medium text-app-text-3">{t.market.milestones}</h2>
           <MilestoneTimeline milestones={award.milestones} />
         </div>
       )}
@@ -139,20 +139,20 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
       {active && <AwardActions award={award} />}
 
       {award.award.status === 'COMPLETED' && !award.myReview && (
-        <div className="rounded-lg border border-surface-200 p-4 dark:border-surface-300">
-          <h2 className="mb-3 text-sm font-medium text-text-secondary">{t.market.reviewAward}</h2>
+        <div className="rounded border border-app-border-light p-4">
+          <h2 className="mb-3 text-body font-medium text-app-text-3">{t.market.reviewAward}</h2>
           <ReviewForm awardId={award.award.id} />
         </div>
       )}
 
       {award.myReview && (
-        <p className="flex items-center gap-2 text-sm text-text-secondary">
-          <CheckCircle2 className="size-4 text-brand-green-600" aria-hidden />
+        <p className="flex items-center gap-2 text-body text-app-text-3">
+          <CheckCircle2 className="size-4 text-app-primary" aria-hidden />
           {t.market.reviewSubmitted}
         </p>
       )}
       {award.theirReview && (
-        <p className="flex items-center gap-2 text-sm text-text-secondary">
+        <p className="flex items-center gap-2 text-body text-app-text-3">
           {t.market.theirRating}: <RatingStars avg={award.theirReview.rating} count={0} />
         </p>
       )}
@@ -211,13 +211,13 @@ function AwardActions({ award }: { award: AwardView }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-surface-200 pt-3 dark:border-surface-300">
+    <div className="flex flex-col gap-3 border-t border-app-border-light pt-3">
       {!isAuthor &&
         award.milestones
           .filter((m) => m.status === 'PENDING')
           .map((milestone) =>
             deliveringId === milestone.id ? (
-              <div key={milestone.id} className="flex flex-col gap-2 rounded-lg bg-surface-100 p-3 dark:bg-surface-200">
+              <div key={milestone.id} className="flex flex-col gap-2 rounded bg-app-subtle p-3">
                 <FormField label={t.market.deliveryNoteLabel} htmlFor={`note-${milestone.id}`}>
                   <TextArea
                     id={`note-${milestone.id}`}
@@ -278,7 +278,7 @@ function AwardActions({ award }: { award: AwardView }) {
 
       {isAuthor &&
         (adding ? (
-          <form onSubmit={handleAddMilestone} className="flex flex-col gap-2 rounded-lg bg-surface-100 p-3 dark:bg-surface-200">
+          <form onSubmit={handleAddMilestone} className="flex flex-col gap-2 rounded bg-app-subtle p-3">
             <FormField label={t.market.milestoneTitle} htmlFor="milestoneTitle">
               <Input id="milestoneTitle" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </FormField>
@@ -303,8 +303,8 @@ function AwardActions({ award }: { award: AwardView }) {
 
       {(allApproved || award.milestones.length === 0) && (
         confirmingComplete ? (
-          <div className="flex flex-col gap-2 rounded-lg bg-surface-100 p-3 dark:bg-surface-200">
-            <p className="text-sm text-text-secondary">{t.market.completeAwardConfirm}</p>
+          <div className="flex flex-col gap-2 rounded bg-app-subtle p-3">
+            <p className="text-body text-app-text-3">{t.market.completeAwardConfirm}</p>
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -355,8 +355,8 @@ function DisputeButton({ awardId }: { awardId: string }) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-2 rounded-lg bg-surface-100 p-3 sm:w-auto dark:bg-surface-200">
-      <p className="text-sm text-text-muted">{t.market.disputeConfirm}</p>
+    <div className="flex w-full flex-col gap-2 rounded bg-app-subtle p-3 sm:w-auto">
+      <p className="text-body text-app-text-4">{t.market.disputeConfirm}</p>
       <TextArea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} aria-label={t.market.disputeReasonLabel} />
       <div className="flex gap-2">
         <Button

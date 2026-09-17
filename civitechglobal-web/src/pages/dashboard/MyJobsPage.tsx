@@ -122,7 +122,7 @@ export default function MyJobsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.myJobs}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.myJobs}</h1>
         {isVerified && (
           <Button onClick={() => setIsFormOpen(true)}>
             <Plus className="size-4" aria-hidden="true" />
@@ -133,7 +133,7 @@ export default function MyJobsPage() {
 
       {!isVerified && (
         <Card>
-          <p className="text-sm text-text-secondary">{t.market.verificationRequired}</p>
+          <p className="text-body text-app-text-3">{t.market.verificationRequired}</p>
           <Link to="/dashboard/verification" className="mt-3 inline-block">
             <Button variant="outline">{t.market.goToVerification}</Button>
           </Link>
@@ -154,8 +154,8 @@ export default function MyJobsPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{job.title}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="font-medium text-app-text">{job.title}</p>
+                  <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr font-mono">{job.code}</span>
                     {' · '}
                     {formatDate(job.createdAt, locale)}
@@ -170,9 +170,9 @@ export default function MyJobsPage() {
               </div>
 
               {job.reviewNote && (
-                <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-                  <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-                  <p className="mt-1 text-sm text-text-primary">{job.reviewNote}</p>
+                <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+                  <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+                  <p className="mt-1 text-body text-app-text">{job.reviewNote}</p>
                 </div>
               )}
 
@@ -280,10 +280,10 @@ export default function MyJobsPage() {
             </FormField>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-text-secondary">
+          <label className="flex items-center gap-2 text-body text-app-text-3">
             <input
               type="checkbox"
-              className="size-4 rounded border-border-strong"
+              className="size-4 rounded border-app-border"
               checked={draft.salaryUndisclosed}
               onChange={(e) => set('salaryUndisclosed')(e.target.checked)}
             />
@@ -321,7 +321,7 @@ export default function MyJobsPage() {
             />
           </FormField>
 
-          <p className="text-xs text-text-muted">{t.market.submitWarning}</p>
+          <p className="text-label text-app-text-4">{t.market.submitWarning}</p>
 
           <div className="flex gap-2">
             <Button type="submit" isLoading={create.isPending}>
@@ -372,12 +372,12 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">
+                  <p className="font-medium text-app-text">
                     {application.applicant.firstName} {application.applicant.lastName}
                   </p>
-                  <p className="ltr text-xs text-text-muted">{application.applicant.email}</p>
+                  <p className="ltr text-label text-app-text-4">{application.applicant.email}</p>
                   {application.applicantProfile && (
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-label">
                       <Link
                         to={`/profiles/${application.applicantProfile.username}`}
                         className="font-medium text-brand-600 hover:underline"
@@ -398,20 +398,20 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
               </div>
 
               {application.expectedSalary && (
-                <p className="mt-2 text-sm text-text-secondary">
+                <p className="mt-2 text-body text-app-text-3">
                   {t.market.expectedSalary}: {formatMoney(application.expectedSalary, locale)}{' '}
                   {t.market.currency}
                 </p>
               )}
 
               {application.coverLetter && (
-                <p className="mt-2 whitespace-pre-line text-sm text-text-primary">
+                <p className="mt-2 whitespace-pre-line text-body text-app-text">
                   {application.coverLetter}
                 </p>
               )}
 
               {application.cvOriginalName && (
-                <p className="mt-2 text-xs text-text-muted">
+                <p className="mt-2 text-label text-app-text-4">
                   {t.market.cv}: {application.cvOriginalName}
                 </p>
               )}

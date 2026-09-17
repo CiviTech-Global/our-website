@@ -98,8 +98,8 @@ export default function MessagesPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{t.contact.inboxTitle}</h1>
-          <p className="mt-1 text-sm text-text-secondary">
+          <h1 className="text-page font-semibold text-app-text">{t.contact.inboxTitle}</h1>
+          <p className="mt-1 text-body text-app-text-3">
             {t.contact.inboxSubtitle}
             {data && data.open > 0 && ` · ${data.open} ${t.contact.statuses.OPEN}`}
           </p>
@@ -133,17 +133,17 @@ export default function MessagesPage() {
       <ul className="flex flex-col gap-3">
         {data?.items.map((message) => (
           <li key={message.id}>
-            <Card className={message.readAt ? undefined : 'border-brand-green-500/40'}>
+            <Card className={message.readAt ? undefined : 'border-app-primary/40'}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">
+                  <p className="font-medium text-app-text">
                     {message.name}{' '}
-                    <span className="ltr text-sm font-normal text-text-muted">{message.email}</span>
+                    <span className="ltr text-body font-normal text-app-text-4">{message.email}</span>
                   </p>
                   {message.subject && (
-                    <p className="mt-0.5 text-sm text-text-secondary">{message.subject}</p>
+                    <p className="mt-0.5 text-body text-app-text-3">{message.subject}</p>
                   )}
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="mt-0.5 text-label text-app-text-4">
                     {t.contact.trackingCode}: <span className="ltr font-mono">{message.trackingCode}</span>
                   </p>
                 </div>
@@ -152,13 +152,13 @@ export default function MessagesPage() {
                   <Badge variant={STATUS_VARIANT[message.status]}>
                     {t.contact.statuses[message.status]}
                   </Badge>
-                  <span className="text-xs text-text-muted">
+                  <span className="text-label text-app-text-4">
                     {formatDate(message.createdAt, locale)}
                   </span>
                 </div>
               </div>
 
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-text-secondary">
+              <p className="mt-3 whitespace-pre-wrap text-body leading-6 text-app-text-3">
                 {message.message}
               </p>
 
@@ -167,10 +167,10 @@ export default function MessagesPage() {
                   {message.replies.map((r) => (
                     <li
                       key={r.id}
-                      className="rounded-lg border border-brand-green-500/40 bg-brand-green-50/40 p-3 dark:bg-brand-green-900/10"
+                      className="rounded border border-app-primary/40 bg-app-primary-soft p-3"
                     >
-                      <p className="whitespace-pre-wrap text-sm text-text-primary">{r.body}</p>
-                      <p className="mt-2 text-xs text-text-muted">
+                      <p className="whitespace-pre-wrap text-body text-app-text">{r.body}</p>
+                      <p className="mt-2 text-label text-app-text-4">
                         {r.author ? `${r.author.firstName} ${r.author.lastName}` : t.contact.staffReply}
                         {' · '}
                         {formatDate(r.createdAt, locale)}
@@ -250,7 +250,7 @@ function ReplyBox({ messageId, onReplied }: { messageId: string; onReplied: () =
   });
 
   return (
-    <div className="mt-4 border-t border-border-default pt-3">
+    <div className="mt-4 border-t border-app-border-light pt-3">
       <TextArea
         rows={3}
         value={body}

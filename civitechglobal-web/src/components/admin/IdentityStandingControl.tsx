@@ -48,7 +48,7 @@ export function IdentityStandingControl({
       </Badge>
 
       {typeof requestCount === 'number' && (
-        <span className="text-xs text-text-muted">
+        <span className="text-label text-app-text-4">
           {t.identity.requestCount.replace('{n}', String(requestCount))}
         </span>
       )}

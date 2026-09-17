@@ -77,7 +77,7 @@ export function PublicProfileForm() {
         <CardDescription>{t.market.publicProfileHint}</CardDescription>
       </CardHeader>
       {!profile?.username && (
-        <p className="mb-4 text-sm text-text-muted">{t.market.usernameMissingHint}</p>
+        <p className="mb-4 text-body text-app-text-4">{t.market.usernameMissingHint}</p>
       )}
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <FormField label={t.market.headlineLabel} htmlFor="headline" error={errors.headline?.message}>

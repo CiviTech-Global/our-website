@@ -101,7 +101,7 @@ export default function MyProjectsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.myProjects}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.myProjects}</h1>
         {isVerified && (
           <Button onClick={() => setIsFormOpen(true)}>
             <Plus className="size-4" aria-hidden="true" />
@@ -112,7 +112,7 @@ export default function MyProjectsPage() {
 
       {!isVerified && (
         <Card>
-          <p className="text-sm text-text-secondary">{t.market.verificationRequired}</p>
+          <p className="text-body text-app-text-3">{t.market.verificationRequired}</p>
           <Link to="/dashboard/verification" className="mt-3 inline-block">
             <Button variant="outline">{t.market.goToVerification}</Button>
           </Link>
@@ -135,8 +135,8 @@ export default function MyProjectsPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{project.title}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="font-medium text-app-text">{project.title}</p>
+                  <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr font-mono">{project.code}</span>
                     {' · '}
                     {formatDate(project.createdAt, locale)}
@@ -151,9 +151,9 @@ export default function MyProjectsPage() {
               </div>
 
               {project.reviewNote && (
-                <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-                  <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-                  <p className="mt-1 text-sm text-text-primary">{project.reviewNote}</p>
+                <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+                  <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+                  <p className="mt-1 text-body text-app-text">{project.reviewNote}</p>
                 </div>
               )}
 
@@ -217,10 +217,10 @@ export default function MyProjectsPage() {
             />
           </FormField>
 
-          <label className="flex items-center gap-2 text-sm text-text-secondary">
+          <label className="flex items-center gap-2 text-body text-app-text-3">
             <input
               type="checkbox"
-              className="size-4 rounded border-border-strong"
+              className="size-4 rounded border-app-border"
               checked={draft.budgetUnknown}
               onChange={(e) => set('budgetUnknown')(e.target.checked)}
             />
@@ -276,17 +276,17 @@ export default function MyProjectsPage() {
             />
           </FormField>
 
-          <label className="flex items-start gap-2 text-sm text-text-secondary">
+          <label className="flex items-start gap-2 text-body text-app-text-3">
             <input
               type="checkbox"
-              className="mt-0.5 size-4 rounded border-border-strong"
+              className="mt-0.5 size-4 rounded border-app-border"
               checked={draft.openToCompanyOffer}
               onChange={(e) => set('openToCompanyOffer')(e.target.checked)}
             />
             {t.market.openToCompanyOffer}
           </label>
 
-          <p className="text-xs text-text-muted">{t.market.submitWarning}</p>
+          <p className="text-label text-app-text-4">{t.market.submitWarning}</p>
 
           <div className="flex gap-2">
             <Button type="submit" isLoading={create.isPending}>
@@ -330,7 +330,7 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
 
   return (
     <Modal isOpen onClose={onClose} title={t.market.bids}>
-      <p className="mb-4 text-sm text-text-muted">{t.market.sealedHint}</p>
+      <p className="mb-4 text-body text-app-text-4">{t.market.sealedHint}</p>
 
       {isLoading && (
         <div className="flex justify-center py-8">
@@ -343,21 +343,21 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
       <ul className="flex flex-col gap-3">
         {data?.map((bid) => (
           <li key={bid.id}>
-            <Card className={bid.isCompanyOffer ? 'border-brand-green-500/50' : undefined}>
+            <Card className={bid.isCompanyOffer ? 'border-app-primary/40' : undefined}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   {bid.isCompanyOffer ? (
-                    <p className="flex items-center gap-1.5 font-medium text-brand-green-600">
+                    <p className="flex items-center gap-1.5 font-medium text-app-primary">
                       <Building2 className="size-4" aria-hidden="true" />
                       {t.market.companyOffer}
                     </p>
                   ) : (
-                    <p className="font-medium text-text-primary">
+                    <p className="font-medium text-app-text">
                       {bid.bidder?.firstName} {bid.bidder?.lastName}
                     </p>
                   )}
                   {!bid.isCompanyOffer && bid.bidderProfile && (
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-label">
                       <Link
                         to={`/profiles/${bid.bidderProfile.username}`}
                         className="font-medium text-brand-600 hover:underline"
@@ -371,7 +371,7 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
                       />
                     </div>
                   )}
-                  <p className="mt-0.5 text-sm text-text-secondary">
+                  <p className="mt-0.5 text-body text-app-text-3">
                     {formatMoney(bid.amount, locale)} {t.market.currency}
                     {bid.deliveryDays
                       ? ` · ${locale === 'fa' ? toPersianDigits(bid.deliveryDays) : bid.deliveryDays} ${t.market.deliveryDays}`
@@ -382,10 +382,10 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
               </div>
 
               {bid.isCompanyOffer && (
-                <p className="mt-2 text-xs text-text-muted">{t.market.companyOfferHint}</p>
+                <p className="mt-2 text-label text-app-text-4">{t.market.companyOfferHint}</p>
               )}
 
-              <p className="mt-2 whitespace-pre-line text-sm text-text-primary">{bid.message}</p>
+              <p className="mt-2 whitespace-pre-line text-body text-app-text">{bid.message}</p>
 
               {!bid.isCompanyOffer && (
                 <div className="mt-3">
@@ -401,7 +401,7 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
                 <div className="mt-3">
                   {confirming === bid.id ? (
                     <div className="flex flex-col gap-2">
-                      <p className="text-sm text-text-secondary">{t.market.acceptBidConfirm}</p>
+                      <p className="text-body text-app-text-3">{t.market.acceptBidConfirm}</p>
                       <div className="flex gap-2">
                         <Button
                           size="sm"

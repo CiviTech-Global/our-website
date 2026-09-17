@@ -59,7 +59,7 @@ export default function ConversationThreadPage() {
   if (isError || !data) {
     return (
       <div className="flex flex-col gap-4 py-16 text-center">
-        <p className="text-text-secondary">{t.market.threadUnavailable}</p>
+        <p className="text-app-text-3">{t.market.threadUnavailable}</p>
         <Link to="/dashboard/messages" className="text-brand-600 hover:underline">
           {t.market.backToMessages}
         </Link>
@@ -72,19 +72,19 @@ export default function ConversationThreadPage() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
           to="/dashboard/messages"
-          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary"
+          className="inline-flex items-center gap-1.5 text-body text-app-text-3 hover:text-app-text"
         >
           <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
           {t.market.backToMessages}
         </Link>
-        <Link to={data.anchor.path} className="text-sm text-brand-600 hover:underline">
+        <Link to={data.anchor.path} className="text-body text-brand-600 hover:underline">
           {data.anchor.listingTitle}
         </Link>
       </div>
 
       <Card className="flex flex-col gap-3">
         {data.messages.length === 0 && (
-          <p className="py-8 text-center text-sm text-text-muted">{t.market.emptyThread}</p>
+          <p className="py-8 text-center text-body text-app-text-4">{t.market.emptyThread}</p>
         )}
         {data.messages.map((message) => (
           <div
@@ -93,10 +93,10 @@ export default function ConversationThreadPage() {
           >
             <div
               className={cn(
-                'max-w-[80%] whitespace-pre-line rounded-2xl px-4 py-2 text-sm sm:max-w-[65%]',
+                'max-w-[80%] whitespace-pre-line rounded px-4 py-2 text-body sm:max-w-[65%]',
                 message.mine
-                  ? 'rounded-br-sm bg-brand-green-500 text-white'
-                  : 'rounded-bl-sm bg-surface-200 text-text-primary dark:bg-surface-300',
+                  ? 'rounded-br-sm bg-app-primary text-white'
+                  : 'rounded-bl-sm bg-app-fill text-app-text',
               )}
             >
               {message.body}

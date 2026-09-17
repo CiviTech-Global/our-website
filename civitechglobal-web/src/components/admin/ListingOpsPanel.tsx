@@ -55,7 +55,7 @@ export function ListingOpsPanel({ kind, id, featured }: ListingOpsPanelProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-surface-300 p-2 text-xs">
+    <div className="flex flex-wrap items-center gap-2 rounded border border-dashed border-app-border p-2 text-label">
       <Button size="sm" variant="outline" isLoading={feature.isPending} onClick={toggleFeature}>
         {featured ? <StarOff className="size-3.5" aria-hidden /> : <Star className="size-3.5" aria-hidden />}
         {featured ? t.ops.unfeature : t.ops.feature}

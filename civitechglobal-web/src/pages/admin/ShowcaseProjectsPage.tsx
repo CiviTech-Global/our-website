@@ -61,9 +61,9 @@ export default function ShowcaseProjectsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <h1 className="text-2xl font-bold text-text-primary">{t.showcase.adminProjectsTitle}</h1>
-          <p className="mt-1 text-sm text-text-secondary">{t.showcase.adminProjectsSubtitle}</p>
-          <p className="mt-1 text-xs text-text-muted">{t.showcase.orderNote}</p>
+          <h1 className="text-page font-semibold text-app-text">{t.showcase.adminProjectsTitle}</h1>
+          <p className="mt-1 text-body text-app-text-3">{t.showcase.adminProjectsSubtitle}</p>
+          <p className="mt-1 text-label text-app-text-4">{t.showcase.orderNote}</p>
         </div>
         <Button onClick={() => setEditing('new')}>
           <Plus className="size-4" aria-hidden="true" />
@@ -93,26 +93,26 @@ export default function ShowcaseProjectsPage() {
                   downLabel={t.showcase.moveDown}
                 />
 
-                <div className="flex h-14 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-default bg-surface-200">
+                <div className="flex h-14 w-24 shrink-0 items-center justify-center overflow-hidden rounded border border-app-border-light bg-app-fill">
                   <StaffImage
                     path={adminImagePath(project.coverUrl)}
                     alt=""
                     className="size-full object-cover"
-                    fallback={<Code2 className="size-6 text-text-muted" aria-hidden="true" />}
+                    fallback={<Code2 className="size-6 text-app-text-4" aria-hidden="true" />}
                   />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-center gap-2 font-medium text-text-primary">
+                  <p className="flex flex-wrap items-center gap-2 font-medium text-app-text">
                     {project.title}
                     {project.featured && (
                       <Star
-                        className="size-4 fill-brand-amber-500 text-brand-amber-500"
+                        className="size-4 fill-status-warning text-status-warning"
                         aria-label={t.showcase.featuredLabel}
                       />
                     )}
                   </p>
-                  <p className="text-xs text-text-muted">
+                  <p className="text-label text-app-text-4">
                     {[t.showcase.projectStatuses[project.status], project.category, project.client?.name]
                       .filter(Boolean)
                       .join(' · ')}
@@ -147,14 +147,14 @@ export default function ShowcaseProjectsPage() {
                     aria-label={t.common.delete}
                     onClick={() => setConfirming(project.id)}
                   >
-                    <Trash2 className="size-4 text-brand-red-500" aria-hidden="true" />
+                    <Trash2 className="size-4 text-status-error" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
 
               {confirming === project.id && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-default pt-3">
-                  <p className="text-sm text-text-secondary">{t.showcase.deleteProjectConfirm}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-app-border-light pt-3">
+                  <p className="text-body text-app-text-3">{t.showcase.deleteProjectConfirm}</p>
                   <Button
                     size="sm"
                     variant="danger"
@@ -333,19 +333,19 @@ function ProjectForm({ project, onClose }: { project: AdminShowcaseProject | nul
         </FormField>
 
         <div className="flex flex-col gap-2">
-          <label className="flex items-start gap-2 text-sm text-text-secondary">
+          <label className="flex items-start gap-2 text-body text-app-text-3">
             <input
               type="checkbox"
-              className="mt-0.5 size-4 rounded border-border-strong"
+              className="mt-0.5 size-4 rounded border-app-border"
               checked={values.featured}
               onChange={(e) => set('featured', e.target.checked)}
             />
             {t.showcase.featuredLabel} — {t.showcase.featuredHint}
           </label>
-          <label className="flex items-start gap-2 text-sm text-text-secondary">
+          <label className="flex items-start gap-2 text-body text-app-text-3">
             <input
               type="checkbox"
-              className="mt-0.5 size-4 rounded border-border-strong"
+              className="mt-0.5 size-4 rounded border-app-border"
               checked={values.published}
               onChange={(e) => set('published', e.target.checked)}
             />

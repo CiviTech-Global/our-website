@@ -592,3 +592,27 @@ textarea::placeholder {
     opacity: 1;
   }
 }
+
+/* The dashboards' mobile navigation drawer, sliding in from its own edge. */
+@keyframes ct-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes ct-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.ct-slide-in-left {
+  animation: ct-slide-in-left 0.2s ease-out both;
+}
+.ct-slide-in-right {
+  animation: ct-slide-in-right 0.2s ease-out both;
+}

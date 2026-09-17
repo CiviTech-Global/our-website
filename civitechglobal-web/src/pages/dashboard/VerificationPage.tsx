@@ -150,13 +150,13 @@ export default function VerificationPage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.verificationTitle}</h1>
-        <p className="mt-1 text-sm text-text-secondary">{t.market.verificationIntro}</p>
+        <h1 className="text-page font-semibold text-app-text">{t.market.verificationTitle}</h1>
+        <p className="mt-1 text-body text-app-text-3">{t.market.verificationIntro}</p>
       </div>
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="flex items-center gap-2 text-sm text-text-secondary">
+          <span className="flex items-center gap-2 text-body text-app-text-3">
             <ShieldCheck className="size-4" aria-hidden="true" />
             {t.market.verificationStatus}
           </span>
@@ -164,19 +164,19 @@ export default function VerificationPage() {
         </div>
 
         {status === 'PENDING' && (
-          <p className="mt-3 text-sm text-text-secondary">{t.market.verificationPendingHint}</p>
+          <p className="mt-3 text-body text-app-text-3">{t.market.verificationPendingHint}</p>
         )}
         {status === 'APPROVED' && (
-          <p className="mt-3 text-sm text-text-secondary">{t.market.verificationApprovedHint}</p>
+          <p className="mt-3 text-body text-app-text-3">{t.market.verificationApprovedHint}</p>
         )}
         {status === 'REJECTED' && (
-          <p className="mt-3 text-sm text-text-secondary">{t.market.verificationRejectedHint}</p>
+          <p className="mt-3 text-body text-app-text-3">{t.market.verificationRejectedHint}</p>
         )}
 
         {data?.reviewNote && (
-          <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-            <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-            <p className="mt-1 text-sm text-text-primary">{data.reviewNote}</p>
+          <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+            <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+            <p className="mt-1 text-body text-app-text">{data.reviewNote}</p>
           </div>
         )}
       </Card>
@@ -324,10 +324,10 @@ export default function VerificationPage() {
             )}
 
             <fieldset className="flex flex-col gap-3">
-              <legend className="mb-1 text-sm font-medium text-text-primary">
+              <legend className="mb-1 text-body font-medium text-app-text">
                 {t.market.documents}
               </legend>
-              <p className="-mt-2 text-xs text-text-muted">
+              <p className="-mt-2 text-label text-app-text-4">
                 {needsCompany
                   ? t.market.requiredDocumentsCompany
                   : t.market.requiredDocumentsIndividual}

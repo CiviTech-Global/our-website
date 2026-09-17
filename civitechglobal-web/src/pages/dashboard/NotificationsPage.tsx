@@ -32,7 +32,7 @@ export default function NotificationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.notificationsNav}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.notificationsNav}</h1>
         {data && data.unreadCount > 0 && (
           <Button
             size="sm"
@@ -91,14 +91,14 @@ function NotificationRow({
     <Card
       className={cn(
         'transition',
-        notification.readAt ? 'opacity-70' : 'border-brand-green-500/40',
+        notification.readAt ? 'opacity-70' : 'border-app-primary/40',
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-medium text-text-primary">{notification.title}</p>
-          <p className="mt-0.5 text-sm text-text-secondary">{notification.body}</p>
-          <p className="mt-1 text-xs text-text-muted">
+          <p className="font-medium text-app-text">{notification.title}</p>
+          <p className="mt-0.5 text-body text-app-text-3">{notification.body}</p>
+          <p className="mt-1 text-label text-app-text-4">
             {formatDate(notification.createdAt, locale)}
           </p>
         </div>
@@ -110,7 +110,7 @@ function NotificationRow({
               event.stopPropagation();
               onMarkRead();
             }}
-            className="shrink-0 rounded-full bg-brand-green-100 px-2.5 py-1 text-xs font-medium text-brand-green-700 hover:bg-brand-green-200 dark:bg-brand-green-900/40 dark:text-brand-green-300"
+            className="shrink-0 rounded-full border border-app-primary/30 bg-app-primary-soft px-2.5 py-1 text-label font-medium text-app-primary hover:border-app-primary/60"
           >
             {t.market.markRead}
           </button>

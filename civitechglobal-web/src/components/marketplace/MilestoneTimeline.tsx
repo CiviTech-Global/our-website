@@ -9,9 +9,9 @@ interface MilestoneTimelineProps {
 }
 
 const STATUS_STYLES: Record<AwardMilestone['status'], string> = {
-  APPROVED: 'border-brand-green-500 bg-brand-green-500 text-white',
-  IN_REVIEW: 'border-brand-amber-500 bg-brand-amber-500 text-white',
-  PENDING: 'border-surface-300 bg-surface-100 text-text-muted dark:border-surface-300 dark:bg-surface-200',
+  APPROVED: 'border-app-primary bg-app-primary text-white',
+  IN_REVIEW: 'border-status-warning bg-status-warning text-white',
+  PENDING: 'border-app-border bg-app-subtle text-app-text-4',
 };
 
 function StatusIcon({ status }: { status: AwardMilestone['status'] }) {
@@ -29,7 +29,7 @@ export function MilestoneTimeline({ milestones }: MilestoneTimelineProps) {
   const { t, locale } = useLocale();
 
   return (
-    <ol className="relative flex flex-col gap-0 border-s-2 border-surface-200 ms-2 dark:border-surface-300">
+    <ol className="relative flex flex-col gap-0 border-s-2 border-app-border ms-2">
       {milestones.map((milestone) => (
         <li key={milestone.id} className="relative pb-6 ps-6 last:pb-0">
           <span
@@ -42,17 +42,17 @@ export function MilestoneTimeline({ milestones }: MilestoneTimelineProps) {
           </span>
           <div className="flex flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-text-primary">{milestone.title}</span>
-              <span className="text-xs text-text-muted">
+              <span className="font-medium text-app-text">{milestone.title}</span>
+              <span className="text-label text-app-text-4">
                 {milestone.status === 'APPROVED'
                   ? t.market.approvedState
                   : t.market[milestone.status === 'IN_REVIEW' ? 'milestoneInReview' : 'milestonePending']}
               </span>
             </div>
             {milestone.description && (
-              <p className="text-sm text-text-secondary">{milestone.description}</p>
+              <p className="text-body text-app-text-3">{milestone.description}</p>
             )}
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-label text-app-text-4">
               {milestone.dueDate && (
                 <span>
                   {t.market.milestoneDue}: {formatDate(milestone.dueDate, locale)}
@@ -71,7 +71,7 @@ export function MilestoneTimeline({ milestones }: MilestoneTimelineProps) {
               )}
             </div>
             {milestone.deliveryNote && (
-              <p className="whitespace-pre-line rounded-lg bg-surface-100 p-2 text-sm text-text-primary dark:bg-surface-200">
+              <p className="whitespace-pre-line rounded bg-app-subtle p-2 text-body text-app-text">
                 {milestone.deliveryNote}
               </p>
             )}

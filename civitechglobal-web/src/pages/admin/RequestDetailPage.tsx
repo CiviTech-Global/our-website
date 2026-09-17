@@ -45,7 +45,7 @@ export default function RequestDetailPage() {
   }
 
   if (isError || !detail) {
-    return <Card className="border-brand-red-500/30 text-sm text-text-secondary">{t.errors.networkError}</Card>;
+    return <Card className="border-status-error-border text-body text-app-text-3">{t.errors.networkError}</Card>;
   }
 
   const { request, answers, formChangedSinceSubmission } = detail;
@@ -89,7 +89,7 @@ export default function RequestDetailPage() {
       <button
         type="button"
         onClick={() => navigate('/admin/requests')}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary"
+        className="mb-4 inline-flex items-center gap-1.5 text-body text-app-text-3 hover:text-app-text"
       >
         <BackIcon className="size-4" aria-hidden="true" />
         {t.common.back}
@@ -113,28 +113,28 @@ export default function RequestDetailPage() {
           </div>
         </CardHeader>
 
-        <div className="mb-6 rounded-lg border border-border-subtle bg-surface-100 p-4">
-          <p className="text-xs text-text-muted">{categoryLabel ?? t.admin.category}</p>
-          <p className="mt-0.5 text-base font-semibold text-text-primary">
+        <div className="mb-6 rounded border border-app-border-light bg-app-subtle p-4">
+          <p className="text-label text-app-text-4">{categoryLabel ?? t.admin.category}</p>
+          <p className="mt-0.5 text-body-lg font-semibold text-app-text">
             {emoji && <span aria-hidden="true">{emoji} </span>}
             {describeRequestSubject(request, locale)}
           </p>
-          <p className="ltr mt-2 font-mono text-xs tracking-widest text-text-muted">
+          <p className="ltr mt-2 font-mono text-label tracking-widest text-app-text-4">
             {request.trackingCode}
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-text-primary">{t.admin.contactInfo}</h3>
-            <dl className="space-y-1.5 text-sm">
+            <h3 className="mb-2 text-body font-semibold text-app-text">{t.admin.contactInfo}</h3>
+            <dl className="space-y-1.5 text-body">
               <Row
                 label={t.admin.phone}
                 value={
                   <span className="ltr inline-flex items-center gap-1.5">
                     {request.phoneNumber}
                     {request.phoneVerified && (
-                      <span className="text-brand-green-500" title={t.admin.phoneVerified}>
+                      <span className="text-app-primary" title={t.admin.phoneVerified}>
                         ✓
                       </span>
                     )}
@@ -151,10 +151,10 @@ export default function RequestDetailPage() {
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-text-primary">
+            <h3 className="mb-2 text-body font-semibold text-app-text">
               {request.source === 'TELEGRAM' ? t.admin.telegramInfo : t.admin.submissionInfo}
             </h3>
-            <dl className="space-y-1.5 text-sm">
+            <dl className="space-y-1.5 text-body">
               {request.source === 'TELEGRAM' ? (
                 <>
                   <Row label="Telegram ID" value={<span className="ltr">{request.telegramUserId ?? '—'}</span>} />
@@ -180,27 +180,27 @@ export default function RequestDetailPage() {
               those enquiries were only ever a request for a call. */}
           {answers.length > 0 && (
             <section className="sm:col-span-2">
-              <h3 className="mb-2 text-sm font-semibold text-text-primary">{t.admin.formAnswers}</h3>
+              <h3 className="mb-2 text-body font-semibold text-app-text">{t.admin.formAnswers}</h3>
 
               {formChangedSinceSubmission && (
-                <p className="mb-3 flex items-start gap-2 rounded-lg border border-brand-amber-500/40 bg-brand-amber-500/5 p-3 text-xs text-text-secondary">
-                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-brand-amber-500" aria-hidden="true" />
+                <p className="mb-3 flex items-start gap-2 rounded border border-status-warning-border bg-status-warning-bg p-3 text-label text-app-text-3">
+                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-status-warning" aria-hidden="true" />
                   {t.admin.formChangedNotice}
                 </p>
               )}
 
-              <dl className="divide-y divide-border-subtle rounded-lg border border-border-subtle">
+              <dl className="divide-y divide-app-border-light rounded border border-app-border-light">
                 {answers.map((answer) => (
-                  <div key={answer.name} className="flex flex-wrap justify-between gap-4 p-3 text-sm">
-                    <dt className="text-text-muted">
+                  <div key={answer.name} className="flex flex-wrap justify-between gap-4 p-3 text-body">
+                    <dt className="text-app-text-4">
                       {locale === 'fa' ? answer.label : answer.labelEn}
                       {answer.orphaned && (
-                        <span className="ms-1 text-xs text-brand-amber-500" title={t.admin.orphanedAnswer}>
+                        <span className="ms-1 text-label text-status-warning" title={t.admin.orphanedAnswer}>
                           ⚠
                         </span>
                       )}
                     </dt>
-                    <dd className="font-medium text-text-primary">
+                    <dd className="font-medium text-app-text">
                       {locale === 'fa' ? answer.display : answer.displayEn}
                     </dd>
                   </div>
@@ -211,8 +211,8 @@ export default function RequestDetailPage() {
 
           {request.notes && (
             <section className="sm:col-span-2">
-              <h3 className="mb-2 text-sm font-semibold text-text-primary">{t.admin.notes}</h3>
-              <p className="whitespace-pre-wrap rounded-lg bg-surface-200/50 p-3 text-sm text-text-secondary">
+              <h3 className="mb-2 text-body font-semibold text-app-text">{t.admin.notes}</h3>
+              <p className="whitespace-pre-wrap rounded bg-app-subtle p-3 text-body text-app-text-3">
                 {request.notes}
               </p>
             </section>
@@ -224,11 +224,11 @@ export default function RequestDetailPage() {
             every enquiry stayed unassigned — which also made the per-user
             scoping on the list a no-op, since it shows a non-super-admin what
             is theirs OR unassigned. */}
-        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-border-subtle pt-6 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-app-border-light pt-6 sm:grid-cols-2">
           <div>
             <label
               htmlFor="assignee"
-              className="mb-1.5 block text-sm font-medium text-text-primary"
+              className="mb-1.5 block text-body font-medium text-app-text"
             >
               {t.admin.assignedTo}
             </label>
@@ -250,7 +250,7 @@ export default function RequestDetailPage() {
           <div>
             <label
               htmlFor="callback"
-              className="mb-1.5 block text-sm font-medium text-text-primary"
+              className="mb-1.5 block text-body font-medium text-app-text"
             >
               {t.admin.callbackScheduled}
             </label>
@@ -267,7 +267,7 @@ export default function RequestDetailPage() {
 
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <div className="w-56">
-            <label htmlFor="status" className="mb-1.5 block text-sm font-medium text-text-primary">
+            <label htmlFor="status" className="mb-1.5 block text-body font-medium text-app-text">
               {t.admin.updateStatus}
             </label>
             <Select
@@ -328,8 +328,8 @@ function contactTimeLabel(value: string | null | undefined, locale: Locale): str
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="text-text-muted">{label}</dt>
-      <dd className="font-medium text-text-primary">{value}</dd>
+      <dt className="text-app-text-4">{label}</dt>
+      <dd className="font-medium text-app-text">{value}</dd>
     </div>
   );
 }

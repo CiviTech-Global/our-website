@@ -41,8 +41,8 @@ export default function BidQueuePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.queueBids}</h1>
-        <p className="mt-1 text-sm text-text-secondary">{t.market.fairnessHint}</p>
+        <h1 className="text-page font-semibold text-app-text">{t.market.queueBids}</h1>
+        <p className="mt-1 text-body text-app-text-3">{t.market.fairnessHint}</p>
       </div>
 
       {isLoading && (
@@ -65,52 +65,52 @@ export default function BidQueuePage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     {row.isCompanyOffer ? (
-                      <p className="flex items-center gap-1.5 font-medium text-brand-green-600">
+                      <p className="flex items-center gap-1.5 font-medium text-app-primary">
                         <Building2 className="size-4" aria-hidden="true" />
                         {t.market.companyOffer}
                       </p>
                     ) : (
-                      <p className="font-medium text-text-primary">
+                      <p className="font-medium text-app-text">
                         {row.bidder?.firstName} {row.bidder?.lastName}{' '}
-                        <span className="ltr text-xs text-text-muted">({row.bidder?.email})</span>
+                        <span className="ltr text-label text-app-text-4">({row.bidder?.email})</span>
                       </p>
                     )}
-                    <p className="mt-0.5 text-xs text-text-muted">
+                    <p className="mt-0.5 text-label text-app-text-4">
                       {formatDate(row.createdAt, locale)}
                     </p>
                   </div>
                   <div className="text-end">
-                    <p className="text-lg font-semibold text-text-primary">
+                    <p className="text-title-sm font-semibold text-app-text">
                       {formatMoney(row.amount, locale)}{' '}
-                      <span className="text-sm font-normal">{t.market.currency}</span>
+                      <span className="text-body font-normal">{t.market.currency}</span>
                     </p>
                     {row.deliveryDays && (
-                      <p className="text-xs text-text-muted">
+                      <p className="text-label text-app-text-4">
                         {days(row.deliveryDays)} {t.market.deliveryDays}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-                  <p className="text-xs font-medium text-text-secondary">{t.market.projectScope}</p>
-                  <p className="mt-0.5 text-sm font-medium text-text-primary">
+                <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+                  <p className="text-label font-medium text-app-text-3">{t.market.projectScope}</p>
+                  <p className="mt-0.5 text-body font-medium text-app-text">
                     {row.project.title}{' '}
-                    <span className="ltr font-mono text-xs text-text-muted">
+                    <span className="ltr font-mono text-label text-app-text-4">
                       {row.project.code}
                     </span>
                   </p>
-                  <p className="mt-1 line-clamp-4 text-xs text-text-secondary">
+                  <p className="mt-1 line-clamp-4 text-label text-app-text-3">
                     {row.project.description}
                   </p>
                   {budget && (
-                    <p className="mt-2 text-xs text-text-secondary">
+                    <p className="mt-2 text-label text-app-text-3">
                       {t.market.clientBudget}: <Badge variant="info">{budget}</Badge>
                     </p>
                   )}
                 </div>
 
-                <p className="mt-3 whitespace-pre-line text-sm text-text-primary">{row.message}</p>
+                <p className="mt-3 whitespace-pre-line text-body text-app-text">{row.message}</p>
 
                 <ReviewActions
                   isPending={review.isPending}

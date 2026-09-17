@@ -61,11 +61,11 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
-          <p className="mt-1 text-sm text-text-secondary">
+          <h1 className="text-page font-semibold text-app-text">{title}</h1>
+          <p className="mt-1 text-body text-app-text-3">
             {isCustomer ? t.showcase.adminCustomersSubtitle : t.showcase.adminPartnersSubtitle}
           </p>
-          <p className="mt-1 text-xs text-text-muted">{t.showcase.orderNote}</p>
+          <p className="mt-1 text-label text-app-text-4">{t.showcase.orderNote}</p>
         </div>
         <Button onClick={() => setEditing('new')}>
           <Plus className="size-4" aria-hidden="true" />
@@ -97,23 +97,23 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
                   downLabel={t.showcase.moveDown}
                 />
 
-                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-default bg-white p-1.5">
+                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded border border-app-border-light bg-white p-1.5">
                   <StaffImage
                     path={adminImagePath(org.logoUrl)}
                     alt={org.name}
                     className="max-h-full max-w-full object-contain"
-                    fallback={<Building2 className="size-6 text-text-muted" aria-hidden="true" />}
+                    fallback={<Building2 className="size-6 text-app-text-4" aria-hidden="true" />}
                   />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-center gap-2 font-medium text-text-primary">
+                  <p className="flex flex-wrap items-center gap-2 font-medium text-app-text">
                     {org.name}
                     {org.featured && (
-                      <Star className="size-4 fill-brand-amber-500 text-brand-amber-500" aria-label={t.showcase.featuredLabel} />
+                      <Star className="size-4 fill-status-warning text-status-warning" aria-label={t.showcase.featuredLabel} />
                     )}
                   </p>
-                  <p className="text-xs text-text-muted">
+                  <p className="text-label text-app-text-4">
                     {[
                       org.partnershipType ? t.showcase.partnershipTypes[org.partnershipType] : null,
                       org.industry,
@@ -152,14 +152,14 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
                     aria-label={t.common.delete}
                     onClick={() => setConfirming(org.id)}
                   >
-                    <Trash2 className="size-4 text-brand-red-500" aria-hidden="true" />
+                    <Trash2 className="size-4 text-status-error" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
 
               {confirming === org.id && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-default pt-3">
-                  <p className="text-sm text-text-secondary">{t.showcase.deleteOrganizationConfirm}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-app-border-light pt-3">
+                  <p className="text-body text-app-text-3">{t.showcase.deleteOrganizationConfirm}</p>
                   <Button
                     size="sm"
                     variant="danger"
@@ -260,10 +260,10 @@ function OrganizationForm({
   }
 
   const check = (key: 'featured' | 'active' | 'published', label: string) => (
-    <label className="flex items-start gap-2 text-sm text-text-secondary">
+    <label className="flex items-start gap-2 text-body text-app-text-3">
       <input
         type="checkbox"
-        className="mt-0.5 size-4 rounded border-border-strong"
+        className="mt-0.5 size-4 rounded border-app-border"
         checked={values[key]}
         onChange={(e) => set(key, e.target.checked)}
       />
@@ -343,9 +343,9 @@ function OrganizationForm({
           />
         </FormField>
 
-        <fieldset className="flex flex-col gap-3 rounded-xl border border-border-default p-4">
-          <legend className="px-1 text-sm font-medium text-text-primary">{t.showcase.testimonial}</legend>
-          <p className="text-xs text-text-muted">{t.showcase.testimonialHint}</p>
+        <fieldset className="flex flex-col gap-3 rounded border border-app-border-light p-4">
+          <legend className="px-1 text-body font-medium text-app-text">{t.showcase.testimonial}</legend>
+          <p className="text-label text-app-text-4">{t.showcase.testimonialHint}</p>
           <FormField label={t.showcase.testimonialQuote} htmlFor="org-quote">
             <TextArea id="org-quote" rows={3} value={values.testimonialQuote} onChange={(e) => set('testimonialQuote', e.target.value)} />
           </FormField>

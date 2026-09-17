@@ -34,7 +34,7 @@ export default function MyApplicationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary">{t.market.myApplications}</h1>
+      <h1 className="text-page font-semibold text-app-text">{t.market.myApplications}</h1>
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -50,8 +50,8 @@ export default function MyApplicationsPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{application.job.title}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="font-medium text-app-text">{application.job.title}</p>
+                  <p className="mt-0.5 text-label text-app-text-4">
                     {application.job.companyName && `${application.job.companyName} · `}
                     <span className="ltr font-mono">{application.job.code}</span>
                     {' · '}
@@ -71,16 +71,16 @@ export default function MyApplicationsPage() {
               </div>
 
               {application.expectedSalary && (
-                <p className="mt-2 text-sm text-text-secondary">
+                <p className="mt-2 text-body text-app-text-3">
                   {t.market.expectedSalary}: {formatMoney(application.expectedSalary, locale)}{' '}
                   {t.market.currency}
                 </p>
               )}
 
               {application.reviewNote && (
-                <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-                  <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-                  <p className="mt-1 text-sm text-text-primary">{application.reviewNote}</p>
+                <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+                  <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+                  <p className="mt-1 text-body text-app-text">{application.reviewNote}</p>
                 </div>
               )}
 
@@ -138,9 +138,9 @@ function ReviseModal({
   return (
     <Modal isOpen onClose={onClose} title={t.market.revise}>
       {application.reviewNote && (
-        <div className="mb-4 rounded-lg border border-border-default bg-surface-200 p-3">
-          <p className="text-xs font-medium text-text-secondary">{t.market.reviewNote}</p>
-          <p className="mt-1 text-sm text-text-primary">{application.reviewNote}</p>
+        <div className="mb-4 rounded border border-app-border-light bg-app-fill p-3">
+          <p className="text-label font-medium text-app-text-3">{t.market.reviewNote}</p>
+          <p className="mt-1 text-body text-app-text">{application.reviewNote}</p>
         </div>
       )}
 

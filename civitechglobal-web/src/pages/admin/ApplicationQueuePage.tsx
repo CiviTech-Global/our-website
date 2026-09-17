@@ -45,7 +45,7 @@ export default function ApplicationQueuePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.queueApplications}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.queueApplications}</h1>
         <Select
           className="w-auto"
           value={status}
@@ -77,10 +77,10 @@ export default function ApplicationQueuePage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">
+                  <p className="font-medium text-app-text">
                     {row.applicant.firstName} {row.applicant.lastName}
                   </p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr">{row.applicant.email}</span>
                     {' · '}
                     {formatDate(row.createdAt, locale)}
@@ -91,26 +91,26 @@ export default function ApplicationQueuePage() {
                 </Badge>
               </div>
 
-              <div className="mt-3 rounded-lg border border-border-default bg-surface-200 p-3">
-                <p className="text-xs font-medium text-text-secondary">{t.market.queueJobs}</p>
-                <p className="mt-0.5 text-sm font-medium text-text-primary">
+              <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
+                <p className="text-label font-medium text-app-text-3">{t.market.queueJobs}</p>
+                <p className="mt-0.5 text-body font-medium text-app-text">
                   {row.job.title}
                   {row.job.companyName && ` — ${row.job.companyName}`}
                 </p>
-                <p className="mt-1 line-clamp-3 text-xs text-text-secondary">
+                <p className="mt-1 line-clamp-3 text-label text-app-text-3">
                   {row.job.description}
                 </p>
               </div>
 
               {row.expectedSalary && (
-                <p className="mt-3 text-sm text-text-secondary">
+                <p className="mt-3 text-body text-app-text-3">
                   {t.market.expectedSalary}: {formatMoney(row.expectedSalary, locale)}{' '}
                   {t.market.currency}
                 </p>
               )}
 
               {row.coverLetter && (
-                <p className="mt-2 whitespace-pre-line text-sm text-text-primary">
+                <p className="mt-2 whitespace-pre-line text-body text-app-text">
                   {row.coverLetter}
                 </p>
               )}

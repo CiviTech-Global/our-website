@@ -19,8 +19,8 @@ export default function RolesPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-text-primary">{t.admin.roles}</h1>
-      <p className="mb-4 text-xs text-text-muted">{t.admin.rolesEndpointNote}</p>
+      <h1 className="mb-6 text-page font-semibold text-app-text">{t.admin.roles}</h1>
+      <p className="mb-4 text-label text-app-text-4">{t.admin.rolesEndpointNote}</p>
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -46,7 +46,7 @@ export default function RolesPage() {
             <Card key={role.id}>
               <CardHeader>
                 <CardTitle>{role.name}</CardTitle>
-                {role.description && <p className="text-sm text-text-secondary">{role.description}</p>}
+                {role.description && <p className="text-body text-app-text-3">{role.description}</p>}
               </CardHeader>
               <div className="flex flex-wrap gap-1.5">
                 {role.permissions.map((permission) => (

@@ -3,22 +3,22 @@ import {
   BarChart3,
   Briefcase,
   Building2,
-  FolderGit2,
-  GraduationCap,
-  Handshake,
-  Sparkles,
   ClipboardList,
   Code2,
+  FileText,
+  FolderGit2,
+  FolderKanban,
+  Gavel,
+  GraduationCap,
+  Handshake,
   Inbox,
   LayoutDashboard,
   Mail,
-  FileText,
-  FolderKanban,
-  Gavel,
   ScrollText,
   Settings,
   Shield,
   ShieldCheck,
+  Sparkles,
   Store,
   UserPlus,
   Users,
@@ -26,157 +26,168 @@ import {
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthProvider';
-import { DashboardShell, type SidebarEntry } from './DashboardShell';
+import { useWorkload } from '@/api/admin';
+import { AppShell } from '@/components/app/AppShell';
+import type { NavItem, NavModule } from '@/components/app/navigation';
+import type { QueueKey } from '@/types/admin';
 
+/**
+ * The admin panel's navigation, as modules on the rail and screens in the
+ * sidebar.
+ *
+ * A super admin reaches everything; an admin reaches what it was granted. A
+ * screen the reader cannot open is not listed, and a module left with nothing
+ * in it is not shown — otherwise the links that are not theirs answer 403,
+ * which reads as the site being broken rather than as access they do not have.
+ */
 export function AdminLayout() {
   const { t } = useLocale();
   const { user } = useAuth();
+  const { data: workload } = useWorkload(Boolean(user));
 
-  /**
-   * A super admin reaches everything; an admin reaches what it was granted.
-   *
-   * Without this the sidebar advertised every module to every admin, and the
-   * links that were not theirs answered 403 — which reads as the site being
-   * broken rather than as access it does not have.
-   */
-  const can = (permission: string) =>
-    user?.role === 'SUPER_ADMIN' || (user?.permissions ?? []).includes(permission);
+  const isSuper = user?.role === 'SUPER_ADMIN';
+  const can = (permission: string) => isSuper || (user?.permissions ?? []).includes(permission);
+  const open = (key: QueueKey) => workload?.queues[key]?.open;
 
-  // Grouped rather than listed flat: with five intakes and two administration
-  // screens a single rail scrolled, and everything read as equally important.
-  const items: SidebarEntry[] = [
-    { to: '/admin', label: t.admin.dashboard, icon: <LayoutDashboard className="size-4" />, end: true },
+  /** One entry per queue, used both in its own module and in "waiting on you". */
+  const queue = {
+    projects: { to: '/admin/projects', label: t.proposal.adminTitle, icon: <Code2 />, count: open('projects') },
+    resumes: { to: '/admin/resumes', label: t.join.adminTitle, icon: <UserPlus />, count: open('resumes') },
+    programme: {
+      to: '/admin/programme',
+      label: t.volunteer.adminTitle,
+      icon: <GraduationCap />,
+      count: open('programme'),
+    },
+    insurance: { to: '/admin/requests', label: t.admin.requests, icon: <ClipboardList />, count: open('insurance') },
+    messages: { to: '/admin/messages', label: t.contact.inboxTitle, icon: <Mail />, count: open('messages') },
+    verification: {
+      to: '/admin/verifications',
+      label: t.market.queueVerifications,
+      icon: <ShieldCheck />,
+      count: open('verification'),
+    },
+    jobPosts: { to: '/admin/job-postings', label: t.market.queueJobs, icon: <Briefcase />, count: open('jobPosts') },
+    applications: {
+      to: '/admin/applications',
+      label: t.market.queueApplications,
+      icon: <FileText />,
+      count: open('applications'),
+    },
+    freelanceProjects: {
+      to: '/admin/freelance-projects',
+      label: t.market.queueProjects,
+      icon: <FolderKanban />,
+      count: open('freelanceProjects'),
+    },
+    bids: { to: '/admin/bids', label: t.market.queueBids, icon: <Gavel />, count: open('bids') },
+  } satisfies Partial<Record<QueueKey, NavItem>>;
+
+  const when = (condition: boolean, ...items: NavItem[]) => (condition ? items : []);
+
+  // Everything with work waiting, busiest first — the overview module's
+  // sidebar doubles as a to-do list across every desk the reader holds.
+  const waiting = Object.values(queue)
+    .filter((item) => (item.count ?? 0) > 0)
+    .sort((a, b) => (b.count ?? 0) - (a.count ?? 0))
+    .map((item) => ({ ...item, shortcut: true }));
+
+  const modules: NavModule[] = [
+    {
+      id: 'home',
+      label: t.app.home,
+      icon: <LayoutDashboard />,
+      sections: [
+        { id: 'main', items: [{ to: '/admin', label: t.admin.dashboard, icon: <LayoutDashboard />, end: true }] },
+        { id: 'waiting', label: t.app.waitingOnYou, items: waiting },
+      ],
+    },
     {
       id: 'intake',
       label: t.admin.groupIntake,
-      icon: <Inbox className="size-4" />,
-      items: [
-        ...(can('projects')
-          ? [{ to: '/admin/projects', label: t.proposal.adminTitle, icon: <Code2 className="size-4" /> }]
-          : []),
-        ...(can('resumes')
-          ? [
-              { to: '/admin/resumes', label: t.join.adminTitle, icon: <UserPlus className="size-4" /> },
-              {
-                to: '/admin/programme',
-                label: t.volunteer.adminTitle,
-                icon: <GraduationCap className="size-4" />,
-              },
-            ]
-          : []),
-        ...(can('insurance')
-          ? [{ to: '/admin/requests', label: t.admin.requests, icon: <ClipboardList className="size-4" /> }]
-          : []),
-        ...(can('messages')
-          ? [{ to: '/admin/messages', label: t.contact.inboxTitle, icon: <Mail className="size-4" /> }]
-          : []),
+      icon: <Inbox />,
+      sections: [
+        {
+          id: 'main',
+          items: [
+            ...when(can('projects'), queue.projects),
+            ...when(can('resumes'), queue.resumes, queue.programme),
+            ...when(can('insurance'), queue.insurance),
+            ...when(can('messages'), queue.messages),
+          ],
+        },
       ],
     },
     {
       id: 'marketplace',
       label: t.market.groupMarketplace,
-      icon: <Store className="size-4" />,
-      items: [
-        ...(can('verification')
-          ? [
-              {
-                to: '/admin/verifications',
-                label: t.market.queueVerifications,
-                icon: <ShieldCheck className="size-4" />,
-              },
-            ]
-          : []),
-        // Postings and the applications answering them are one desk: whoever
-        // decides a role belongs on the board is who judges the replies to it.
-        ...(can('jobs')
-          ? [
-              {
-                to: '/admin/job-postings',
-                label: t.market.queueJobs,
-                icon: <Briefcase className="size-4" />,
-              },
-              {
-                to: '/admin/applications',
-                label: t.market.queueApplications,
-                icon: <FileText className="size-4" />,
-              },
-            ]
-          : []),
-        ...(can('freelance')
-          ? [
-              {
-                to: '/admin/freelance-projects',
-                label: t.market.queueProjects,
-                icon: <FolderKanban className="size-4" />,
-              },
-              {
-                to: '/admin/bids',
-                label: t.market.queueBids,
-                icon: <Gavel className="size-4" />,
-              },
-            ]
-          : []),
-        ...(can('analytics')
-          ? [
-              {
-                to: '/admin/marketplace',
-                label: t.analytics.title,
-                icon: <BarChart3 className="size-4" />,
-              },
-            ]
-          : []),
+      icon: <Store />,
+      sections: [
+        {
+          id: 'moderation',
+          items: [
+            ...when(can('verification'), queue.verification),
+            // Postings and the applications answering them are one desk: whoever
+            // decides a role belongs on the board judges the replies to it.
+            ...when(can('jobs'), queue.jobPosts, queue.applications),
+            ...when(can('freelance'), queue.freelanceProjects, queue.bids),
+          ],
+        },
+        {
+          id: 'insights',
+          label: t.analytics.title,
+          items: when(can('analytics'), {
+            to: '/admin/marketplace',
+            label: t.analytics.title,
+            icon: <BarChart3 />,
+          }),
+        },
       ],
     },
-    ...(user?.role === 'SUPER_ADMIN'
-      ? [
-          {
-            to: '/admin/audit',
-            label: t.audit.title,
-            icon: <ScrollText className="size-4" />,
-          },
-        ]
-      : []),
-    // What the company says about itself: who it works for, with, and on what.
     {
       id: 'showcase',
       label: t.showcase.groupAdmin,
-      icon: <Sparkles className="size-4" />,
-      items: can('showcase')
-        ? [
-            { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 className="size-4" /> },
-            { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake className="size-4" /> },
-            { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 className="size-4" /> },
-          ]
-        : [],
+      icon: <Sparkles />,
+      sections: [
+        {
+          id: 'main',
+          items: [
+            ...when(
+              can('showcase'),
+              { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 /> },
+              { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake /> },
+              { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 /> }
+            ),
+            // Super admin only, and not a grantable permission: who represents
+            // the company on its own page is not a module of work to delegate.
+            ...when(isSuper, { to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound /> }),
+          ],
+        },
+      ],
     },
     {
       id: 'administration',
       label: t.admin.groupAdministration,
-      icon: <Settings className="size-4" />,
-      items: [
-        ...(can('users')
-          ? [{ to: '/admin/users', label: t.admin.users, icon: <Users className="size-4" /> }]
-          : []),
-        ...(can('users')
-          ? [{ to: '/admin/roles', label: t.admin.roles, icon: <Shield className="size-4" /> }]
-          : []),
-        // Super admin only, and deliberately not behind a grantable
-        // permission: who represents the company on its own page is not a
-        // module of work to delegate.
-        ...(user?.role === 'SUPER_ADMIN'
-          ? [{ to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound className="size-4" /> }]
-          : []),
+      icon: <Settings />,
+      sections: [
+        {
+          id: 'main',
+          items: [
+            ...when(
+              can('users'),
+              { to: '/admin/users', label: t.admin.users, icon: <Users /> },
+              { to: '/admin/roles', label: t.admin.roles, icon: <Shield /> }
+            ),
+            ...when(isSuper, { to: '/admin/audit', label: t.audit.title, icon: <ScrollText /> }),
+          ],
+        },
       ],
     },
   ];
 
-  // A group with nothing left in it is noise, not structure — an admin granted
-  // only one module should see one link, not two empty headings.
-  const visible = items.filter((entry) => !('items' in entry) || entry.items.length > 0);
-
   return (
-    <DashboardShell title={t.nav.admin} items={visible}>
+    <AppShell panel="admin" modules={modules}>
       <Outlet />
-    </DashboardShell>
+    </AppShell>
   );
 }

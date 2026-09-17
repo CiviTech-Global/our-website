@@ -36,7 +36,7 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <AnimatedSection>
-        <h1 className="text-2xl font-semibold text-text-primary">
+        <h1 className="text-page font-semibold text-app-text">
           {t.dashboard.welcome}, {user?.firstName}
         </h1>
       </AnimatedSection>
@@ -45,14 +45,14 @@ export default function DashboardPage() {
           how people learn to stop reading banners. */}
       {user?.emailVerified === false && (
         <AnimatedSection delay={0.02} className="mt-6">
-          <Card className="flex flex-wrap items-center gap-3 border-brand-amber-500/40">
+          <Card className="flex flex-wrap items-center gap-3 border-status-warning-border">
             <MailWarning
-              className="size-5 shrink-0 text-brand-amber-500"
+              className="size-5 shrink-0 text-status-warning"
               aria-hidden="true"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-text-primary">{t.auth.verifyBannerTitle}</p>
-              <p className="mt-0.5 text-sm text-text-secondary">{t.auth.verifyBannerBody}</p>
+              <p className="text-body font-medium text-app-text">{t.auth.verifyBannerTitle}</p>
+              <p className="mt-0.5 text-body text-app-text-3">{t.auth.verifyBannerBody}</p>
             </div>
             <Button
               type="button"
@@ -82,13 +82,13 @@ export default function DashboardPage() {
         <AnimatedSection delay={0.05}>
           <Card>
             <div className="mb-3 flex items-center justify-between">
-              <CircleUserRound className="size-6 text-brand-green-500" aria-hidden="true" />
-              <span className="text-sm font-medium text-text-secondary">{completion}%</span>
+              <CircleUserRound className="size-6 text-app-primary" aria-hidden="true" />
+              <span className="text-body font-medium text-app-text-3">{completion}%</span>
             </div>
-            <p className="text-sm font-medium text-text-primary">{t.dashboard.profileCompletionTitle}</p>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-200">
+            <p className="text-body font-medium text-app-text">{t.dashboard.profileCompletionTitle}</p>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-app-fill">
               <div
-                className="h-full rounded-full bg-brand-green-500 transition-all"
+                className="h-full rounded-full bg-app-primary transition-all"
                 style={{ width: `${completion}%` }}
               />
             </div>
@@ -98,27 +98,27 @@ export default function DashboardPage() {
         <AnimatedSection delay={0.1}>
           <Card>
             <div className="mb-3 flex items-center justify-between">
-              <CheckCircle2 className="size-6 text-brand-green-500" aria-hidden="true" />
+              <CheckCircle2 className="size-6 text-app-primary" aria-hidden="true" />
               <Badge variant="success">{t.dashboard.accountStatusActive}</Badge>
             </div>
-            <p className="text-sm font-medium text-text-primary">{t.dashboard.accountStatusTitle}</p>
+            <p className="text-body font-medium text-app-text">{t.dashboard.accountStatusTitle}</p>
           </Card>
         </AnimatedSection>
 
         <AnimatedSection delay={0.15}>
           <Card>
             <div className="mb-3 flex items-center justify-between">
-              <ShieldCheck className="size-6 text-brand-amber-500" aria-hidden="true" />
+              <ShieldCheck className="size-6 text-status-warning" aria-hidden="true" />
               <Badge variant="info">{user?.role}</Badge>
             </div>
-            <p className="text-sm font-medium text-text-primary">{t.dashboard.roleTitle}</p>
+            <p className="text-body font-medium text-app-text">{t.dashboard.roleTitle}</p>
           </Card>
         </AnimatedSection>
       </div>
 
       {stats && (
         <AnimatedSection delay={0.18} className="mt-8">
-          <h2 className="text-lg font-semibold text-text-primary">{t.meStats.sectionTitle}</h2>
+          <h2 className="text-title-sm font-semibold text-app-text">{t.meStats.sectionTitle}</h2>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             <StatLink to="/dashboard/jobs" label={t.meStats.listings} value={stats.listings.total} />
             <StatLink to="/dashboard/jobs" label={t.meStats.views} value={stats.listings.views} />
@@ -136,9 +136,9 @@ export default function DashboardPage() {
 
       {verification && verification.status !== 'APPROVED' && (
         <AnimatedSection delay={0.19} className="mt-6">
-          <Card className="flex flex-wrap items-center gap-3 border-brand-amber-500/40">
-            <ShieldCheck className="size-5 shrink-0 text-brand-amber-500" aria-hidden="true" />
-            <p className="min-w-0 flex-1 text-sm text-text-secondary">{t.meStats.verificationNudge}</p>
+          <Card className="flex flex-wrap items-center gap-3 border-status-warning-border">
+            <ShieldCheck className="size-5 shrink-0 text-status-warning" aria-hidden="true" />
+            <p className="min-w-0 flex-1 text-body text-app-text-3">{t.meStats.verificationNudge}</p>
             <Link to="/dashboard/verification">
               <Button type="button" variant="secondary">
                 {t.market.verificationTitle}
@@ -152,7 +152,7 @@ export default function DashboardPage() {
           list of "your requests" to show here. Links to the things an account
           holder actually came to do are more use than an empty table. */}
       <AnimatedSection delay={0.2} className="mt-8">
-        <h2 className="text-lg font-semibold text-text-primary">{t.dashboard.quickActions}</h2>
+        <h2 className="text-title-sm font-semibold text-app-text">{t.dashboard.quickActions}</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <QuickAction
             to="/start-project"
@@ -179,8 +179,8 @@ function StatLink({ to, label, value }: { to: string; label: string; value: numb
   return (
     <Link to={to} className="block transition-transform hover:-translate-y-0.5">
       <Card className="flex h-full flex-col gap-1">
-        <span className="text-xl font-bold text-text-primary">{value}</span>
-        <span className="text-xs text-text-secondary">{label}</span>
+        <span className="text-title font-semibold text-app-text">{value}</span>
+        <span className="text-label text-app-text-3">{label}</span>
       </Card>
     </Link>
   );
@@ -188,13 +188,13 @@ function StatLink({ to, label, value }: { to: string; label: string; value: numb
 
 function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
   return (
-    <Link to={to} className="block rounded-2xl transition-transform hover:-translate-y-0.5">
+    <Link to={to} className="block rounded transition-transform hover:-translate-y-0.5">
       <Card className="flex h-full items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-green-500/10 text-brand-green-600 dark:text-brand-green-400">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded bg-app-primary-soft text-app-primary">
           {icon}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">{label}</span>
-        <ArrowLeft className="size-4 shrink-0 text-text-muted ltr:rotate-180" aria-hidden="true" />
+        <span className="min-w-0 flex-1 truncate text-body font-medium text-app-text">{label}</span>
+        <ArrowLeft className="size-4 shrink-0 text-app-text-4 ltr:rotate-180" aria-hidden="true" />
       </Card>
     </Link>
   );

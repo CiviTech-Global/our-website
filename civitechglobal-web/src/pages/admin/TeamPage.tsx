@@ -80,8 +80,8 @@ export default function AdminTeamPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">{t.team.adminTitle}</h1>
-        <p className="mt-1 text-sm text-text-secondary">{t.team.adminSubtitle}</p>
+        <h1 className="text-page font-semibold text-app-text">{t.team.adminTitle}</h1>
+        <p className="mt-1 text-body text-app-text-3">{t.team.adminSubtitle}</p>
       </div>
 
       {isLoading && (
@@ -94,10 +94,10 @@ export default function AdminTeamPage() {
       <section className="flex flex-col gap-3" aria-labelledby="sections-heading">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="max-w-2xl">
-            <h2 id="sections-heading" className="text-lg font-semibold text-text-primary">
+            <h2 id="sections-heading" className="text-title-sm font-semibold text-app-text">
               {t.team.sectionsTitle}
             </h2>
-            <p className="mt-1 text-sm text-text-secondary">{t.team.sectionsHint}</p>
+            <p className="mt-1 text-body text-app-text-3">{t.team.sectionsHint}</p>
           </div>
           <Button variant="secondary" onClick={() => setEditingSection('new')}>
             <FolderPlus className="size-4" aria-hidden="true" />
@@ -106,7 +106,7 @@ export default function AdminTeamPage() {
         </div>
 
         {!isLoading && sections.order.length === 0 && (
-          <p className="text-sm text-text-muted">{t.team.sectionsEmpty}</p>
+          <p className="text-body text-app-text-4">{t.team.sectionsEmpty}</p>
         )}
 
         <ul className="flex flex-col gap-2">
@@ -123,9 +123,9 @@ export default function AdminTeamPage() {
                     downLabel={t.team.moveDown}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-text-primary">{section.name}</p>
+                    <p className="font-medium text-app-text">{section.name}</p>
                     {section.description && (
-                      <p className="text-sm text-text-secondary">{section.description}</p>
+                      <p className="text-body text-app-text-3">{section.description}</p>
                     )}
                   </div>
                   <Badge>
@@ -141,7 +141,7 @@ export default function AdminTeamPage() {
                     aria-label={t.common.delete}
                     onClick={() => setConfirming(`section:${section.id}`)}
                   >
-                    <Trash2 className="size-4 text-brand-red-500" aria-hidden="true" />
+                    <Trash2 className="size-4 text-status-error" aria-hidden="true" />
                   </Button>
                 </div>
 
@@ -169,7 +169,7 @@ export default function AdminTeamPage() {
       {/* Members ------------------------------------------------------------- */}
       <section className="flex flex-col gap-3" aria-labelledby="members-heading">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 id="members-heading" className="text-lg font-semibold text-text-primary">
+          <h2 id="members-heading" className="text-title-sm font-semibold text-app-text">
             {t.team.membersTitle}
           </h2>
           <Button onClick={() => setEditingMember('new')}>
@@ -197,21 +197,21 @@ export default function AdminTeamPage() {
                   <StaffImage
                     path={adminPhotoPath(member.photoUrl)}
                     alt={member.name}
-                    className="size-14 shrink-0 rounded-full border border-border-default object-cover"
+                    className="size-14 shrink-0 rounded-full border border-app-border-light object-cover"
                     fallback={
                       <div
-                        className="flex size-14 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-200"
+                        className="flex size-14 shrink-0 items-center justify-center rounded-full border border-app-border-light bg-app-fill"
                         aria-hidden="true"
                       >
-                        <UserRound className="size-6 text-text-muted" />
+                        <UserRound className="size-6 text-app-text-4" />
                       </div>
                     }
                   />
 
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-text-primary">{member.name}</p>
-                    <p className="text-sm text-text-secondary">{member.title}</p>
-                    <p className="mt-0.5 text-xs text-text-muted">
+                    <p className="font-medium text-app-text">{member.name}</p>
+                    <p className="text-body text-app-text-3">{member.title}</p>
+                    <p className="mt-0.5 text-label text-app-text-4">
                       {sectionName(member.sectionId) ?? t.team.noSection}
                     </p>
                   </div>
@@ -249,7 +249,7 @@ export default function AdminTeamPage() {
                       aria-label={t.common.delete}
                       onClick={() => setConfirming(`member:${member.id}`)}
                     >
-                      <Trash2 className="size-4 text-brand-red-500" aria-hidden="true" />
+                      <Trash2 className="size-4 text-status-error" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -306,8 +306,8 @@ function ConfirmRow({
 }) {
   const { t } = useLocale();
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-default pt-3">
-      <p className="text-sm text-text-secondary">{message}</p>
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-app-border-light pt-3">
+      <p className="text-body text-app-text-3">{message}</p>
       <Button size="sm" variant="danger" isLoading={busy} onClick={onConfirm}>
         {t.common.delete}
       </Button>
@@ -493,10 +493,10 @@ function MemberForm({
           </FormField>
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
+        <label className="flex items-center gap-2 text-body text-app-text-3">
           <input
             type="checkbox"
-            className="size-4 rounded border-border-strong"
+            className="size-4 rounded border-app-border"
             checked={values.published ?? true}
             onChange={(e) => set('published')(e.target.checked)}
           />

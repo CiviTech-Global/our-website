@@ -77,8 +77,8 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
-          <p className="mt-1 text-sm text-text-secondary">
+          <h1 className="text-page font-semibold text-app-text">{title}</h1>
+          <p className="mt-1 text-body text-app-text-3">
             {programme ? t.volunteer.adminSubtitle : t.join.adminSubtitle}
           </p>
         </div>
@@ -133,11 +133,11 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
                 <div className="min-w-0">
                   <Link
                     to={`/admin/resumes/${cv.id}`}
-                    className="font-medium text-text-primary hover:underline"
+                    className="font-medium text-app-text hover:underline"
                   >
                     {cv.fullName}
                   </Link>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr font-mono">{cv.trackingCode}</span>
                     {cv.city && ` · ${cv.city}`}
                     {programme && cv.track !== 'JOB' && ` · ${t.volunteer.tracks[cv.track]}`}
@@ -184,7 +184,7 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
                 </Select>
 
                 {cv.matchedRole && (
-                  <span className="text-xs text-text-muted">
+                  <span className="text-label text-app-text-4">
                     {t.join.matchedRole}: {cv.matchedRole}
                   </span>
                 )}

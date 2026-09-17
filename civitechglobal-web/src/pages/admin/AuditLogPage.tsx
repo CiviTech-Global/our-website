@@ -45,7 +45,7 @@ export default function AuditLogPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-text-primary">{t.audit.title}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.audit.title}</h1>
         <Select
           className="w-auto"
           value={action}
@@ -77,16 +77,16 @@ export default function AuditLogPage() {
           <li key={entry.id}>
             <Card className="flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium text-text-primary">
-                  <span className="ltr font-mono text-xs text-brand-600">{entry.action}</span>
+                <p className="font-medium text-app-text">
+                  <span className="ltr font-mono text-label text-brand-600">{entry.action}</span>
                 </p>
-                <p className="mt-0.5 text-sm text-text-secondary">
+                <p className="mt-0.5 text-body text-app-text-3">
                   {entry.actor ? `${entry.actor.firstName} ${entry.actor.lastName}` : '—'} ·{' '}
                   <span className="ltr inline-block">{entry.targetType}</span> ·{' '}
-                  <span className="ltr inline-block font-mono text-xs">{entry.targetId.slice(0, 8)}…</span>
+                  <span className="ltr inline-block font-mono text-label">{entry.targetId.slice(0, 8)}…</span>
                 </p>
               </div>
-              <span className="text-xs text-text-muted">{formatDate(entry.createdAt, locale)}</span>
+              <span className="text-label text-app-text-4">{formatDate(entry.createdAt, locale)}</span>
             </Card>
           </li>
         ))}

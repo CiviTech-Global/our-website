@@ -45,7 +45,7 @@ export default function VerificationQueuePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.queueVerifications}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.queueVerifications}</h1>
         <Select
           className="w-auto"
           value={status}
@@ -78,10 +78,10 @@ export default function VerificationQueuePage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">
+                  <p className="font-medium text-app-text">
                     {row.legalFirstName} {row.legalLastName}
                   </p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr">{row.user.email}</span>
                     {' · '}
                     {formatDate(row.submittedAt, locale)}
@@ -150,21 +150,21 @@ function VerificationDetailPanel({ id }: { id: string }) {
   ];
 
   return (
-    <div className="mt-4 border-t border-border-default pt-4">
+    <div className="mt-4 border-t border-app-border-light pt-4">
       <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
         {rows
           .filter(([, value]) => Boolean(value))
           .map(([label, value]) => (
             <div key={label}>
-              <dt className="text-xs text-text-muted">{label}</dt>
-              <dd className="text-sm text-text-primary">{value}</dd>
+              <dt className="text-label text-app-text-4">{label}</dt>
+              <dd className="text-body text-app-text">{value}</dd>
             </div>
           ))}
       </dl>
 
       {data.documents.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-sm font-medium text-text-secondary">{t.market.documents}</p>
+          <p className="mb-2 text-body font-medium text-app-text-3">{t.market.documents}</p>
           <ul className="flex flex-col gap-1.5">
             {data.documents.map((doc) => (
               <li key={doc.id}>

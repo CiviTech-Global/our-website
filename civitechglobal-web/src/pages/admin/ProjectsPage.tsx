@@ -36,7 +36,7 @@ export default function ProjectsPage() {
       key: 'trackingCode',
       header: t.insurance.trackingCode,
       render: (row) => (
-        <span className="ltr font-mono text-xs tracking-wider text-text-secondary">
+        <span className="ltr font-mono text-label tracking-wider text-app-text-3">
           {row.trackingCode}
         </span>
       ),
@@ -46,8 +46,8 @@ export default function ProjectsPage() {
       header: t.proposal.project,
       render: (row) => (
         <div className="min-w-0">
-          <p className="truncate font-medium text-text-primary">{row.title}</p>
-          <p className="truncate text-xs text-text-muted">
+          <p className="truncate font-medium text-app-text">{row.title}</p>
+          <p className="truncate text-label text-app-text-4">
             {row.organizationName ? `${row.organizationName} · ` : ''}
             {row.contactName}
           </p>
@@ -58,19 +58,19 @@ export default function ProjectsPage() {
       key: 'projectType',
       header: t.project.projectType,
       render: (row) => (
-        <span className="text-text-secondary">{t.project.types[row.projectType]}</span>
+        <span className="text-app-text-3">{t.project.types[row.projectType]}</span>
       ),
     },
     {
       key: 'budget',
       header: t.project.sectionBudget,
-      render: (row) => <span className="ltr text-text-secondary">{budget(row)}</span>,
+      render: (row) => <span className="ltr text-app-text-3">{budget(row)}</span>,
     },
     {
       key: 'urgency',
       header: t.project.urgency,
       render: (row) => (
-        <span className="text-text-secondary">{t.project.urgencies[row.urgency]}</span>
+        <span className="text-app-text-3">{t.project.urgencies[row.urgency]}</span>
       ),
     },
     {
@@ -80,7 +80,7 @@ export default function ProjectsPage() {
       // which is worth knowing before opening it.
       render: (row) =>
         row._count.attachments > 0 ? (
-          <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+          <span className="inline-flex items-center gap-1 text-label text-app-text-4">
             <Paperclip className="size-3.5" aria-hidden="true" />
             {row._count.attachments}
           </span>
@@ -99,7 +99,7 @@ export default function ProjectsPage() {
       key: 'createdAt',
       header: t.admin.createdAt,
       render: (row) => (
-        <span className="text-xs text-text-muted">{formatDate(row.createdAt, locale)}</span>
+        <span className="text-label text-app-text-4">{formatDate(row.createdAt, locale)}</span>
       ),
     },
   ];
@@ -108,8 +108,8 @@ export default function ProjectsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{t.proposal.adminTitle}</h1>
-          <p className="mt-1 text-sm text-text-secondary">{t.proposal.adminSubtitle}</p>
+          <h1 className="text-page font-semibold text-app-text">{t.proposal.adminTitle}</h1>
+          <p className="mt-1 text-body text-app-text-3">{t.proposal.adminSubtitle}</p>
         </div>
         <Select
           value={status}

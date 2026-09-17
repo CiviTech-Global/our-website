@@ -43,7 +43,7 @@ export default function JobQueuePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold text-text-primary">{t.market.queueJobs}</h1>
+        <h1 className="text-page font-semibold text-app-text">{t.market.queueJobs}</h1>
         <Select
           className="w-auto"
           value={status}
@@ -76,13 +76,13 @@ export default function JobQueuePage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-text-primary">{row.title}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="font-medium text-app-text">{row.title}</p>
+                  <p className="mt-0.5 text-label text-app-text-4">
                     {row.companyName && `${row.companyName} · `}
                     <span className="ltr font-mono">{row.code}</span>
                     {row.submittedAt && ` · ${formatDate(row.submittedAt, locale)}`}
                   </p>
-                  <p className="mt-0.5 text-xs text-text-muted">
+                  <p className="mt-0.5 text-label text-app-text-4">
                     {t.market.submittedBy}: {row.author.firstName} {row.author.lastName}{' '}
                     <span className="ltr">({row.author.email})</span>
                   </p>
@@ -138,7 +138,7 @@ function JobReviewPanel({ id }: { id: string }) {
   const where = [data.city, data.province].filter(Boolean).join('، ');
 
   return (
-    <div className="mt-4 border-t border-border-default pt-4">
+    <div className="mt-4 border-t border-app-border-light pt-4">
       <div className="flex flex-wrap gap-1.5">
         <Badge variant="info">{t.market[data.employmentType]}</Badge>
         <Badge>{t.market[data.workArrangement]}</Badge>
@@ -146,7 +146,7 @@ function JobReviewPanel({ id }: { id: string }) {
         {where && <Badge>{where}</Badge>}
       </div>
 
-      <p className="mt-4 whitespace-pre-line text-sm leading-6 text-text-primary">
+      <p className="mt-4 whitespace-pre-line text-body leading-6 text-app-text">
         {data.description}
       </p>
 

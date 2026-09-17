@@ -66,17 +66,17 @@ export function MfaSettings() {
   // there is no second chance and the copy has to say so plainly.
   if (recoveryCodes) {
     return (
-      <Card className="border-brand-amber-500/40">
+      <Card className="border-status-warning-border">
         <CardHeader>
           <CardTitle>{t.auth.mfaRecoveryTitle}</CardTitle>
           <CardDescription>{t.auth.mfaRecoveryBody}</CardDescription>
         </CardHeader>
 
-        <ul className="grid grid-cols-2 gap-2 rounded-lg bg-surface-200 p-4 sm:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-2 rounded bg-app-fill p-4 sm:grid-cols-4">
           {recoveryCodes.map((recoveryCode) => (
             <li
               key={recoveryCode}
-              className="ltr text-center font-mono text-sm tracking-wider text-text-primary"
+              className="ltr text-center font-mono text-body tracking-wider text-app-text"
             >
               {recoveryCode}
             </li>
@@ -115,7 +115,7 @@ export function MfaSettings() {
         </CardHeader>
 
         {status.recoveryCodesLeft <= 2 && (
-          <p className="mb-4 text-sm text-brand-amber-600 dark:text-brand-amber-400">
+          <p className="mb-4 text-body text-status-warning">
             {t.auth.mfaRecoveryLow.replace('{count}', String(status.recoveryCodesLeft))}
           </p>
         )}
@@ -184,9 +184,9 @@ export function MfaSettings() {
       ) : (
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm text-text-secondary">{t.auth.mfaStep1}</p>
+            <p className="text-body text-app-text-3">{t.auth.mfaStep1}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <code className="ltr select-all break-all rounded-lg bg-surface-200 px-3 py-2 font-mono text-sm tracking-wider text-text-primary">
+              <code className="ltr select-all break-all rounded bg-app-fill px-3 py-2 font-mono text-body tracking-wider text-app-text">
                 {secret}
               </code>
               <Button
@@ -201,7 +201,7 @@ export function MfaSettings() {
             {otpauth && (
               <a
                 href={otpauth}
-                className="mt-2 inline-block text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+                className="mt-2 inline-block text-body font-medium text-app-primary hover:underline"
               >
                 {t.auth.mfaOpenInApp}
               </a>
@@ -247,7 +247,7 @@ export function MfaSettings() {
       )}
 
       {error && !secret && (
-        <p role="alert" className="mt-3 text-sm text-brand-red-500">
+        <p role="alert" className="mt-3 text-body text-status-error">
           {error}
         </p>
       )}

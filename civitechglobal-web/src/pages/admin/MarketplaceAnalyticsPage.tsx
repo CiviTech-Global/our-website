@@ -55,7 +55,7 @@ export default function MarketplaceAnalyticsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary">{t.analytics.title}</h1>
+      <h1 className="text-page font-semibold text-app-text">{t.analytics.title}</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label={t.analytics.totalAwards} value={digits(data.awards.total)} />
@@ -72,7 +72,7 @@ export default function MarketplaceAnalyticsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-text-primary">{t.analytics.queueDepths}</h2>
+          <h2 className="mb-4 text-title-sm font-semibold text-app-text">{t.analytics.queueDepths}</h2>
           <div className="flex flex-col gap-4">
             {queueDefs.map((queue) => {
               const rows = data.queues[queue.key] ?? {};
@@ -80,16 +80,16 @@ export default function MarketplaceAnalyticsPage() {
               const total = entries.reduce((sum, [, count]) => sum + count, 0);
               return (
                 <div key={queue.key}>
-                  <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="font-medium text-text-primary">{queue.label}</span>
-                    <span className="text-text-muted">{digits(total)}</span>
+                  <div className="mb-1 flex items-center justify-between text-body">
+                    <span className="font-medium text-app-text">{queue.label}</span>
+                    <span className="text-app-text-4">{digits(total)}</span>
                   </div>
-                  <div className="flex h-2 overflow-hidden rounded-full bg-surface-200 dark:bg-surface-300">
+                  <div className="flex h-2 overflow-hidden rounded-full bg-app-fill">
                     {entries.map(([status, count]) => (
                       <span
                         key={status}
                         title={`${status}: ${count}`}
-                        className="bg-brand-green-500 first:rounded-s-full last:rounded-e-full"
+                        className="bg-app-primary first:rounded-s-full last:rounded-e-full"
                         style={{ width: `${total === 0 ? 0 : (count / total) * 100}%` }}
                       />
                     ))}
@@ -101,11 +101,11 @@ export default function MarketplaceAnalyticsPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-text-primary">{t.analytics.reviewSpeed}</h2>
+          <h2 className="mb-4 text-title-sm font-semibold text-app-text">{t.analytics.reviewSpeed}</h2>
           <div className="grid grid-cols-2 gap-3">
             {Object.entries(data.reviewSpeedHours).map(([key, hours]) => (
-              <div key={key} className="rounded-xl border border-surface-200 p-3 dark:border-surface-300">
-                <p className="text-xs text-text-muted">
+              <div key={key} className="rounded border border-app-border-light p-3">
+                <p className="text-label text-app-text-4">
                   {key === 'jobs'
                     ? t.market.queueJobs
                     : key === 'projects'
@@ -114,9 +114,9 @@ export default function MarketplaceAnalyticsPage() {
                         ? t.market.queueApplications
                         : t.market.queueBids}
                 </p>
-                <p className="text-lg font-semibold text-text-primary">
+                <p className="text-title-sm font-semibold text-app-text">
                   {hours === null ? '—' : locale === 'fa' ? toPersianDigits(hours) : hours}
-                  <span className="ms-1 text-xs font-normal text-text-muted">{t.analytics.hoursSuffix}</span>
+                  <span className="ms-1 text-label font-normal text-app-text-4">{t.analytics.hoursSuffix}</span>
                 </p>
               </div>
             ))}
@@ -126,7 +126,7 @@ export default function MarketplaceAnalyticsPage() {
 
       {disputes && disputes.length > 0 && (
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-text-primary">
+          <h2 className="mb-4 text-title-sm font-semibold text-app-text">
             {t.analytics.openDisputes}
           </h2>
           <ul className="flex flex-col gap-3">
@@ -139,13 +139,13 @@ export default function MarketplaceAnalyticsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-text-primary">{t.analytics.weeklyTrend}</h2>
+          <h2 className="mb-4 text-title-sm font-semibold text-app-text">{t.analytics.weeklyTrend}</h2>
           <div className="flex h-32 items-end gap-1">
             {data.weeklyTrend.map((week) => {
               const height = Math.round(((week.jobs + week.projects) / maxWeekly) * 100);
               return (
                 <div key={week.week} className="flex flex-1 flex-col items-center gap-1">
-                  <div className="flex w-full flex-col justify-end rounded-t bg-brand-green-500/80" style={{ height: `${Math.max(2, height)}%` }} title={`${week.week}: ${week.jobs + week.projects}`} />
+                  <div className="flex w-full flex-col justify-end rounded-t bg-app-primary" style={{ height: `${Math.max(2, height)}%` }} title={`${week.week}: ${week.jobs + week.projects}`} />
                 </div>
               );
             })}
@@ -153,20 +153,20 @@ export default function MarketplaceAnalyticsPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-text-primary">{t.analytics.topSkills}</h2>
+          <h2 className="mb-4 text-title-sm font-semibold text-app-text">{t.analytics.topSkills}</h2>
           <div className="flex flex-wrap gap-2">
-            {data.topSkills.length === 0 && <p className="text-sm text-text-muted">{t.analytics.empty}</p>}
+            {data.topSkills.length === 0 && <p className="text-body text-app-text-4">{t.analytics.empty}</p>}
             {data.topSkills.map((skill) => (
-              <span key={skill.value} className="rounded-full bg-surface-200 px-3 py-1 text-sm text-text-primary dark:bg-surface-300">
+              <span key={skill.value} className="rounded-full bg-app-fill px-3 py-1 text-body text-app-text">
                 {skill.value} · {digits(skill.total)}
               </span>
             ))}
           </div>
-          <h2 className="mb-3 mt-6 text-lg font-semibold text-text-primary">{t.analytics.topCategories}</h2>
+          <h2 className="mb-3 mt-6 text-title-sm font-semibold text-app-text">{t.analytics.topCategories}</h2>
           <div className="flex flex-wrap gap-2">
-            {data.topCategories.length === 0 && <p className="text-sm text-text-muted">{t.analytics.empty}</p>}
+            {data.topCategories.length === 0 && <p className="text-body text-app-text-4">{t.analytics.empty}</p>}
             {data.topCategories.map((category) => (
-              <span key={category.value} className="rounded-full border border-border-default px-3 py-1 text-sm text-text-secondary">
+              <span key={category.value} className="rounded-full border border-app-border-light px-3 py-1 text-body text-app-text-3">
                 {category.value} · {digits(category.total)}
               </span>
             ))}
@@ -185,22 +185,22 @@ function DisputeRow({ dispute }: { dispute: OpenDisputeRow }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <li className="flex flex-col gap-2 rounded-xl border border-surface-200 p-3 dark:border-surface-300">
+    <li className="flex flex-col gap-2 rounded border border-app-border-light p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
           to={`/${dispute.kind === 'job' ? 'jobs' : 'projects'}/${dispute.listing.code}`}
-          className="font-medium text-text-primary hover:underline"
+          className="font-medium text-app-text hover:underline"
         >
           {dispute.listing.title}
         </Link>
-        <span className="text-xs text-text-muted">
+        <span className="text-label text-app-text-4">
           {dispute.disputeOpenedAt
             ? formatDate(dispute.disputeOpenedAt, locale)
             : ''}
         </span>
       </div>
       {dispute.disputeReason && (
-        <p className="whitespace-pre-line text-sm text-text-secondary">{dispute.disputeReason}</p>
+        <p className="whitespace-pre-line text-body text-app-text-3">{dispute.disputeReason}</p>
       )}
       {open ? (
         <div className="flex flex-wrap items-end gap-2">
@@ -239,8 +239,8 @@ function DisputeRow({ dispute }: { dispute: OpenDisputeRow }) {
 function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Card className="flex flex-col gap-1">
-      <span className="text-xs text-text-muted">{label}</span>
-      <span className="text-2xl font-bold text-text-primary">{value}</span>
+      <span className="text-label text-app-text-4">{label}</span>
+      <span className="text-page font-semibold text-app-text">{value}</span>
     </Card>
   );
 }
