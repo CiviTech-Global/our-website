@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 
 /**
- * The "تیم ما" page and the super admin's control over it.
+ * The "تیم ما" page, its sections, and the super admin's control over both.
  *
  * Photographs travel as multipart with the structured half in one `payload`
  * JSON field, the same shape every other upload here uses.
@@ -13,7 +13,7 @@ export interface TeamMember {
   name: string;
   title: string;
   bio: string | null;
-  team: string | null;
+  sectionId: string | null;
   email: string | null;
   linkedin: string | null;
   github: string | null;
@@ -21,6 +21,33 @@ export interface TeamMember {
   displayOrder: number;
   /** An API path, not a storage key — served by the server, may be null. */
   photoUrl: string | null;
+}
+
+export interface TeamSection {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+/** The public page, already arranged by the server. */
+export interface TeamPage {
+  sections: Array<TeamSection & { members: TeamMember[] }>;
+  unsectioned: TeamMember[];
+}
+
+export interface AdminTeamSection extends TeamSection {
+  displayOrder: number;
+  _count: { members: number };
+}
+
+export interface AdminTeam {
+  sections: AdminTeamSection[];
+  members: AdminTeamMember[];
+}
+
+export interface TeamSectionPayload {
+  name: string;
+  description?: string;
 }
 
 export interface AdminTeamMember extends TeamMember {
@@ -33,7 +60,8 @@ export interface TeamMemberPayload {
   name: string;
   title: string;
   bio?: string;
-  team?: string;
+  /** Null takes a member out of their section. */
+  sectionId?: string | null;
   email?: string;
   linkedin?: string;
   github?: string;
@@ -70,7 +98,7 @@ export function useTeam() {
   return useQuery({
     queryKey: keys.public,
     queryFn: async () => {
-      const res = await api.get<TeamMember[]>('/team');
+      const res = await api.get<TeamPage>('/team');
       return res.data;
     },
     staleTime: 5 * 60 * 1000,
@@ -81,7 +109,7 @@ export function useAdminTeam() {
   return useQuery({
     queryKey: keys.admin,
     queryFn: async () => {
-      const res = await api.get<AdminTeamMember[]>('/team/admin');
+      const res = await api.get<AdminTeam>('/team/admin');
       return res.data;
     },
   });
@@ -127,4 +155,36 @@ export function useReorderTeam() {
   return useTeamMutation(async (ids: string[]) => {
     await api.post('/team/admin/reorder', { ids });
   });
+}
+
+// --- Sections ----------------------------------------------------------------
+
+export function useCreateSection() {
+  return useTeamMutation(async (payload: TeamSectionPayload) => {
+    await api.post('/team/admin/sections', payload);
+  });
+}
+
+export function useUpdateSection() {
+  return useTeamMutation(async (input: { id: string; payload: Partial<TeamSectionPayload> }) => {
+    await api.patch(`/team/admin/sections/${input.id}`, input.payload);
+  });
+}
+
+/** Members of a deleted section are kept; the server moves them out of it. */
+export function useDeleteSection() {
+  return useTeamMutation(async (id: string) => {
+    await api.delete(`/team/admin/sections/${id}`);
+  });
+}
+
+export function useReorderSections() {
+  return useTeamMutation(async (ids: string[]) => {
+    await api.post('/team/admin/sections/reorder', { ids });
+  });
+}
+
+/** The staff route for a portrait, which serves unpublished members too. */
+export function adminPhotoPath(photoUrl: string | null): string | null {
+  return photoUrl ? photoUrl.replace('/team/photo/', '/team/admin/photo/') : null;
 }

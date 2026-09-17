@@ -46,6 +46,9 @@ const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
 // filters, forms and money formatting, and none of it belongs in the bundle a
 // visitor downloads to read the landing page.
 const TeamPage = lazy(() => import('@/pages/public/TeamPage'));
+const OrganizationsPage = lazy(() => import('@/pages/public/OrganizationsPage'));
+const PortfolioPage = lazy(() => import('@/pages/public/PortfolioPage'));
+const VolunteerPage = lazy(() => import('@/pages/public/VolunteerPage'));
 const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
 const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
 const FreelanceProjectsPage = lazy(() => import('@/pages/public/FreelanceProjectsPage'));
@@ -71,6 +74,8 @@ const RequestDetailPage = lazy(() => import('@/pages/admin/RequestDetailPage'));
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
 const AdminTeamPage = lazy(() => import('@/pages/admin/TeamPage'));
+const ShowcaseOrganizationsPage = lazy(() => import('@/pages/admin/ShowcaseOrganizationsPage'));
+const ShowcaseProjectsPage = lazy(() => import('@/pages/admin/ShowcaseProjectsPage'));
 const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
@@ -194,6 +199,38 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <TeamPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <OrganizationsPage kind="CUSTOMER" />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/partners"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <OrganizationsPage kind="PARTNER" />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/portfolio"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <PortfolioPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/volunteer"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <VolunteerPage />
             </Suspense>
           }
         />
@@ -360,6 +397,16 @@ export default function App() {
           }
         />
         <Route
+          path="programme"
+          element={
+            <RequirePermission permission="resumes">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminResumesPage programme />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
           path="resumes/:id"
           element={
             <RequirePermission permission="resumes">
@@ -423,6 +470,36 @@ export default function App() {
             <RequirePermission superAdminOnly>
               <Suspense fallback={<RouteLoadingFallback />}>
                 <AdminTeamPage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="customers"
+          element={
+            <RequirePermission permission="showcase">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ShowcaseOrganizationsPage kind="CUSTOMER" />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="partners"
+          element={
+            <RequirePermission permission="showcase">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ShowcaseOrganizationsPage kind="PARTNER" />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="portfolio"
+          element={
+            <RequirePermission permission="showcase">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ShowcaseProjectsPage />
               </Suspense>
             </RequirePermission>
           }

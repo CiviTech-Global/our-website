@@ -71,6 +71,10 @@ const fr: PartialTranslations = {
     logout: 'Déconnexion',
     profile: 'Profil',
     viewSite: 'Voir le site',
+    volunteer: 'Bénévolat et stage',
+    customers: 'Club clients',
+    partners: 'Partenaires',
+    portfolio: 'Nos projets',
   },
 
   theme: { light: 'Thème clair', dark: 'Thème sombre' },
@@ -193,6 +197,27 @@ const fr: PartialTranslations = {
     networkError: 'Le serveur est injoignable',
     unauthorized: 'Non autorisé',
     endpointUnavailable: 'Cette section n’est pas encore disponible côté serveur.',
+  },
+
+  showcase: {
+    customersTitle: 'Club clients',
+    customersSubtitle: 'Les organisations et entreprises dont nous avons conçu les logiciels.',
+    partnersTitle: 'Nos partenaires',
+    partnersSubtitle: 'Les organisations aux côtés desquelles nous construisons des logiciels.',
+    projectsTitle: 'Nos projets',
+    projectsSubtitle: 'Ce que nous construisons, et ce que nous avons livré.',
+    filterAll: 'Tous',
+    filterCurrent: 'En cours',
+    filterCompleted: 'Livrés',
+    visitWebsite: 'Site web',
+    builtWith: 'Technologies',
+    client: 'Client',
+  },
+
+  volunteer: {
+    title: 'Programme de bénévolat et de stage',
+    subtitle: 'Si vous voulez acquérir une vraie expérience en développement logiciel, rejoignez notre équipe comme bénévole ou stagiaire.',
+    submit: 'Envoyer la candidature',
   },
 
   footer: {

@@ -3,14 +3,14 @@
  * Writes public/sitemap.xml and public/robots.txt.
  *
  * Generated rather than hand-kept because going multilingual multiplied the
- * work: seven public pages in six languages is forty-two URLs, each needing
- * the full set of seven hreflang links naming its siblings — 294 lines that
- * have to stay in step with each other and with the route table. Hand-editing
+ * work: ten-odd public pages in six languages is dozens of URLs, each needing
+ * the full set of seven hreflang links naming its siblings — hundreds of lines
+ * that have to stay in step with each other and with the route table. Hand-editing
  * that survives exactly one round of changes.
  *
  * Only the pages that exist at a fixed address are listed. Job openings and
  * freelance projects come and go with the boards, so they are reachable from
- * /jobs and /freelance, which are listed; a sitemap naming a posting that
+ * /jobs and /projects, which are listed; a sitemap naming a posting that
  * closed last week is worse than one that does not mention it.
  *
  * Run from `prebuild`, so a deployment cannot ship a sitemap describing an
@@ -46,7 +46,13 @@ const PAGES = [
   { path: '/services', changefreq: 'monthly', priority: '0.9' },
   { path: '/start-project', changefreq: 'monthly', priority: '0.9' },
   { path: '/jobs', changefreq: 'daily', priority: '0.9' },
-  { path: '/freelance', changefreq: 'daily', priority: '0.9' },
+  // The freelance board's route is /projects; this said /freelance, which
+  // 404s, so six sitemap entries pointed at a missing page.
+  { path: '/projects', changefreq: 'daily', priority: '0.9' },
+  { path: '/portfolio', changefreq: 'weekly', priority: '0.8' },
+  { path: '/customers', changefreq: 'monthly', priority: '0.7' },
+  { path: '/partners', changefreq: 'monthly', priority: '0.6' },
+  { path: '/volunteer', changefreq: 'monthly', priority: '0.7' },
   { path: '/join', changefreq: 'monthly', priority: '0.8' },
   { path: '/about', changefreq: 'yearly', priority: '0.7' },
   { path: '/team', changefreq: 'monthly', priority: '0.7' },

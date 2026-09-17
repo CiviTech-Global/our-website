@@ -71,6 +71,10 @@ const de: PartialTranslations = {
     logout: 'Abmelden',
     profile: 'Profil',
     viewSite: 'Website ansehen',
+    volunteer: 'Ehrenamt & Praktikum',
+    customers: 'Kundenclub',
+    partners: 'Partner',
+    portfolio: 'Unsere Projekte',
   },
 
   theme: { light: 'Heller Modus', dark: 'Dunkler Modus' },
@@ -193,6 +197,27 @@ const de: PartialTranslations = {
     networkError: 'Der Server war nicht erreichbar',
     unauthorized: 'Nicht berechtigt',
     endpointUnavailable: 'Dieser Bereich ist auf dem Server noch nicht verfügbar.',
+  },
+
+  showcase: {
+    customersTitle: 'Kundenclub',
+    customersSubtitle: 'Die Organisationen und Unternehmen, deren Software wir gebaut haben.',
+    partnersTitle: 'Unsere Partner',
+    partnersSubtitle: 'Die Organisationen, mit denen gemeinsam wir Software bauen.',
+    projectsTitle: 'Unsere Projekte',
+    projectsSubtitle: 'Woran wir arbeiten und was wir ausgeliefert haben.',
+    filterAll: 'Alle',
+    filterCurrent: 'Laufend',
+    filterCompleted: 'Ausgeliefert',
+    visitWebsite: 'Website',
+    builtWith: 'Technologien',
+    client: 'Auftraggeber',
+  },
+
+  volunteer: {
+    title: 'Ehrenamts- und Praktikumsprogramm',
+    subtitle: 'Wenn Sie echte Erfahrung in der Softwareentwicklung sammeln möchten, verstärken Sie unser Team als Ehrenamtliche oder Praktikant.',
+    submit: 'Bewerbung senden',
   },
 
   footer: {

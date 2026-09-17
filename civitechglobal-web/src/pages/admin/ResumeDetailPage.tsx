@@ -105,6 +105,8 @@ export default function ResumeDetailPage() {
     }
   }
 
+  const isProgramme = data.track !== 'JOB';
+
   const standing = data.identity.blocked
     ? 'blocked'
     : data.identity.trusted
@@ -114,11 +116,11 @@ export default function ResumeDetailPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <Link
-        to="/admin/resumes"
+        to={isProgramme ? '/admin/programme' : '/admin/resumes'}
         className="inline-flex w-fit items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
       >
         <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-        {t.join.adminTitle}
+        {isProgramme ? t.volunteer.adminTitle : t.join.adminTitle}
       </Link>
 
       {/* Who, and how to reach them ---------------------------------------- */}
@@ -168,6 +170,82 @@ export default function ResumeDetailPage() {
           />
         </div>
       </Card>
+
+      {/* The placement they asked for -------------------------------------- */}
+      {isProgramme && (
+        <Card>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-text-primary">{t.volunteer.sectionPlacement}</h2>
+            <Badge variant="success">{t.volunteer.tracks[data.track]}</Badge>
+          </div>
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field
+              label={t.volunteer.discipline}
+              value={data.discipline ? t.volunteer.disciplines[data.discipline] : null}
+            />
+            <Field
+              label={t.volunteer.hoursPerWeek}
+              value={data.hoursPerWeek ? String(data.hoursPerWeek) : null}
+            />
+            <Field
+              label={t.volunteer.availableFrom}
+              value={data.availableFrom ? formatDate(data.availableFrom, locale) : null}
+            />
+            <Field
+              label={t.volunteer.durationMonths}
+              value={data.durationMonths ? `${data.durationMonths} ${t.volunteer.monthsUnit}` : null}
+            />
+            <Field
+              label={t.volunteer.arrangement}
+              value={data.arrangement ? t.volunteer.arrangements[data.arrangement] : t.volunteer.noPreference}
+            />
+            <Field label={t.volunteer.university} value={data.university} />
+            <Field label={t.volunteer.fieldOfStudy} value={data.fieldOfStudy} />
+          </dl>
+
+          {data.skills.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs text-text-muted">{t.volunteer.skills}</p>
+              <ul className="mt-1 flex flex-wrap gap-1.5">
+                {data.skills.map((skill) => (
+                  <li key={skill} className="rounded-md border border-border-default px-2 py-0.5 text-xs text-text-primary">
+                    {skill}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {(data.githubUrl || data.portfolioUrl || data.linkedinUrl) && (
+            <div className="mt-4">
+              <p className="text-xs text-text-muted">{t.volunteer.links}</p>
+              <div className="mt-1 flex flex-wrap gap-4">
+                {(
+                  [
+                    [data.githubUrl, t.volunteer.githubUrl],
+                    [data.portfolioUrl, t.volunteer.portfolioUrl],
+                    [data.linkedinUrl, t.volunteer.linkedinUrl],
+                  ] as const
+                )
+                  .filter(([href]) => href)
+                  .map(([href, label]) => (
+                    <a
+                      key={label}
+                      href={href!}
+                      target="_blank"
+                      // Applicant-supplied links: never hand them the opener
+                      // or the admin URL they were clicked from.
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+                    >
+                      {label}
+                    </a>
+                  ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* The CV and anything they wrote ------------------------------------ */}
       <Card>

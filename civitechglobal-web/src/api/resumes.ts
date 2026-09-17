@@ -8,6 +8,7 @@ import type {
   ResumePayload,
   ResumeResult,
   ResumeStatus,
+  TalentTrack,
 } from '@/types/resume';
 
 /**
@@ -31,14 +32,24 @@ export function useSubmitResume() {
  * Checked when the email field loses focus, so somebody who has already used
  * their two days finds out then — not after writing a page and attaching a file.
  */
-export async function checkResumeAllowance(email: string): Promise<ResumeAllowance> {
-  const res = await api.post<ResumeAllowance>('/resumes/allowance', { email });
+export async function checkResumeAllowance(
+  email: string,
+  track: TalentTrack = 'JOB'
+): Promise<ResumeAllowance> {
+  // Counted per track on the server, so the question names one.
+  const res = await api.post<ResumeAllowance>('/resumes/allowance', { email, track });
   return res.data;
 }
 
 // --- Admin ----------------------------------------------------------------
 
-export function useAdminResumes(params: { page: number; pageSize: number; status?: string }) {
+export function useAdminResumes(params: {
+  page: number;
+  pageSize: number;
+  status?: string;
+  /** One track, or several joined by commas. */
+  track?: string;
+}) {
   return useQuery({
     queryKey: ['resumes', 'admin', params],
     queryFn: async () => {
@@ -47,6 +58,7 @@ export function useAdminResumes(params: { page: number; pageSize: number; status
           page: params.page,
           pageSize: params.pageSize,
           ...(params.status && params.status !== 'ALL' ? { status: params.status } : {}),
+          ...(params.track ? { track: params.track } : {}),
         },
       });
       return res.data;

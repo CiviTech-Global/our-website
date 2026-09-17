@@ -81,6 +81,10 @@ const tr: PartialTranslations = {
     logout: 'Çıkış',
     profile: 'Profil',
     viewSite: 'Siteyi görüntüle',
+    volunteer: 'Gönüllülük ve staj',
+    customers: 'Müşteri kulübü',
+    partners: 'İş ortakları',
+    portfolio: 'Projelerimiz',
   },
 
   theme: { light: 'Açık tema', dark: 'Koyu tema' },
@@ -203,6 +207,27 @@ const tr: PartialTranslations = {
     networkError: 'Sunucuya ulaşılamadı',
     unauthorized: 'Yetkisiz erişim',
     endpointUnavailable: 'Bu bölüm sunucuda henüz hazır değil.',
+  },
+
+  showcase: {
+    customersTitle: 'Müşteri kulübü',
+    customersSubtitle: 'Yazılımlarını birlikte geliştirdiğimiz kurum ve işletmeler.',
+    partnersTitle: 'İş ortaklarımız',
+    partnersSubtitle: 'Birlikte yazılım geliştirdiğimiz kuruluşlar.',
+    projectsTitle: 'Projelerimiz',
+    projectsSubtitle: 'Şu anda geliştirdiklerimiz ve teslim ettiklerimiz.',
+    filterAll: 'Tümü',
+    filterCurrent: 'Devam eden',
+    filterCompleted: 'Teslim edilen',
+    visitWebsite: 'Web sitesi',
+    builtWith: 'Kullanılan teknolojiler',
+    client: 'Müşteri',
+  },
+
+  volunteer: {
+    title: 'Gönüllülük ve staj programı',
+    subtitle: 'Yazılım geliştirmede gerçek deneyim kazanmak istiyorsanız, ekibimize gönüllü ya da stajyer olarak katılın.',
+    submit: 'Başvuruyu gönder',
   },
 
   footer: {

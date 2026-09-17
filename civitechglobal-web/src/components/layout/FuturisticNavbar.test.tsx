@@ -82,7 +82,9 @@ describe('FuturisticNavbar', () => {
       'false'
     );
     expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Send your CV' })).toBeInTheDocument();
+    // The company menu is about who the company is; joining moved to sit with
+    // the job boards, so About is the link that proves this menu opened.
+    expect(screen.getByRole('link', { name: 'About' })).toBeInTheDocument();
   });
 
   it('stays open when the pointer leaves the trigger', async () => {

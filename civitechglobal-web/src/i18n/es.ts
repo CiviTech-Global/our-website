@@ -75,6 +75,10 @@ const es: PartialTranslations = {
     logout: 'Cerrar sesión',
     profile: 'Perfil',
     viewSite: 'Ver el sitio',
+    volunteer: 'Voluntariado y prácticas',
+    customers: 'Club de clientes',
+    partners: 'Socios',
+    portfolio: 'Nuestros proyectos',
   },
 
   theme: { light: 'Modo claro', dark: 'Modo oscuro' },
@@ -197,6 +201,27 @@ const es: PartialTranslations = {
     networkError: 'No se pudo conectar con el servidor',
     unauthorized: 'No autorizado',
     endpointUnavailable: 'Esta sección aún no está disponible en el servidor.',
+  },
+
+  showcase: {
+    customersTitle: 'Club de clientes',
+    customersSubtitle: 'Las organizaciones y empresas cuyo software hemos construido.',
+    partnersTitle: 'Nuestros socios',
+    partnersSubtitle: 'Las organizaciones junto a las que construimos software.',
+    projectsTitle: 'Nuestros proyectos',
+    projectsSubtitle: 'Lo que estamos construyendo y lo que ya hemos entregado.',
+    filterAll: 'Todos',
+    filterCurrent: 'En curso',
+    filterCompleted: 'Entregados',
+    visitWebsite: 'Sitio web',
+    builtWith: 'Tecnologías',
+    client: 'Cliente',
+  },
+
+  volunteer: {
+    title: 'Programa de voluntariado y prácticas',
+    subtitle: 'Si quiere adquirir experiencia real en desarrollo de software, únase a nuestro equipo como voluntario o en prácticas.',
+    submit: 'Enviar solicitud',
   },
 
   footer: {

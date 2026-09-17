@@ -43,21 +43,26 @@ export function FuturisticFooter() {
             <div>
               <h4 className="mb-3 text-sm font-semibold text-text-primary">{t.footer.links}</h4>
               <ul className="flex flex-col gap-2 text-sm text-text-secondary">
-                <li>
-                  <Link to="/about" className="hover:text-brand-green-500">
-                    {t.nav.about}
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/services" className="hover:text-brand-green-500">
-                    {t.nav.services}
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contact" className="hover:text-brand-green-500">
-                    {t.nav.contact}
-                  </Link>
-                </li>
+                {/* Every public page, as plain links: the footer is on every page, so
+                    this is also how a crawler that lands anywhere finds the rest. */}
+                {(
+                  [
+                    ['/about', t.nav.about],
+                    ['/services', t.nav.services],
+                    ['/team', t.nav.team],
+                    ['/portfolio', t.nav.portfolio],
+                    ['/customers', t.nav.customers],
+                    ['/partners', t.nav.partners],
+                    ['/volunteer', t.nav.volunteer],
+                    ['/contact', t.nav.contact],
+                  ] as const
+                ).map(([to, label]) => (
+                  <li key={to}>
+                    <Link to={to} className="hover:text-brand-green-500">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 

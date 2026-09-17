@@ -2,6 +2,11 @@ import { Outlet } from 'react-router';
 import {
   BarChart3,
   Briefcase,
+  Building2,
+  FolderGit2,
+  GraduationCap,
+  Handshake,
+  Sparkles,
   ClipboardList,
   Code2,
   Inbox,
@@ -50,7 +55,14 @@ export function AdminLayout() {
           ? [{ to: '/admin/projects', label: t.proposal.adminTitle, icon: <Code2 className="size-4" /> }]
           : []),
         ...(can('resumes')
-          ? [{ to: '/admin/resumes', label: t.join.adminTitle, icon: <UserPlus className="size-4" /> }]
+          ? [
+              { to: '/admin/resumes', label: t.join.adminTitle, icon: <UserPlus className="size-4" /> },
+              {
+                to: '/admin/programme',
+                label: t.volunteer.adminTitle,
+                icon: <GraduationCap className="size-4" />,
+              },
+            ]
           : []),
         ...(can('insurance')
           ? [{ to: '/admin/requests', label: t.admin.requests, icon: <ClipboardList className="size-4" /> }]
@@ -124,6 +136,19 @@ export function AdminLayout() {
           },
         ]
       : []),
+    // What the company says about itself: who it works for, with, and on what.
+    {
+      id: 'showcase',
+      label: t.showcase.groupAdmin,
+      icon: <Sparkles className="size-4" />,
+      items: can('showcase')
+        ? [
+            { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 className="size-4" /> },
+            { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake className="size-4" /> },
+            { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 className="size-4" /> },
+          ]
+        : [],
+    },
     {
       id: 'administration',
       label: t.admin.groupAdministration,

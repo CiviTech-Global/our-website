@@ -81,7 +81,11 @@ router.post(
       successResponse(
         res,
         result,
-        'رزومهٔ شما دریافت شد. کد رهگیری را نگه دارید؛ در صورت تطابق با موقعیت شغلی مناسب با شما تماس می‌گیریم.',
+        // A volunteer or intern is not waiting for a vacancy to match, so the
+        // job applicant's confirmation would promise them the wrong next step.
+        input.track === 'JOB'
+          ? 'رزومهٔ شما دریافت شد. کد رهگیری را نگه دارید؛ در صورت تطابق با موقعیت شغلی مناسب با شما تماس می‌گیریم.'
+          : 'درخواست شما دریافت شد. کد رهگیری را نگه دارید؛ درخواست را بررسی می‌کنیم و برای گفت‌وگو با شما تماس می‌گیریم.',
         201
       );
     } catch (error) {
@@ -132,10 +136,14 @@ router.get('/admin', async (req, res, next) => {
     // Parsed, not cast: an unknown value here used to reach Prisma as an enum
     // it could not match, which is a 500 for what is really a bad query string.
     const status = updateResumeStatusSchema.shape.status.safeParse(req.query.status);
-    const track = resumeTrackSchema.safeParse(req.query.track);
+    // One track or several, comma-separated: the volunteer and internship
+    // queue shows both programmes together, and the CV queue shows jobs alone.
+    const tracks = (typeof req.query.track === 'string' ? req.query.track.split(',') : [])
+      .map((value) => resumeTrackSchema.safeParse(value.trim()))
+      .flatMap((parsed) => (parsed.success ? [parsed.data] : []));
     const where = {
       ...(status.success ? { status: status.data } : {}),
-      ...(track.success ? { track: track.data } : {}),
+      ...(tracks.length > 0 ? { track: { in: tracks } } : {}),
     };
 
     const [items, total] = await Promise.all([

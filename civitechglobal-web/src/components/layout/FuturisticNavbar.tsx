@@ -28,6 +28,10 @@ type NavKey =
   | 'jobs'
   | 'freelance'
   | 'team'
+  | 'customers'
+  | 'partners'
+  | 'portfolio'
+  | 'volunteer'
   | 'contact';
 
 interface NavLinkItem {
@@ -71,6 +75,8 @@ const NAV_ENTRIES: NavEntry[] = [
     items: [
       { to: '/jobs', key: 'jobs' },
       { to: '/projects', key: 'freelance' },
+      { to: '/join', key: 'joinUs' },
+      { to: '/volunteer', key: 'volunteer' },
     ],
   },
   {
@@ -79,7 +85,9 @@ const NAV_ENTRIES: NavEntry[] = [
     items: [
       { to: '/about', key: 'about' },
       { to: '/team', key: 'team' },
-      { to: '/join', key: 'joinUs' },
+      { to: '/portfolio', key: 'portfolio' },
+      { to: '/customers', key: 'customers' },
+      { to: '/partners', key: 'partners' },
       { to: '/contact', key: 'contact' },
     ],
   },

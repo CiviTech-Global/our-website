@@ -1,19 +1,27 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Plus, Trash2, UserRound } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { Eye, EyeOff, FolderPlus, Pencil, Plus, Trash2, UserRound } from 'lucide-react';
 import {
-  photoSrc,
+  adminPhotoPath,
   useAdminTeam,
   useCreateMember,
+  useCreateSection,
   useDeleteMember,
+  useDeleteSection,
+  useReorderSections,
   useReorderTeam,
   useUpdateMember,
+  useUpdateSection,
   type AdminTeamMember,
+  type AdminTeamSection,
   type TeamMemberPayload,
+  type TeamSectionPayload,
 } from '@/api/team';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
+import { MoveButtons } from '@/components/admin/OrderedList';
+import { useOrderedList } from '@/components/admin/useOrderedList';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -21,14 +29,16 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import { StaffImage } from '@/components/ui/StaffImage';
 import { TextArea } from '@/components/ui/TextArea';
 
 const EMPTY: TeamMemberPayload = {
   name: '',
   title: '',
   bio: '',
-  team: '',
+  sectionId: null,
   email: '',
   linkedin: '',
   github: '',
@@ -37,64 +47,41 @@ const EMPTY: TeamMemberPayload = {
 };
 
 /**
- * Who appears on "تیم ما", and in what order.
+ * Who appears on "تیم ما", under which heading, and in what order.
  *
- * Reordering is by arrows rather than drag-and-drop on purpose: this list is
- * short, edited rarely, and a drag target that must also work on a phone and
- * with a keyboard is a great deal of machinery for moving somebody up one
- * place. The arrows are reachable by tab and announce themselves.
+ * Two lists on one screen, sections first: the structure of the page is
+ * decided before the people are placed in it, and a member's section is picked
+ * from the sections that exist rather than typed — which is what stopped
+ * "Engineering" and "engineering " being two departments.
  */
 export default function AdminTeamPage() {
   const { t } = useLocale();
   useDocumentTitle(t.team.adminTitle);
   const { showToast } = useToast();
+  const onError = (error: unknown) => showToast(apiMessage(error, t.common.error), 'error');
 
   const { data, isLoading } = useAdminTeam();
-  const reorder = useReorderTeam();
-  const remove = useDeleteMember();
-  const update = useUpdateMember();
+  const reorderMembers = useReorderTeam();
+  const reorderSections = useReorderSections();
+  const removeMember = useDeleteMember();
+  const removeSection = useDeleteSection();
+  const updateMember = useUpdateMember();
 
-  const [editing, setEditing] = useState<AdminTeamMember | 'new' | null>(null);
+  const members = useOrderedList(data?.members, reorderMembers.mutateAsync, onError);
+  const sections = useOrderedList(data?.sections, reorderSections.mutateAsync, onError);
+
+  const [editingMember, setEditingMember] = useState<AdminTeamMember | 'new' | null>(null);
+  const [editingSection, setEditingSection] = useState<AdminTeamSection | 'new' | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
 
-  /**
-   * A local copy, so a move is visible immediately rather than after a
-   * round trip. It follows the server whenever the server speaks.
-   */
-  const [order, setOrder] = useState<AdminTeamMember[]>([]);
-  useEffect(() => {
-    if (data) setOrder(data);
-  }, [data]);
-
-  async function move(index: number, direction: -1 | 1) {
-    const target = index + direction;
-    if (target < 0 || target >= order.length) return;
-
-    const next = [...order];
-    [next[index], next[target]] = [next[target], next[index]];
-    setOrder(next);
-
-    try {
-      await reorder.mutateAsync(next.map((m) => m.id));
-    } catch (error) {
-      // Put it back: leaving the optimistic order on screen would show an
-      // arrangement the page does not actually have.
-      setOrder(order);
-      showToast(apiMessage(error, t.common.error), 'error');
-    }
-  }
+  const sectionName = (id: string | null) =>
+    data?.sections.find((section) => section.id === id)?.name ?? null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">{t.team.adminTitle}</h1>
-          <p className="mt-1 text-sm text-text-secondary">{t.team.adminSubtitle}</p>
-        </div>
-        <Button onClick={() => setEditing('new')}>
-          <Plus className="size-4" aria-hidden="true" />
-          {t.team.addMember}
-        </Button>
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-2xl font-bold text-text-primary">{t.team.adminTitle}</h1>
+        <p className="mt-1 text-sm text-text-secondary">{t.team.adminSubtitle}</p>
       </div>
 
       {isLoading && (
@@ -103,55 +90,130 @@ export default function AdminTeamPage() {
         </div>
       )}
 
-      {!isLoading && order.length === 0 && <EmptyState title={t.team.empty} />}
+      {/* Sections ------------------------------------------------------------ */}
+      <section className="flex flex-col gap-3" aria-labelledby="sections-heading">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="max-w-2xl">
+            <h2 id="sections-heading" className="text-lg font-semibold text-text-primary">
+              {t.team.sectionsTitle}
+            </h2>
+            <p className="mt-1 text-sm text-text-secondary">{t.team.sectionsHint}</p>
+          </div>
+          <Button variant="secondary" onClick={() => setEditingSection('new')}>
+            <FolderPlus className="size-4" aria-hidden="true" />
+            {t.team.addSection}
+          </Button>
+        </div>
 
-      <ul className="flex flex-col gap-3">
-        {order.map((member, index) => {
-          const src = photoSrc(member.photoUrl);
-          return (
+        {!isLoading && sections.order.length === 0 && (
+          <p className="text-sm text-text-muted">{t.team.sectionsEmpty}</p>
+        )}
+
+        <ul className="flex flex-col gap-2">
+          {sections.order.map((section, index) => (
+            <li key={section.id}>
+              <Card className="py-3">
+                <div className="flex flex-wrap items-center gap-4">
+                  <MoveButtons
+                    index={index}
+                    count={sections.order.length}
+                    busy={reorderSections.isPending}
+                    onMove={(i, d) => void sections.move(i, d)}
+                    upLabel={t.team.moveUp}
+                    downLabel={t.team.moveDown}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-text-primary">{section.name}</p>
+                    {section.description && (
+                      <p className="text-sm text-text-secondary">{section.description}</p>
+                    )}
+                  </div>
+                  <Badge>
+                    {section._count.members} {t.team.sectionMembers}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setEditingSection(section)}>
+                    <Pencil className="size-4" aria-hidden="true" />
+                    {t.common.edit}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={t.common.delete}
+                    onClick={() => setConfirming(`section:${section.id}`)}
+                  >
+                    <Trash2 className="size-4 text-brand-red-500" aria-hidden="true" />
+                  </Button>
+                </div>
+
+                {confirming === `section:${section.id}` && (
+                  <ConfirmRow
+                    message={t.team.sectionDeleteConfirm}
+                    busy={removeSection.isPending}
+                    onCancel={() => setConfirming(null)}
+                    onConfirm={async () => {
+                      try {
+                        await removeSection.mutateAsync(section.id);
+                        setConfirming(null);
+                      } catch (error) {
+                        onError(error);
+                      }
+                    }}
+                  />
+                )}
+              </Card>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Members ------------------------------------------------------------- */}
+      <section className="flex flex-col gap-3" aria-labelledby="members-heading">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 id="members-heading" className="text-lg font-semibold text-text-primary">
+            {t.team.membersTitle}
+          </h2>
+          <Button onClick={() => setEditingMember('new')}>
+            <Plus className="size-4" aria-hidden="true" />
+            {t.team.addMember}
+          </Button>
+        </div>
+
+        {!isLoading && members.order.length === 0 && <EmptyState title={t.team.empty} />}
+
+        <ul className="flex flex-col gap-3">
+          {members.order.map((member, index) => (
             <li key={member.id}>
               <Card className={member.published ? undefined : 'opacity-70'}>
                 <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex flex-col gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      aria-label={t.team.moveUp}
-                      disabled={index === 0 || reorder.isPending}
-                      onClick={() => void move(index, -1)}
-                    >
-                      <ArrowUp className="size-4" aria-hidden="true" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      aria-label={t.team.moveDown}
-                      disabled={index === order.length - 1 || reorder.isPending}
-                      onClick={() => void move(index, 1)}
-                    >
-                      <ArrowDown className="size-4" aria-hidden="true" />
-                    </Button>
-                  </div>
+                  <MoveButtons
+                    index={index}
+                    count={members.order.length}
+                    busy={reorderMembers.isPending}
+                    onMove={(i, d) => void members.move(i, d)}
+                    upLabel={t.team.moveUp}
+                    downLabel={t.team.moveDown}
+                  />
 
-                  {src ? (
-                    <img
-                      src={src}
-                      alt={member.name}
-                      className="size-14 shrink-0 rounded-full border border-border-default object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="flex size-14 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-200"
-                      aria-hidden="true"
-                    >
-                      <UserRound className="size-6 text-text-muted" />
-                    </div>
-                  )}
+                  <StaffImage
+                    path={adminPhotoPath(member.photoUrl)}
+                    alt={member.name}
+                    className="size-14 shrink-0 rounded-full border border-border-default object-cover"
+                    fallback={
+                      <div
+                        className="flex size-14 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-200"
+                        aria-hidden="true"
+                      >
+                        <UserRound className="size-6 text-text-muted" />
+                      </div>
+                    }
+                  />
 
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-text-primary">{member.name}</p>
                     <p className="text-sm text-text-secondary">{member.title}</p>
-                    {member.team && <p className="mt-0.5 text-xs text-text-muted">{member.team}</p>}
+                    <p className="mt-0.5 text-xs text-text-muted">
+                      {sectionName(member.sectionId) ?? t.team.noSection}
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
@@ -162,25 +224,22 @@ export default function AdminTeamPage() {
                       size="sm"
                       variant="ghost"
                       aria-label={member.published ? t.team.hide : t.team.publish}
-                      onClick={() =>
-                        void (async () => {
-                          try {
-                            // Only the flag: sending the whole member would
-                            // resubmit every field, and a partial PATCH is
-                            // what the route expects.
-                            await update.mutateAsync({
-                              id: member.id,
-                              payload: { published: !member.published },
-                            });
-                          } catch (error) {
-                            showToast(apiMessage(error, t.common.error), 'error');
-                          }
-                        })()
-                      }
+                      onClick={async () => {
+                        try {
+                          // Only the flag: a partial PATCH is what the route
+                          // expects, and resubmitting every field is not.
+                          await updateMember.mutateAsync({
+                            id: member.id,
+                            payload: { published: !member.published },
+                          });
+                        } catch (error) {
+                          onError(error);
+                        }
+                      }}
                     >
                       {member.published ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => setEditing(member)}>
+                    <Button size="sm" variant="outline" onClick={() => setEditingMember(member)}>
                       <Pencil className="size-4" aria-hidden="true" />
                       {t.common.edit}
                     </Button>
@@ -188,55 +247,141 @@ export default function AdminTeamPage() {
                       size="sm"
                       variant="ghost"
                       aria-label={t.common.delete}
-                      onClick={() => setConfirming(member.id)}
+                      onClick={() => setConfirming(`member:${member.id}`)}
                     >
                       <Trash2 className="size-4 text-brand-red-500" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
 
-                {confirming === member.id && (
-                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-default pt-3">
-                    <p className="text-sm text-text-secondary">{t.team.deleteConfirm}</p>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      isLoading={remove.isPending}
-                      onClick={() =>
-                        void (async () => {
-                          try {
-                            await remove.mutateAsync(member.id);
-                            setConfirming(null);
-                          } catch (error) {
-                            showToast(apiMessage(error, t.common.error), 'error');
-                          }
-                        })()
+                {confirming === `member:${member.id}` && (
+                  <ConfirmRow
+                    message={t.team.deleteConfirm}
+                    busy={removeMember.isPending}
+                    onCancel={() => setConfirming(null)}
+                    onConfirm={async () => {
+                      try {
+                        await removeMember.mutateAsync(member.id);
+                        setConfirming(null);
+                      } catch (error) {
+                        onError(error);
                       }
-                    >
-                      {t.common.delete}
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setConfirming(null)}>
-                      {t.common.cancel}
-                    </Button>
-                  </div>
+                    }}
+                  />
                 )}
               </Card>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      </section>
 
-      {editing && (
+      {editingMember && (
         <MemberForm
-          member={editing === 'new' ? null : editing}
-          onClose={() => setEditing(null)}
+          member={editingMember === 'new' ? null : editingMember}
+          sections={data?.sections ?? []}
+          onClose={() => setEditingMember(null)}
+        />
+      )}
+
+      {editingSection && (
+        <SectionForm
+          section={editingSection === 'new' ? null : editingSection}
+          onClose={() => setEditingSection(null)}
         />
       )}
     </div>
   );
 }
 
-function MemberForm({ member, onClose }: { member: AdminTeamMember | null; onClose: () => void }) {
+function ConfirmRow({
+  message,
+  busy,
+  onConfirm,
+  onCancel,
+}: {
+  message: string;
+  busy: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const { t } = useLocale();
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border-default pt-3">
+      <p className="text-sm text-text-secondary">{message}</p>
+      <Button size="sm" variant="danger" isLoading={busy} onClick={onConfirm}>
+        {t.common.delete}
+      </Button>
+      <Button size="sm" variant="ghost" onClick={onCancel}>
+        {t.common.cancel}
+      </Button>
+    </div>
+  );
+}
+
+function SectionForm({ section, onClose }: { section: AdminTeamSection | null; onClose: () => void }) {
+  const { t } = useLocale();
+  const { showToast } = useToast();
+  const create = useCreateSection();
+  const update = useUpdateSection();
+  const [values, setValues] = useState<TeamSectionPayload>({
+    name: section?.name ?? '',
+    description: section?.description ?? '',
+  });
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const payload = { name: values.name.trim(), description: values.description?.trim() || undefined };
+    try {
+      if (section) await update.mutateAsync({ id: section.id, payload });
+      else await create.mutateAsync(payload);
+      showToast(t.team.saved, 'success');
+      onClose();
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  return (
+    <Modal isOpen onClose={onClose} title={section ? t.team.editSection : t.team.addSection}>
+      <form className="flex flex-col gap-4" onSubmit={submit}>
+        <FormField label={t.team.sectionName} htmlFor="section-name">
+          <Input
+            id="section-name"
+            required
+            minLength={2}
+            value={values.name}
+            onChange={(e) => setValues((prev) => ({ ...prev, name: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={t.team.sectionDescription} htmlFor="section-description">
+          <Input
+            id="section-description"
+            value={values.description}
+            onChange={(e) => setValues((prev) => ({ ...prev, description: e.target.value }))}
+          />
+        </FormField>
+        <div className="flex gap-2">
+          <Button type="submit" isLoading={create.isPending || update.isPending}>
+            {t.common.save}
+          </Button>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            {t.common.cancel}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function MemberForm({
+  member,
+  sections,
+  onClose,
+}: {
+  member: AdminTeamMember | null;
+  sections: AdminTeamSection[];
+  onClose: () => void;
+}) {
   const { t } = useLocale();
   const { showToast } = useToast();
   const create = useCreateMember();
@@ -248,18 +393,18 @@ function MemberForm({ member, onClose }: { member: AdminTeamMember | null; onClo
           name: member.name,
           title: member.title,
           bio: member.bio ?? '',
-          team: member.team ?? '',
+          sectionId: member.sectionId,
           email: member.email ?? '',
           linkedin: member.linkedin ?? '',
           github: member.github ?? '',
           website: member.website ?? '',
           published: member.published,
         }
-      : EMPTY,
+      : EMPTY
   );
   const [photo, setPhoto] = useState<File | null>(null);
 
-  const set = (key: keyof TeamMemberPayload) => (value: string | boolean) =>
+  const set = <K extends keyof TeamMemberPayload>(key: K) => (value: TeamMemberPayload[K]) =>
     setValues((prev) => ({ ...prev, [key]: value }));
 
   async function submit(event: FormEvent) {
@@ -270,7 +415,9 @@ function MemberForm({ member, onClose }: { member: AdminTeamMember | null; onClo
     const payload: TeamMemberPayload = {
       ...values,
       bio: values.bio?.trim() || undefined,
-      team: values.team?.trim() || undefined,
+      // Explicit null, not undefined: "no section" is a choice, and on an
+      // update undefined would leave the member where they were.
+      sectionId: values.sectionId || null,
       email: values.email?.trim() || undefined,
       linkedin: values.linkedin?.trim() || undefined,
       github: values.github?.trim() || undefined,
@@ -299,8 +446,19 @@ function MemberForm({ member, onClose }: { member: AdminTeamMember | null; onClo
           </FormField>
         </div>
 
-        <FormField label={t.team.group} htmlFor="team" hint={t.team.groupHint}>
-          <Input id="team" value={values.team} onChange={(e) => set('team')(e.target.value)} />
+        <FormField label={t.team.group} htmlFor="section">
+          <Select
+            id="section"
+            value={values.sectionId ?? ''}
+            onChange={(e) => set('sectionId')(e.target.value || null)}
+          >
+            <option value="">{t.team.noSection}</option>
+            {sections.map((section) => (
+              <option key={section.id} value={section.id}>
+                {section.name}
+              </option>
+            ))}
+          </Select>
         </FormField>
 
         <FormField label={t.team.bio} htmlFor="bio">

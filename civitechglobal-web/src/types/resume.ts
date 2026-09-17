@@ -15,7 +15,52 @@ export type ResumeStatus =
   | 'DECLINED'
   | 'WITHDRAWN';
 
-export interface ResumePayload {
+/** Which programme a CV was sent to. Absent on the wire means JOB. */
+export type TalentTrack = 'JOB' | 'VOLUNTEER' | 'INTERNSHIP';
+
+export type TalentDiscipline =
+  | 'FRONTEND'
+  | 'BACKEND'
+  | 'FULLSTACK'
+  | 'MOBILE'
+  | 'DEVOPS'
+  | 'DATA'
+  | 'QA'
+  | 'UI_UX'
+  | 'OTHER';
+
+export const TALENT_DISCIPLINES: TalentDiscipline[] = [
+  'FRONTEND',
+  'BACKEND',
+  'FULLSTACK',
+  'MOBILE',
+  'DEVOPS',
+  'DATA',
+  'QA',
+  'UI_UX',
+  'OTHER',
+];
+
+export type WorkArrangement = 'ONSITE' | 'HYBRID' | 'REMOTE';
+
+/** What the volunteer and internship form adds to a CV. Empty on a job CV. */
+export interface ProgrammeFields {
+  track?: TalentTrack;
+  discipline?: TalentDiscipline;
+  hoursPerWeek?: number;
+  /** Gregorian ISO date, whatever calendar the field displayed. */
+  availableFrom?: string;
+  durationMonths?: number;
+  arrangement?: WorkArrangement;
+  university?: string;
+  fieldOfStudy?: string;
+  skills?: string[];
+  githubUrl?: string;
+  portfolioUrl?: string;
+  linkedinUrl?: string;
+}
+
+export interface ResumePayload extends ProgrammeFields {
   fullName: string;
   email: string;
   phone: string;
@@ -64,6 +109,18 @@ export interface ClientIdentitySummary {
  */
 export interface AdminResumeDetail {
   id: string;
+  track: TalentTrack;
+  discipline: TalentDiscipline | null;
+  hoursPerWeek: number | null;
+  availableFrom: string | null;
+  durationMonths: number | null;
+  arrangement: WorkArrangement | null;
+  university: string | null;
+  fieldOfStudy: string | null;
+  skills: string[];
+  githubUrl: string | null;
+  portfolioUrl: string | null;
+  linkedinUrl: string | null;
   trackingCode: string;
   fullName: string;
   email: string;
@@ -91,6 +148,9 @@ export interface AdminResumeDetail {
 
 export interface AdminResumeSummary {
   id: string;
+  track: TalentTrack;
+  discipline: TalentDiscipline | null;
+  hoursPerWeek: number | null;
   trackingCode: string;
   fullName: string;
   city: string | null;

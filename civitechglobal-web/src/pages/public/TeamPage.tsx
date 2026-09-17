@@ -10,19 +10,18 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 /**
  * The people behind the company.
  *
- * Grouped only when the data says to. A `team` label is optional on a member,
- * so a company with no departments gets one clean list rather than a page of
- * single-person headings — the grouping appears when it starts meaning
- * something.
+ * Arranged by the server: sections in the order the super admin set, members
+ * in theirs, then anyone not placed in a section. A company with no sections
+ * gets one clean list, because a heading only appears when there is one.
  */
 export default function TeamPage() {
   const { t } = useLocale();
   useDocumentTitle(t.team.title, { description: t.seo.team });
 
   const { data, isLoading } = useTeam();
-
-  const groups = groupByTeam(data ?? []);
-  const grouped = groups.length > 1 || (groups[0]?.label ?? null) !== null;
+  const sections = data?.sections ?? [];
+  const unsectioned = data?.unsectioned ?? [];
+  const empty = !isLoading && sections.length === 0 && unsectioned.length === 0;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -37,23 +36,50 @@ export default function TeamPage() {
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.team.empty} />}
+      {empty && <EmptyState title={t.team.empty} />}
 
-      {groups.map((group, index) => (
-        <AnimatedSection key={group.label ?? 'all'} delay={index * 0.05} className="mb-10">
-          {grouped && group.label && (
-            <h2 className="mb-4 text-lg font-semibold text-text-primary">{group.label}</h2>
-          )}
-          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {group.members.map((member) => (
-              <li key={member.id}>
-                <MemberCard member={member} />
-              </li>
-            ))}
-          </ul>
+      {sections.map((section, index) => (
+        <AnimatedSection key={section.id} delay={index * 0.05} className="mb-12">
+          <section aria-labelledby={`team-section-${section.id}`}>
+            <h2
+              id={`team-section-${section.id}`}
+              className="text-xl font-semibold text-text-primary"
+            >
+              {section.name}
+            </h2>
+            {section.description && (
+              <p className="mt-1 text-sm text-text-secondary">{section.description}</p>
+            )}
+            <MemberGrid members={section.members} />
+          </section>
         </AnimatedSection>
       ))}
+
+      {unsectioned.length > 0 && (
+        <AnimatedSection delay={sections.length * 0.05} className="mb-12">
+          <section aria-label={sections.length > 0 ? t.team.otherMembers : t.team.title}>
+            {/* Only titled when there are sections above it; alone, the page
+                heading already says what this list is. */}
+            {sections.length > 0 && (
+              <h2 className="text-xl font-semibold text-text-primary">{t.team.otherMembers}</h2>
+            )}
+            <MemberGrid members={unsectioned} />
+          </section>
+        </AnimatedSection>
+      )}
     </div>
+  );
+}
+
+function MemberGrid({ members }: { members: TeamMember[] }) {
+  return (
+    <ul className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {members.map((member) => (
+        <li key={member.id}>
+          <MemberCard member={member} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -137,24 +163,4 @@ function IconLink({
       {children}
     </a>
   );
-}
-
-/**
- * Members in the order the server sent them, split into contiguous groups.
- *
- * Contiguous rather than collected: the order is an editorial decision, so
- * regrouping members who happen to share a label would silently rearrange a
- * list somebody deliberately arranged.
- */
-function groupByTeam(members: TeamMember[]): Array<{ label: string | null; members: TeamMember[] }> {
-  const groups: Array<{ label: string | null; members: TeamMember[] }> = [];
-
-  for (const member of members) {
-    const label = member.team?.trim() || null;
-    const last = groups.at(-1);
-    if (last && last.label === label) last.members.push(member);
-    else groups.push({ label, members: [member] });
-  }
-
-  return groups;
 }

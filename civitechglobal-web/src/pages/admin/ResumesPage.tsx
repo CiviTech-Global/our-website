@@ -15,7 +15,9 @@ import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import type { BadgeVariant } from '@/components/ui/Badge';
-import type { ResumeStatus } from '@/types/resume';
+import type { ResumeStatus, TalentTrack } from '@/types/resume';
+
+type ProgrammeFilter = 'VOLUNTEER,INTERNSHIP' | 'VOLUNTEER' | 'INTERNSHIP';
 
 const PAGE_SIZE = 20;
 
@@ -46,30 +48,56 @@ function statusVariant(status: ResumeStatus): BadgeVariant {
 }
 
 /**
- * The CV pile.
+ * The CV pile — or, with `programme`, the volunteer and internship pile.
+ *
+ * Both come through the same intake, so they are the same screen filtered two
+ * ways. Kept apart in the sidebar all the same: whoever reads job CVs against
+ * an opening is doing different work from whoever plans placements, and a
+ * single mixed list would make both of them skip half of it.
  *
  * A list rather than a table: the useful signal in an application is the
  * headline, the years and the skills, and those do not fit a row without being
  * truncated into uselessness.
  */
-export default function ResumesPage() {
+export default function ResumesPage({ programme = false }: { programme?: boolean }) {
   const { t, locale } = useLocale();
-  useDocumentTitle(t.join.adminTitle);
+  const title = programme ? t.volunteer.adminTitle : t.join.adminTitle;
+  useDocumentTitle(title);
+  const [programmeFilter, setProgrammeFilter] = useState<ProgrammeFilter>('VOLUNTEER,INTERNSHIP');
+  const track: string = programme ? programmeFilter : ('JOB' satisfies TalentTrack);
   const { showToast } = useToast();
   const [page, setPage] = useState(1);
   const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
   const [status, setStatus] = useState<ResumeStatus | 'ALL'>('ALL');
 
-  const { data, isLoading } = useAdminResumes({ page, pageSize: PAGE_SIZE, status });
+  const { data, isLoading } = useAdminResumes({ page, pageSize: PAGE_SIZE, status, track });
   const update = useUpdateResumeStatus();
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{t.join.adminTitle}</h1>
-          <p className="mt-1 text-sm text-text-secondary">{t.join.adminSubtitle}</p>
+          <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            {programme ? t.volunteer.adminSubtitle : t.join.adminSubtitle}
+          </p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        {programme && (
+          <Select
+            value={programmeFilter}
+            className="w-auto"
+            aria-label={t.volunteer.programme}
+            onChange={(e) => {
+              setProgrammeFilter(e.target.value as ProgrammeFilter);
+              setPage(1);
+            }}
+          >
+            <option value="VOLUNTEER,INTERNSHIP">{t.volunteer.bothTracks}</option>
+            <option value="INTERNSHIP">{t.volunteer.tracks.INTERNSHIP}</option>
+            <option value="VOLUNTEER">{t.volunteer.tracks.VOLUNTEER}</option>
+          </Select>
+        )}
         <Select
           value={status}
           className="w-auto"
@@ -86,6 +114,7 @@ export default function ResumesPage() {
             </option>
           ))}
         </Select>
+        </div>
       </div>
 
       {isLoading && (
@@ -94,7 +123,7 @@ export default function ResumesPage() {
         </div>
       )}
 
-      {!isLoading && data && data.items.length === 0 && <EmptyState title={t.join.adminEmpty} />}
+      {!isLoading && data && data.items.length === 0 && <EmptyState title={programme ? t.volunteer.adminEmpty : t.join.adminEmpty} />}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((cv) => (
@@ -111,6 +140,9 @@ export default function ResumesPage() {
                   <p className="mt-0.5 text-xs text-text-muted">
                     <span className="ltr font-mono">{cv.trackingCode}</span>
                     {cv.city && ` · ${cv.city}`}
+                    {programme && cv.track !== 'JOB' && ` · ${t.volunteer.tracks[cv.track]}`}
+                    {cv.discipline && ` · ${t.volunteer.disciplines[cv.discipline]}`}
+                    {cv.hoursPerWeek && ` · ${cv.hoursPerWeek} ${t.volunteer.hoursUnit}`}
                     {` · ${formatDate(cv.createdAt, locale)}`}
                   </p>
                 </div>

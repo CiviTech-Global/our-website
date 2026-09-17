@@ -291,76 +291,364 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://rayantamaddonjahangostar.ir/freelance</loc>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/freelance"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/freelance"/>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/freelance"/>
-    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/freelance"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/freelance"/>
+    <loc>https://rayantamaddonjahangostar.ir/projects</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/projects"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/projects"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/projects"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/projects"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/projects"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/projects"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://rayantamaddonjahangostar.ir/en/freelance</loc>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/freelance"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/freelance"/>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/freelance"/>
-    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/freelance"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/freelance"/>
+    <loc>https://rayantamaddonjahangostar.ir/en/projects</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/projects"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/projects"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/projects"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/projects"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/projects"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/projects"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://rayantamaddonjahangostar.ir/tr/freelance</loc>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/freelance"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/freelance"/>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/freelance"/>
-    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/freelance"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/freelance"/>
+    <loc>https://rayantamaddonjahangostar.ir/tr/projects</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/projects"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/projects"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/projects"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/projects"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/projects"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/projects"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://rayantamaddonjahangostar.ir/de/freelance</loc>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/freelance"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/freelance"/>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/freelance"/>
-    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/freelance"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/freelance"/>
+    <loc>https://rayantamaddonjahangostar.ir/de/projects</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/projects"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/projects"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/projects"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/projects"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/projects"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/projects"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://rayantamaddonjahangostar.ir/fr/freelance</loc>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/freelance"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/freelance"/>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/freelance"/>
-    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/freelance"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/freelance"/>
+    <loc>https://rayantamaddonjahangostar.ir/fr/projects</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/projects"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/projects"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/projects"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/projects"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/projects"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/projects"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://rayantamaddonjahangostar.ir/es/freelance</loc>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/freelance"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/freelance"/>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/freelance"/>
-    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/freelance"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/freelance"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/freelance"/>
+    <loc>https://rayantamaddonjahangostar.ir/es/projects</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/projects"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/projects"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/projects"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/projects"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/projects"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/projects"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/portfolio</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/en/portfolio</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/tr/portfolio</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/de/portfolio</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/fr/portfolio</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/es/portfolio</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/portfolio"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/customers</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/customers"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/customers"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/customers"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/customers"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/customers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/en/customers</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/customers"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/customers"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/customers"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/customers"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/customers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/tr/customers</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/customers"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/customers"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/customers"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/customers"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/customers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/de/customers</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/customers"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/customers"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/customers"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/customers"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/customers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/fr/customers</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/customers"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/customers"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/customers"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/customers"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/customers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/es/customers</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/customers"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/customers"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/customers"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/customers"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/customers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/customers"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/partners</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/partners"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/partners"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/partners"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/partners"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/partners"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/en/partners</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/partners"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/partners"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/partners"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/partners"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/partners"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/tr/partners</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/partners"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/partners"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/partners"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/partners"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/partners"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/de/partners</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/partners"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/partners"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/partners"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/partners"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/partners"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/fr/partners</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/partners"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/partners"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/partners"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/partners"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/partners"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/es/partners</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/partners"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/partners"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/partners"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/partners"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/partners"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/partners"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/volunteer</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/en/volunteer</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/tr/volunteer</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/de/volunteer</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/fr/volunteer</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/es/volunteer</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/volunteer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/volunteer"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://rayantamaddonjahangostar.ir/join</loc>
