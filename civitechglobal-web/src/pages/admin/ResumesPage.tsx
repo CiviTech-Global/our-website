@@ -77,13 +77,14 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
 
   return (
     <div className="flex flex-col gap-4">
+      {/* The status filter rides in the header rather than on a toolbar of its
+          own: on the CV screen there is nothing else to put beside it, and a
+          row holding one right-aligned select reads as a stray control. */}
       <PageHeader
         title={title}
         description={programme ? t.volunteer.adminSubtitle : t.join.adminSubtitle}
         className="mb-2"
-      />
-      <Toolbar
-        end={
+        actions={
           <Select
             value={status}
             className="w-auto min-w-40"
@@ -101,8 +102,9 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
             ))}
           </Select>
         }
-      >
-        {programme && (
+      />
+      {programme && (
+        <Toolbar>
           <SegmentedControl<ProgrammeFilter>
             label={t.volunteer.programme}
             value={programmeFilter}
@@ -116,8 +118,8 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
               { value: 'VOLUNTEER', label: t.volunteer.tracks.VOLUNTEER },
             ]}
           />
-        )}
-      </Toolbar>
+        </Toolbar>
+      )}
 
       {isLoading && (
         <div className="flex justify-center py-16">

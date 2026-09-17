@@ -84,7 +84,16 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
       )}
 
       {!isLoading && list.order.length === 0 && (
-        <EmptyState title={isCustomer ? t.showcase.customersEmpty : t.showcase.partnersEmpty} />
+        <EmptyState
+          title={isCustomer ? t.showcase.adminCustomersEmpty : t.showcase.adminPartnersEmpty}
+          description={t.showcase.adminEmptyBody}
+          action={
+            <Button onClick={() => setEditing('new')}>
+              <Plus className="size-4" aria-hidden="true" />
+              {isCustomer ? t.showcase.addCustomer : t.showcase.addPartner}
+            </Button>
+          }
+        />
       )}
 
       <ul className="flex flex-col gap-3">

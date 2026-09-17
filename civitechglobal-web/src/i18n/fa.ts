@@ -1306,6 +1306,10 @@ const fa = {
 
     // Admin
     adminCustomersTitle: 'باشگاه مشتریان',
+    adminCustomersEmpty: 'هنوز مشتری‌ای در باشگاه مشتریان ثبت نشده است.',
+    adminPartnersEmpty: 'هنوز شریکی ثبت نشده است.',
+    adminProjectsEmpty: 'هنوز پروژه‌ای در نمونه‌کارها ثبت نشده است.',
+    adminEmptyBody: 'هنوز چیزی اینجا منتشر نشده است. نخستین مورد که اضافه کنید، در بالای صفحهٔ عمومی دیده می‌شود.',
     adminCustomersSubtitle: 'مشتریانی که در صفحهٔ باشگاه مشتریان نمایش داده می‌شوند، ترتیب و لوگوی آن‌ها.',
     adminPartnersTitle: 'شرکا',
     adminPartnersSubtitle: 'شرکایی که در صفحهٔ شرکا نمایش داده می‌شوند، ترتیب و لوگوی آن‌ها.',

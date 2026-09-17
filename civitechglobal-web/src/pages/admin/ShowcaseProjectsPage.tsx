@@ -82,7 +82,18 @@ export default function ShowcaseProjectsPage() {
         </div>
       )}
 
-      {!isLoading && list.order.length === 0 && <EmptyState title={t.showcase.projectsEmpty} />}
+      {!isLoading && list.order.length === 0 && (
+        <EmptyState
+          title={t.showcase.adminProjectsEmpty}
+          description={t.showcase.adminEmptyBody}
+          action={
+            <Button onClick={() => setEditing('new')}>
+              <Plus className="size-4" aria-hidden="true" />
+              {t.showcase.addProject}
+            </Button>
+          }
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {list.order.map((project, index) => (

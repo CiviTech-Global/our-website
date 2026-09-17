@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2, Handshake, Star } from 'lucide-react';
+import { ArrivalsChart } from '@/components/app/ArrivalsChart';
 import { StatCard, StatGrid } from '@/components/app/StatCard';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState } from 'react';
@@ -54,7 +55,11 @@ export default function MarketplaceAnalyticsPage() {
     { key: 'bids', label: t.market.queueBids },
   ];
 
-  const maxWeekly = Math.max(1, ...data.weeklyTrend.map((week) => week.jobs + week.projects));
+  // The deepest queue sets the scale for every bar in the queue panel.
+  const queueCeiling = Math.max(
+    1,
+    ...queueDefs.map((queue) => Object.values(data.queues[queue.key] ?? {}).reduce((sum, count) => sum + count, 0))
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -66,7 +71,11 @@ export default function MarketplaceAnalyticsPage() {
             <StatCard label={t.analytics.totalAwards} value={digits(data.awards.total)} icon={Handshake} />
             <StatCard
               label={t.analytics.completionRate}
-              value={data.awards.completionRate === null ? '—' : `${digits(data.awards.completionRate)}٪`}
+              value={
+                data.awards.completionRate === null
+                  ? '—'
+                  : `${digits(data.awards.completionRate)}${locale === 'fa' ? '٪' : '%'}`
+              }
               icon={CheckCircle2}
             />
             <StatCard
@@ -87,26 +96,24 @@ export default function MarketplaceAnalyticsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="mb-4 text-title-sm font-semibold text-app-text">{t.analytics.queueDepths}</h2>
+          {/* Bars are scaled against the deepest queue, not against their own
+              total: the point of the panel is which queue is worst, and a row
+              that always fills its track cannot say that. */}
           <div className="flex flex-col gap-4">
             {queueDefs.map((queue) => {
               const rows = data.queues[queue.key] ?? {};
-              const entries = Object.entries(rows);
-              const total = entries.reduce((sum, [, count]) => sum + count, 0);
+              const total = Object.values(rows).reduce((sum, count) => sum + count, 0);
               return (
                 <div key={queue.key}>
                   <div className="mb-1 flex items-center justify-between text-body">
                     <span className="font-medium text-app-text">{queue.label}</span>
-                    <span className="text-app-text-4">{digits(total)}</span>
+                    <span className="tabular-nums text-app-text-3">{digits(total)}</span>
                   </div>
-                  <div className="flex h-2 overflow-hidden rounded-full bg-app-fill">
-                    {entries.map(([status, count]) => (
-                      <span
-                        key={status}
-                        title={`${status}: ${count}`}
-                        className="bg-app-primary first:rounded-s-full last:rounded-e-full"
-                        style={{ width: `${total === 0 ? 0 : (count / total) * 100}%` }}
-                      />
-                    ))}
+                  <div className="h-2 overflow-hidden rounded-full bg-app-fill">
+                    <span
+                      className="block h-full rounded-full bg-app-primary"
+                      style={{ width: `${total === 0 ? 0 : Math.max(2, (total / queueCeiling) * 100)}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -154,16 +161,10 @@ export default function MarketplaceAnalyticsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="mb-4 text-title-sm font-semibold text-app-text">{t.analytics.weeklyTrend}</h2>
-          <div className="flex h-32 items-end gap-1">
-            {data.weeklyTrend.map((week) => {
-              const height = Math.round(((week.jobs + week.projects) / maxWeekly) * 100);
-              return (
-                <div key={week.week} className="flex flex-1 flex-col items-center gap-1">
-                  <div className="flex w-full flex-col justify-end rounded-t bg-app-primary" style={{ height: `${Math.max(2, height)}%` }} title={`${week.week}: ${week.jobs + week.projects}`} />
-                </div>
-              );
-            })}
-          </div>
+          <ArrivalsChart
+            label={t.analytics.weeklyTrend}
+            points={data.weeklyTrend.map((week) => ({ day: week.week, count: week.jobs + week.projects }))}
+          />
         </Card>
 
         <Card>

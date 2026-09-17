@@ -1307,6 +1307,10 @@ const en: typeof fa = {
 
     // Admin
     adminCustomersTitle: 'Customers club',
+    adminCustomersEmpty: 'No customers on the club page yet.',
+    adminPartnersEmpty: 'No partners on the partners page yet.',
+    adminProjectsEmpty: 'No projects in the portfolio yet.',
+    adminEmptyBody: 'Nothing is published here yet. The first entry you add appears at the top of the public page.',
     adminCustomersSubtitle: 'Which customers appear on the customers club page, in what order, with their logos.',
     adminPartnersTitle: 'Partners',
     adminPartnersSubtitle: 'Which partners appear on the partners page, in what order, with their logos.',
