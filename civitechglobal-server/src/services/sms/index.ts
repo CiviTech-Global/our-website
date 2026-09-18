@@ -18,6 +18,26 @@ export interface SmsProvider {
   sendOtp(phone: string, code: string): Promise<void>;
 }
 
+/**
+ * No gateway at all.
+ *
+ * The mirror of NoEmailProvider next door, and the honest setting for a
+ * deployment that has decided not to buy SMS. Sending throws, so nothing can
+ * believe a code went out; the routes that would have sent one check
+ * canSendSms() first and skip the step instead of failing in front of a
+ * person.
+ *
+ * Permitted in production, unlike the console provider: "we do not text
+ * people" is a decision, whereas "we print codes to the log" is an accident.
+ */
+class NoSmsProvider implements SmsProvider {
+  readonly name = 'none';
+
+  async sendOtp(): Promise<void> {
+    throw new Error('This deployment has no SMS provider configured (SMS_PROVIDER=none).');
+  }
+}
+
 class ConsoleSmsProvider implements SmsProvider {
   readonly name = 'console';
 
@@ -99,6 +119,8 @@ class SmsIrProvider implements SmsProvider {
 function build(): SmsProvider {
   const name = env.SMS_PROVIDER.toLowerCase();
 
+  if (name === 'none') return new NoSmsProvider();
+
   if (name === 'console') {
     if (env.isProduction) {
       // Silently logging codes to stdout instead of texting them would look
@@ -122,7 +144,7 @@ function build(): SmsProvider {
     case 'sms.ir':
       return new SmsIrProvider(env.SMS_API_KEY, env.SMS_OTP_TEMPLATE);
     default:
-      throw new Error(`Unknown SMS_PROVIDER "${env.SMS_PROVIDER}" (expected: console, kavenegar, smsir)`);
+      throw new Error(`Unknown SMS_PROVIDER "${env.SMS_PROVIDER}" (expected: none, console, kavenegar, smsir)`);
   }
 }
 
@@ -143,5 +165,6 @@ export function smsProvider(): SmsProvider {
  * cannot complete. Mirrors canSendEmail next door.
  */
 export function canSendSms(): boolean {
-  return smsProvider().name !== 'console';
+  const { name } = smsProvider();
+  return name !== 'console' && name !== 'none';
 }

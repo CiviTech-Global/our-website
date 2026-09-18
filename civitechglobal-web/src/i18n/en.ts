@@ -666,6 +666,7 @@ const en: typeof fa = {
     verifyPhoneTitle: 'Verify your phone number',
     verifyPhoneHint: 'We text you a six-digit code so we know the number we call back is right.',
     phoneLabel: 'Mobile number',
+    noSmsNotice: "We do not send text messages. You will get a tracking code on the next screen — save it with the phone number and email you gave us; that code is how you check the answer.",
     phoneInvalid: 'That is not a valid Iranian mobile number.',
     sendCode: 'Send code',
     keyFacts: 'At a glance',

@@ -44,25 +44,33 @@
           openssl rand -hex 32
       no_log: true
 
-    - name: Refuse to deploy without a working SMS gateway
-      # Phone verification gates every insurance request. With the console
-      # provider the API refuses to start in production — but a missing API key
-      # or template would let it start and then fail on the first applicant,
-      # silently, one send at a time. Catch both here instead.
+    - name: Refuse to deploy an SMS gateway that cannot deliver
+      # Either this deployment has a working gateway, or it says out loud that
+      # it has none — the same rule the mail provider follows below.
+      #
+      # What is not allowed is the state this was in: sms_provider set to a
+      # real gateway with a stand-in API key, so the API starts, the form still
+      # asks for a code, and every send fails one applicant at a time.
+      #
+      # With sms_provider=none the intake asks for the phone number plainly,
+      # records that nobody verified it, and issues the tracking code — see
+      # insurance-request.service. The console provider stays refused: printing
+      # codes to the log looks like a working system and is not one.
       ansible.builtin.assert:
         that:
-          - sms_provider in ['kavenegar', 'smsir']
-          - vault_sms_api_key is defined
-          - (vault_sms_api_key | length) > 0
-          - not (vault_sms_api_key | string).startswith('REPLACE_ME')
-          - vault_sms_otp_template is defined
-          - (vault_sms_otp_template | length) > 0
-          - not (vault_sms_otp_template | string).startswith('REPLACE_ME')
+          - sms_provider in ['none', 'kavenegar', 'smsir']
+          - >-
+            sms_provider == 'none' or (
+              vault_sms_api_key is defined and (vault_sms_api_key | length) > 0
+              and not (vault_sms_api_key | string).startswith('REPLACE_ME')
+              and vault_sms_otp_template is defined and (vault_sms_otp_template | length) > 0
+              and not (vault_sms_otp_template | string).startswith('REPLACE_ME')
+            )
         fail_msg: >-
-          Insurance requests verify the applicant's phone by SMS. Set
-          sms_provider to kavenegar or smsir in group_vars/all/main.yml, and
-          put the gateway credentials in vault.yml. Deploying without them
-          leaves every applicant unable to submit.
+          sms_provider must be kavenegar or smsir with real credentials in
+          vault.yml, or 'none' to state plainly that this deployment does not
+          send SMS. A real gateway with a placeholder key fails on every
+          applicant instead of failing here.
       no_log: true
 
     - name: Refuse to deploy a mail provider that cannot deliver

@@ -5,7 +5,7 @@ import { logger } from '../config/logger.js';
 import { redis } from '../config/redis.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { sha256Hex } from '../utils/hash.js';
-import { smsProvider } from './sms/index.js';
+import { canSendSms, smsProvider } from './sms/index.js';
 
 /**
  * Phone verification for insurance requests.
@@ -66,6 +66,15 @@ export interface OtpRequestResult {
 }
 
 export async function requestCode(phone: string): Promise<OtpRequestResult> {
+  // Checked before the cooldown is taken: refusing after burning the key would
+  // leave the caller rate-limited for a code that was never going to be sent.
+  if (!canSendSms()) {
+    throw new AppError(
+      'این سایت پیامک ارسال نمی‌کند. شمارهٔ تماس و ایمیل خود را در فرم وارد کنید؛ کد رهگیری دریافت می‌کنید و پاسخ را در همان صفحه می‌بینید.',
+      501,
+    );
+  }
+
   const cooldownKey = cooldownKeyFor(phone);
 
   // NX+EX in one command: two concurrent requests cannot both win the check.

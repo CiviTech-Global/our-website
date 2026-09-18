@@ -1,3 +1,6 @@
+import { normalizeIranMobile } from '@/lib/persian';
+import { PhoneOnlyField } from './PhoneOnlyField';
+import { useCapabilities } from '@/api/capabilities';
 import { useMemo, useState } from 'react';
 import { apiErrorBody } from '@/lib/apiMessage';
 import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
@@ -37,6 +40,7 @@ export function InsuranceForm({ product, onSubmitted }: InsuranceFormProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [phone, setPhone] = useState<string | null>(null);
   const [phoneToken, setPhoneToken] = useState<string | null>(null);
+  const { sms: canSms } = useCapabilities();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const submit = useSubmitInsuranceRequest();
@@ -100,15 +104,22 @@ export function InsuranceForm({ product, onSubmitted }: InsuranceFormProps) {
     setSubmitError(null);
 
     if (!validateCurrentStep()) return;
-    if (!phoneToken) {
+    // With a gateway the number must be proved before it is submitted.
+    // Without one there is nothing to prove it with, so the typed number is
+    // sent as-is and the request records that nobody checked it.
+    if (canSms && !phoneToken) {
       setSubmitError(t.insurance.verifyPhoneFirst);
+      return;
+    }
+    if (!canSms && !normalizeIranMobile(phone ?? '')) {
+      setSubmitError(t.insurance.phoneInvalid);
       return;
     }
 
     try {
       const result = await submit.mutateAsync({
         productSlug: product.slug,
-        phoneToken,
+        ...(canSms ? { phoneToken: phoneToken! } : { phone: normalizeIranMobile(phone ?? '')! }),
         answers: buildPayload(product.formSchema, answers),
       });
       onSubmitted(result);
@@ -183,16 +194,27 @@ export function InsuranceForm({ product, onSubmitted }: InsuranceFormProps) {
         ))}
       </div>
 
-      {isLastStep && (
-        <PhoneVerification
-          verifiedPhone={phone}
-          onVerified={(verifiedPhone, token) => {
-            setPhone(verifiedPhone);
-            setPhoneToken(token);
-            setSubmitError(null);
-          }}
-        />
-      )}
+      {isLastStep &&
+        (canSms ? (
+          <PhoneVerification
+            verifiedPhone={phone}
+            onVerified={(verifiedPhone, token) => {
+              setPhone(verifiedPhone);
+              setPhoneToken(token);
+              setSubmitError(null);
+            }}
+          />
+        ) : (
+          // No gateway: ask for the number plainly, and say what happens
+          // next, because nothing is going to arrive on this phone.
+          <PhoneOnlyField
+            value={phone ?? ''}
+            onChange={(value) => {
+              setPhone(value);
+              setSubmitError(null);
+            }}
+          />
+        ))}
 
       {submitError && (
         <p className="rounded-xl border border-brand-red-500/40 bg-brand-red-500/5 p-3 text-sm text-brand-red-500" role="alert">

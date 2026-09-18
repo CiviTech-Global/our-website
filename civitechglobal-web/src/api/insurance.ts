@@ -67,7 +67,9 @@ export function useVerifyOtp() {
 
 export interface SubmitRequestInput {
   productSlug: string;
-  phoneToken: string;
+  phoneToken?: string;
+  /** Sent instead of a token where the deployment has no SMS gateway. */
+  phone?: string;
   answers: Answers;
   email?: string | null;
 }

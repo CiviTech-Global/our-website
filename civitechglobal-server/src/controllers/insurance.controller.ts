@@ -51,6 +51,7 @@ export async function submitRequest(req: Request, res: Response, next: NextFunct
     const result = await insuranceRequestService.submitRequest({
       productSlug: req.body.productSlug,
       phoneToken: req.body.phoneToken,
+      phone: req.body.phone,
       answers: req.body.answers,
       email: req.body.email ?? null,
     });

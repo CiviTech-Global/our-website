@@ -9,6 +9,7 @@ import { getProduct } from '../insurance/catalog/index.js';
 import { CATALOG_VERSION } from '../insurance/catalog/index.js';
 import { validateAnswers } from '../insurance/catalog/schema.js';
 import { verifyPhoneToken } from './otp.service.js';
+import { canSendSms } from './sms/index.js';
 import { publishNewRequest } from './notify.service.js';
 
 /**
@@ -83,7 +84,9 @@ async function createWithUniqueTrackingCode(
 export interface SubmitRequestInput {
   productSlug: string;
   /** Proof that the applicant controls the phone number — issued by otp.service. */
-  phoneToken: string;
+  phoneToken?: string;
+  /** Taken from the form only when there is no gateway to prove it with. */
+  phone?: string;
   answers: Record<string, unknown>;
   email?: string | null;
 }
@@ -98,13 +101,33 @@ export interface SubmitRequestResult {
 /**
  * Accepts a website submission.
  *
- * The phone number is taken from the verified token, never from the request
- * body — otherwise anyone could verify their own number and then submit a
- * hundred requests naming someone else's. That is the entire point of the
- * token, and it is why `phone` is absent from every product's field list.
+ * Where there is an SMS gateway, the phone number is taken from the verified
+ * token and never from the request body — otherwise anyone could verify their
+ * own number and then submit a hundred requests naming someone else's. That is
+ * the entire point of the token, and it is why `phone` is absent from every
+ * product's field list.
+ *
+ * Where there is no gateway, there is no token to take it from. The number is
+ * then read from the form and the row records that nobody proved it
+ * (`phoneVerified: false`), which is the honest state and the one the queue
+ * needs to see: staff ring these numbers, and "we never checked this" is
+ * exactly what they should know before they do. The alternative — refusing
+ * every submission — would close the intake altogether.
  */
 export async function submitRequest(input: SubmitRequestInput): Promise<SubmitRequestResult> {
-  const phone = verifyPhoneToken(input.phoneToken);
+  const gateway = canSendSms();
+  if (gateway && !input.phoneToken) {
+    throw new AppError('تأیید شماره تماس الزامی است.', 400);
+  }
+  if (!gateway && !input.phone) {
+    throw new AppError('شمارهٔ تماس الزامی است.', 400);
+  }
+
+  // A token still wins when one was sent: a deployment that gained a gateway
+  // between the code being issued and the form being submitted should honour
+  // the proof it already has.
+  const phone = input.phoneToken ? verifyPhoneToken(input.phoneToken) : input.phone!;
+  const phoneVerified = Boolean(input.phoneToken);
 
   // The catalog module holds the validation rules; the database row holds the
   // id we need for the foreign key. Both must recognise the slug — a product
@@ -136,7 +159,7 @@ export async function submitRequest(input: SubmitRequestInput): Promise<SubmitRe
     fullName: contact.fullName,
     phoneNumber: phone,
     phoneNumberHash: sha256Hex(phone),
-    phoneVerified: true,
+    phoneVerified,
     email: input.email ?? null,
     organizationName: contact.organizationName,
     province: contact.province,

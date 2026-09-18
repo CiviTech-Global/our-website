@@ -43,7 +43,12 @@ export const submitRequestSchema = z.object({
     .min(1)
     .max(100)
     .regex(/^[a-z0-9-]+$/, 'شناسه محصول نامعتبر است'),
-  phoneToken: z.string().min(1, 'تأیید شماره تماس الزامی است'),
+  // One of the two, decided by the service rather than here: with a gateway
+  // the token is mandatory, and without one it cannot exist. A schema cannot
+  // see the deployment's configuration, so it accepts either and the service
+  // refuses the wrong one.
+  phoneToken: z.string().min(1).optional(),
+  phone: iranMobile.optional(),
   // Answers are shaped per product, so they cannot be typed here. The real
   // validation happens in validateAnswers() against the product's field list;
   // this only bounds the payload so a malformed body fails cheaply.

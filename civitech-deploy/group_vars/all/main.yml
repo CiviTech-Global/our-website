@@ -92,10 +92,13 @@ db_app_user: civitech_app
 # one-time code before the request is accepted: it is the number a specialist
 # rings back, and an unverified public form fills the queue with typos.
 #
-# "kavenegar" or "smsir" in production. "console" logs the code instead of
-# sending it and is refused at startup when NODE_ENV=production — deploy.yml
-# asserts the same thing so the failure surfaces before the container starts.
-sms_provider: kavenegar
+# "kavenegar" or "smsir" once a gateway is bought. "none" states plainly that
+# this deployment does not text anybody: the intake then asks for the number,
+# records that nobody verified it, and issues the tracking code the applicant
+# uses to read the answer. "console" logs the code instead of sending it and
+# is refused at startup when NODE_ENV=production — deploy.yml asserts the same
+# thing so the failure surfaces before the container starts.
+sms_provider: none
 
 otp_ttl_seconds: 300
 # Per-number cooldown. The API also rate-limits per caller; this bounds many
