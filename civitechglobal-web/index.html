@@ -52,5 +52,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!--
+      ENAMAD (اینماد) trust seal. Sits in the document rather than inside the
+      React tree so it is the last thing on the page and is present in the
+      served HTML, and is reproduced exactly as issued: the seal is a state
+      mark and altering it is an offence, not a style choice.
+    -->
+    <div id="enamad-seal" style="display:flex;justify-content:center;padding:16px">
+      <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7802250&Code=H3YASD8X7ByfZyyLN4APTEuaxxzYPeCw'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7802250&Code=H3YASD8X7ByfZyyLN4APTEuaxxzYPeCw' alt='' style='cursor:pointer' code='H3YASD8X7ByfZyyLN4APTEuaxxzYPeCw'></a>
+    </div>
   </body>
 </html>

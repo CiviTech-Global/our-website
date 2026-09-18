@@ -1,4 +1,3 @@
-import { TrustSeal } from './TrustSeal';
 import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
@@ -40,10 +39,6 @@ export function FuturisticFooter() {
                 </Link>
               </div>
 
-              {/* The ENAMAD seal, shown on every page of the site and so on
-                  the home page their panel checks. Rendered exactly as issued
-                  — see TrustSeal. */}
-              <TrustSeal className="mt-5" />
             </div>
 
             <div>
