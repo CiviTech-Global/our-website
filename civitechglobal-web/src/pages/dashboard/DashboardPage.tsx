@@ -16,6 +16,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useSendVerificationEmail } from '@/api/accountRecovery';
+import { useCapabilities } from '@/api/capabilities';
 import { useOwnMarketplaceStats, useOwnVerification } from '@/api/marketplace';
 import { isApiError } from '@/config/api';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -56,6 +57,9 @@ export default function DashboardPage() {
   const { t, locale } = useLocale();
   const { showToast } = useToast();
   const sendVerification = useSendVerificationEmail();
+  // No mail service, no email step: the server would answer 501, and a
+  // checklist item nobody can ever tick is worse than a shorter checklist.
+  const { email: canEmail } = useCapabilities();
   useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useOwnMarketplaceStats(Boolean(user));
@@ -70,12 +74,16 @@ export default function DashboardPage() {
       state: user?.phone ? 'done' : 'todo',
       to: '/dashboard/profile',
     },
-    {
-      id: 'email',
-      label: t.app.setupEmail,
-      // Undefined means the server does not report it; not a step we can show.
-      state: user?.emailVerified === false ? 'todo' : 'done',
-    },
+    ...(canEmail
+      ? [
+          {
+            id: 'email',
+            label: t.app.setupEmail,
+            // Undefined means the server does not report it; not a step we can show.
+            state: (user?.emailVerified === false ? 'todo' : 'done') as StepState,
+          },
+        ]
+      : []),
     {
       id: 'identity',
       label: t.app.setupIdentity,
@@ -152,7 +160,7 @@ export default function DashboardPage() {
 
       {/* Only while it matters. A banner that stays after the thing is done is
           how people learn to stop reading banners. */}
-      {user?.emailVerified === false && (
+      {canEmail && user?.emailVerified === false && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded border border-status-warning-border bg-status-warning-bg px-4 py-3">
           <MailWarning className="size-5 shrink-0 text-status-warning" aria-hidden="true" />
           <div className="min-w-0 flex-1">

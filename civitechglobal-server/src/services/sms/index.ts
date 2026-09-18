@@ -133,3 +133,15 @@ export function smsProvider(): SmsProvider {
   provider ??= build();
   return provider;
 }
+
+/**
+ * Whether this deployment can deliver a text message to a real phone.
+ *
+ * The console provider prints the code to the server log, which is exactly
+ * right on a laptop and is not delivery: nobody holding the phone ever sees
+ * it. So it counts as 'no' here, and the page does not offer a step that
+ * cannot complete. Mirrors canSendEmail next door.
+ */
+export function canSendSms(): boolean {
+  return smsProvider().name !== 'console';
+}
