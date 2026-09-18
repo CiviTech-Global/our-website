@@ -34,7 +34,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -137,7 +137,7 @@ jobs:
               VITE_CANONICAL_ORIGIN=https://rayantamaddonjahangostar.ir
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -184,7 +184,7 @@ jobs:
     name: Ansible lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up lint environment
         # A venv (not pipx): the lint run must see the same collections the
         # playbooks require, so ansible and ansible-lint share one env.
@@ -205,7 +205,7 @@ jobs:
       name: production      # add required reviewers in repo settings
       url: http://62.220.123.6 # TODO: https://<domain> once DNS lands; also drop -e enable_ssl=false below
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Ansible
         run: pipx install --include-deps ansible
