@@ -285,3 +285,52 @@ export const projectBoardSchema = listQuerySchema.extend({
   budgetMax: optionalMoney,
   sort: z.enum(['newest', 'budgetAsc', 'budgetDesc']).default('newest'),
 });
+
+// ---------------------------------------------------------------------------
+// Books
+// ---------------------------------------------------------------------------
+
+/**
+ * A book listing.
+ *
+ * The description floor is lower than a job advert's: "First edition, spine
+ * creased, no markings" is a complete and honest description of a used book,
+ * and demanding fifty characters would only teach people to pad it.
+ */
+export const bookSchema = z.object({
+  title: required(2, 200, 'عنوان کتاب الزامی است'),
+  bookAuthor: required(2, 160, 'نام نویسنده الزامی است'),
+  description: required(10, 4000, 'توضیح کتاب الزامی است'),
+  condition: z.enum(['NEW', 'USED']),
+  price: money,
+  publisher: trimmed(160).optional(),
+  /** Hyphens and spaces are how an ISBN is written; the service stores digits. */
+  isbn: z
+    .union([z.literal(''), z.string().trim().regex(/^[ds-]{10,20}$/, 'شابک معتبر نیست')])
+    .optional(),
+  publishYear: z.coerce
+    .number()
+    .int()
+    .min(1200, 'سال انتشار معتبر نیست')
+    // Gregorian or Jalali, whichever the seller typed: both are bounded well
+    // below this, and guessing which calendar somebody meant would be worse
+    // than accepting the range that contains both.
+    .max(2200, 'سال انتشار معتبر نیست')
+    .optional(),
+  language: trimmed(40).optional(),
+  pageCount: z.coerce.number().int().min(1).max(20_000).optional(),
+  category: trimmed(80).optional(),
+  negotiable: z.coerce.boolean().default(false),
+  province: trimmed(80).optional(),
+  city: trimmed(80).optional(),
+});
+
+export const bookUpdateSchema = bookSchema.partial();
+
+/** The public market query. Search is by title or author — see the service. */
+export const bookBoardSchema = listQuerySchema.extend({
+  condition: z.enum(['NEW', 'USED']).optional(),
+  priceMin: optionalMoney,
+  priceMax: optionalMoney,
+  sort: z.enum(['newest', 'price-asc', 'price-desc', 'title']).default('newest'),
+});

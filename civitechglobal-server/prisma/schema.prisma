@@ -126,6 +126,9 @@ model User {
   freelanceProjects FreelanceProject[] @relation("ProjectAuthor")
   projectsReviewed  FreelanceProject[] @relation("ProjectReviewer")
 
+  books         BookListing[] @relation("BookSeller")
+  booksReviewed BookListing[] @relation("BookReviewer")
+
   bids             ProjectBid[]       @relation("Bidder")
   bidsReviewed     ProjectBid[]       @relation("BidReviewer")
   awardsMade       MarketplaceAward[] @relation("AwardedBy")
@@ -1786,4 +1789,95 @@ model MarketplaceAuditEntry {
   @@index([targetType, targetId])
   @@index([createdAt])
   @@map("marketplace_audit")
+}
+
+/// What state a copy is in. Two values because that is the whole decision a
+/// buyer makes here — a five-point scale invites arguments about whether
+/// "very good" and "good" differ, which nobody can settle from a photograph.
+enum BookCondition {
+  NEW
+  USED
+}
+
+/// A book somebody is offering.
+///
+/// The market is a noticeboard, not a shop: there is no basket, no payment and
+/// no stock count, because none of those exist yet and pretending otherwise
+/// would be a promise the application cannot keep. A listing is a description,
+/// one photograph and an asking price, and it takes the same moderated route
+/// to publication as every other thing a member writes.
+model BookListing {
+  id String @id @default(cuid())
+
+  /// Quotable public reference, as on every other listing.
+  code String @unique
+
+  sellerId String @map("seller_id")
+  seller   User   @relation("BookSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  /// Frozen at creation rather than read from the seller's role.
+  ///
+  /// A member of staff who posts a book is the company speaking, and the
+  /// listing says so. Deriving it from the current role would rewrite history
+  /// the day somebody's admin rights are granted or taken away: adverts placed
+  /// by a private seller would retroactively claim to be the company's.
+  postedByCompany Boolean @default(false) @map("posted_by_company")
+
+  title       String
+  /// Who wrote the book, as opposed to who is selling it.
+  bookAuthor  String @map("book_author")
+  description String
+
+  publisher   String?
+  /// Digits only, 10 or 13, stored without separators. Optional: plenty of
+  /// second-hand books predate the scheme or have lost the page that carried it.
+  isbn        String?
+  publishYear Int?    @map("publish_year")
+  /// The language the book itself is written in, as a BCP-47 tag.
+  language    String?
+  pageCount   Int?    @map("page_count")
+  category    String?
+
+  condition  BookCondition
+  /// Asking price. Nothing charges it — see the model comment.
+  price      BigInt
+  currency   String        @default("IRT")
+  /// Whether the seller will consider offers. Display only.
+  negotiable Boolean       @default(false)
+
+  province String?
+  city     String?
+
+  /// Exactly one cover image, required at creation. See attachment.service for
+  /// what is accepted and how it is checked.
+  coverStoredName   String? @map("cover_stored_name")
+  coverOriginalName String? @map("cover_original_name")
+  coverMimeType     String? @map("cover_mime_type")
+
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("BookReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
+
+  /// Same convention as JobPost: staff-curated, never paid.
+  featured   Boolean   @default(false)
+  featuredAt DateTime? @map("featured_at")
+
+  /// See the note on JobPost.viewCount.
+  viewCount Int @default(0) @map("view_count")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
+  @@index([sellerId])
+  @@index([featured, state])
+  @@map("book_listings")
 }

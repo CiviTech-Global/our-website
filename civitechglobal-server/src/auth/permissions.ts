@@ -44,6 +44,14 @@ export const PERMISSIONS = {
   freelance: 'freelance',
 
   /**
+   * Moderating the book market: the listings members put up, and the
+   * company's own. Separate from jobs and freelance because judging whether a
+   * book advert is honest is clerical work — a photograph, a price and a
+   * condition — and suits a different desk from reading a job description.
+   */
+  books: 'books',
+
+  /**
    * Marketplace operations outside the review flow: featuring listings,
    * extending deadlines, pausing accounts, resolving disputes, reading the
    * audit log. Deliberately separate from the three moderation keys —

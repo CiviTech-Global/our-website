@@ -13,6 +13,7 @@ import { requestedDisposition, serveStoredFile } from '../services/file-response
 import * as verification from '../services/verification.service.js';
 import * as jobs from '../services/jobs.service.js';
 import * as freelance from '../services/freelance.service.js';
+import * as books from '../services/books.service.js';
 import {
   applicationOutcomeSchema,
   applicationSchema,
@@ -39,6 +40,9 @@ import {
   reviewSchema,
   verificationReviewSchema,
   verificationSchema,
+  bookSchema,
+  bookUpdateSchema,
+  bookBoardSchema,
 } from '../validators/marketplace.schema.js';
 import * as board from '../services/marketplace-board.service.js';
 import * as profiles from '../services/profile.service.js';
@@ -94,6 +98,10 @@ function payloadOf(req: Request): unknown {
     throw new AppError('قالب اطلاعات فرم نامعتبر است.', 400);
   }
 }
+
+/** The one uploaded file, in the shape the attachment service takes. */
+const fileOf = (req: Request) =>
+  req.file ? { originalName: req.file.originalname, buffer: req.file.buffer } : null;
 
 /** A JSON array sent as a form field beside the files. */
 function parseJsonField(req: Request, name: string, fallback: unknown): unknown {
@@ -154,6 +162,44 @@ router.get(
   validate({ query: jobBoardSchema }),
   wrap(async (req, res) => {
     successResponse(res, serialize(await jobs.listPublicJobs(req.query as never)));
+  }),
+);
+
+// ---- The book market ------------------------------------------------------
+//
+// Read-only and open to everybody: the point of a noticeboard is that it can
+// be read without joining anything. Posting needs an account and verification,
+// like every other listing here.
+
+router.get(
+  '/books',
+  boardCache,
+  validate({ query: bookBoardSchema }),
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await books.listPublicBooks(req.query as never)));
+  }),
+);
+
+router.get(
+  '/books/:code',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await books.getPublicBook(param(req, 'code'))));
+  }),
+);
+
+/**
+ * The cover.
+ *
+ * Cached hard: the bytes never change — a new picture is a new stored name
+ * under the same listing id, so the URL is the id and the content behind it
+ * is replaced only when the seller replaces the image.
+ */
+router.get(
+  '/books/:id/cover',
+  boardCache,
+  wrap(async (req, res) => {
+    const image = await books.getCover(param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
   }),
 );
 
@@ -256,6 +302,65 @@ router.post(
 
 // ---- Jobs the account has posted ------------------------------------------
 
+// ---- The seller's own book listings ---------------------------------------
+
+router.get(
+  '/me/books',
+  authenticate,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await books.listOwnBooks(req.user!.userId)));
+  }),
+);
+
+router.post(
+  '/me/books',
+  authenticate,
+  upload.single('cover'),
+  wrap(async (req, res) => {
+    const input = bookSchema.parse(payloadOf(req));
+    const result = await books.createBook(req.user!.userId, input, fileOf(req));
+    successResponse(res, serialize(result), 'پیش‌نویس آگهی کتاب ساخته شد.', 201);
+  }),
+);
+
+router.patch(
+  '/me/books/:id',
+  authenticate,
+  upload.single('cover'),
+  wrap(async (req, res) => {
+    const input = bookUpdateSchema.parse(payloadOf(req));
+    const result = await books.updateBook(req.user!.userId, param(req, 'id'), input, fileOf(req));
+    successResponse(res, serialize(result), 'ذخیره شد.');
+  }),
+);
+
+router.post(
+  '/me/books/:id/submit',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await books.submitBook(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'آگهی برای بررسی ارسال شد.');
+  }),
+);
+
+router.post(
+  '/me/books/:id/close',
+  authenticate,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await books.closeBook(req.user!.userId, param(req, 'id'))), 'آگهی بسته شد.');
+  }),
+);
+
+/** The seller's own cover, before anybody has approved it. */
+router.get(
+  '/me/books/:id/cover',
+  authenticate,
+  wrap(async (req, res) => {
+    const image = await books.getCover(param(req, 'id'), true);
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  }),
+);
+
 router.get(
   '/me/jobs',
   wrap(async (req, res) => {
@@ -320,7 +425,7 @@ router.post(
   upload.single('cv'),
   wrap(async (req, res) => {
     const input = applicationSchema.parse(payloadOf(req));
-    const cv = req.file ? { originalName: req.file.originalname, buffer: req.file.buffer } : null;
+    const cv = fileOf(req);
 
     const result = await jobs.apply(req.user!.userId, param(req, 'id'), input, cv);
     successResponse(res, result, 'درخواست شما ثبت شد و پس از بررسی برای کارفرما ارسال می‌شود.', 201);
@@ -332,7 +437,7 @@ router.patch(
   upload.single('cv'),
   wrap(async (req, res) => {
     const input = applicationSchema.parse(payloadOf(req));
-    const cv = req.file ? { originalName: req.file.originalname, buffer: req.file.buffer } : null;
+    const cv = fileOf(req);
 
     const result = await jobs.reviseApplication(req.user!.userId, param(req, 'id'), input, cv);
     successResponse(res, result, 'درخواست شما به‌روزرسانی و دوباره برای بررسی ارسال شد.');
@@ -707,6 +812,44 @@ router.post(
 const canVerify = [authenticate, requirePermission(PERMISSIONS.verification)] as const;
 const canModerateJobs = [authenticate, requirePermission(PERMISSIONS.jobs)] as const;
 const canModerateFreelance = [authenticate, requirePermission(PERMISSIONS.freelance)] as const;
+const canModerateBooks = [authenticate, requirePermission(PERMISSIONS.books)] as const;
+
+// ---- Book queue -----------------------------------------------------------
+
+router.get(
+  '/admin/books',
+  ...canModerateBooks,
+  validate({ query: listQuerySchema }),
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await books.listBooksForReview(req.query as never)));
+  }),
+);
+
+/** The cover of something still in the queue — see books.getCover. */
+router.get(
+  '/admin/books/:id/cover',
+  ...canModerateBooks,
+  wrap(async (req, res) => {
+    const image = await books.getCover(param(req, 'id'), true);
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  }),
+);
+
+router.post(
+  '/admin/books/:id/review',
+  ...canModerateBooks,
+  validate({ body: reviewSchema }),
+  wrap(async (req, res) => {
+    const result = await books.reviewBook(
+      param(req, 'id'),
+      req.body.decision as never,
+      { userId: req.user!.userId },
+      { reviewNote: req.body.reviewNote as string | undefined, internalNote: req.body.internalNote as string | undefined },
+    );
+    successResponse(res, serialize(result), 'ثبت شد.');
+  }),
+);
+
 
 // ---- Verification queue ---------------------------------------------------
 

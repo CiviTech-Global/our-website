@@ -129,6 +129,22 @@ export const RESUME_EXTENSIONS = ['pdf', 'docx', 'tex'] as const;
  * these are rendered in an <img> on a public page.
  */
 export const IMAGE_EXTENSIONS = ['png', 'jpg', 'webp'] as const;
+
+/**
+ * The ceiling for anything shown as a picture, rather than downloaded.
+ *
+ * Every image on this site is decoration around text: a book cover, a logo, a
+ * portrait. None of them is worth a megabyte on a phone connection, and a
+ * 4MB photograph straight off a camera is the normal thing for somebody to
+ * pick. The browser therefore re-encodes to WebP and shrinks to fit before it
+ * uploads anything, and this is the wall behind that: the server does not
+ * trust the page that called it, and an image that arrives over the limit is
+ * refused rather than quietly stored and served to everybody afterwards.
+ *
+ * 300KB is chosen to be generous for a 1600px WebP at good quality and mean
+ * for anything that has not been through an encoder at all.
+ */
+export const MAX_IMAGE_BYTES = 300 * 1024;
 export const IMAGE_ACCEPT_ATTRIBUTE = IMAGE_EXTENSIONS.map((e) => `.${e}`).join(',');
 export const RESUME_ACCEPT_ATTRIBUTE = RESUME_EXTENSIONS.map((e) => `.${e}`).join(',');
 
@@ -183,7 +199,7 @@ export function identifyType(
   return match;
 }
 
-export function assertWithinLimits(files: IncomingFile[]): void {
+export function assertWithinLimits(files: IncomingFile[], maxPerFile = MAX_FILE_BYTES): void {
   if (files.length > MAX_FILES) {
     throw new AppError(`حداکثر ${MAX_FILES} فایل می‌توانید پیوست کنید.`, 413);
   }
@@ -192,9 +208,15 @@ export function assertWithinLimits(files: IncomingFile[]): void {
     if (file.buffer.length === 0) {
       throw new AppError(`فایل «${safeDisplayName(file.originalName)}» خالی است.`, 400);
     }
-    if (file.buffer.length > MAX_FILE_BYTES) {
+    if (file.buffer.length > maxPerFile) {
+      // Kilobytes for the image ceiling, megabytes for the document one: "0.29
+      // مگابایت" is not a limit anybody can act on.
+      const limit =
+        maxPerFile < 1024 * 1024
+          ? `${Math.round(maxPerFile / 1024)} کیلوبایت`
+          : `${maxPerFile / 1024 / 1024} مگابایت`;
       throw new AppError(
-        `حجم فایل «${safeDisplayName(file.originalName)}» بیش از ${MAX_FILE_BYTES / 1024 / 1024} مگابایت است.`,
+        `حجم فایل «${safeDisplayName(file.originalName)}» بیش از ${limit} است.`,
         413
       );
     }
@@ -231,7 +253,10 @@ export async function storeFiles(
 ): Promise<StoredFile[]> {
   if (files.length === 0) return [];
 
-  assertWithinLimits(files);
+  // The caller says what it accepts; an images-only call gets the image
+  // ceiling without every call site having to remember to ask for it.
+  const imagesOnly = allowed.every((ext) => (IMAGE_EXTENSIONS as readonly string[]).includes(ext));
+  assertWithinLimits(files, imagesOnly ? MAX_IMAGE_BYTES : MAX_FILE_BYTES);
   const typed = files.map((file) => ({
     file,
     type: identifyType(file.buffer, file.originalName, allowed),
