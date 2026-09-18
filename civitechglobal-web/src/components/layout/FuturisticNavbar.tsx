@@ -27,6 +27,7 @@ type NavKey =
   | 'track'
   | 'jobs'
   | 'freelance'
+  | 'books'
   | 'team'
   | 'customers'
   | 'partners'
@@ -75,6 +76,7 @@ const NAV_ENTRIES: NavEntry[] = [
     items: [
       { to: '/jobs', key: 'jobs' },
       { to: '/projects', key: 'freelance' },
+      { to: '/books', key: 'books' },
       { to: '/join', key: 'joinUs' },
       { to: '/volunteer', key: 'volunteer' },
     ],

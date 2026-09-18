@@ -76,6 +76,15 @@ describe('creating a listing', () => {
     expect(mocks.prisma.bookListing.create).not.toHaveBeenCalled();
   });
 
+  it('does not ask staff to verify their identity to post as the company', async () => {
+    mocks.prisma.user.findUnique.mockResolvedValue({ role: 'ADMIN' });
+
+    await createBook('admin', input, cover);
+
+    expect(mocks.assertVerified).not.toHaveBeenCalled();
+    expect(mocks.prisma.bookListing.create).toHaveBeenCalled();
+  });
+
   it('trims what it stores and starts as a draft', async () => {
     await createBook('u1', input, cover);
 

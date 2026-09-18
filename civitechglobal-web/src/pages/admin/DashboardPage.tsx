@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import {
   AlertCircle,
+  BookOpen,
   Briefcase,
   ChevronRight,
   ClipboardList,
@@ -14,9 +15,9 @@ import {
   Mail,
   ShieldCheck,
   Sparkles,
+  type LucideIcon,
   UserPlus,
   Users,
-  type LucideIcon,
 } from 'lucide-react';
 import { useWorkload } from '@/api/admin';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -56,6 +57,7 @@ function queueMeta(t: Translations): Record<QueueKey, QueueMeta> {
     applications: { label: t.market.queueApplications, to: '/admin/applications', icon: FileText },
     freelanceProjects: { label: t.market.queueProjects, to: '/admin/freelance-projects', icon: FolderKanban },
     bids: { label: t.market.queueBids, to: '/admin/bids', icon: Gavel },
+    books: { label: t.books.queueTitle, to: '/admin/books', icon: BookOpen },
     disputes: { label: t.analytics.title, to: '/admin/marketplace', icon: AlertCircle },
   };
 }

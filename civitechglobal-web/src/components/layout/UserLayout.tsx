@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import {
   Bell,
+  BookOpen,
   Briefcase,
   FileText,
   FolderKanban,
@@ -54,6 +55,7 @@ export function UserLayout() {
         {
           id: 'main',
           items: [
+            { to: '/dashboard/books', label: t.books.myBooks, icon: <BookOpen /> },
             { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase /> },
             { to: '/dashboard/applications', label: t.market.myApplications, icon: <FileText /> },
             { to: '/dashboard/projects', label: t.market.myProjects, icon: <FolderKanban /> },

@@ -563,3 +563,99 @@ export interface BidQueueRow {
     currency: string;
   };
 }
+
+// ---------------------------------------------------------------------------
+// The book market
+// ---------------------------------------------------------------------------
+
+export type BookCondition = 'NEW' | 'USED';
+
+export interface PublicBookSummary {
+  id: string;
+  code: string;
+  title: string;
+  bookAuthor: string;
+  publisher: string | null;
+  condition: BookCondition;
+  /** Money crosses as a decimal string; see the note at the top of this file. */
+  price: string;
+  currency: string;
+  negotiable: boolean;
+  category: string | null;
+  province: string | null;
+  city: string | null;
+  /** True when a member of staff posted it — the listing is the company's. */
+  postedByCompany: boolean;
+  featured: boolean;
+  publishedAt: string | null;
+  viewCount: number;
+  coverUrl: string | null;
+  /** Null for a company listing: the badge is the attribution. */
+  sellerProfile: AuthorProfile | null;
+}
+
+export interface PublicBookDetail extends PublicBookSummary {
+  description: string;
+  isbn: string | null;
+  publishYear: number | null;
+  language: string | null;
+  pageCount: number | null;
+}
+
+export interface BookPayload {
+  title: string;
+  bookAuthor: string;
+  description: string;
+  condition: BookCondition;
+  price: string;
+  publisher?: string;
+  isbn?: string;
+  publishYear?: number;
+  language?: string;
+  pageCount?: number;
+  category?: string;
+  negotiable?: boolean;
+  province?: string;
+  city?: string;
+}
+
+/** A listing as its seller sees it, in any state. */
+export interface OwnBook {
+  id: string;
+  code: string;
+  title: string;
+  bookAuthor: string;
+  condition: BookCondition;
+  price: string;
+  currency: string;
+  moderationStatus: ModerationStatus;
+  reviewNote: string | null;
+  state: ListingState;
+  publishedAt: string | null;
+  viewCount: number;
+  postedByCompany: boolean;
+  coverUrl: string | null;
+  updatedAt: string;
+}
+
+/** A listing in the review queue, with everything a reviewer has to judge. */
+export interface BookQueueRow {
+  id: string;
+  code: string;
+  title: string;
+  bookAuthor: string;
+  description: string;
+  condition: BookCondition;
+  price: string;
+  currency: string;
+  publisher: string | null;
+  isbn: string | null;
+  publishYear: number | null;
+  province: string | null;
+  city: string | null;
+  postedByCompany: boolean;
+  moderationStatus: ModerationStatus;
+  submittedAt: string | null;
+  coverUrl: string | null;
+  seller: { id: string; email: string; firstName: string; lastName: string };
+}

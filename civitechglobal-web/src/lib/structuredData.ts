@@ -1,4 +1,4 @@
-import type { PublicJobDetail } from '@/types/marketplace';
+import type { PublicBookDetail, PublicJobDetail } from '@/types/marketplace';
 
 /**
  * Structured data — the part of a page written for machines.
@@ -161,5 +161,51 @@ export function jobPostingSchema(
       : {}),
     ...(job.skills.length ? { skills: job.skills.join(', ') } : {}),
     ...salary,
+  };
+}
+
+/**
+ * One book on offer, as a Book with an Offer attached.
+ *
+ * Book rather than Product because that is what search engines index for
+ * something with an author and an ISBN, and the ISBN is the identifier that
+ * lets a result be matched against every other copy of the same edition.
+ *
+ * The offer's availability is InStock for exactly as long as the listing is
+ * open — this market has no stock count, and a second-hand book is one copy.
+ * itemCondition uses schema.org's own vocabulary so "used" is not guessed at
+ * from a free-text word.
+ */
+export function bookListingSchema(
+  book: PublicBookDetail,
+  options: { url: string; locale: string; sellerName: string; imageUrl?: string | null },
+): object | null {
+  if (!book.publishedAt) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Book',
+    name: book.title,
+    author: { '@type': 'Person', name: book.bookAuthor },
+    description: book.description,
+    url: options.url,
+    inLanguage: book.language ?? options.locale,
+    ...(book.isbn ? { isbn: book.isbn } : {}),
+    ...(book.publisher ? { publisher: { '@type': 'Organization', name: book.publisher } } : {}),
+    ...(book.publishYear ? { datePublished: String(book.publishYear) } : {}),
+    ...(book.pageCount ? { numberOfPages: book.pageCount } : {}),
+    ...(options.imageUrl ? { image: options.imageUrl } : {}),
+    offers: {
+      '@type': 'Offer',
+      price: Number(book.price),
+      priceCurrency: book.currency,
+      itemCondition:
+        book.condition === 'NEW'
+          ? 'https://schema.org/NewCondition'
+          : 'https://schema.org/UsedCondition',
+      availability: 'https://schema.org/InStock',
+      url: options.url,
+      seller: { '@type': 'Organization', name: options.sellerName },
+    },
   };
 }

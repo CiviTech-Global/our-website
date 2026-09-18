@@ -49,6 +49,8 @@ const TeamPage = lazy(() => import('@/pages/public/TeamPage'));
 const OrganizationsPage = lazy(() => import('@/pages/public/OrganizationsPage'));
 const PortfolioPage = lazy(() => import('@/pages/public/PortfolioPage'));
 const VolunteerPage = lazy(() => import('@/pages/public/VolunteerPage'));
+const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
+const BookDetailPage = lazy(() => import('@/pages/public/BookDetailPage'));
 const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
 const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
 const FreelanceProjectsPage = lazy(() => import('@/pages/public/FreelanceProjectsPage'));
@@ -59,6 +61,7 @@ const FreelanceProjectDetailPage = lazy(
 const UserDashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
 const VerificationPage = lazy(() => import('@/pages/dashboard/VerificationPage'));
+const MyBooksPage = lazy(() => import('@/pages/dashboard/MyBooksPage'));
 const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
@@ -77,6 +80,7 @@ const AdminTeamPage = lazy(() => import('@/pages/admin/TeamPage'));
 const ShowcaseOrganizationsPage = lazy(() => import('@/pages/admin/ShowcaseOrganizationsPage'));
 const ShowcaseProjectsPage = lazy(() => import('@/pages/admin/ShowcaseProjectsPage'));
 const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
+const BookQueuePage = lazy(() => import('@/pages/admin/BookQueuePage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
 const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
@@ -156,6 +160,22 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <TrackRequestPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/books"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BooksPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/books/:code"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BookDetailPage />
             </Suspense>
           }
         />
@@ -275,6 +295,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <VerificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="books"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyBooksPage />
             </Suspense>
           }
         />
@@ -510,6 +538,16 @@ export default function App() {
             <RequirePermission permission="verification">
               <Suspense fallback={<RouteLoadingFallback />}>
                 <VerificationQueuePage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="books"
+          element={
+            <RequirePermission permission="books">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <BookQueuePage />
               </Suspense>
             </RequirePermission>
           }

@@ -1,3 +1,4 @@
+import { apiAssetSrc } from '@/lib/apiAsset';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 
@@ -137,9 +138,7 @@ function multipart(field: string, payload: unknown, file?: File | null): FormDat
  * configurable API base in front, which an <img src> cannot get any other way.
  */
 export function showcaseImageSrc(path: string | null): string | undefined {
-  if (!path) return undefined;
-  const base = import.meta.env.VITE_API_URL ?? '/api';
-  return `${base}${path}`;
+  return apiAssetSrc(path);
 }
 
 /** The staff route for the same image, which also serves unpublished rows. */

@@ -306,7 +306,7 @@ export const bookSchema = z.object({
   publisher: trimmed(160).optional(),
   /** Hyphens and spaces are how an ISBN is written; the service stores digits. */
   isbn: z
-    .union([z.literal(''), z.string().trim().regex(/^[ds-]{10,20}$/, 'شابک معتبر نیست')])
+    .union([z.literal(''), z.string().trim().regex(/^[\d\s-]{10,20}$/, 'شابک معتبر نیست')])
     .optional(),
   publishYear: z.coerce
     .number()

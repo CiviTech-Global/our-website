@@ -49,6 +49,7 @@ const PAGES = [
   // The freelance board's route is /projects; this said /freelance, which
   // 404s, so six sitemap entries pointed at a missing page.
   { path: '/projects', changefreq: 'daily', priority: '0.9' },
+  { path: '/books', changefreq: 'daily', priority: '0.8' },
   { path: '/portfolio', changefreq: 'weekly', priority: '0.8' },
   { path: '/customers', changefreq: 'monthly', priority: '0.7' },
   { path: '/partners', changefreq: 'monthly', priority: '0.6' },

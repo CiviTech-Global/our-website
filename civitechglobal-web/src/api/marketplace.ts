@@ -10,6 +10,8 @@ import type {
   BidPayload,
   BidQueueRow,
   BoardStats,
+  BookPayload,
+  BookQueueRow,
   ConversationSummary,
   EmployerApplication,
   FeaturedResponse,
@@ -19,6 +21,7 @@ import type {
   MarketplaceAnalytics,
   OwnApplication,
   OwnBid,
+  OwnBook,
   OwnJob,
   OwnMarketplaceStats,
   OwnProject,
@@ -27,6 +30,8 @@ import type {
   ProfilePayload,
   ProjectPayload,
   ProjectQueueRow,
+  PublicBookDetail,
+  PublicBookSummary,
   PublicJobDetail,
   PublicJobSummary,
   PublicProfile,
@@ -59,6 +64,8 @@ const keys = {
   ownApplications: ['market', 'me', 'applications'] as const,
   ownProjects: ['market', 'me', 'projects'] as const,
   ownBids: ['market', 'me', 'bids'] as const,
+  books: ['market', 'books'] as const,
+  ownBooks: ['market', 'me', 'books'] as const,
   queue: ['market', 'admin'] as const,
 };
 
@@ -933,3 +940,131 @@ export const reviewFileUrls = {
   projectAttachment: (id: string) => `/market/admin/project-attachments/${id}`,
   applicationCv: (id: string) => `/market/admin/application-cvs/${id}`,
 };
+
+// --- The book market -------------------------------------------------------
+
+export type BookSort = 'newest' | 'price-asc' | 'price-desc' | 'title';
+
+export interface BookBoardQuery extends Record<string, string | number | boolean | null | undefined> {
+  page: number;
+  pageSize: number;
+  /** Matched against the title and the author, never the description. */
+  search?: string;
+  condition?: string;
+  category?: string;
+  province?: string;
+  priceMin?: string;
+  priceMax?: string;
+  sort?: BookSort;
+}
+
+export function usePublicBooks(query: BookBoardQuery) {
+  return useQuery({
+    queryKey: [...keys.books, query],
+    queryFn: async () => {
+      const res = await api.get<Paged<PublicBookSummary>>('/market/books', { params: query });
+      return res.data;
+    },
+  });
+}
+
+export function usePublicBook(code: string | undefined) {
+  return useQuery({
+    queryKey: [...keys.books, 'detail', code],
+    queryFn: async () => {
+      const res = await api.get<PublicBookDetail>(`/market/books/${code!}`);
+      return res.data;
+    },
+    enabled: Boolean(code),
+  });
+}
+
+export function useOwnBooks(enabled = true) {
+  return useQuery({
+    queryKey: keys.ownBooks,
+    queryFn: async () => {
+      const res = await api.get<OwnBook[]>('/market/me/books');
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+/**
+ * Creating and editing both carry the cover, so both go out as multipart.
+ * The picture is re-encoded by lib/prepareImage before it gets here.
+ */
+export function useCreateBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { payload: BookPayload; cover: File }) => {
+      const res = await api.post<OwnBook>('/market/me/books', multipart(input.payload, [['cover', input.cover]]));
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBooks }),
+  });
+}
+
+export function useUpdateBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; payload: Partial<BookPayload>; cover?: File | null }) => {
+      await api.patch(
+        `/market/me/books/${input.id}`,
+        multipart(input.payload, input.cover ? [['cover', input.cover]] : []),
+      );
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBooks }),
+  });
+}
+
+/** Hands a draft to the queue. From here the seller cannot edit it. */
+export function useSubmitBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/market/me/books/${id}/submit`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBooks }),
+  });
+}
+
+export function useCloseBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/market/me/books/${id}/close`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBooks }),
+  });
+}
+
+export function useBookQueue(query: { status?: string; page: number; pageSize: number }, enabled = true) {
+  return useQuery({
+    queryKey: [...keys.queue, 'books', query],
+    queryFn: async () => {
+      const res = await api.get<Paged<BookQueueRow>>('/market/admin/books', { params: query });
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+export function useReviewBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      decision: ReviewDecision;
+      reviewNote?: string;
+      internalNote?: string;
+    }) => {
+      await api.post(`/market/admin/books/${input.id}/review`, {
+        decision: input.decision,
+        reviewNote: input.reviewNote,
+        internalNote: input.internalNote,
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.queue }),
+  });
+}

@@ -58,6 +58,7 @@ export type QueueKey =
   | 'applications'
   | 'freelanceProjects'
   | 'bids'
+  | 'books'
   | 'disputes';
 
 export const TREND_DAYS = 14;
@@ -270,6 +271,17 @@ export async function getWorkload(principal: Principal, now = new Date()): Promi
         ]);
         queues.freelanceProjects = projects;
         queues.bids = bids;
+      })(),
+    );
+  }
+
+  if (can(PERMISSIONS.books)) {
+    tasks.push(
+      (async () => {
+        queues.books = await pair(
+          prisma.bookListing.count({ where: { moderationStatus: 'PENDING_REVIEW' } }),
+          prisma.bookListing.count(),
+        );
       })(),
     );
   }

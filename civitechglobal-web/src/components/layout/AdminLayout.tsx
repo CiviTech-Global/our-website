@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import {
   BarChart3,
+  BookOpen,
   Briefcase,
   Building2,
   ClipboardList,
@@ -81,6 +82,7 @@ export function AdminLayout() {
       count: open('freelanceProjects'),
     },
     bids: { to: '/admin/bids', label: t.market.queueBids, icon: <Gavel />, count: open('bids') },
+    books: { to: '/admin/books', label: t.books.queueTitle, icon: <BookOpen />, count: open('books') },
   } satisfies Partial<Record<QueueKey, NavItem>>;
 
   const when = (condition: boolean, ...items: NavItem[]) => (condition ? items : []);
@@ -131,6 +133,7 @@ export function AdminLayout() {
             // decides a role belongs on the board judges the replies to it.
             ...when(can('jobs'), queue.jobPosts, queue.applications),
             ...when(can('freelance'), queue.freelanceProjects, queue.bids),
+            ...when(can('books'), queue.books),
           ],
         },
         {

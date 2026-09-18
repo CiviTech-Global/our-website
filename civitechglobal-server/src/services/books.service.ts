@@ -127,8 +127,19 @@ async function storeCover(file: IncomingFile | null) {
 // ---------------------------------------------------------------------------
 
 export async function createBook(userId: string, input: BookInput, cover: IncomingFile | null) {
-  await assertVerified(userId);
-  await assertMarketplaceAllowed(userId);
+  const staff = await isStaff(userId);
+
+  // Members prove who they are before they can sell to strangers. Staff do
+  // not: their accounts are created by a super admin, which is a stronger
+  // check than uploading a national ID, and their listings are attributed to
+  // the company rather than to a person — there is no individual identity for
+  // a buyer to want assurance about. Requiring it anyway would mean nobody
+  // could post the company's own books until an administrator had submitted
+  // their own documents.
+  if (!staff) {
+    await assertVerified(userId);
+    await assertMarketplaceAllowed(userId);
+  }
   assertSanePrice(input.price);
 
   const stored = await storeCover(cover);
@@ -143,7 +154,7 @@ export async function createBook(userId: string, input: BookInput, cover: Incomi
         ...(normalize(input) as BookInput),
         code: generateTrackingCode(),
         sellerId: userId,
-        postedByCompany: await isStaff(userId),
+        postedByCompany: staff,
         coverStoredName: stored?.storedName,
         coverOriginalName: stored?.originalName,
         coverMimeType: stored?.mimeType,
