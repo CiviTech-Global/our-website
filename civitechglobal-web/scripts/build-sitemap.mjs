@@ -16,7 +16,7 @@
  * Run from `prebuild`, so a deployment cannot ship a sitemap describing an
  * older route table than the bundle beside it.
  */
-import { writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -59,7 +59,67 @@ const PAGES = [
   { path: '/team', changefreq: 'monthly', priority: '0.7' },
   { path: '/insurance', changefreq: 'monthly', priority: '0.6' },
   { path: '/contact', changefreq: 'yearly', priority: '0.6' },
+  // The blog index is a fixed address and exists in every locale, so it goes
+  // through the same per-language expansion as the pages above.
+  { path: '/blog', changefreq: 'weekly', priority: '0.8' },
 ];
+
+/**
+ * Blog articles. Read from the Markdown files in src/content/blog so the
+ * sitemap can never drift from what actually ships: adding a post adds its
+ * URL here on the next build. Articles are Persian-first — their URLs exist
+ * only in the default locale — so unlike PAGES they do not get the six-way
+ * hreflang expansion, just a self-reference and x-default.
+ */
+function blogPosts() {
+  const dir = resolve(HERE, '..', 'src', 'content', 'blog');
+  try {
+    return readdirSync(dir)
+      .filter((name) => name.endsWith('.md'))
+      .map((name) => {
+        const raw = readFileSync(resolve(dir, name), 'utf8');
+        const field = (key) => new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(raw)?.[1]?.trim() ?? '';
+        return { slug: field('slug'), lastmod: field('updated') || field('date') };
+      })
+      .filter((post) => post.slug.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Static intent landings, Persian-first like the articles. Listed here so
+ * the sitemap stays in the repo rather than in a deployment note.
+ */
+const LANDINGS = [{ path: '/insurance/third-party', lastmod: '2026-08-06' }];
+
+function landingEntry(landing) {
+  const url = `${ORIGIN}${landing.path}`;
+  return [
+    '  <url>',
+    `    <loc>${url}</loc>`,
+    `    <xhtml:link rel="alternate" hreflang="fa-IR" href="${url}"/>`,
+    `    <xhtml:link rel="alternate" hreflang="x-default" href="${url}"/>`,
+    ...(landing.lastmod ? [`    <lastmod>${landing.lastmod}</lastmod>`] : []),
+    '    <changefreq>monthly</changefreq>',
+    '    <priority>0.8</priority>',
+    '  </url>',
+  ].join('\n');
+}
+
+function articleEntry(post) {
+  const url = `${ORIGIN}/blog/${post.slug}`;
+  return [
+    '  <url>',
+    `    <loc>${url}</loc>`,
+    `    <xhtml:link rel="alternate" hreflang="fa-IR" href="${url}"/>`,
+    `    <xhtml:link rel="alternate" hreflang="x-default" href="${url}"/>`,
+    ...(post.lastmod ? [`    <lastmod>${post.lastmod}</lastmod>`] : []),
+    '    <changefreq>monthly</changefreq>',
+    '    <priority>0.7</priority>',
+    '  </url>',
+  ].join('\n');
+}
 
 /** Signed-in areas and one-time links. Mirrors PRIVATE_PREFIXES in the app. */
 const PRIVATE = [
@@ -108,6 +168,8 @@ const sitemap = [
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
   '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
   ...PAGES.flatMap((page) => LOCALES.map((locale) => urlEntry(locale, page))),
+  ...LANDINGS.map(landingEntry),
+  ...blogPosts().map(articleEntry),
   '</urlset>',
   '',
 ].join('\n');
@@ -132,5 +194,5 @@ writeFileSync(resolve(PUBLIC, 'sitemap.xml'), sitemap);
 writeFileSync(resolve(PUBLIC, 'robots.txt'), robots);
 
 console.log(
-  `sitemap: ${PAGES.length * LOCALES.length} urls, robots: ${PRIVATE.length * LOCALES.length} disallow rules (${ORIGIN})`
+  `sitemap: ${PAGES.length * LOCALES.length + LANDINGS.length + blogPosts().length} urls, robots: ${PRIVATE.length * LOCALES.length} disallow rules (${ORIGIN})`
 );

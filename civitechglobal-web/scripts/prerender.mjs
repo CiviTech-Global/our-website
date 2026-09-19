@@ -17,7 +17,14 @@
  * rules. When a public route is added or removed, update both.
  */
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+  statSync,
+  readdirSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer-core';
@@ -47,7 +54,33 @@ const PAGES = [
   '/team',
   '/insurance',
   '/contact',
+  // The blog index exists in every locale, like the pages above.
+  '/blog',
 ];
+
+/**
+ * Blog articles, read from the same Markdown files the app bundles — see
+ * scripts/build-sitemap.mjs for the why. Articles are Persian-first: fa-only
+ * URLs, no locale expansion.
+ */
+function blogArticleRoutes() {
+  const dir = resolve(HERE, '..', 'src', 'content', 'blog');
+  try {
+    return readdirSync(dir)
+      .filter((name) => name.endsWith('.md'))
+      .map((name) => {
+        const raw = readFileSync(resolve(dir, name), 'utf8');
+        return /slug:\s*(.+)/.exec(raw)?.[1]?.trim() ?? '';
+      })
+      .filter(Boolean)
+      .map((slug) => ({
+        url: `/blog/${slug}`,
+        out: join(DIST, 'blog', slug, 'index.html'),
+      }));
+  } catch {
+    return [];
+  }
+}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -64,15 +97,23 @@ const MIME = {
 };
 
 function routes() {
-  return PAGES.flatMap((path) =>
-    LOCALES.map((locale) => ({
-      // The URL the browser visits.
-      url: locale === DEFAULT_LOCALE ? path : `/${locale}${path === '/' ? '' : path}`,
-      // Where the rendered HTML lands inside dist. nginx serves
-      // `try_files $uri $uri/ /index.html`, so $uri/ resolves these.
-      out: locale === DEFAULT_LOCALE ? join(DIST, path, 'index.html') : join(DIST, locale, path, 'index.html'),
-    }))
-  );
+  return [
+    ...PAGES.flatMap((path) =>
+      LOCALES.map((locale) => ({
+        // The URL the browser visits.
+        url: locale === DEFAULT_LOCALE ? path : `/${locale}${path === '/' ? '' : path}`,
+        // Where the rendered HTML lands inside dist. nginx serves
+        // `try_files $uri $uri/ /index.html`, so $uri/ resolves these.
+        out:
+          locale === DEFAULT_LOCALE
+            ? join(DIST, path, 'index.html')
+            : join(DIST, locale, path, 'index.html'),
+      }))
+    ),
+    ...blogArticleRoutes(),
+    // Static intent landings, Persian-first (see scripts/build-sitemap.mjs).
+    { url: '/insurance/third-party', out: join(DIST, 'insurance', 'third-party', 'index.html') },
+  ];
 }
 
 /** A tiny static server for dist/ — `vite preview` would do, minus the API. */
@@ -104,6 +145,13 @@ function findBrowser() {
     'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
     'C:/Program Files/Google/Chrome/Application/chrome.exe',
     'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    // Linux, which is where this actually runs that matters: the image build.
+    // Alpine's chromium package has moved the binary between releases, so both
+    // names are tried rather than pinning the one this week's image happens to
+    // ship.
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium',
+    '/usr/bin/google-chrome',
   ].filter(Boolean);
   const found = candidates.find((candidate) => existsSync(candidate));
   if (!found) {
@@ -170,7 +218,7 @@ async function main() {
     console.error(`\n${failures.length} route(s) failed: ${failures.join(', ')}`);
     process.exit(1);
   }
-  console.log(`\nPrerendered ${PAGES.length * LOCALES.length} pages.`);
+  console.log(`\nPrerendered ${routes().length} pages.`);
 }
 
 main();

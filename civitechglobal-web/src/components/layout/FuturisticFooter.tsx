@@ -49,6 +49,7 @@ export function FuturisticFooter() {
                 {(
                   [
                     ['/about', t.nav.about],
+                    ['/blog', t.nav.blog],
                     ['/services', t.nav.services],
                     ['/team', t.nav.team],
                     ['/portfolio', t.nav.portfolio],

@@ -29,6 +29,9 @@ const PublicProfilePage = lazy(() => import('@/pages/public/ProfilePage'));
 // Route-split: the insurance section carries the catalog, the dynamic form and
 // the OTP step, none of which the landing page needs in its bundle.
 const InsurancePage = lazy(() => import('@/pages/public/InsurancePage'));
+// Static intent landing for the "third-party insurance price" query. The
+// static segment outranks /insurance/:slug in the router, so no conflict.
+const ThirdPartyLandingPage = lazy(() => import('@/pages/public/ThirdPartyLandingPage'));
 // The main service line, and a heavy form: split out so the home page does
 // not carry it.
 const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
@@ -46,6 +49,9 @@ const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
 // filters, forms and money formatting, and none of it belongs in the bundle a
 // visitor downloads to read the landing page.
 const TeamPage = lazy(() => import('@/pages/public/TeamPage'));
+// The blog: index and posts, both fed by the Markdown files in src/content/blog.
+const BlogIndexPage = lazy(() => import('@/pages/public/BlogIndexPage'));
+const BlogPostPage = lazy(() => import('@/pages/public/BlogPostPage'));
 const OrganizationsPage = lazy(() => import('@/pages/public/OrganizationsPage'));
 const PortfolioPage = lazy(() => import('@/pages/public/PortfolioPage'));
 const VolunteerPage = lazy(() => import('@/pages/public/VolunteerPage'));
@@ -144,6 +150,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <InsurancePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/insurance/third-party"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ThirdPartyLandingPage />
             </Suspense>
           }
         />
@@ -251,6 +265,22 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <VolunteerPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/blog"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BlogIndexPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/blog/:slug"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BlogPostPage />
             </Suspense>
           }
         />

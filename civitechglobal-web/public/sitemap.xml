@@ -1082,4 +1082,108 @@
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/blog</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/en/blog</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/tr/blog</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/de/blog</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/fr/blog</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/es/blog</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rayantamaddonjahangostar.ir/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://rayantamaddonjahangostar.ir/tr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://rayantamaddonjahangostar.ir/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr-FR" href="https://rayantamaddonjahangostar.ir/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://rayantamaddonjahangostar.ir/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/insurance/third-party</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/insurance/third-party"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/insurance/third-party"/>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/blog/body-insurance-coverage</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog/body-insurance-coverage"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog/body-insurance-coverage"/>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/blog/third-party-insurance-guide</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog/third-party-insurance-guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog/third-party-insurance-guide"/>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rayantamaddonjahangostar.ir/blog/third-party-price-factors</loc>
+    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://rayantamaddonjahangostar.ir/blog/third-party-price-factors"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://rayantamaddonjahangostar.ir/blog/third-party-price-factors"/>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>

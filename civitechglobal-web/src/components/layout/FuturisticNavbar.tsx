@@ -33,7 +33,8 @@ type NavKey =
   | 'partners'
   | 'portfolio'
   | 'volunteer'
-  | 'contact';
+  | 'contact'
+  | 'blog';
 
 interface NavLinkItem {
   to: string;
@@ -86,6 +87,7 @@ const NAV_ENTRIES: NavEntry[] = [
     key: 'companyMenu',
     items: [
       { to: '/about', key: 'about' },
+      { to: '/blog', key: 'blog' },
       { to: '/team', key: 'team' },
       { to: '/portfolio', key: 'portfolio' },
       { to: '/customers', key: 'customers' },

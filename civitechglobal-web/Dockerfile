@@ -21,6 +21,21 @@ ENV VITE_CANONICAL_ORIGIN=$VITE_CANONICAL_ORIGIN
 
 RUN npm run build
 
+# Prerender the public pages into real HTML.
+#
+# This has to happen here, in the image that ships, and not on a laptop: dist/
+# is gitignored, so a locally prerendered build never reaches the server — the
+# prerender step existed for a release and had no effect in production, which
+# is invisible unless somebody curls the HTML and notices <div id="root"> is
+# still empty.
+#
+# Chromium is installed in the build stage only; the production stage below
+# copies dist/ into nginx and carries none of it. `--no-sandbox` is already
+# passed by the script, which is what lets Chromium run as root in a container.
+RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
+ENV CHROME_PATH=/usr/bin/chromium-browser
+RUN npm run prerender
+
 # --- Production stage: static serving via nginx ---
 FROM nginx:1.27-alpine AS production
 

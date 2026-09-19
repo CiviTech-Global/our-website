@@ -211,6 +211,61 @@ export function insuranceProductSchema(facts: {
 }
 
 /**
+ * A blog article, in the shape that earns a headline, an image and a date
+ * in a search result. Authorship is the organisation: posts carry no
+ * byline, and naming a person the page does not show would be exactly the
+ * dishonest markup this file refuses to write.
+ */
+export function articleSchema(facts: {
+  headline: string;
+  description: string;
+  url: string;
+  image: string;
+  datePublished: string;
+  dateModified: string;
+  locale: string;
+  origin: string;
+  siteName: string;
+}): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: facts.headline,
+    description: facts.description,
+    inLanguage: facts.locale,
+    mainEntityOfPage: facts.url,
+    image: facts.image,
+    datePublished: facts.datePublished,
+    dateModified: facts.dateModified,
+    author: { '@type': 'Organization', name: facts.siteName, url: facts.origin },
+    publisher: {
+      '@type': 'Organization',
+      name: facts.siteName,
+      url: facts.origin,
+      logo: { '@type': 'ImageObject', url: `${facts.origin}/favicon.png` },
+    },
+  };
+}
+
+/** A page's FAQ section, stated for rich results. */
+export function faqPageSchema(
+  faqs: { question: string; answer: string }[],
+  locale: string
+): object | null {
+  if (!faqs.length) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: locale,
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+    })),
+  };
+}
+
+/**
  * One book on offer, as a Book with an Offer attached.
  *
  * Book rather than Product because that is what search engines index for
