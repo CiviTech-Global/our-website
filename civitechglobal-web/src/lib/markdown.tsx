@@ -23,6 +23,41 @@ export type MarkdownBlock =
 
 const INLINE_TOKEN = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\))/g;
 
+/**
+ * The schemes a link in a post may use.
+ *
+ * React escapes text but puts `href` through untouched, so `javascript:` in a
+ * Markdown link would run on click. The posts are first-party files in this
+ * repository rather than anything a visitor can write, which makes this a
+ * second line rather than the first — and exactly the kind of assumption that
+ * stops being true the day somebody adds an editor, or pastes in content from
+ * elsewhere.
+ *
+ * An allow list, not a block list: `javascript:` has enough spellings
+ * (whitespace, control characters, `JaVaScRiPt:`, entity encodings) that
+ * naming the bad ones is a promise nobody can keep. Anything that is not a
+ * scheme we recognise — including `data:` and `vbscript:` — is refused.
+ */
+const SAFE_SCHEMES = ['http:', 'https:', 'mailto:', 'tel:'];
+
+export function safeHref(raw: string): string | null {
+  const href = raw.trim();
+
+  // Relative paths and in-page anchors carry no scheme and cannot execute.
+  if (href.startsWith('/') || href.startsWith('#') || href.startsWith('?')) return href;
+
+  try {
+    // Parsed rather than pattern-matched: the URL parser applies the same
+    // rules the browser will, so "java\nscript:alert(1)" cannot read as safe
+    // here and as a script there.
+    const parsed = new URL(href, 'https://rayantamaddonjahangostar.ir');
+    return SAFE_SCHEMES.includes(parsed.protocol) ? href : null;
+  } catch {
+    // Not a URL at all. Nothing sensible to link to.
+    return null;
+  }
+}
+
 function renderInline(text: string, keyPrefix: string): ReactNode[] {
   const parts = text.split(INLINE_TOKEN);
   return parts.map((part, index) => {
@@ -37,11 +72,16 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
     }
     const link = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(part);
     if (link) {
-      const external = link[2].startsWith('http');
+      const href = safeHref(link[2]);
+      // A link whose target we will not follow keeps its words and loses its
+      // href: the sentence still reads, and nothing is silently swallowed.
+      if (!href) return renderInline(link[1], `${key}-l`);
+
+      const external = href.startsWith('http');
       return (
         <a
           key={key}
-          href={link[2]}
+          href={href}
           {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           className="text-brand-green-600 underline decoration-brand-green-500/40 underline-offset-4 hover:decoration-brand-green-500 dark:text-brand-green-400"
         >

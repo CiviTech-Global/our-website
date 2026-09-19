@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { countWords, extractFaqs, Markdown, parseMarkdown } from './markdown';
+import { countWords, extractFaqs, Markdown, parseMarkdown, safeHref } from './markdown';
 
 describe('parseMarkdown', () => {
   it('parses headings, paragraphs and lists', () => {
@@ -90,5 +90,43 @@ describe('Markdown rendering', () => {
     render(<Markdown blocks={blocks} />);
     expect(screen.getByRole('link', { name: 'استعلام آنلاین' })).toHaveAttribute('href', '/insurance');
     expect(screen.getByText('مهم')).toBeInTheDocument();
+  });
+});
+
+describe('link schemes', () => {
+  it('keeps the ordinary ones', () => {
+    expect(safeHref('https://example.com/a')).toBe('https://example.com/a');
+    expect(safeHref('http://example.com')).toBe('http://example.com');
+    expect(safeHref('mailto:a@example.com')).toBe('mailto:a@example.com');
+    expect(safeHref('tel:+982112345678')).toBe('tel:+982112345678');
+  });
+
+  it('keeps relative paths and anchors, which carry no scheme', () => {
+    expect(safeHref('/insurance')).toBe('/insurance');
+    expect(safeHref('#faq')).toBe('#faq');
+    expect(safeHref('?page=2')).toBe('?page=2');
+  });
+
+  it('refuses anything that can execute', () => {
+    expect(safeHref('javascript:alert(1)')).toBeNull();
+    expect(safeHref('JaVaScRiPt:alert(1)')).toBeNull();
+    // The parser collapses the whitespace a naive prefix check would trip on.
+    expect(safeHref('  javascript:alert(1)')).toBeNull();
+    expect(safeHref('java\nscript:alert(1)')).toBeNull();
+    expect(safeHref('vbscript:msgbox(1)')).toBeNull();
+    expect(safeHref('data:text/html,<script>alert(1)</script>')).toBeNull();
+  });
+
+  it('renders a refused link as plain words rather than dropping it', () => {
+    const { container } = render(<Markdown blocks={parseMarkdown('[click me](javascript:alert(1))')} />);
+
+    expect(container.textContent).toContain('click me');
+    expect(container.querySelector('a')).toBeNull();
+  });
+
+  it('still links a safe one', () => {
+    const { container } = render(<Markdown blocks={parseMarkdown('[our insurance](/insurance)')} />);
+
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('/insurance');
   });
 });
