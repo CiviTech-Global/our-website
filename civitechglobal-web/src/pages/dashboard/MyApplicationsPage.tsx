@@ -1,10 +1,11 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { useOwnApplications, useReviseApplication } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
@@ -117,9 +118,13 @@ function ReviseModal({
   const [coverLetter, setCoverLetter] = useState(application.coverLetter ?? '');
   const [expectedSalary, setExpectedSalary] = useState(application.expectedSalary ?? '');
   const [cv, setCv] = useState<File | null>(null);
+  const upload = useUploadFeedback('application-cv');
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload.
+  async function handleSubmit(event?: FormEvent) {
+    event?.preventDefault();
+    upload.start(cv);
+
     try {
       await revise.mutateAsync({
         id: application.id,
@@ -128,11 +133,13 @@ function ReviseModal({
           expectedSalary: expectedSalary.replace(/[^0-9]/g, '') || undefined,
         },
         cv,
+        onProgress: upload.onProgress,
       });
+      upload.done();
       showToast(t.market.revised, 'success');
       onClose();
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -179,6 +186,10 @@ function ReviseModal({
             onChange={(e) => setCv(e.target.files?.[0] ?? null)}
           />
         </FormField>
+
+        {upload.state.phase !== 'idle' && (
+          <UploadStatus state={upload.state} onRetry={() => void handleSubmit()} />
+        )}
 
         <div className="flex gap-2">
           <Button type="submit" isLoading={revise.isPending}>

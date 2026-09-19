@@ -1,3 +1,6 @@
+import { apiMessage } from '@/lib/apiMessage';
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import type { Locale } from '@/i18n/locales';
@@ -14,7 +17,6 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { apiMessage } from '@/lib/apiMessage';
 import { formatMoney } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -176,6 +178,7 @@ function AwardActions({ award }: { award: AwardView }) {
   const [deliveringId, setDeliveringId] = useState<string | null>(null);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
+  const upload = useUploadFeedback('milestone-delivery');
   const [confirmingComplete, setConfirmingComplete] = useState(false);
 
   const isAuthor = award.myRole === 'author';
@@ -200,14 +203,22 @@ function AwardActions({ award }: { award: AwardView }) {
   }
 
   async function handleDeliver(milestoneId: string) {
+    upload.start(attachment);
+
     try {
-      await deliver.mutateAsync({ milestoneId, deliveryNote: deliveryNote.trim(), attachment });
+      await deliver.mutateAsync({
+        milestoneId,
+        deliveryNote: deliveryNote.trim(),
+        attachment,
+        onProgress: upload.onProgress,
+      });
+      upload.done();
       setDeliveringId(null);
       setDeliveryNote('');
       setAttachment(null);
       showToast(t.market.milestoneDelivered, 'success');
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -234,6 +245,14 @@ function AwardActions({ award }: { award: AwardView }) {
                     onChange={(e) => setAttachment(e.target.files?.[0] ?? null)}
                   />
                 </FormField>
+
+                {upload.state.phase !== 'idle' && (
+                  <UploadStatus
+                    state={upload.state}
+                    onRetry={() => void handleDeliver(milestone.id)}
+                  />
+                )}
+
                 <div className="flex gap-2">
                   <Button
                     size="sm"

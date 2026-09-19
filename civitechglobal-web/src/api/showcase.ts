@@ -200,10 +200,21 @@ export function useAdminOrganizations(kind?: OrganizationKind) {
 
 export function useSaveOrganization() {
   return useShowcaseMutation(
-    async (input: { id?: string; payload: Partial<OrganizationPayload>; logo?: File | null }) => {
+    async (input: {
+      id?: string;
+      payload: Partial<OrganizationPayload>;
+      logo?: File | null;
+      /** Drives the progress bar while the image goes out. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const body = multipart('logo', input.payload, input.logo);
-      if (input.id) await api.patch(`/showcase/admin/organizations/${input.id}`, body);
-      else await api.post('/showcase/admin/organizations', body);
+      if (input.id) {
+        await api.upload('PATCH', `/showcase/admin/organizations/${input.id}`, body, {
+          onProgress: input.onProgress,
+        });
+      } else {
+        await api.upload('POST', '/showcase/admin/organizations', body, { onProgress: input.onProgress });
+      }
     }
   );
 }
@@ -232,10 +243,21 @@ export function useAdminProjects() {
 
 export function useSaveProject() {
   return useShowcaseMutation(
-    async (input: { id?: string; payload: Partial<ProjectPayload>; cover?: File | null }) => {
+    async (input: {
+      id?: string;
+      payload: Partial<ProjectPayload>;
+      cover?: File | null;
+      /** Drives the progress bar while the image goes out. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const body = multipart('cover', input.payload, input.cover);
-      if (input.id) await api.patch(`/showcase/admin/projects/${input.id}`, body);
-      else await api.post('/showcase/admin/projects', body);
+      if (input.id) {
+        await api.upload('PATCH', `/showcase/admin/projects/${input.id}`, body, {
+          onProgress: input.onProgress,
+        });
+      } else {
+        await api.upload('POST', '/showcase/admin/projects', body, { onProgress: input.onProgress });
+      }
     }
   );
 }

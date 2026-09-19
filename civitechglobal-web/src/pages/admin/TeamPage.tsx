@@ -1,3 +1,5 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff, FolderPlus, Pencil, Plus, Trash2, UserRound } from 'lucide-react';
@@ -402,12 +404,14 @@ function MemberForm({
       : EMPTY
   );
   const [photo, setPhoto] = useState<File | null>(null);
+  const upload = useUploadFeedback('team-photo');
 
   const set = <K extends keyof TeamMemberPayload>(key: K) => (value: TeamMemberPayload[K]) =>
     setValues((prev) => ({ ...prev, [key]: value }));
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload.
+  async function submit(event?: FormEvent) {
+    event?.preventDefault();
 
     // Blank is not the same as absent to the server's schema — an empty string
     // fails the url() check on the social fields, where undefined passes.
@@ -423,13 +427,19 @@ function MemberForm({
       website: values.website?.trim() || undefined,
     };
 
+    upload.start(photo);
+
     try {
-      if (member) await update.mutateAsync({ id: member.id, payload, photo });
-      else await create.mutateAsync({ payload, photo });
+      if (member) {
+        await update.mutateAsync({ id: member.id, payload, photo, onProgress: upload.onProgress });
+      } else {
+        await create.mutateAsync({ payload, photo, onProgress: upload.onProgress });
+      }
+      upload.done();
       showToast(t.team.saved, 'success');
       onClose();
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -473,9 +483,15 @@ function MemberForm({
             id="photo"
             type="file"
             accept=".png,.jpg,.jpeg,.webp"
-            onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+            // Shrunk and converted here, so a phone photograph is not a 413
+            // the person can do nothing about.
+            onChange={(e) => void upload.pickImage(e.target.files?.[0] ?? null).then(setPhoto)}
           />
         </FormField>
+
+        {upload.state.phase !== 'idle' && (
+          <UploadStatus state={upload.state} onRetry={() => void submit()} />
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label={t.team.emailLabel} htmlFor="email">
@@ -503,7 +519,7 @@ function MemberForm({
         </label>
 
         <div className="flex gap-2">
-          <Button type="submit" isLoading={create.isPending || update.isPending}>
+          <Button type="submit" isLoading={create.isPending || update.isPending} disabled={upload.state.phase === 'shrinking'}>
             {t.common.save}
           </Button>
           <Button type="button" variant="ghost" onClick={onClose}>

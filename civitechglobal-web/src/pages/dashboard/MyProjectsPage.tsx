@@ -1,3 +1,5 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
@@ -64,12 +66,16 @@ export default function MyProjectsPage() {
     openToCompanyOffer: true,
   });
   const [attachments, setAttachments] = useState<File[]>([]);
+  const upload = useUploadFeedback('project-attachments');
 
   const set = (name: keyof typeof draft) => (value: string | boolean) =>
     setDraft((prev) => ({ ...prev, [name]: value }));
 
-  async function handleCreate(event: FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload.
+  async function handleCreate(event?: FormEvent) {
+    event?.preventDefault();
+    upload.start(attachments);
+
     try {
       await create.mutateAsync({
         payload: {
@@ -91,11 +97,13 @@ export default function MyProjectsPage() {
             .filter(Boolean),
         },
         attachments,
+        onProgress: upload.onProgress,
       });
+      upload.done();
       setIsFormOpen(false);
       showToast(t.market.draftCreated, 'success');
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -280,6 +288,10 @@ export default function MyProjectsPage() {
               onChange={(e) => setAttachments(Array.from(e.target.files ?? []))}
             />
           </FormField>
+
+          {upload.state.phase !== 'idle' && (
+            <UploadStatus state={upload.state} onRetry={() => void handleCreate()} />
+          )}
 
           <label className="flex items-start gap-2 text-body text-app-text-3">
             <input

@@ -1,3 +1,5 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft, Briefcase, MapPin, ShieldCheck } from 'lucide-react';
@@ -9,7 +11,6 @@ import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTit
 import { breadcrumbSchema, jobPostingSchema } from '@/lib/structuredData';
 import { localeHref } from '@/i18n/localePath';
 import { LOCALE_TAGS } from '@/i18n/locales';
-import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { formatRange } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
@@ -39,6 +40,7 @@ export default function JobDetailPage() {
   const { data: job, isLoading, isError } = usePublicJob(code);
   const { data: verification } = useOwnVerification(Boolean(user));
   const apply = useApply();
+  const upload = useUploadFeedback('job-application-cv');
 
   const [coverLetter, setCoverLetter] = useState('');
   const [expectedSalary, setExpectedSalary] = useState('');
@@ -99,9 +101,11 @@ export default function JobDetailPage() {
   const where = [job.city, job.province].filter(Boolean).join('، ');
   const isVerified = verification?.status === 'APPROVED';
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function handleSubmit(event?: FormEvent) {
+    event?.preventDefault();
     if (!job) return;
+
+    upload.start(cv);
 
     try {
       await apply.mutateAsync({
@@ -114,11 +118,13 @@ export default function JobDetailPage() {
           expectedSalary: expectedSalary.replace(/[^0-9]/g, '') || undefined,
         },
         cv,
+        onProgress: upload.onProgress,
       });
+      upload.done();
       setDone(true);
       showToast(t.market.applied, 'success');
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -255,6 +261,10 @@ export default function JobDetailPage() {
                 onChange={(e) => setCv(e.target.files?.[0] ?? null)}
               />
             </FormField>
+
+            {upload.state.phase !== 'idle' && (
+              <UploadStatus state={upload.state} onRetry={() => void handleSubmit()} />
+            )}
 
             <div>
               <Button type="submit" isLoading={apply.isPending}>

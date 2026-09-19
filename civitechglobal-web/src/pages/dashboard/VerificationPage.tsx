@@ -1,3 +1,5 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
@@ -5,7 +7,6 @@ import { useOwnVerification, useSubmitVerification } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { apiMessage } from '@/lib/apiMessage';
 import { verificationVariant } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -61,6 +62,7 @@ export default function VerificationPage() {
 
   const { data, isLoading } = useOwnVerification();
   const submit = useSubmitVerification();
+  const upload = useUploadFeedback('verification-documents');
 
   const [kind, setKind] = useState<AccountKind>('INDIVIDUAL');
   const [fields, setFields] = useState({
@@ -98,8 +100,8 @@ export default function VerificationPage() {
   const status = data?.status ?? 'UNVERIFIED';
   const canSubmit = status === 'UNVERIFIED' || status === 'REJECTED';
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function handleSubmit(event?: FormEvent) {
+    event?.preventDefault();
 
     const ready = documents.filter((doc): doc is DocumentRow & { file: File } => doc.file !== null);
 
@@ -115,6 +117,8 @@ export default function VerificationPage() {
       );
       return;
     }
+
+    upload.start(ready.map((doc) => doc.file));
 
     try {
       await submit.mutateAsync({
@@ -141,10 +145,12 @@ export default function VerificationPage() {
             : {}),
         },
         documents: ready.map((doc) => ({ kind: doc.kind, file: doc.file })),
+        onProgress: upload.onProgress,
       });
+      upload.done();
       showToast(t.market.verificationSubmitted, 'success');
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -330,6 +336,10 @@ export default function VerificationPage() {
                   ? t.market.requiredDocumentsCompany
                   : t.market.requiredDocumentsIndividual}
               </p>
+
+              {upload.state.phase !== 'idle' && (
+                <UploadStatus state={upload.state} onRetry={() => void handleSubmit()} className="mb-3" />
+              )}
 
               {documents.map((doc, index) => (
                 <div key={doc.key} className="flex flex-wrap items-end gap-3">

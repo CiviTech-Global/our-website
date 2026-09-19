@@ -201,6 +201,8 @@ export function useSubmitVerification() {
     mutationFn: async (input: {
       payload: VerificationPayload;
       documents: Array<{ kind: VerificationDocumentKind; file: File }>;
+      /** Drives the progress bar while the body goes out. */
+      onProgress?: (percent: number) => void;
     }) => {
       const form = new FormData();
       form.append('payload', JSON.stringify(input.payload));
@@ -210,7 +212,9 @@ export function useSubmitVerification() {
       form.append('kinds', JSON.stringify(input.documents.map((d) => d.kind)));
       for (const doc of input.documents) form.append('documents', doc.file);
 
-      const res = await api.post<{ status: string }>('/market/me/verification', form);
+      const res = await api.upload<{ status: string }>('POST', '/market/me/verification', form, {
+        onProgress: input.onProgress,
+      });
       return res.data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.verification }),
@@ -360,12 +364,19 @@ export function useOwnProjects() {
 export function useCreateProject() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { payload: ProjectPayload; attachments?: File[] }) => {
+    mutationFn: async (input: {
+      payload: ProjectPayload;
+      attachments?: File[];
+      /** Drives the progress bar while the body goes out. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = multipart(
         input.payload,
         (input.attachments ?? []).map((file) => ['attachments', file] as [string, File])
       );
-      const res = await api.post<OwnProject>('/market/me/projects', form);
+      const res = await api.upload<OwnProject>('POST', '/market/me/projects', form, {
+        onProgress: input.onProgress,
+      });
       return res.data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProjects }),
@@ -483,10 +494,18 @@ export function useAddMilestone() {
 export function useDeliverMilestone() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { milestoneId: string; deliveryNote: string; attachment?: File | null }) => {
+    mutationFn: async (input: {
+      milestoneId: string;
+      deliveryNote: string;
+      attachment?: File | null;
+      /** Drives the progress bar while the body goes out. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = multipart({ deliveryNote: input.deliveryNote });
       if (input.attachment) form.append('attachment', input.attachment);
-      const res = await api.post(`/market/me/milestones/${input.milestoneId}/deliver`, form);
+      const res = await api.upload(`POST`, `/market/me/milestones/${input.milestoneId}/deliver`, form, {
+        onProgress: input.onProgress,
+      });
       return res.data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['market', 'me', 'awards'] }),

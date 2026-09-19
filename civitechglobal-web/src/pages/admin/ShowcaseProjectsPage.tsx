@@ -1,3 +1,5 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Code2, Eye, EyeOff, Pencil, Plus, Star, Trash2 } from 'lucide-react';
@@ -225,12 +227,14 @@ function ProjectForm({ project, onClose }: { project: AdminShowcaseProject | nul
     published: project?.published ?? true,
   });
   const [cover, setCover] = useState<File | null>(null);
+  const upload = useUploadFeedback('showcase-cover');
 
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) =>
     setValues((prev) => ({ ...prev, [key]: value }));
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload.
+  async function submit(event?: FormEvent) {
+    event?.preventDefault();
 
     // Emptied fields go as '' on purpose: the server reads that as "clear it",
     // where a missing key would keep the old value.
@@ -254,7 +258,8 @@ function ProjectForm({ project, onClose }: { project: AdminShowcaseProject | nul
     };
 
     try {
-      await save.mutateAsync({ id: project?.id, payload, cover });
+      await save.mutateAsync({ id: project?.id, payload, cover, onProgress: upload.onProgress });
+      upload.done();
       showToast(t.showcase.saved, 'success');
       onClose();
     } catch (error) {
@@ -345,7 +350,10 @@ function ProjectForm({ project, onClose }: { project: AdminShowcaseProject | nul
           htmlFor="project-cover"
           hint={project?.coverUrl ? t.showcase.imageReplaceHint : t.showcase.imageHint}
         >
-          <Input id="project-cover" type="file" accept=".png,.jpg,.jpeg,.webp" onChange={(e) => setCover(e.target.files?.[0] ?? null)} />
+          <Input id="project-cover" type="file" accept=".png,.jpg,.jpeg,.webp" onChange={(e) => void upload.pickImage(e.target.files?.[0] ?? null).then(setCover)} />
+          {upload.state.phase !== 'idle' && (
+            <UploadStatus state={upload.state} onRetry={() => void submit()} className="mt-3" />
+          )}
         </FormField>
 
         <div className="flex flex-col gap-2">
@@ -370,7 +378,7 @@ function ProjectForm({ project, onClose }: { project: AdminShowcaseProject | nul
         </div>
 
         <div className="flex gap-2">
-          <Button type="submit" isLoading={save.isPending}>
+          <Button type="submit" isLoading={save.isPending} disabled={upload.state.phase === 'shrinking'}>
             {t.common.save}
           </Button>
           <Button type="button" variant="ghost" onClick={onClose}>

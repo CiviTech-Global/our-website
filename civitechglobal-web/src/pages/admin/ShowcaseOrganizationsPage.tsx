@@ -1,3 +1,5 @@
+import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Building2, Eye, EyeOff, Pencil, Plus, Star, Trash2 } from 'lucide-react';
@@ -238,12 +240,14 @@ function OrganizationForm({
     published: org?.published ?? true,
   });
   const [logo, setLogo] = useState<File | null>(null);
+  const upload = useUploadFeedback('showcase-logo');
 
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) =>
     setValues((prev) => ({ ...prev, [key]: value }));
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload.
+  async function submit(event?: FormEvent) {
+    event?.preventDefault();
 
     // Emptied fields are sent as '' deliberately: the server reads that as
     // "clear it", where leaving the key out would keep the old value.
@@ -263,12 +267,15 @@ function OrganizationForm({
       published: values.published,
     };
 
+    upload.start(logo);
+
     try {
-      await save.mutateAsync({ id: org?.id, payload, logo });
+      await save.mutateAsync({ id: org?.id, payload, logo, onProgress: upload.onProgress });
+      upload.done();
       showToast(t.showcase.saved, 'success');
       onClose();
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      showToast(upload.fail(error).message, 'error');
     }
   }
 
@@ -352,9 +359,13 @@ function OrganizationForm({
             id="org-logo"
             type="file"
             accept=".png,.jpg,.jpeg,.webp"
-            onChange={(e) => setLogo(e.target.files?.[0] ?? null)}
+            onChange={(e) => void upload.pickImage(e.target.files?.[0] ?? null).then(setLogo)}
           />
         </FormField>
+
+        {upload.state.phase !== 'idle' && (
+          <UploadStatus state={upload.state} onRetry={() => void submit()} />
+        )}
 
         <fieldset className="flex flex-col gap-3 rounded border border-app-border-light p-4">
           <legend className="px-1 text-body font-medium text-app-text">{t.showcase.testimonial}</legend>
@@ -379,7 +390,7 @@ function OrganizationForm({
         </div>
 
         <div className="flex gap-2">
-          <Button type="submit" isLoading={save.isPending}>
+          <Button type="submit" isLoading={save.isPending} disabled={upload.state.phase === 'shrinking'}>
             {t.common.save}
           </Button>
           <Button type="button" variant="ghost" onClick={onClose}>
