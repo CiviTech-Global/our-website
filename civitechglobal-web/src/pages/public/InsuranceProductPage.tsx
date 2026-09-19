@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { useInsuranceProduct } from '@/api/insurance';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useDocumentTitle } from '@/lib/documentTitle';
+import { CANONICAL_ORIGIN, useDocumentTitle } from '@/lib/documentTitle';
+import { insuranceProductSchema } from '@/lib/structuredData';
 import { useToast } from '@/contexts/ToastContext';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
@@ -86,10 +87,30 @@ export default function InsuranceProductPage() {
   const [result, setResult] = useState<SubmitResult | null>(null);
 
   // Named after the product once it loads, so a shared link says what it is
-  // rather than "Insurance" for every one of them.
-  useDocumentTitle(
-    product ? (locale === 'fa' ? product.title : product.titleEn) : t.nav.insurance
-  );
+  // rather than "Insurance" for every one of them. The summary and the
+  // structured data come from the product itself — the FAQ markup states
+  // exactly the questions the page renders, nothing more.
+  const productTitle = product ? (locale === 'fa' ? product.title : product.titleEn) : undefined;
+  const productDescription = product
+    ? locale === 'fa'
+      ? product.description
+      : product.descriptionEn
+    : undefined;
+
+  useDocumentTitle(productTitle ?? t.nav.insurance, {
+    description: productDescription ?? t.seo.insurance,
+    jsonLd: product
+      ? insuranceProductSchema({
+          name: productTitle ?? t.nav.insurance,
+          description: productDescription ?? t.seo.insurance,
+          url: `${CANONICAL_ORIGIN}/insurance/${product.slug}`,
+          providerName: locale === 'fa' ? 'رایان تمدن جهان گستر' : 'Rayan Tamaddon Jahan Gostar',
+          origin: CANONICAL_ORIGIN,
+          locale: locale === 'fa' ? 'fa-IR' : 'en',
+          faqs: product.faq,
+        })
+      : undefined,
+  });
 
   if (isLoading) {
     return (

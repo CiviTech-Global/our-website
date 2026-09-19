@@ -41,6 +41,15 @@ export const CANONICAL_ORIGIN: string =
 const OWNED = 'data-head';
 
 /**
+ * The fallback image for a shared link. A link previewed anywhere shows this
+ * branded 1200x630 card rather than the 32px favicon, which reads as a broken
+ * image in a chat bubble and costs the click. Pages with a more specific
+ * image (a product, a project, an article) pass their own and override it.
+ */
+const DEFAULT_OG_IMAGE = '/og/default.png';
+const FAVICON_IMAGE = '/favicon.png';
+
+/**
  * Routes that must never be indexed, matched by prefix.
  *
  * Derived from the path rather than declared page by page, because the list of
@@ -121,7 +130,7 @@ function addLink(rel: string, href: string, hreflang?: string): void {
 export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
   const { locale, t } = useLocale();
   const { pathname } = useLocation();
-  const { description, type = 'website', image = '/favicon.png', jsonLd } = meta;
+  const { description, type = 'website', image = DEFAULT_OG_IMAGE, jsonLd } = meta;
   const noindex = meta.noindex === true || isPrivatePath(pathname);
 
   // The options object is rebuilt on every render by every caller, so the
@@ -182,7 +191,13 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
       }
     }
 
-    addMeta('name', 'twitter:card', image === '/favicon.png' ? 'summary' : 'summary_large_image');
+    addMeta('name', 'twitter:card', image === FAVICON_IMAGE ? 'summary' : 'summary_large_image');
+    if (image !== FAVICON_IMAGE) {
+      // A card image only earns its place in the large layout when its size
+      // is declared — some scrapers drop an undersized image silently.
+      addMeta('property', 'og:image:width', '1200');
+      addMeta('property', 'og:image:height', '630');
+    }
     addMeta('name', 'twitter:title', fullTitle);
     addMeta('name', 'twitter:description', summary);
 

@@ -165,6 +165,52 @@ export function jobPostingSchema(
 }
 
 /**
+ * An insurance product page, as search engines describe a service — plus the
+ * FAQ on the same page, so both the service statement and its questions are
+ * eligible for rich results.
+ *
+ * The FAQ list is the product's own `faq` field: every question rendered in
+ * the markup is also visible in the page's FAQ card. Markup that claims more
+ * than the page shows is the one SEO mistake with a penalty attached.
+ */
+export function insuranceProductSchema(facts: {
+  name: string;
+  description: string;
+  url: string;
+  providerName: string;
+  origin: string;
+  locale: string;
+  faqs: { question: string; answer: string }[];
+}): object[] {
+  const service = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: facts.name,
+    description: facts.description,
+    url: facts.url,
+    provider: { '@type': 'Organization', name: facts.providerName, url: facts.origin },
+    areaServed: { '@type': 'Country', name: COUNTRY },
+    serviceType: 'Insurance',
+  };
+
+  if (!facts.faqs.length) return [service];
+
+  return [
+    service,
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: facts.locale,
+      mainEntity: facts.faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+      })),
+    },
+  ];
+}
+
+/**
  * One book on offer, as a Book with an Offer attached.
  *
  * Book rather than Product because that is what search engines index for

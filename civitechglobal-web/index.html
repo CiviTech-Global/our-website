@@ -44,10 +44,18 @@
       property="og:description"
       content="شرکت مهندسی نرم‌افزار: طراحی و توسعهٔ نرم‌افزار سفارشی، پلتفرم‌های سازمانی و پروژه‌های متن‌باز."
     />
-    <meta data-head property="og:image" content="/favicon.png" />
+    <!--
+      The static fallback for crawlers that do not run scripts. Every page
+      overrides these at runtime through useDocumentTitle; the runtime value
+      is what a JavaScript-capable crawler and every link preview reads. This
+      pair only has to be a branded 1200x630 card instead of the favicon.
+    -->
+    <meta data-head property="og:image" content="https://rayantamaddonjahangostar.ir/og/default.png" />
+    <meta data-head property="og:image:width" content="1200" />
+    <meta data-head property="og:image:height" content="630" />
     <meta data-head property="og:locale" content="fa_IR" />
     <meta data-head property="og:locale:alternate" content="en_US" />
-    <meta data-head name="twitter:card" content="summary" />
+    <meta data-head name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>

@@ -11,11 +11,16 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastViewport } from '@/components/ui/Toast';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { installErrorReporter } from '@/lib/errorReporter';
+import { installAnalytics } from '@/lib/analytics';
 import './index.css';
 
 // Before anything renders, so an error thrown during the first paint is
 // caught too. Cheap: it registers two listeners and nothing else.
 installErrorReporter();
+
+// No-op unless the deployment opts in by setting the analytics environment
+// variables; see src/lib/analytics.ts.
+installAnalytics();
 
 /**
  * The language comes off the front of the URL, once, before anything renders.

@@ -26,6 +26,16 @@ export default function HomePage() {
   const { t, locale } = useLocale();
   const siteName = locale === 'fa' ? SITE_NAME.fa : SITE_NAME.en;
 
+  // The organisation's verified profiles. Search engines use these to tie the
+  // site to its social presence and build the knowledge panel; each one is
+  // set in the deployment environment, and only present links are claimed.
+  const socialProfiles = [
+    import.meta.env.VITE_SOCIAL_INSTAGRAM,
+    import.meta.env.VITE_SOCIAL_LINKEDIN,
+    import.meta.env.VITE_SOCIAL_GITHUB,
+    import.meta.env.VITE_SOCIAL_X,
+  ].filter((url): url is string => typeof url === 'string' && url.length > 0);
+
   useDocumentTitle(undefined, {
     description: t.seo.home,
     // Stated once, on the one page that is unambiguously about the company
@@ -38,6 +48,7 @@ export default function HomePage() {
         description: t.seo.home,
         origin: CANONICAL_ORIGIN,
         logo: '/favicon.png',
+        sameAs: socialProfiles,
       }),
       websiteSchema({ name: siteName, origin: CANONICAL_ORIGIN, locale: LOCALE_TAGS[locale] }),
     ],
