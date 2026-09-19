@@ -17,12 +17,19 @@ import type {
  */
 export function useSubmitResume() {
   return useMutation({
-    mutationFn: async (input: { payload: ResumePayload; resume: File }) => {
+    mutationFn: async (input: {
+      payload: ResumePayload;
+      resume: File;
+      /** Drives the progress bar; a CV can be several megabytes. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = new FormData();
       form.append('payload', JSON.stringify(input.payload));
       form.append('resume', input.resume);
 
-      const res = await api.post<ResumeResult>('/resumes', form);
+      const res = await api.upload<ResumeResult>('POST', '/resumes', form, {
+        onProgress: input.onProgress,
+      });
       return res.data;
     },
   });

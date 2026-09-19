@@ -125,15 +125,29 @@ function useTeamMutation<TInput>(fn: (input: TInput) => Promise<unknown>) {
 }
 
 export function useCreateMember() {
-  return useTeamMutation(async (input: { payload: TeamMemberPayload; photo?: File | null }) => {
-    await api.post('/team/admin', multipart(input.payload, input.photo));
+  return useTeamMutation(async (input: {
+    payload: TeamMemberPayload;
+    photo?: File | null;
+    /** Progress for the portrait, when the caller wants a bar. */
+    onProgress?: (percent: number) => void;
+  }) => {
+    await api.upload('POST', '/team/admin', multipart(input.payload, input.photo), {
+      onProgress: input.onProgress,
+    });
   });
 }
 
 export function useUpdateMember() {
   return useTeamMutation(
-    async (input: { id: string; payload: Partial<TeamMemberPayload>; photo?: File | null }) => {
-      await api.patch(`/team/admin/${input.id}`, multipart(input.payload, input.photo));
+    async (input: {
+      id: string;
+      payload: Partial<TeamMemberPayload>;
+      photo?: File | null;
+      onProgress?: (percent: number) => void;
+    }) => {
+      await api.upload('PATCH', `/team/admin/${input.id}`, multipart(input.payload, input.photo), {
+        onProgress: input.onProgress,
+      });
     },
   );
 }

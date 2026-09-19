@@ -1,5 +1,6 @@
+import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
+import { IDLE, UploadStatus, type UploadState } from '@/components/ui/UploadStatus';
 import { useState } from 'react';
-import { apiMessage } from '@/lib/apiMessage';
 import { Link } from 'react-router';
 import { CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
 import { useSubmitProjectRequest } from '@/api/projects';
@@ -87,6 +88,7 @@ export default function StartProjectPage() {
   });
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Errors>({});
+  const [upload, setUpload] = useState<UploadState>(IDLE);
   const [result, setResult] = useState<{ trackingCode: string; attachmentCount: number } | null>(
     null
   );
@@ -159,8 +161,9 @@ export default function StartProjectPage() {
     return Object.keys(next).length === 0;
   }
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  // The event is absent on a retry of a failed upload.
+  async function handleSubmit(event?: React.FormEvent) {
+    event?.preventDefault();
     if (!validate()) {
       document.querySelector('[data-invalid="true"]')?.scrollIntoView({ block: 'center' });
       return;
@@ -194,12 +197,41 @@ export default function StartProjectPage() {
       clientNotes: form.clientNotes.trim() || undefined,
     };
 
+    // Several files go out as one request, so the bar is for the batch. The
+    // status line names the batch rather than pretending to be one file.
+    const batch =
+      files.length > 0
+        ? new File([], files.length === 1 ? files[0].name : t.upload.batch.replace('{count}', String(files.length)), {
+            type: 'application/octet-stream',
+          })
+        : null;
+    const total = files.reduce((sum, file) => sum + file.size, 0);
+    // A File built from [] reports size 0; the status line should show what is
+    // actually being sent.
+    const shown = batch ? Object.defineProperty(batch, 'size', { value: total }) : null;
+
+    if (shown) setUpload({ phase: 'uploading', percent: 0, file: shown });
+
     try {
-      const res = await submit.mutateAsync({ payload, files });
+      const res = await submit.mutateAsync({
+        payload,
+        files,
+        onProgress: (percent) =>
+          setUpload((prev) => ({
+            ...prev,
+            phase: percent >= 100 ? 'finishing' : 'uploading',
+            percent,
+            file: shown,
+          })),
+      });
+      setUpload(IDLE);
       setResult(res);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      setErrors({ submit: apiMessage(error, t.project.errSubmit) });
+      const diagnosis = diagnoseUpload(error, t, shown);
+      logUploadFailure('project-attachments', diagnosis, error);
+      if (shown) setUpload({ phase: 'error', percent: 0, file: shown, error: diagnosis });
+      setErrors({ submit: diagnosis.message });
     }
   }
 
@@ -578,6 +610,10 @@ export default function StartProjectPage() {
             <p className="text-xs text-brand-red-500" role="alert">
               {errors.files}
             </p>
+          )}
+
+          {upload.phase !== 'idle' && (
+            <UploadStatus state={upload} onRetry={() => void handleSubmit()} />
           )}
 
           {files.length > 0 && (

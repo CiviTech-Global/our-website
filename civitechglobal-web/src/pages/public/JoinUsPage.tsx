@@ -1,7 +1,8 @@
+import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
+import { IDLE, UploadStatus, type UploadState } from '@/components/ui/UploadStatus';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { AlertTriangle, CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
-import { apiMessage } from '@/lib/apiMessage';
 import { checkResumeAllowance, useSubmitResume } from '@/api/resumes';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
@@ -37,6 +38,8 @@ export default function JoinUsPage() {
   });
   const [resume, setResume] = useState<File | null>(null);
   const [errors, setErrors] = useState<Errors>({});
+  // The CV travels with the form, so the progress is the submit's.
+  const [upload, setUpload] = useState<UploadState>(IDLE);
   const [allowance, setAllowance] = useState<ResumeAllowance | null>(null);
   const [result, setResult] = useState<{ trackingCode: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -88,8 +91,10 @@ export default function JoinUsPage() {
     return Object.keys(next).length === 0;
   }
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload rather than a
+  // fresh submit.
+  async function handleSubmit(event?: React.FormEvent) {
+    event?.preventDefault();
     if (!validate() || !resume) {
       document.querySelector('[data-invalid="true"]')?.scrollIntoView({ block: 'center' });
       return;
@@ -107,12 +112,30 @@ export default function JoinUsPage() {
       coverNote: form.coverNote.trim() || undefined,
     };
 
+    setUpload({ phase: 'uploading', percent: 0, file: resume });
+
     try {
-      const res = await submit.mutateAsync({ payload, resume });
+      const res = await submit.mutateAsync({
+        payload,
+        resume,
+        onProgress: (percent) =>
+          setUpload((prev) => ({
+            ...prev,
+            phase: percent >= 100 ? 'finishing' : 'uploading',
+            percent,
+            file: resume,
+          })),
+      });
+      setUpload(IDLE);
       setResult(res);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      setErrors({ submit: apiMessage(error, t.join.errSubmit) });
+      // The banner gets the sentence; the status block keeps the status code
+      // and the server's own words for whoever has to explain it.
+      const diagnosis = diagnoseUpload(error, t, resume);
+      logUploadFailure('resume', diagnosis, error);
+      setUpload({ phase: 'error', percent: 0, file: resume, error: diagnosis });
+      setErrors({ submit: diagnosis.message });
     }
   }
 
@@ -293,7 +316,11 @@ export default function JoinUsPage() {
             </p>
           )}
 
-          {resume && (
+          {upload.phase !== 'idle' && (
+            <UploadStatus state={upload} onRetry={() => void handleSubmit()} />
+          )}
+
+          {resume && upload.phase === 'idle' && (
             <div className="flex items-center gap-3 rounded-lg border border-border-default p-2.5 text-sm">
               <Paperclip className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-text-primary">{resume.name}</span>

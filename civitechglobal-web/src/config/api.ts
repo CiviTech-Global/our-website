@@ -194,10 +194,199 @@ async function request<T>(
   throw new ApiError(response.status, data, `Request failed with status ${response.status}`);
 }
 
+
+// --- Uploads ---------------------------------------------------------------
+//
+// fetch cannot report upload progress. The Streams-based workaround needs
+// duplex requests, which Safari and Firefox still do not ship, so a file
+// upload is the one request here that goes out over XMLHttpRequest — the only
+// transport that fires progress events for the request body.
+//
+// Everything else is kept identical to `request` on purpose: same base URL,
+// same bearer header, same cookie credentials, same envelope unwrapping, same
+// ApiError, and the same single-flight refresh-and-replay on a 401. A second
+// set of rules for uploads is how a session expiring mid-upload turns into an
+// unexplained failure on one screen and a clean retry on another.
+
+/**
+ * How long an upload may make no progress at all before it is abandoned.
+ *
+ * Not a total timeout: a large file on a slow connection is not a fault, and
+ * cutting it off at sixty seconds would punish exactly the people the progress
+ * bar is for. What is a fault is silence — a connection that died mid-request
+ * leaves the browser holding an open socket indefinitely, and the page sits at
+ * "Uploading… 0%" forever. The watchdog resets on every progress event, so it
+ * only fires when nothing has moved.
+ */
+const STALL_TIMEOUT_MS = 30_000;
+
+export interface UploadConfig extends RequestConfig {
+  /** 0–100, fired as the body goes out. Never called after the response. */
+  onProgress?: (percent: number) => void;
+}
+
+/** Distinguishes the ways an upload can fail before the server ever answers. */
+export type UploadFailure = 'network' | 'timeout' | 'aborted';
+
+export class UploadError extends Error {
+  readonly kind: UploadFailure;
+
+  constructor(kind: UploadFailure, message: string) {
+    super(message);
+    this.name = 'UploadError';
+    this.kind = kind;
+  }
+}
+
+function sendXhr<T>(
+  method: string,
+  url: string,
+  body: FormData,
+  config: UploadConfig,
+): Promise<ApiResponse<T>> {
+  return new Promise((resolve, reject) => {
+    // Nothing can be sent with no network, and the browser will happily hold
+    // the request open rather than say so. Failing here gives the person the
+    // real reason immediately instead of a bar that never moves.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      reject(new UploadError('network', 'The browser reports no network connection.'));
+      return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, buildUrl(url, config.params), true);
+    // The cookie carries the refresh token; without this the upload is
+    // anonymous even when the page is signed in.
+    xhr.withCredentials = true;
+
+    for (const [key, value] of Object.entries(config.headers ?? {})) xhr.setRequestHeader(key, value);
+    if (accessToken && !isAuthEndpoint(url)) xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+    // Deliberately no Content-Type: the browser writes the multipart boundary.
+
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    const stopWatchdog = () => {
+      if (watchdog) clearTimeout(watchdog);
+      watchdog = undefined;
+    };
+    const armWatchdog = () => {
+      stopWatchdog();
+      watchdog = setTimeout(() => {
+        stalled = true;
+        // Rejected here rather than left to onabort: a request the browser
+        // never managed to start — no network, or one blocked by the platform
+        // — can be aborted without any event being dispatched, which is how
+        // 'Uploading… 0%' ends up on screen forever. Settling twice is
+        // harmless; a promise keeps its first result.
+        reject(
+          new UploadError(
+            'timeout',
+            `No progress for ${STALL_TIMEOUT_MS / 1000}s; the connection appears to have dropped.`,
+          ),
+        );
+        xhr.abort();
+      }, STALL_TIMEOUT_MS);
+    };
+    let stalled = false;
+
+    xhr.upload.onprogress = (event) => {
+      armWatchdog();
+      if (config.onProgress) {
+        // Only meaningful when the browser knows the total; otherwise the
+        // caller keeps showing an indeterminate state rather than a lying bar.
+        if (event.lengthComputable) {
+          config.onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+        }
+      }
+    };
+    // The body may be out while the server is still working; the response is
+    // what the watchdog waits on from then on.
+    xhr.upload.onloadend = () => armWatchdog();
+
+    xhr.onload = () => {
+      stopWatchdog();
+      let parsed: unknown = null;
+      try {
+        parsed = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+      } catch {
+        parsed = xhr.responseText;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: unwrap(parsed) as T, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.status, parsed, `Request failed with status ${xhr.status}`));
+      }
+    };
+
+    // A dropped connection, DNS failure or blocked request: the status is 0
+    // and there is no body to explain it.
+    xhr.onerror = () => {
+      stopWatchdog();
+      reject(new UploadError('network', 'The upload could not reach the server.'));
+    };
+    xhr.ontimeout = () => {
+      stopWatchdog();
+      reject(new UploadError('timeout', 'The upload timed out.'));
+    };
+    xhr.onabort = () => {
+      stopWatchdog();
+      // A watchdog abort is a stall, not somebody pressing cancel, and the two
+      // want different words and different offers of a retry.
+      reject(
+        stalled
+          ? new UploadError('timeout', `No progress for ${STALL_TIMEOUT_MS / 1000}s; the connection appears to have dropped.`)
+          : new UploadError('aborted', 'The upload was cancelled.'),
+      );
+    };
+
+    if (config.signal) {
+      if (config.signal.aborted) {
+        reject(new UploadError('aborted', 'The upload was cancelled.'));
+        return;
+      }
+      config.signal.addEventListener('abort', () => xhr.abort(), { once: true });
+    }
+
+    armWatchdog();
+    xhr.send(body);
+  });
+}
+
+/**
+ * Sends a multipart body and reports how much of it has gone out.
+ *
+ * Retries once through the shared refresh when the session has expired, in
+ * which case the file is sent a second time — unavoidable, since the bytes are
+ * consumed by the first attempt, and far better than telling somebody their
+ * upload failed when their session merely needed renewing.
+ */
+export async function upload<T>(
+  method: 'POST' | 'PATCH' | 'PUT',
+  url: string,
+  body: FormData,
+  config: UploadConfig = {},
+): Promise<ApiResponse<T>> {
+  try {
+    return await sendXhr<T>(method, url, body, config);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401 && !isAuthEndpoint(url)) {
+      await refreshAccessToken();
+      // Progress restarts from zero for the second attempt; the caller's bar
+      // simply fills again rather than appearing to go backwards from 100.
+      config.onProgress?.(0);
+      return await sendXhr<T>(method, url, body, config);
+    }
+    throw error;
+  }
+}
+
 export const api = {
   get: <T>(url: string, config?: RequestConfig) => request<T>('GET', url, undefined, config),
   post: <T>(url: string, body?: unknown, config?: RequestConfig) =>
     request<T>('POST', url, body, config),
+  /** Multipart with progress — see `upload` above for why it is not fetch. */
+  upload: <T>(method: 'POST' | 'PATCH' | 'PUT', url: string, body: FormData, config?: UploadConfig) =>
+    upload<T>(method, url, body, config),
   put: <T>(url: string, body?: unknown, config?: RequestConfig) =>
     request<T>('PUT', url, body, config),
   patch: <T>(url: string, body?: unknown, config?: RequestConfig) =>

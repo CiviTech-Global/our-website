@@ -308,9 +308,17 @@ export function useOwnApplications() {
 export function useApply() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { jobId: string; payload: ApplicationPayload; cv?: File | null }) => {
+    mutationFn: async (input: {
+      jobId: string;
+      payload: ApplicationPayload;
+      cv?: File | null;
+      /** Progress for the file this carries, when the caller wants a bar. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = multipart(input.payload, input.cv ? [['cv', input.cv]] : []);
-      const res = await api.post<{ id: string }>(`/market/me/jobs/${input.jobId}/apply`, form);
+      const res = await api.upload<{ id: string }>('POST', `/market/me/jobs/${input.jobId}/apply`, form, {
+        onProgress: input.onProgress,
+      });
       return res.data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownApplications }),
@@ -321,9 +329,17 @@ export function useApply() {
 export function useReviseApplication() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; payload: ApplicationPayload; cv?: File | null }) => {
+    mutationFn: async (input: {
+      id: string;
+      payload: ApplicationPayload;
+      cv?: File | null;
+      /** Progress for the file this carries, when the caller wants a bar. */
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = multipart(input.payload, input.cv ? [['cv', input.cv]] : []);
-      await api.patch(`/market/me/applications/${input.id}`, form);
+      await api.upload('PATCH', `/market/me/applications/${input.id}`, form, {
+        onProgress: input.onProgress,
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownApplications }),
   });
@@ -997,8 +1013,19 @@ export function useOwnBooks(enabled = true) {
 export function useCreateBook() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { payload: BookPayload; cover: File }) => {
-      const res = await api.post<OwnBook>('/market/me/books', multipart(input.payload, [['cover', input.cover]]));
+    // api.upload rather than api.post: a cover is the one request here big
+    // enough that somebody watches it, and fetch cannot report progress.
+    mutationFn: async (input: {
+      payload: BookPayload;
+      cover: File;
+      onProgress?: (percent: number) => void;
+    }) => {
+      const res = await api.upload<OwnBook>(
+        'POST',
+        '/market/me/books',
+        multipart(input.payload, [['cover', input.cover]]),
+        { onProgress: input.onProgress },
+      );
       return res.data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBooks }),
@@ -1008,10 +1035,17 @@ export function useCreateBook() {
 export function useUpdateBook() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; payload: Partial<BookPayload>; cover?: File | null }) => {
-      await api.patch(
+    mutationFn: async (input: {
+      id: string;
+      payload: Partial<BookPayload>;
+      cover?: File | null;
+      onProgress?: (percent: number) => void;
+    }) => {
+      await api.upload(
+        'PATCH',
         `/market/me/books/${input.id}`,
         multipart(input.payload, input.cover ? [['cover', input.cover]] : []),
+        { onProgress: input.onProgress },
       );
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownBooks }),

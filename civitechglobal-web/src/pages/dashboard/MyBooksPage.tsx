@@ -1,3 +1,5 @@
+import { IDLE, type UploadState } from '@/components/ui/UploadStatus';
+import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import { StaffImage } from '@/components/ui/StaffImage';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
@@ -75,6 +77,9 @@ export default function MyBooksPage() {
   const [editing, setEditing] = useState<'new' | OwnBook | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [cover, setCover] = useState<File | null>(null);
+  // The save carries the cover, so the progress belongs to the save rather
+  // than to the file picker. IDLE until somebody presses it.
+  const [uploadState, setUploadState] = useState<UploadState>(IDLE);
 
   // Staff post as the company and are not asked to verify an identity — see
   // the note in books.service.createBook. Gating the button on verification
@@ -89,14 +94,17 @@ export default function MyBooksPage() {
   function openNew() {
     setDraft(EMPTY_DRAFT);
     setCover(null);
+    setUploadState(IDLE);
     setEditing('new');
   }
 
   const digits = (value: string) => value.replace(/[^0-9]/g, '');
   const optionalNumber = (value: string) => (digits(value) ? Number(digits(value)) : undefined);
 
-  async function handleSave(event: FormEvent) {
-    event.preventDefault();
+  // The event is absent when this is a retry of a failed upload rather than
+  // a fresh submit.
+  async function handleSave(event?: FormEvent) {
+    event?.preventDefault();
     if (editing === 'new' && !cover) {
       showToast(t.books.coverRequired, 'error');
       return;
@@ -119,17 +127,35 @@ export default function MyBooksPage() {
       city: draft.city.trim() || undefined,
     };
 
+    const sent = cover ?? null;
+    const onProgress = (percent: number) =>
+      setUploadState((prev) => ({
+        ...prev,
+        phase: percent >= 100 ? 'finishing' : 'uploading',
+        percent,
+        file: sent,
+      }));
+
+    if (sent) setUploadState({ phase: 'uploading', percent: 0, file: sent });
+
     try {
       if (editing === 'new') {
-        await create.mutateAsync({ payload, cover: cover! });
+        await create.mutateAsync({ payload, cover: cover!, onProgress });
         showToast(t.books.created, 'success');
       } else if (editing) {
-        await update.mutateAsync({ id: editing.id, payload, cover });
+        await update.mutateAsync({ id: editing.id, payload, cover, onProgress });
         showToast(t.books.saved, 'success');
       }
+      setUploadState(IDLE);
       setEditing(null);
     } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
+      // Two audiences, one failure: the sentence goes in the toast, and the
+      // status block keeps the status code and the server's own words within
+      // reach of whoever has to explain it.
+      const diagnosis = diagnoseUpload(error, t, sent);
+      logUploadFailure('book-cover', diagnosis, error);
+      if (sent) setUploadState({ phase: 'error', percent: 0, file: sent, error: diagnosis });
+      showToast(diagnosis.message, 'error');
     }
   }
 
@@ -310,8 +336,12 @@ export default function MyBooksPage() {
           <CoverField
             value={cover}
             previewUrl={editing !== null && editing !== 'new' ? editing.coverUrl : null}
-            onChange={setCover}
-            onError={(message) => showToast(message, 'error')}
+            onChange={(file) => {
+              setCover(file);
+              setUploadState(IDLE);
+            }}
+            uploadState={uploadState}
+            onRetryUpload={() => void handleSave()}
           />
 
           <FormField label={t.books.fieldTitle} htmlFor="book-title">

@@ -22,12 +22,18 @@ import type {
  */
 export function useSubmitProjectRequest() {
   return useMutation({
-    mutationFn: async (input: { payload: ProjectRequestPayload; files: File[] }) => {
+    mutationFn: async (input: {
+      payload: ProjectRequestPayload;
+      files: File[];
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = new FormData();
       form.append('payload', JSON.stringify(input.payload));
       for (const file of input.files) form.append('files', file);
 
-      const res = await api.post<SubmitProjectResult>('/projects/requests', form);
+      const res = await api.upload<SubmitProjectResult>('POST', '/projects/requests', form, {
+        onProgress: input.onProgress,
+      });
       return res.data;
     },
   });
