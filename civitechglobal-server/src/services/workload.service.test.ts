@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => {
     freelanceProject: model(),
     projectBid: model(),
     bookListing: model(),
+    consultationRequest: model(),
     marketplaceAward: model(),
     showcaseOrganization: model(),
     showcaseProject: model(),
@@ -82,7 +83,7 @@ describe('workload scoping', () => {
     const workload = await getWorkload({ userId: 'root', role: 'SUPER_ADMIN' });
 
     expect(mocks.prisma.user.findUnique).not.toHaveBeenCalled();
-    expect(Object.keys(workload.queues)).toHaveLength(12);
+    expect(Object.keys(workload.queues)).toHaveLength(13);
     expect(workload.users).toBeDefined();
     expect(workload.showcase).toBeDefined();
   });

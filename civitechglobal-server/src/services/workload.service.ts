@@ -59,6 +59,7 @@ export type QueueKey =
   | 'freelanceProjects'
   | 'bids'
   | 'books'
+  | 'consultations'
   | 'disputes';
 
 export const TREND_DAYS = 14;
@@ -281,6 +282,19 @@ export async function getWorkload(principal: Principal, now = new Date()): Promi
         queues.books = await pair(
           prisma.bookListing.count({ where: { moderationStatus: 'PENDING_REVIEW' } }),
           prisma.bookListing.count(),
+        );
+      })(),
+    );
+  }
+
+  if (can(PERMISSIONS.consultations)) {
+    tasks.push(
+      (async () => {
+        queues.consultations = await pair(
+          // NEW and CONTACTED both still want somebody's attention; a
+          // scheduled one is waiting for a date, not for us.
+          prisma.consultationRequest.count({ where: { status: { in: ['NEW', 'CONTACTED'] } } }),
+          prisma.consultationRequest.count(),
         );
       })(),
     );

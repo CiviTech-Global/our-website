@@ -9,6 +9,7 @@ import contactRoutes from './contact.routes.js';
 import teamRoutes from './team.routes.js';
 import showcaseRoutes from './showcase.routes.js';
 import capabilitiesRoutes from './capabilities.routes.js';
+import consultationRoutes from './consultation.routes.js';
 import i18nRoutes from './i18n.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
@@ -36,6 +37,9 @@ router.use('/contact', contactRoutes);
 
 // The public "تیم ما" page, and the super admin's control over it.
 router.use('/team', teamRoutes);
+
+// The club of experts, and the consultations they give.
+router.use('/consult', consultationRoutes);
 
 // The customers club, the partners page and the projects page.
 router.use('/showcase', showcaseRoutes);

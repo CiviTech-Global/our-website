@@ -52,6 +52,19 @@ export const PERMISSIONS = {
   books: 'books',
 
   /**
+   * The club of experts: who is listed, what their profile says, and the
+   * order they appear in. Editorial work, like the showcase.
+   */
+  experts: 'experts',
+
+  /**
+   * The consultation queue: reading what somebody asked for, ringing them,
+   * and recording what was agreed. Separate from `experts` because whoever
+   * keeps the directory current is not necessarily who takes the calls.
+   */
+  consultations: 'consultations',
+
+  /**
    * Marketplace operations outside the review flow: featuring listings,
    * extending deadlines, pausing accounts, resolving disputes, reading the
    * audit log. Deliberately separate from the three moderation keys —

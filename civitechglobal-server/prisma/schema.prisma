@@ -133,6 +133,7 @@ model User {
   bidsReviewed     ProjectBid[]       @relation("BidReviewer")
   awardsMade       MarketplaceAward[] @relation("AwardedBy")
   assignedRequests InsuranceRequest[] @relation("LeadAssignee")
+  consultationsAssigned   ConsultationRequest[] @relation("ConsultationAssignee")
 
   assignedProjectRequests ProjectRequest[]   @relation("AssignedProjectRequests")
   authoredProposals       ProjectProposal[]  @relation("AuthoredProposals")
@@ -921,6 +922,8 @@ model ShowcaseProject {
   featured     Boolean @default(false)
   displayOrder Int     @default(0) @map("display_order")
   published    Boolean @default(true)
+
+  screenshots ShowcaseProjectShot[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1880,4 +1883,201 @@ model BookListing {
   @@index([sellerId])
   @@index([featured, state])
   @@map("book_listings")
+}
+
+/// A screenshot of a showcase project.
+///
+/// Separate from the cover because a gallery is a different job: the cover
+/// identifies the project in a grid, these show what it actually looks like,
+/// and there is no useful limit of one.
+model ShowcaseProjectShot {
+  id String @id @default(cuid())
+
+  projectId String          @map("project_id")
+  project   ShowcaseProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  storedName   String  @map("stored_name")
+  originalName String? @map("original_name")
+  mimeType     String  @map("mime_type")
+  /// Shown under the picture, and used as its alt text.
+  caption      String?
+
+  displayOrder Int @default(0) @map("display_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([projectId, displayOrder])
+  @@map("showcase_project_shots")
+}
+
+/// What somebody wants to talk about.
+///
+/// Five, because the answer changes who should take the appointment — not so
+/// many that choosing is itself a decision.
+enum ConsultationTopic {
+  /// Where to go next in a career already underway.
+  CAREER
+  /// A technical problem, architecture, a code review.
+  TECHNICAL
+  /// How to begin: which language, which path, what to study.
+  STARTING_OUT
+  /// Interviews, CVs, portfolios.
+  HIRING
+  OTHER
+}
+
+/// How they would like to meet.
+enum ConsultationMode {
+  ONLINE
+  PHONE
+  IN_PERSON
+}
+
+/// Which part of a day somebody is free.
+///
+/// Deliberately coarse. Asking for an exact time from a stranger whose week
+/// we cannot see produces a time that has usually moved by the time anybody
+/// rings; asking for "Tuesday afternoon" produces an answer that survives.
+enum DayPart {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+/// Where a request has got to.
+enum ConsultationStatus {
+  NEW
+  /// Somebody has picked it up and is arranging a time.
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  /// Tried, could not reach them. Distinct from cancelled: it may still happen.
+  NO_ANSWER
+  CANCELLED
+}
+
+/// Somebody who gives consultations, and appears in the club of experts.
+///
+/// Curated by staff rather than self-registered: the list is a statement
+/// about who we vouch for, and an open sign-up makes it a statement about who
+/// found the form. The shape leaves room for applications later — an expert
+/// row does not care how it came to exist.
+model Expert {
+  id String @id @default(cuid())
+
+  /// The public URL: /experts/<slug>. Stable across name changes.
+  slug String @unique
+
+  fullName String  @map("full_name")
+  /// One line under the name: "Backend engineer, 12 years".
+  headline String
+  bio      String?
+
+  /// What they can actually help with. Free text, because the field's own
+  /// vocabulary moves faster than a migration.
+  specialities String[] @default([])
+  languages    String[] @default([])
+
+  yearsExperience Int? @map("years_experience")
+
+  photoStoredName   String? @map("photo_stored_name")
+  photoOriginalName String? @map("photo_original_name")
+  photoMimeType     String? @map("photo_mime_type")
+
+  linkedinUrl String? @map("linkedin_url")
+  githubUrl   String? @map("github_url")
+  websiteUrl  String? @map("website_url")
+
+  /// False for somebody listed for their standing who does not take
+  /// appointments. The club and the consultation list are not the same list.
+  acceptsConsultations Boolean @default(true) @map("accepts_consultations")
+
+  featured     Boolean @default(false)
+  displayOrder Int     @default(0) @map("display_order")
+  published    Boolean @default(true)
+
+  requests ConsultationRequest[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([published, displayOrder])
+  @@map("experts")
+}
+
+/// Somebody asking for a consultation.
+///
+/// Not a booking: nothing is confirmed here. They say what they want to talk
+/// about and when they could be free, and we ring them. That is the honest
+/// shape for a small team — a public calendar of bookable slots promises an
+/// availability nobody has committed to keeping, and a slot taken at 2am by a
+/// stranger is a promise made by the software rather than by a person.
+model ConsultationRequest {
+  id String @id @default(cuid())
+
+  /// How they check where it has got to. There is no mailbox in this
+  /// deployment, so the code is the only thread back to the request.
+  trackingCode String @unique @map("tracking_code")
+
+  fullName        String  @map("full_name")
+  phoneNumber     String  @map("phone_number")
+  /// Deterministic hash for lookup without reading every row, as elsewhere.
+  phoneNumberHash String? @map("phone_number_hash")
+  email           String?
+
+  topic ConsultationTopic
+  /// What they want out of the session, in their words.
+  goal  String?
+  /// Where they are now: student, switching field, three years in.
+  background String?
+
+  preferredMode ConsultationMode @default(ONLINE)
+
+  /// Optional: somebody from the club they would like to speak to.
+  /// SetNull, because removing an expert from the club must not delete the
+  /// requests that named them.
+  expertId String? @map("expert_id")
+  expert   Expert? @relation(fields: [expertId], references: [id], onDelete: SetNull)
+
+  availability ConsultationAvailability[]
+
+  status    ConsultationStatus @default(NEW)
+  /// Ours, never shown to the person who asked.
+  staffNote String?            @map("staff_note")
+
+  /// Who picked it up. SetNull so a staff account can be closed without
+  /// erasing who handled what.
+  assignedToId String? @map("assigned_to_id")
+  assignedTo   User?   @relation("ConsultationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  contactedAt DateTime? @map("contacted_at")
+  /// When the conversation was actually fixed for, once it is.
+  scheduledAt DateTime? @map("scheduled_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([expertId])
+  @@map("consultation_requests")
+}
+
+/// One window somebody said they are free.
+///
+/// A row per option rather than a text field, so the queue can be sorted and
+/// filtered by when people can actually talk — "who can do Thursday morning"
+/// is the question staff ask, and free text cannot answer it.
+model ConsultationAvailability {
+  id String @id @default(cuid())
+
+  requestId String              @map("request_id")
+  request   ConsultationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  /// The day itself, with no time of day; the part says which half.
+  day  DateTime @db.Date
+  part DayPart
+
+  @@unique([requestId, day, part])
+  @@index([day, part])
+  @@map("consultation_availability")
 }

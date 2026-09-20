@@ -4,11 +4,13 @@ import { successResponse } from '../utils/apiResponse.js';
 import * as insuranceRequestService from '../services/insurance-request.service.js';
 import * as projectRequestService from '../services/project-request.service.js';
 import * as resumeService from '../services/resume-submission.service.js';
+import * as consultationService from '../services/consultation.service.js';
 
 /**
  * One tracking code box, whatever the code belongs to.
  *
- * There are three intakes now — insurance, project, resume — and they draw
+ * There are four intakes now — insurance, project, resume, consultation —
+ * and they draw
  * codes from the same alphabet, so a code is indistinguishable by eye. The
  * person holding one has no reason to know which system it came from, and
  * making them choose would be asking them to know our architecture.
@@ -37,10 +39,11 @@ router.get('/:code', async (req, res, next) => {
 
     // `allSettled`, not `all`: a miss in two of the three is the NORMAL case,
     // and one rejection must not discard the answer the third one found.
-    const [insurance, project, resume] = await Promise.allSettled([
+    const [insurance, project, resume, consultation] = await Promise.allSettled([
       insuranceRequestService.trackRequest(code),
       projectRequestService.trackRequest(code),
       resumeService.trackResume(code),
+      consultationService.trackRequest(code),
     ]);
 
     if (insurance.status === 'fulfilled') {
@@ -53,6 +56,11 @@ router.get('/:code', async (req, res, next) => {
     }
     if (resume.status === 'fulfilled') {
       successResponse(res, serialize({ kind: 'resume', ...resume.value }));
+      return;
+    }
+    if (consultation.status === 'fulfilled') {
+      // The service already names its own kind.
+      successResponse(res, serialize(consultation.value));
       return;
     }
 
