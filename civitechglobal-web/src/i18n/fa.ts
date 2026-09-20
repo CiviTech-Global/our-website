@@ -37,6 +37,23 @@ const fa = {
       gregorian: 'تقویم میلادی',
     },
   },
+  // The controls above every list: search, filters, view, paging. Shared so a
+  // reader meets the same words on the book market and in the admin queues.
+  list: {
+    viewLabel: 'نحوهٔ نمایش',
+    viewCards: 'نمایش کارتی',
+    viewTable: 'نمایش جدولی',
+    resultCount: '{count} نتیجه',
+    resultOne: 'یک نتیجه',
+    clearFilters: 'حذف فیلترها',
+    noResults: 'نتیجه‌ای با این فیلترها پیدا نشد',
+    noResultsBody: 'عبارت جستجو را تغییر دهید یا فیلترها را حذف کنید.',
+    empty: 'هنوز چیزی اینجا نیست',
+    sortLabel: 'ترتیب',
+    filterLabel: 'فیلتر',
+    allOption: 'همه',
+    searchPlaceholder: 'جستجو...',
+  },
   nav: {
     insurance: 'بیمه‌ها',
     track: 'پیگیری درخواست',

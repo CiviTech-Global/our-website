@@ -39,6 +39,23 @@ const en: typeof fa = {
       gregorian: 'Gregorian calendar',
     },
   },
+  // The controls above every list: search, filters, view, paging. Shared so a
+  // reader meets the same words on the book market and in the admin queues.
+  list: {
+    viewLabel: 'View as',
+    viewCards: 'Card view',
+    viewTable: 'Table view',
+    resultCount: '{count} results',
+    resultOne: 'One result',
+    clearFilters: 'Clear filters',
+    noResults: 'Nothing matches these filters',
+    noResultsBody: 'Try a different search term, or clear the filters.',
+    empty: 'Nothing here yet',
+    sortLabel: 'Sort',
+    filterLabel: 'Filter',
+    allOption: 'All',
+    searchPlaceholder: 'Search...',
+  },
   nav: {
     insurance: 'Insurance',
     track: 'Track request',
