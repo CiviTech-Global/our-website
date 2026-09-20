@@ -24,6 +24,17 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
   const { mounted, state } = usePresence(isOpen);
   const app = useSurface() === 'app';
 
+  // Held in a ref so the trap below depends on `isOpen` alone. Callers write
+  // `onClose={() => setEditing(null)}`, which is a new function on every
+  // parent render; an effect that listed it as a dependency tore the trap
+  // down and rebuilt it after every keystroke, and rebuilding it moves focus
+  // back to the dialog's first element. A form inside a modal then accepted
+  // exactly one character per click — the rest went to the Close button.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -34,7 +45,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !dialog) return;
@@ -61,7 +72,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       document.body.style.overflow = '';
       (previousActiveElement.current as HTMLElement | null)?.focus?.();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!mounted) return null;
 

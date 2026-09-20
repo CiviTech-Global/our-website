@@ -61,6 +61,52 @@ describe('Modal focus trap', () => {
     expect(screen.getByRole('button', { name: 'Second' })).toHaveFocus();
   });
 
+  // Every page writes `onClose={() => setEditing(null)}`, so the prop is a new
+  // function on each parent render. While the trap listed it as a dependency,
+  // typing re-ran the effect and the re-run pulled focus back to Close: the
+  // field took one character per click. The value has to accumulate.
+  it('leaves focus in a field while a controlled form re-renders the parent', () => {
+    function FormHarness() {
+      const [value, setValue] = useState('');
+      return (
+        <Modal isOpen onClose={() => undefined} title="Test modal">
+          <input aria-label="Name" value={value} onChange={(e) => setValue(e.target.value)} />
+        </Modal>
+      );
+    }
+
+    render(<FormHarness />);
+    const field = screen.getByRole('textbox', { name: 'Name' });
+    field.focus();
+
+    for (const text of ['س', 'سل', 'سلا', 'سلام']) {
+      fireEvent.change(field, { target: { value: text } });
+      expect(field).toHaveFocus();
+    }
+
+    expect(field).toHaveValue('سلام');
+  });
+
+  it('closes on Escape with the newest onClose after a re-render', () => {
+    const stale = vi.fn();
+    const fresh = vi.fn();
+
+    const { rerender } = render(
+      <Modal isOpen onClose={stale} title="Test modal">
+        <button type="button">First</button>
+      </Modal>
+    );
+    rerender(
+      <Modal isOpen onClose={fresh} title="Test modal">
+        <button type="button">First</button>
+      </Modal>
+    );
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(fresh).toHaveBeenCalledTimes(1);
+    expect(stale).not.toHaveBeenCalled();
+  });
+
   it('calls onClose on Escape', () => {
     const onClose = vi.fn();
     render(
