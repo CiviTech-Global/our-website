@@ -45,6 +45,8 @@ const PAGES = [
   '/jobs',
   '/projects',
   '/books',
+  '/consult',
+  '/experts',
   '/portfolio',
   '/customers',
   '/partners',

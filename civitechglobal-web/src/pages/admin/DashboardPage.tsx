@@ -13,6 +13,7 @@ import {
   Inbox,
   KeyRound,
   Mail,
+  MessageCircle,
   ShieldCheck,
   Sparkles,
   type LucideIcon,
@@ -58,6 +59,7 @@ function queueMeta(t: Translations): Record<QueueKey, QueueMeta> {
     freelanceProjects: { label: t.market.queueProjects, to: '/admin/freelance-projects', icon: FolderKanban },
     bids: { label: t.market.queueBids, to: '/admin/bids', icon: Gavel },
     books: { label: t.books.queueTitle, to: '/admin/books', icon: BookOpen },
+    consultations: { label: t.consult.queueTitle, to: '/admin/consultations', icon: MessageCircle },
     disputes: { label: t.analytics.title, to: '/admin/marketplace', icon: AlertCircle },
   };
 }

@@ -49,6 +49,7 @@ export type QueueKey =
   | 'freelanceProjects'
   | 'bids'
   | 'books'
+  | 'consultations'
   | 'disputes';
 
 export type ActivityKind = 'project' | 'resume' | 'programme' | 'insurance' | 'message';

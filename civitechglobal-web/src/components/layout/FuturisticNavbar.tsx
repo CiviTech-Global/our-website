@@ -28,6 +28,8 @@ type NavKey =
   | 'jobs'
   | 'freelance'
   | 'books'
+  | 'consult'
+  | 'experts'
   | 'team'
   | 'customers'
   | 'partners'
@@ -78,6 +80,7 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/jobs', key: 'jobs' },
       { to: '/projects', key: 'freelance' },
       { to: '/books', key: 'books' },
+      { to: '/consult', key: 'consult' },
       { to: '/join', key: 'joinUs' },
       { to: '/volunteer', key: 'volunteer' },
     ],
@@ -89,6 +92,7 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/about', key: 'about' },
       { to: '/blog', key: 'blog' },
       { to: '/team', key: 'team' },
+      { to: '/experts', key: 'experts' },
       { to: '/portfolio', key: 'portfolio' },
       { to: '/customers', key: 'customers' },
       { to: '/partners', key: 'partners' },

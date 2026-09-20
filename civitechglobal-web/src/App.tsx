@@ -55,6 +55,9 @@ const BlogPostPage = lazy(() => import('@/pages/public/BlogPostPage'));
 const OrganizationsPage = lazy(() => import('@/pages/public/OrganizationsPage'));
 const PortfolioPage = lazy(() => import('@/pages/public/PortfolioPage'));
 const VolunteerPage = lazy(() => import('@/pages/public/VolunteerPage'));
+const ConsultPage = lazy(() => import('@/pages/public/ConsultPage'));
+const ExpertsPage = lazy(() => import('@/pages/public/ExpertsPage'));
+const ExpertProfilePage = lazy(() => import('@/pages/public/ExpertProfilePage'));
 const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
 const BookDetailPage = lazy(() => import('@/pages/public/BookDetailPage'));
 const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
@@ -86,6 +89,8 @@ const AdminTeamPage = lazy(() => import('@/pages/admin/TeamPage'));
 const ShowcaseOrganizationsPage = lazy(() => import('@/pages/admin/ShowcaseOrganizationsPage'));
 const ShowcaseProjectsPage = lazy(() => import('@/pages/admin/ShowcaseProjectsPage'));
 const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
+const AdminExpertsPage = lazy(() => import('@/pages/admin/ExpertsPage'));
+const ConsultationQueuePage = lazy(() => import('@/pages/admin/ConsultationQueuePage'));
 const BookQueuePage = lazy(() => import('@/pages/admin/BookQueuePage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
@@ -174,6 +179,30 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <TrackRequestPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/consult"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ConsultPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/experts"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ExpertsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/experts/:slug"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ExpertProfilePage />
             </Suspense>
           }
         />
@@ -568,6 +597,26 @@ export default function App() {
             <RequirePermission permission="verification">
               <Suspense fallback={<RouteLoadingFallback />}>
                 <VerificationQueuePage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="experts"
+          element={
+            <RequirePermission permission="experts">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminExpertsPage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="consultations"
+          element={
+            <RequirePermission permission="consultations">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ConsultationQueuePage />
               </Suspense>
             </RequirePermission>
           }

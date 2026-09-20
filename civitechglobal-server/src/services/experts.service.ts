@@ -34,7 +34,9 @@ export interface ExpertInput {
 
 /** The public URL for a photo, never its storage key. See showcase.service. */
 const photoUrl = (id: string, storedName: string | null): string | null =>
-  storedName ? `/experts/${id}/photo` : null;
+  // The path the route is actually mounted at — the router lives under
+  // /consult, and a URL that only looks right answers 404.
+  storedName ? `/consult/experts/${id}/photo` : null;
 
 /**
  * A URL-safe slug from a name.

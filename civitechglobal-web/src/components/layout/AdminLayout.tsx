@@ -15,6 +15,7 @@ import {
   Inbox,
   LayoutDashboard,
   Mail,
+  MessageCircle,
   ScrollText,
   Settings,
   Shield,
@@ -22,6 +23,7 @@ import {
   Sparkles,
   Store,
   UserPlus,
+  UserRound,
   Users,
   UsersRound,
 } from 'lucide-react';
@@ -83,6 +85,12 @@ export function AdminLayout() {
     },
     bids: { to: '/admin/bids', label: t.market.queueBids, icon: <Gavel />, count: open('bids') },
     books: { to: '/admin/books', label: t.books.queueTitle, icon: <BookOpen />, count: open('books') },
+    consultations: {
+      to: '/admin/consultations',
+      label: t.consult.queueTitle,
+      icon: <MessageCircle />,
+      count: open('consultations'),
+    },
   } satisfies Partial<Record<QueueKey, NavItem>>;
 
   const when = (condition: boolean, ...items: NavItem[]) => (condition ? items : []);
@@ -116,6 +124,7 @@ export function AdminLayout() {
             ...when(can('resumes'), queue.resumes, queue.programme),
             ...when(can('insurance'), queue.insurance),
             ...when(can('messages'), queue.messages),
+            ...when(can('consultations'), queue.consultations),
           ],
         },
       ],
@@ -161,6 +170,13 @@ export function AdminLayout() {
               { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake /> },
               { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 /> }
             ),
+            // The club is editorial too, but its own permission: who we vouch
+            // for is a different decision from which logos are on the wall.
+            ...when(can('experts'), {
+              to: '/admin/experts',
+              label: t.experts.adminTitle,
+              icon: <UserRound />,
+            }),
             // Super admin only, and not a grantable permission: who represents
             // the company on its own page is not a module of work to delegate.
             ...when(isSuper, { to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound /> }),
