@@ -739,6 +739,16 @@ const fa = {
     callbackScheduled: 'زمان تماس هماهنگ‌شده',
   },
   access: {
+    searchUsers: 'جستجو در نام یا ایمیل',
+    filterRole: 'نقش',
+    filterRoleAll: 'همهٔ نقش‌ها',
+    roleUser: 'کاربر',
+    roleAdmin: 'مدیر',
+    roleSuperAdmin: 'مدیر ارشد',
+    filterStatus: 'وضعیت',
+    filterStatusAll: 'همه',
+    statusActive: 'فعال',
+    statusInactive: 'غیرفعال',
     pageSubtitle: 'حساب‌های کاربری و دسترسی هر مدیر به بخش‌های مختلف.',
     newAdmin: 'مدیر تازه',
     newAdminHint:
@@ -777,6 +787,7 @@ const fa = {
   },
 
   admin: {
+    searchRequests: 'جستجو در نام، شماره یا کد پیگیری',
     assignedTo: 'مسئول پیگیری',
     unassigned: 'واگذار نشده',
     assignUpdated: 'مسئول پیگیری تغییر کرد.',

@@ -51,7 +51,7 @@ export default function ResumeDetailPage() {
   useDocumentTitle(data?.fullName ?? t.join.adminTitle);
 
   // Staff to assign to. Deactivated accounts are filtered by the endpoint.
-  const { data: users } = useAdminUsers(1, 100);
+  const { data: users } = useAdminUsers({ page: 1, limit: 100 });
 
   const [status, setStatus] = useState<ResumeStatus>('RECEIVED');
   const [matchedRole, setMatchedRole] = useState('');

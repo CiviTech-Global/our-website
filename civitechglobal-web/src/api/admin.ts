@@ -35,13 +35,20 @@ export function useWorkload(enabled = true) {
   });
 }
 
-export function useAdminUsers(page: number, limit: number) {
+export interface AdminUserQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  role?: string;
+  /** 'active' or 'inactive'; deactivation is a soft delete on the server. */
+  status?: string;
+}
+
+export function useAdminUsers(query: AdminUserQuery) {
   return useQuery({
-    queryKey: ['admin', 'users', { page, limit }],
+    queryKey: ['admin', 'users', query],
     queryFn: async () => {
-      const res = await api.get<Paged<AdminUserListItem>>('/admin/users', {
-        params: { page, limit },
-      });
+      const res = await api.get<Paged<AdminUserListItem>>('/admin/users', { params: { ...query } });
       return res.data;
     },
     retry: false,

@@ -11,6 +11,7 @@ import {
 import { apiMessage } from '@/lib/apiMessage';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -18,9 +19,11 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Pagination } from '@/components/ui/Pagination';
+import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import type { AdminUserListItem, Permission } from '@/types/admin';
 import type { Translations } from '@/i18n/LocaleProvider';
@@ -55,13 +58,18 @@ export default function UsersPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
 
-  const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(false);
-  const { data, isLoading, isError } = useAdminUsers(page, PAGE_SIZE);
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { role: '', status: '' } });
+  const { data, isLoading, isError } = useAdminUsers({
+    page: controls.page,
+    limit: PAGE_SIZE,
+    search: controls.search || undefined,
+    role: controls.filters.role || undefined,
+    status: controls.filters.status || undefined,
+  });
   const { data: catalogue } = usePermissionCatalogue();
 
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  const total = data?.total ?? 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -89,6 +97,38 @@ export default function UsersPage() {
         />
       )}
 
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.access.searchUsers}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <>
+            <Select
+              className="w-40"
+              value={controls.filters.role}
+              aria-label={t.access.filterRole}
+              onChange={(e) => controls.setFilter('role', e.target.value)}
+            >
+              <option value="">{t.access.filterRoleAll}</option>
+              <option value="USER">{t.access.roleUser}</option>
+              <option value="ADMIN">{t.access.roleAdmin}</option>
+              <option value="SUPER_ADMIN">{t.access.roleSuperAdmin}</option>
+            </Select>
+            <Select
+              className="w-36"
+              value={controls.filters.status}
+              aria-label={t.access.filterStatus}
+              onChange={(e) => controls.setFilter('status', e.target.value)}
+            >
+              <option value="">{t.access.filterStatusAll}</option>
+              <option value="active">{t.access.statusActive}</option>
+              <option value="inactive">{t.access.statusInactive}</option>
+            </Select>
+          </>
+        }
+      />
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
@@ -113,11 +153,19 @@ export default function UsersPage() {
         ))}
       </ul>
 
-      {total > PAGE_SIZE && (
+      {!isLoading && !isError && data?.items.length === 0 && (
+        <EmptyState
+          icon={<UsersIcon className="size-8" />}
+          title={controls.activeCount > 0 ? t.list.noResults : t.list.empty}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
+
+      {(data?.totalPages ?? 1) > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data?.totalPages ?? 1}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
     </div>

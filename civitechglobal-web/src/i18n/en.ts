@@ -739,6 +739,16 @@ const en: typeof fa = {
     callbackScheduled: 'Call scheduled for',
   },
   access: {
+    searchUsers: 'Search name or email',
+    filterRole: 'Role',
+    filterRoleAll: 'All roles',
+    roleUser: 'User',
+    roleAdmin: 'Admin',
+    roleSuperAdmin: 'Super admin',
+    filterStatus: 'Status',
+    filterStatusAll: 'All',
+    statusActive: 'Active',
+    statusInactive: 'Inactive',
     pageSubtitle: 'Accounts, and which parts of the admin each one can reach.',
     newAdmin: 'New admin',
     newAdminHint:
@@ -778,6 +788,7 @@ const en: typeof fa = {
   },
 
   admin: {
+    searchRequests: 'Search name, phone or tracking code',
     assignedTo: 'Assigned to',
     unassigned: 'Unassigned',
     assignUpdated: 'Assignee updated.',

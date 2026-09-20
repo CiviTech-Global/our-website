@@ -32,7 +32,7 @@ export default function RequestDetailPage() {
   const updateStatus = useUpdateRequestStatus(id ?? '');
   const assign = useAssignRequest(id ?? '');
   const scheduleCallback = useScheduleCallback(id ?? '');
-  const { data: users } = useAdminUsers(1, 100);
+  const { data: users } = useAdminUsers({ page: 1, limit: 100 });
   const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
 
   if (isLoading) {

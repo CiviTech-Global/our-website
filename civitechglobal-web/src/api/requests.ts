@@ -25,11 +25,12 @@ export interface UseRequestsParams {
   status?: LeadStatus | 'ALL';
   source?: RequestSource | 'ALL';
   productSlug?: string;
+  search?: string;
 }
 
-export function useRequests({ page, limit, status, source, productSlug }: UseRequestsParams) {
+export function useRequests({ page, limit, status, source, productSlug, search }: UseRequestsParams) {
   return useQuery({
-    queryKey: ['requests', { page, limit, status, source, productSlug }],
+    queryKey: ['requests', { page, limit, status, source, productSlug, search }],
     queryFn: async () => {
       const res = await api.get<Paged<InsuranceRequest>>('/requests', {
         params: {
@@ -38,6 +39,7 @@ export function useRequests({ page, limit, status, source, productSlug }: UseReq
           status: status && status !== 'ALL' ? status : undefined,
           source: source && source !== 'ALL' ? source : undefined,
           productSlug: productSlug || undefined,
+          search: search || undefined,
         },
       });
       return res.data;
