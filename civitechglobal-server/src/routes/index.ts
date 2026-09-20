@@ -14,6 +14,7 @@ import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
+import sitemapRoutes from './sitemap.routes.js';
 
 const router = Router();
 
@@ -48,6 +49,10 @@ router.use('/i18n', i18nRoutes);
 router.use('/resumes', resumeRoutes);
 // One box for any tracking code, whichever intake issued it.
 router.use('/track', trackRoutes);
+
+// The dynamic half of the sitemap: catalog products and open marketplace
+// listings. Served by nginx at /sitemap-extras.xml.
+router.use('/sitemap', sitemapRoutes);
 
 // The job and freelance boards, their verification gate, and their queues.
 router.use('/market', marketplaceRoutes);

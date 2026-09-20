@@ -99,6 +99,9 @@ export default function InsuranceProductPage() {
 
   useDocumentTitle(productTitle ?? t.nav.insurance, {
     description: productDescription ?? t.seo.insurance,
+    // A branded card exists for every catalog product; unknown slugs fall
+    // back to the site-wide default automatically.
+    image: product ? `/og/insurance/${product.slug}.png` : undefined,
     jsonLd: product
       ? insuranceProductSchema({
           name: productTitle ?? t.nav.insurance,
