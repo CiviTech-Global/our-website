@@ -282,12 +282,23 @@ export async function listPublicProjects(filter: 'current' | 'completed' | 'all'
       client: {
         select: { id: true, name: true, website: true, published: true, logoStoredName: true },
       },
+      screenshots: {
+        orderBy: { displayOrder: 'asc' },
+        select: { id: true, caption: true },
+      },
     },
   });
 
-  return rows.map(({ coverStoredName, client, ...row }) => ({
+  return rows.map(({ coverStoredName, client, screenshots, ...row }) => ({
     ...row,
     coverUrl: imageUrl('cover', row.id, coverStoredName),
+    // The id is the URL: the storage key never becomes part of the public
+    // contract, as with every other image here.
+    screenshots: screenshots.map((shot) => ({
+      id: shot.id,
+      caption: shot.caption,
+      url: `/showcase/shot/${shot.id}`,
+    })),
     client:
       client?.published
         ? {
@@ -413,4 +424,108 @@ export async function getCover(id: string, { includeUnpublished = false } = {}) 
     throw new AppError('تصویری پیدا نشد.', 404);
   }
   return { storedName: row.coverStoredName, mimeType: row.coverMimeType, originalName: row.coverOriginalName ?? 'cover' };
+}
+
+// ---------------------------------------------------------------------------
+// Project screenshots
+// ---------------------------------------------------------------------------
+
+/**
+ * The gallery on a project.
+ *
+ * Separate from the cover because they do different jobs: the cover
+ * identifies the project in a grid, these show what it actually looks like,
+ * and there is no useful limit of one.
+ */
+const MAX_SHOTS = 12;
+
+export async function addScreenshots(
+  projectId: string,
+  files: IncomingFile[],
+  captions: Array<string | null> = []
+) {
+  const project = await prisma.showcaseProject.findUnique({
+    where: { id: projectId },
+    select: { id: true, _count: { select: { screenshots: true } } },
+  });
+  if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
+
+  if (project._count.screenshots + files.length > MAX_SHOTS) {
+    throw new AppError(`حداکثر ${MAX_SHOTS} تصویر برای هر پروژه می‌توانید اضافه کنید.`, 400);
+  }
+
+  const stored = await storeFiles(files, IMAGE_EXTENSIONS);
+  const last = await prisma.showcaseProjectShot.findFirst({
+    where: { projectId },
+    orderBy: { displayOrder: 'desc' },
+    select: { displayOrder: true },
+  });
+
+  try {
+    await prisma.showcaseProjectShot.createMany({
+      data: stored.map((file, index) => ({
+        projectId,
+        storedName: file.storedName,
+        originalName: file.originalName,
+        mimeType: file.mimeType,
+        caption: captions[index]?.trim() || null,
+        displayOrder: (last?.displayOrder ?? 0) + index + 1,
+      })),
+    });
+  } catch (error) {
+    // Nothing references the files yet; an orphan in storage is invisible.
+    for (const file of stored) await removeFile(file.storedName);
+    throw error;
+  }
+
+  return { added: stored.length };
+}
+
+export async function removeScreenshot(id: string) {
+  const shot = await prisma.showcaseProjectShot.findUnique({
+    where: { id },
+    select: { storedName: true },
+  });
+  if (!shot) throw new AppError('این تصویر پیدا نشد.', 404);
+
+  await prisma.showcaseProjectShot.delete({ where: { id } });
+  await removeFile(shot.storedName);
+  return { ok: true };
+}
+
+export async function reorderScreenshots(projectId: string, ids: string[]) {
+  const found = await prisma.showcaseProjectShot.count({ where: { id: { in: ids }, projectId } });
+  if (found !== ids.length || new Set(ids).size !== ids.length) {
+    throw new AppError('فهرست ارسالی با موارد موجود هم‌خوانی ندارد.', 400);
+  }
+
+  await prisma.$transaction(
+    ids.map((id, index) =>
+      prisma.showcaseProjectShot.update({ where: { id }, data: { displayOrder: index + 1 } })
+    )
+  );
+  return { ok: true };
+}
+
+/**
+ * The bytes of one screenshot.
+ *
+ * An unpublished project's gallery is as private as the rest of its row;
+ * includeUnpublished is for the staff route, where the pictures have to be
+ * checked before anybody agrees to publish them.
+ */
+export async function getScreenshot(id: string, { includeUnpublished = false } = {}) {
+  const row = await prisma.showcaseProjectShot.findUnique({
+    where: { id },
+    select: {
+      storedName: true,
+      mimeType: true,
+      originalName: true,
+      project: { select: { published: true } },
+    },
+  });
+  if (!row || (!row.project.published && !includeUnpublished)) {
+    throw new AppError('این تصویر پیدا نشد.', 404);
+  }
+  return { storedName: row.storedName, mimeType: row.mimeType, originalName: row.originalName ?? 'shot' };
 }

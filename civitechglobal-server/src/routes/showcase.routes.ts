@@ -153,6 +153,15 @@ router.get('/logo/:id', cached, async (req, res, next) => {
   }
 });
 
+router.get('/shot/:id', cached, async (req, res, next) => {
+  try {
+    const image = await showcase.getScreenshot(param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/cover/:id', cached, async (req, res, next) => {
   try {
     const image = await showcase.getCover(param(req, 'id'));
@@ -267,6 +276,68 @@ router.delete('/admin/projects/:id', async (req, res, next) => {
 router.get('/admin/cover/:id', async (req, res, next) => {
   try {
     const image = await showcase.getCover(param(req, 'id'), { includeUnpublished: true });
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- Project screenshots ---------------------------------------------------
+
+/** Several at once: a gallery is usually chosen in one go. */
+const shots = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_BYTES, files: 12, fields: 4, fieldSize: 64 * 1024 },
+});
+
+router.post('/admin/projects/:id/shots', shots.array('shots', 12), async (req, res, next) => {
+  try {
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+    if (files.length === 0) throw new AppError('تصویری انتخاب نشده است.', 400);
+
+    // Captions ride alongside as one JSON array, paired by position — the
+    // same reason verification sends its document kinds that way.
+    const raw = typeof req.body?.captions === 'string' ? req.body.captions : '[]';
+    let captions: Array<string | null> = [];
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) captions = parsed.map((c) => (typeof c === 'string' ? c : null));
+    } catch {
+      throw new AppError('قالب اطلاعات فرم نامعتبر است.', 400);
+    }
+
+    const result = await showcase.addScreenshots(
+      param(req, 'id'),
+      files.map((file) => ({ originalName: file.originalname, buffer: file.buffer })),
+      captions,
+    );
+    successResponse(res, result, 'تصاویر افزوده شد.', 201);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/admin/projects/:id/shots/reorder', validate(reorderSchema), async (req, res, next) => {
+  try {
+    await showcase.reorderScreenshots(param(req, 'id'), req.body.ids as string[]);
+    successResponse(res, { ok: true }, 'ترتیب ذخیره شد.');
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/admin/shots/:id', async (req, res, next) => {
+  try {
+    successResponse(res, await showcase.removeScreenshot(param(req, 'id')), 'حذف شد.');
+  } catch (error) {
+    next(error);
+  }
+});
+
+/** An unpublished project's screenshot, which the public route will not serve. */
+router.get('/admin/shot/:id', async (req, res, next) => {
+  try {
+    const image = await showcase.getScreenshot(param(req, 'id'), { includeUnpublished: true });
     serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
   } catch (error) {
     next(error);
