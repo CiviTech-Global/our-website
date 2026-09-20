@@ -1,18 +1,19 @@
 import { StaffImage } from '@/components/ui/StaffImage';
-import { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { useBookQueue, useReviewBook } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant } from '@/lib/marketplace';
 import { PageHeader } from '@/components/app/PageHeader';
-import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
+import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { CompanyBadge } from '@/components/marketplace/CompanyBadge';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Spinner } from '@/components/ui/Spinner';
 import type { BookQueueRow, ModerationStatus } from '@/types/marketplace';
@@ -32,25 +33,35 @@ export default function BookQueuePage() {
   const { t } = useLocale();
   useDocumentTitle(t.books.queueTitle);
 
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<ModerationStatus>('PENDING_REVIEW');
+  const controls = useListControls({
+    pageSize: PAGE_SIZE,
+    filters: { status: 'PENDING_REVIEW' },
+  });
 
-  const { data, isLoading } = useBookQueue({ page, pageSize: PAGE_SIZE, status });
+  const { data, isLoading } = useBookQueue({
+    page: controls.page,
+    pageSize: PAGE_SIZE,
+    status: controls.filters.status,
+    search: controls.search || undefined,
+  });
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.books.queueTitle} description={t.books.queueDescription} className="mb-2" />
-      <Toolbar>
-        <SegmentedControl<ModerationStatus>
-          label={t.app.filterByStatus}
-          value={status}
-          segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
-        />
-      </Toolbar>
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.books.searchQueue}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <SegmentedControl<ModerationStatus>
+            label={t.app.filterByStatus}
+            value={controls.filters.status as ModerationStatus}
+            segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
+            onChange={(value) => controls.setFilter('status', value)}
+          />
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -59,7 +70,11 @@ export default function BookQueuePage() {
       )}
 
       {!isLoading && data?.items.length === 0 && (
-        <EmptyState title={t.books.queueEmpty} icon={<BookOpen aria-hidden="true" />} />
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.books.queueEmpty}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+          icon={<BookOpen aria-hidden="true" />}
+        />
       )}
 
       <ul className="flex flex-col gap-3">
@@ -70,8 +85,8 @@ export default function BookQueuePage() {
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
-        <Pagination page={page} totalPages={data.totalPages} onPageChange={setPage} />
+      {data && data.totalPages > 1 && (
+        <Pagination page={controls.page} totalPages={data.totalPages} onPageChange={controls.setPage} />
       )}
     </div>
   );

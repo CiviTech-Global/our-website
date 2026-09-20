@@ -844,6 +844,10 @@ const fa = {
     createdOn: 'تاریخ ایجاد',
   },
   market: {
+    searchQueueJobs: 'جستجو در عنوان، شرکت، کد یا ایمیل',
+    searchQueueProjects: 'جستجو در عنوان، شرکت، کد یا ایمیل',
+    searchQueueApplications: 'جستجو در نام متقاضی یا عنوان آگهی',
+    searchQueueBids: 'جستجو در نام پیشنهاددهنده یا عنوان پروژه',
     // Boards
     jobsTitle: 'فرصت‌های شغلی',
     jobsSubtitle: 'آگهی‌های تأییدشدهٔ کارفرمایان احرازهویت‌شده.',
@@ -1506,6 +1510,7 @@ const fa = {
     deleted: 'حذف شد.',
   },
   books: {
+    searchQueue: 'جستجو در عنوان، نویسنده، کد یا ایمیل فروشنده',
     title: 'بازار کتاب',
     subtitle: 'کتاب‌های نو و دست‌دوم، از اعضای ما و از خود ما.',
     metaDescription:

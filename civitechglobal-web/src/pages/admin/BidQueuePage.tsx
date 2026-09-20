@@ -4,12 +4,14 @@ import { Building2 } from 'lucide-react';
 import { useBidQueue, useReviewBid } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, formatRange } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Pagination } from '@/components/ui/Pagination';
@@ -31,10 +33,10 @@ export default function BidQueuePage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.market.queueBids);
 
-  const [page, setPage] = useState(1);
+  const controls = useListControls({ pageSize: PAGE_SIZE });
   const [suggestions, setSuggestions] = useState<Record<string, string>>({});
 
-  const { data, isLoading } = useBidQueue({ page, pageSize: PAGE_SIZE });
+  const { data, isLoading } = useBidQueue({ page: controls.page, pageSize: PAGE_SIZE, search: controls.search || undefined });
   const review = useReviewBid();
 
   const days = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
@@ -43,13 +45,25 @@ export default function BidQueuePage() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.queueBids} description={t.market.fairnessHint} className="mb-2" />
 
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.market.searchQueueBids}
+        total={data?.total}
+        isLoading={isLoading}
+      />
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && <EmptyState title={t.market.emptyQueue} />}
+      {!isLoading && data?.items.length === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.market.emptyQueue}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((row) => {
@@ -145,11 +159,11 @@ export default function BidQueuePage() {
         })}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
     </div>

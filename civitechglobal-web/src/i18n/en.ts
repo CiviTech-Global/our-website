@@ -845,6 +845,10 @@ const en: typeof fa = {
     createdOn: 'Created on',
   },
   market: {
+    searchQueueJobs: 'Search title, company, code or email',
+    searchQueueProjects: 'Search title, company, code or email',
+    searchQueueApplications: 'Search applicant or job title',
+    searchQueueBids: 'Search bidder or project title',
     // Boards
     jobsTitle: 'Jobs',
     jobsSubtitle: 'Approved postings from verified employers.',
@@ -1514,6 +1518,7 @@ const en: typeof fa = {
     deleted: 'Removed.',
   },
   books: {
+    searchQueue: 'Search title, author, code or seller email',
     // Public market
     title: 'Book market',
     subtitle: 'New and second-hand books, offered by our members and by us.',

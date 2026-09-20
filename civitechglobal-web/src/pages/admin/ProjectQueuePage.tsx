@@ -1,11 +1,12 @@
 import { PageHeader } from '@/components/app/PageHeader';
-import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
+import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { useState, type FormEvent } from 'react';
 import { Building2 } from 'lucide-react';
 import { usePlaceCompanyOffer, useProjectQueue, useReviewProject } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { moderationVariant } from '@/lib/marketplace';
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -42,27 +44,37 @@ export default function ProjectQueuePage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.market.queueProjects);
 
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<ModerationStatus>('PENDING_REVIEW');
+  const controls = useListControls({
+    pageSize: PAGE_SIZE,
+    filters: { status: 'PENDING_REVIEW' },
+  });
   const [offerFor, setOfferFor] = useState<string | null>(null);
 
-  const { data, isLoading } = useProjectQueue({ page, pageSize: PAGE_SIZE, status });
+  const { data, isLoading } = useProjectQueue({
+    page: controls.page,
+    pageSize: PAGE_SIZE,
+    status: controls.filters.status,
+    search: controls.search || undefined,
+  });
   const review = useReviewProject();
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.queueProjects} description={t.app.queueDescriptions.freelanceProjects} className="mb-2" />
-      <Toolbar>
-        <SegmentedControl<ModerationStatus>
-          label={t.app.filterByStatus}
-          value={status}
-          segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
-        />
-      </Toolbar>
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.market.searchQueueProjects}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <SegmentedControl<ModerationStatus>
+            label={t.app.filterByStatus}
+            value={controls.filters.status as ModerationStatus}
+            segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
+            onChange={(value) => controls.setFilter('status', value)}
+          />
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -70,7 +82,12 @@ export default function ProjectQueuePage() {
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && <EmptyState title={t.market.emptyQueue} />}
+      {!isLoading && data?.items.length === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.market.emptyQueue}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((row) => (
@@ -116,11 +133,11 @@ export default function ProjectQueuePage() {
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
 

@@ -810,6 +810,7 @@ export interface QueueQuery {
   page: number;
   pageSize: number;
   status?: string;
+  search?: string;
 }
 
 export function useVerificationQueue(query: QueueQuery) {
@@ -930,7 +931,7 @@ export function useReviewProject() {
   });
 }
 
-export function useBidQueue(query: { page: number; pageSize: number }) {
+export function useBidQueue(query: { page: number; pageSize: number; search?: string }) {
   return useQuery({
     queryKey: [...keys.queue, 'bids', query],
     queryFn: async () => {
@@ -1092,7 +1093,10 @@ export function useCloseBook() {
   });
 }
 
-export function useBookQueue(query: { status?: string; page: number; pageSize: number }, enabled = true) {
+export function useBookQueue(
+  query: { status?: string; search?: string; page: number; pageSize: number },
+  enabled = true,
+) {
   return useQuery({
     queryKey: [...keys.queue, 'books', query],
     queryFn: async () => {
