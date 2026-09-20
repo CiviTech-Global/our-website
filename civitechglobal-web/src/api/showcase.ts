@@ -81,6 +81,19 @@ export interface OrganizationPayload {
   published?: boolean;
 }
 
+/**
+ * One picture from a project's gallery.
+ *
+ * `url` is the API path the server chose — the public route for a published
+ * project, the staff one in the admin listing — so the caller never has to
+ * know which, and the storage key never leaves the server.
+ */
+export interface ProjectShot {
+  id: string;
+  caption: string | null;
+  url: string;
+}
+
 export interface ShowcaseProject {
   id: string;
   title: string;
@@ -95,6 +108,7 @@ export interface ShowcaseProject {
   completedAt: string | null;
   featured: boolean;
   coverUrl: string | null;
+  screenshots: ProjectShot[];
   client: { id: string; name: string; website: string | null; logoUrl: string | null } | null;
 }
 
@@ -271,5 +285,60 @@ export function useDeleteProject() {
 export function useReorderProjects() {
   return useShowcaseMutation(async (ids: string[]) => {
     await api.post('/showcase/admin/projects/reorder', { ids });
+  });
+}
+
+// --- Project screenshots ----------------------------------------------------
+
+/**
+ * Several pictures in one request, with their captions paired by position.
+ *
+ * Through api.upload rather than api.post: a gallery is the largest thing
+ * anybody sends from the admin, and it is worth a bar.
+ */
+export function useAddScreenshots() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      projectId: string;
+      files: File[];
+      captions?: Array<string | null>;
+      onProgress?: (percent: number) => void;
+    }) => {
+      const form = new FormData();
+      for (const file of input.files) form.append('shots', file);
+      form.append('captions', JSON.stringify(input.captions ?? []));
+
+      await api.upload('POST', `/showcase/admin/projects/${input.projectId}/shots`, form, {
+        onProgress: input.onProgress,
+      });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['showcase'] });
+    },
+  });
+}
+
+export function useRemoveScreenshot() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/showcase/admin/shots/${id}`);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['showcase'] });
+    },
+  });
+}
+
+export function useReorderScreenshots() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { projectId: string; ids: string[] }) => {
+      await api.post(`/showcase/admin/projects/${input.projectId}/shots/reorder`, { ids: input.ids });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['showcase'] });
+    },
   });
 }

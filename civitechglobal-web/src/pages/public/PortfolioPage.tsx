@@ -1,3 +1,4 @@
+import { ProjectGallery } from '@/components/showcase/ProjectGallery';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Code2, ExternalLink, FolderKanban, Github, Star } from 'lucide-react';
@@ -182,6 +183,10 @@ function ProjectCard({ project }: { project: ShowcaseProject }) {
               {expanded ? t.showcase.readLess : t.showcase.readMore}
             </button>
           </>
+        )}
+
+        {project.screenshots.length > 0 && (
+          <ProjectGallery shots={project.screenshots} title={project.title} />
         )}
 
         {project.technologies.length > 0 && (

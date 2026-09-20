@@ -314,11 +314,20 @@ export async function listPublicProjects(filter: 'current' | 'completed' | 'all'
 export async function listAllProjects() {
   const rows = await prisma.showcaseProject.findMany({
     orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
-    include: { client: { select: { id: true, name: true, kind: true } } },
+    include: {
+      client: { select: { id: true, name: true, kind: true } },
+      screenshots: { orderBy: { displayOrder: 'asc' }, select: { id: true, caption: true } },
+    },
   });
-  return rows.map(({ coverStoredName, coverMimeType: _m, coverOriginalName: _o, ...row }) => ({
+  return rows.map(({ coverStoredName, coverMimeType: _m, coverOriginalName: _o, screenshots, ...row }) => ({
     ...row,
     coverUrl: imageUrl('cover', row.id, coverStoredName),
+    // The staff route, which also serves an unpublished project's gallery.
+    screenshots: screenshots.map((shot) => ({
+      id: shot.id,
+      caption: shot.caption,
+      url: `/showcase/admin/shot/${shot.id}`,
+    })),
   }));
 }
 

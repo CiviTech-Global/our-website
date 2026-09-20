@@ -1,8 +1,18 @@
+import { ProjectGalleryEditor } from '@/components/admin/ProjectGalleryEditor';
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
-import { Code2, Eye, EyeOff, Pencil, Plus, Star, Trash2 } from 'lucide-react';
+import {
+  Code2,
+  Eye,
+  EyeOff,
+  Images,
+  Pencil,
+  Plus,
+  Star,
+  Trash2,
+} from 'lucide-react';
 import {
   PROJECT_STATUSES,
   adminImagePath,
@@ -59,6 +69,9 @@ export default function ShowcaseProjectsPage() {
 
   const [editing, setEditing] = useState<AdminShowcaseProject | 'new' | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
+  // Opened per project rather than inside the edit modal: a gallery is worked
+  // on while looking at the card it belongs to.
+  const [galleryFor, setGalleryFor] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -161,6 +174,14 @@ export default function ShowcaseProjectsPage() {
                   </Button>
                   <Button
                     size="sm"
+                    variant="outline"
+                    onClick={() => setGalleryFor((current) => (current === project.id ? null : project.id))}
+                  >
+                    <Images className="size-4" aria-hidden="true" />
+                    {t.showcase.gallery}
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="ghost"
                     aria-label={t.common.delete}
                     onClick={() => setConfirming(project.id)}
@@ -169,6 +190,12 @@ export default function ShowcaseProjectsPage() {
                   </Button>
                 </div>
               </div>
+
+              {galleryFor === project.id && (
+                <div className="mt-3">
+                  <ProjectGalleryEditor projectId={project.id} shots={project.screenshots} />
+                </div>
+              )}
 
               {confirming === project.id && (
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-app-border-light pt-3">
