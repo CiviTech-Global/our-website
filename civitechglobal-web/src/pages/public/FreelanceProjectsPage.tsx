@@ -1,14 +1,15 @@
-import { useState } from 'react';
 import { Link } from 'react-router';
-import { Search, Star, Users } from 'lucide-react';
+import { Star, Users } from 'lucide-react';
 import { usePublicProjects, type ProjectBoardSort } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatRange } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Input } from '@/components/ui/Input';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
@@ -29,37 +30,35 @@ export default function FreelanceProjectsPage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.market.projectsTitle, { description: t.seo.freelance });
 
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [skills, setSkills] = useState('');
-  const [budgetMin, setBudgetMin] = useState('');
-  const [budgetMax, setBudgetMax] = useState('');
-  const [sort, setSort] = useState<ProjectBoardSort>('newest');
+  // Rows by default, like the job board: a brief has no picture, and the row
+  // shows the budget and the bid count together — which is what somebody
+  // deciding whether to bid is weighing.
+  const controls = useListControls({
+    defaultView: 'table',
+    defaultSort: 'newest',
+    pageSize: PAGE_SIZE,
+    filters: { category: '', skills: '', budgetMin: '', budgetMax: '' },
+    typedFilters: ['category', 'skills', 'budgetMin', 'budgetMax'],
+  });
 
   const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '');
-  const skillsList = skills
+  const skillsList = controls.filters.skills
     .split(',')
     .map((skill) => skill.trim())
     .filter(Boolean);
 
   const { data, isLoading } = usePublicProjects({
-    page,
+    page: controls.page,
     pageSize: PAGE_SIZE,
-    search: search.trim() || undefined,
-    category: category.trim() || undefined,
+    search: controls.search || undefined,
+    category: controls.filters.category.trim() || undefined,
     skills: skillsList.length > 0 ? skillsList : undefined,
-    budgetMin: digitsOnly(budgetMin) || undefined,
-    budgetMax: digitsOnly(budgetMax) || undefined,
-    sort,
+    budgetMin: digitsOnly(controls.filters.budgetMin) || undefined,
+    budgetMax: digitsOnly(controls.filters.budgetMax) || undefined,
+    sort: controls.sort as ProjectBoardSort,
   });
 
   const count = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
-
-  const reset = <T,>(setter: (value: T) => void) => (value: T) => {
-    setter(value);
-    setPage(1);
-  };
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -68,64 +67,61 @@ export default function FreelanceProjectsPage() {
         <p className="mt-2 text-text-secondary">{t.market.projectsSubtitle}</p>
       </header>
 
-      <div className="relative mb-3">
-        <Search
-          className="pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-text-muted start-3"
-          aria-hidden="true"
-        />
-        <Input
-          className="ps-9"
-          value={search}
-          placeholder={t.market.searchProjects}
-          aria-label={t.market.searchProjects}
-          onChange={(e) => reset(setSearch)(e.target.value)}
-        />
-      </div>
+      <ListToolbar
+        className="mb-3"
+        controls={controls}
+        searchPlaceholder={t.market.searchProjects}
+        total={data?.total}
+        isLoading={isLoading}
+        views={['cards', 'table']}
+        filters={
+          <Select
+            className="w-48"
+            value={controls.sort}
+            aria-label={t.market.sortLabel}
+            onChange={(e) => controls.setSort(e.target.value)}
+          >
+            <option value="newest">{t.market.sortNewest}</option>
+            <option value="budgetAsc">{t.market.sortBudgetAsc}</option>
+            <option value="budgetDesc">{t.market.sortBudgetDesc}</option>
+          </Select>
+        }
+      />
 
       <div className="mb-6 flex flex-col gap-3 rounded-xl border border-surface-200 p-3 sm:flex-row sm:flex-wrap sm:items-center dark:border-surface-300">
         <Input
           className="sm:w-44"
-          value={category}
+          value={controls.filterInput('category')}
           placeholder={t.market.category}
           aria-label={t.market.category}
-          onChange={(e) => reset(setCategory)(e.target.value)}
+          onChange={(e) => controls.setFilter('category', e.target.value)}
         />
         <Input
           className="sm:w-52"
-          value={skills}
+          value={controls.filterInput('skills')}
           placeholder={t.market.skillsFilterPlaceholder}
           aria-label={t.market.skillsFilter}
-          onChange={(e) => reset(setSkills)(e.target.value)}
+          onChange={(e) => controls.setFilter('skills', e.target.value)}
         />
         <div className="flex items-center gap-2">
           <Input
             className="w-28"
-            value={budgetMin}
+            value={controls.filterInput('budgetMin')}
             inputMode="numeric"
             placeholder={t.market.minLabel}
             aria-label={`${t.market.budgetRange} — ${t.market.minLabel}`}
-            onChange={(e) => reset(setBudgetMin)(e.target.value)}
+            onChange={(e) => controls.setFilter('budgetMin', e.target.value)}
           />
           <span className="text-sm text-text-muted">{t.market.to}</span>
           <Input
             className="w-28"
-            value={budgetMax}
+            value={controls.filterInput('budgetMax')}
             inputMode="numeric"
             placeholder={t.market.maxLabel}
             aria-label={`${t.market.budgetRange} — ${t.market.maxLabel}`}
-            onChange={(e) => reset(setBudgetMax)(e.target.value)}
+            onChange={(e) => controls.setFilter('budgetMax', e.target.value)}
           />
         </div>
-        <Select
-          className="sm:w-48"
-          value={sort}
-          aria-label={t.market.sortLabel}
-          onChange={(e) => reset(setSort)(e.target.value as ProjectBoardSort)}
-        >
-          <option value="newest">{t.market.sortNewest}</option>
-          <option value="budgetAsc">{t.market.sortBudgetAsc}</option>
-          <option value="budgetDesc">{t.market.sortBudgetDesc}</option>
-        </Select>
       </div>
 
       {isLoading && (
@@ -134,9 +130,20 @@ export default function FreelanceProjectsPage() {
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && <EmptyState title={t.market.noProjects} />}
+      {!isLoading && data?.items.length === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.market.noProjects}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
-      <ul className="flex flex-col gap-3">
+      <ul
+        className={
+          controls.view === 'cards'
+            ? 'grid grid-cols-1 gap-3 md:grid-cols-2'
+            : 'flex flex-col gap-3'
+        }
+      >
         {data?.items.map((project) => {
           const budget = project.budgetUnknown
             ? t.market.budgetUnknown
@@ -200,12 +207,12 @@ export default function FreelanceProjectsPage() {
         })}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <div className="mt-6">
           <Pagination
-            page={page}
+            page={controls.page}
             totalPages={data.totalPages}
-            onPageChange={setPage}
+            onPageChange={controls.setPage}
           />
         </div>
       )}

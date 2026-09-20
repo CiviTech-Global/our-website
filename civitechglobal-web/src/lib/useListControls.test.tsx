@@ -144,6 +144,48 @@ describe('useListControls', () => {
     expect(result.current.controls.searchInput).toBe('');
   });
 
+  // A dropdown changes once per decision; a text box changes once per letter.
+  it('debounces a typed filter but shows it immediately', () => {
+    const { result } = setup('/jobs', {
+      filters: { skills: '' },
+      typedFilters: ['skills'],
+    });
+
+    act(() => result.current.controls.setFilter('skills', 'rea'));
+    expect(result.current.controls.filterInput('skills')).toBe('rea');
+    expect(result.current.controls.filters.skills).toBe('');
+    expect(result.current.location.search).toBe('');
+
+    act(() => result.current.controls.setFilter('skills', 'react'));
+    act(() => vi.advanceTimersByTime(300));
+
+    expect(result.current.controls.filters.skills).toBe('react');
+    expect(result.current.location.search).toBe('?skills=react');
+  });
+
+  it('writes a picked filter straight through', () => {
+    const { result } = setup('/jobs', { filters: { skills: '', kind: '' }, typedFilters: ['skills'] });
+
+    act(() => result.current.controls.setFilter('kind', 'REMOTE'));
+    expect(result.current.controls.filters.kind).toBe('REMOTE');
+    expect(result.current.location.search).toBe('?kind=REMOTE');
+  });
+
+  it('fills a typed filter box from the URL it was opened with', () => {
+    const { result } = setup('/jobs?skills=go', { filters: { skills: '' }, typedFilters: ['skills'] });
+    expect(result.current.controls.filterInput('skills')).toBe('go');
+  });
+
+  it('empties a typed filter box when the filters are cleared', () => {
+    const { result } = setup('/jobs?skills=go', { filters: { skills: '' }, typedFilters: ['skills'] });
+
+    act(() => result.current.controls.setFilter('skills', 'golang'));
+    act(() => result.current.controls.clear());
+
+    expect(result.current.controls.filterInput('skills')).toBe('');
+    expect(result.current.location.search).toBe('');
+  });
+
   it('ignores a view the app does not have', () => {
     const { result } = setup('/books?view=carousel', { defaultView: 'table' });
     expect(result.current.controls.view).toBe('table');

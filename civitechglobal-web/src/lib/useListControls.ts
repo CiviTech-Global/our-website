@@ -8,6 +8,15 @@ export interface ListControlsOptions {
   defaultView?: ListView;
   /** Named filters this list understands, with the value that means "all". */
   filters?: Record<string, string>;
+  /**
+   * Which of those filters are typed rather than picked.
+   *
+   * A dropdown changes once per decision, so it can go straight into the URL.
+   * A text box changes once per character, and writing each one out would mean
+   * a request and a history entry per keystroke — the thing the search box's
+   * debounce exists to prevent. These get the same treatment.
+   */
+  typedFilters?: string[];
   /** The sort chosen when the URL says nothing. */
   defaultSort?: string;
   /** Rows per page. Sent to the server, so it belongs with the rest. */
@@ -26,7 +35,10 @@ export interface ListControls {
   /** Immediate — what the text box should show. */
   searchInput: string;
   setSearch: (value: string) => void;
+  /** Debounced — what the query should ask the server for. */
   filters: Record<string, string>;
+  /** Immediate — what a typed filter's box should show. */
+  filterInput: (name: string) => string;
   setFilter: (name: string, value: string) => void;
   sort: string;
   setSort: (value: string) => void;
@@ -60,6 +72,7 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
   const {
     defaultView = 'cards',
     filters: filterDefaults = {},
+    typedFilters = [],
     defaultSort = '',
     pageSize = 20,
     debounceMs = 300,
@@ -130,13 +143,43 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, JSON.stringify(filterDefaults)]);
 
-  const setFilter = useCallback(
-    (name: string, value: string) => {
-      write({ [name]: value === (filterDefaults[name] ?? '') ? null : value, page: null });
+  // Drafts for the typed filters, holding what the box shows until it settles.
+  // A name only appears here once somebody has typed in it; until then the URL
+  // answers for it, which is what makes a shared link fill the boxes in.
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const typed = useMemo(() => new Set(typedFilters), [typedFilters.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const writeFilter = useCallback(
+    (name: string, value: string, replace = false) => {
+      write({ [name]: value === (filterDefaults[name] ?? '') ? null : value, page: null }, replace);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [write, JSON.stringify(filterDefaults)]
   );
+
+  const setFilter = useCallback(
+    (name: string, value: string) => {
+      if (typed.has(name)) setDrafts((prev) => ({ ...prev, [name]: value }));
+      else writeFilter(name, value);
+    },
+    [typed, writeFilter]
+  );
+
+  const filterInput = useCallback(
+    (name: string) => drafts[name] ?? filters[name] ?? '',
+    [drafts, filters]
+  );
+
+  // One timer for the typed filters, on the same rhythm as the search box.
+  useEffect(() => {
+    const pending = Object.entries(drafts).filter(([name, value]) => value !== (filters[name] ?? ''));
+    if (pending.length === 0) return;
+
+    const timer = window.setTimeout(() => {
+      for (const [name, value] of pending) writeFilter(name, value, true);
+    }, debounceMs);
+    return () => window.clearTimeout(timer);
+  }, [drafts, filters, writeFilter, debounceMs]);
 
   const sort = params.get('sort') ?? defaultSort;
   const setSort = useCallback(
@@ -163,6 +206,7 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
   const clear = useCallback(() => {
     lastPushed.current = '';
     setSearchInput('');
+    setDrafts({});
     write({
       q: null,
       page: null,
@@ -177,6 +221,7 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
     searchInput,
     setSearch,
     filters,
+    filterInput,
     setFilter,
     sort,
     setSort,

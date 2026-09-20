@@ -1513,6 +1513,7 @@ const fa = {
     searchPlaceholder: 'جست‌وجوی نام کتاب یا نویسنده',
     searchLabel: 'جست‌وجو در بازار کتاب',
     empty: 'کتابی با این مشخصات پیدا نشد.',
+    noCover: 'بدون تصویر جلد',
     emptyAll: 'هنوز کتابی ثبت نشده است.',
     resultCount: '{count} کتاب',
     resultCountOne: '۱ کتاب',

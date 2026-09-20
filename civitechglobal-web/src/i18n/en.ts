@@ -1522,6 +1522,7 @@ const en: typeof fa = {
     searchPlaceholder: 'Search by title or author',
     searchLabel: 'Search the book market',
     empty: 'No books match what you are looking for.',
+    noCover: 'No cover image',
     emptyAll: 'No books have been listed yet.',
     resultCount: '{count} books',
     resultCountOne: '1 book',
