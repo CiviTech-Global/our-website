@@ -44,8 +44,15 @@ interface Frontmatter {
   faqHeading: string;
 }
 
-function parseFrontmatter(raw: string): { frontmatter: Frontmatter; body: string } {
-  const match = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(raw);
+/** Exported for the test that pins the line-ending handling. */
+export function parseFrontmatter(raw: string): { frontmatter: Frontmatter; body: string } {
+  // Normalised first, as parseMarkdown already does. Git hands these files out
+  // with whatever line ending the checkout asks for — CRLF on a Windows clone
+  // — and a pattern anchored on \n then failed to match its own frontmatter,
+  // taking the whole blog down with "missing its frontmatter block" on every
+  // developer machine while the Linux build was fine.
+  const source = raw.replace(/\r\n/g, '\n');
+  const match = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(source);
   if (!match) throw new Error('blog post is missing its frontmatter block');
 
   const fields: Record<string, string> = {};
