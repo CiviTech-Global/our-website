@@ -1,5 +1,6 @@
 import type { ConsultationStatus, DayPart, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
+import { searchWhere } from './list-search.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { logger } from '../config/logger.js';
 import { sha256Hex } from '../utils/hash.js';
@@ -190,6 +191,7 @@ export interface QueueQuery {
   status?: string;
   /** Only requests naming this expert. */
   expertId?: string;
+  search?: string;
   page: number;
   pageSize: number;
 }
@@ -198,6 +200,9 @@ export async function listForStaff(query: QueueQuery) {
   const where: Prisma.ConsultationRequestWhereInput = {
     ...(query.status ? { status: query.status as ConsultationStatus } : {}),
     ...(query.expertId ? { expertId: query.expertId } : {}),
+    // Whoever is working the queue has a caller on the line, so the number
+    // and the tracking code matter as much as the name.
+    ...searchWhere(query.search, ['fullName', 'trackingCode', 'phoneNumber', 'email']),
   };
 
   const [items, total] = await Promise.all([

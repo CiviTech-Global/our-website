@@ -2,17 +2,34 @@ import type { Role } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
 import { getPaginationParams } from '../utils/pagination.js';
+import { searchWhere } from './list-search.js';
 import { toPage } from '../utils/page.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { emailLookupHash, revokeAllUserRefreshTokens } from './auth.service.js';
 import { hashPassword } from '../utils/password.js';
 import type { Permission } from '../auth/permissions.js';
 
-export async function getUsers(query: { page?: number | string; limit?: number | string }) {
+export async function getUsers(query: {
+  page?: number | string;
+  limit?: number | string;
+  search?: string;
+  role?: string;
+  status?: string;
+}) {
   const { page, limit, skip } = getPaginationParams(query);
+
+  const where = {
+    ...searchWhere(query.search, ['email', 'firstName', 'lastName']),
+    ...(query.role ? { role: query.role as Role } : {}),
+    // Deactivation is a deletedAt stamp, not a column anybody would think to
+    // filter on, so the query says "active" or "inactive" and this translates.
+    ...(query.status === 'active' ? { deletedAt: null } : {}),
+    ...(query.status === 'inactive' ? { deletedAt: { not: null } } : {}),
+  };
 
   const [users, total] = await Promise.all([
     userRepository.findMany({
+      where,
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -29,7 +46,7 @@ export async function getUsers(query: { page?: number | string; limit?: number |
         deletedAt: true,
       },
     }),
-    userRepository.count(),
+    userRepository.count({ where }),
   ]);
 
   return toPage(

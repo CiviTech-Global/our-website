@@ -12,6 +12,7 @@ export const requestListQuerySchema = paginationQuerySchema.extend({
   status: single(z.enum(LEAD_STATUSES)).optional(),
   source: single(z.enum(REQUEST_SOURCES)).optional(),
   productSlug: single(z.string().min(1).max(100)).optional(),
+  search: single(z.string().trim().max(120)).optional(),
 });
 
 export type RequestListQuery = z.infer<typeof requestListQuerySchema>;

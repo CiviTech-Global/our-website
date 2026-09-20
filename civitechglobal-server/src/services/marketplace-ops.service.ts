@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { searchWhere } from './list-search.js';
 import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -39,10 +40,16 @@ export async function listAudit(query: {
   pageSize: number;
   action?: string;
   targetType?: string;
+  search?: string;
 }) {
   const where = {
     ...(query.action ? { action: query.action } : {}),
     ...(query.targetType ? { targetType: query.targetType } : {}),
+    // The id of the thing acted on, because that is what somebody tracing an
+    // incident has in front of them. The actor is a plain column rather than
+    // a relation (see the schema note), so their name cannot be searched from
+    // here without a join this table deliberately does not have.
+    ...searchWhere(query.search, ['action', 'targetId', 'actorId']),
   };
 
   const [items, total] = await Promise.all([

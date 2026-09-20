@@ -222,6 +222,7 @@ export const auditQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   action: trimmed(80).optional(),
   targetType: z.enum(['job', 'project', 'user', 'award']).optional(),
+  search: trimmed(120).optional(),
 });
 
 export const messageSchema = z.object({

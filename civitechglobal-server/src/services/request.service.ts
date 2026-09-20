@@ -1,5 +1,6 @@
 import type { LeadStatus, Prisma, Role } from '@prisma/client';
 import { toPage } from '../utils/page.js';
+import { searchWhere } from './list-search.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { insuranceRequestRepository } from '../database/prisma/repositories/insurance-request.repository.js';
 import { userRepository } from '../database/prisma/repositories/user.repository.js';
@@ -35,7 +36,19 @@ export async function getAllRequests(query: RequestListQuery, principal: Request
   if (query.status) where.status = query.status;
   if (query.source) where.source = query.source;
   if (query.productSlug) where.product = { slug: query.productSlug };
-  const scopedWhere = scopeWhere(where, principal);
+
+  // Under AND rather than beside the scope: scopeWhere narrows a non-super
+  // admin with an OR of its own, and two ORs at the same level would merge
+  // into "assigned to me OR matching the search", which is an admin reading
+  // rows that are not theirs. The two conditions have to both hold.
+  //
+  // The name and the phone number are plaintext columns today (see the
+  // schema note on User.emailHash). If they are ever encrypted at rest, a
+  // substring match over them stops working and this drops to the tracking
+  // code — which is the field somebody is usually holding anyway.
+  const searched = searchWhere(query.search, ['trackingCode', 'fullName', 'phoneNumber']);
+  const scopedWhere: Prisma.InsuranceRequestWhereInput =
+    'OR' in searched ? { AND: [scopeWhere(where, principal), searched] } : scopeWhere(where, principal);
 
   const [requests, total] = await Promise.all([
     insuranceRequestRepository.findManyWithRelations({ where: scopedWhere, skip, take: limit }),

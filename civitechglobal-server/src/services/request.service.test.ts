@@ -119,3 +119,52 @@ describe('request.service row-level scoping', () => {
     });
   });
 });
+
+/**
+ * Searching must narrow a scoped list, never widen it.
+ *
+ * Both conditions are an OR: the scope is "mine or unassigned", the search is
+ * "matches any of these columns". Merged into one object the second would
+ * overwrite the first, and an admin searching a tracking code would read a
+ * colleague's request. They have to be ANDed.
+ */
+describe('request.service search', () => {
+  it('requires the scope and the search to both hold', async () => {
+    mocks.insuranceRequestRepository.findManyWithRelations.mockResolvedValue([]);
+
+    await requestService.getAllRequests({ page: 1, limit: 20, search: 'CTG-42' } as any, ADMIN);
+
+    const { where } = mocks.insuranceRequestRepository.findManyWithRelations.mock.calls[0][0];
+    expect(where).toEqual({
+      AND: [
+        { OR: [{ assignedToId: ADMIN.userId }, { assignedToId: null }] },
+        {
+          OR: [
+            { trackingCode: { contains: 'CTG-42', mode: 'insensitive' } },
+            { fullName: { contains: 'CTG-42', mode: 'insensitive' } },
+            { phoneNumber: { contains: 'CTG-42', mode: 'insensitive' } },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('counts the same rows it lists', async () => {
+    mocks.insuranceRequestRepository.findManyWithRelations.mockResolvedValue([]);
+
+    await requestService.getAllRequests({ page: 1, limit: 20, search: 'ali' } as any, ADMIN);
+
+    const listed = mocks.insuranceRequestRepository.findManyWithRelations.mock.calls[0][0].where;
+    const counted = mocks.insuranceRequestRepository.count.mock.calls[0][0].where;
+    expect(counted).toEqual(listed);
+  });
+
+  it('leaves the scope alone when nothing was searched for', async () => {
+    mocks.insuranceRequestRepository.findManyWithRelations.mockResolvedValue([]);
+
+    await requestService.getAllRequests({ page: 1, limit: 20, search: '  ' } as any, ADMIN);
+
+    const { where } = mocks.insuranceRequestRepository.findManyWithRelations.mock.calls[0][0];
+    expect(where).toEqual({ OR: [{ assignedToId: ADMIN.userId }, { assignedToId: null }] });
+  });
+});

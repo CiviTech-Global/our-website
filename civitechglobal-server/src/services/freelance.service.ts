@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { toPage } from '../utils/page.js';
+import { searchWhere } from './list-search.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { generateTrackingCode } from './insurance-request.service.js';
@@ -658,11 +659,13 @@ export async function reviewBid(
 
 export async function listProjectsForReview(query: {
   status?: string;
+  search?: string;
   page: number;
   pageSize: number;
 }) {
   const where: Prisma.FreelanceProjectWhereInput = {
     moderationStatus: (query.status as never) ?? 'PENDING_REVIEW',
+    ...searchWhere(query.search, ['title', 'companyName', 'code', ['author', 'email']]),
   };
 
   const [items, total] = await Promise.all([
@@ -700,8 +703,17 @@ export async function getAttachmentForReview(attachmentId: string) {
 }
 
 /** The bid queue, with the project's scope alongside so fairness can be judged. */
-export async function listBidsForReview(query: { page: number; pageSize: number }) {
-  const where: Prisma.ProjectBidWhereInput = { moderationStatus: 'PENDING_REVIEW' };
+export async function listBidsForReview(query: { search?: string; page: number; pageSize: number }) {
+  const where: Prisma.ProjectBidWhereInput = {
+    moderationStatus: 'PENDING_REVIEW',
+    ...searchWhere(query.search, [
+      ['bidder', 'email'],
+      ['bidder', 'firstName'],
+      ['bidder', 'lastName'],
+      ['project', 'title'],
+      ['project', 'code'],
+    ]),
+  };
 
   const [items, total] = await Promise.all([
     prisma.projectBid.findMany({

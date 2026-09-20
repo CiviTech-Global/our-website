@@ -88,6 +88,7 @@ const queueSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(50).default(20),
   status: trimmed(30).optional(),
   expertId: trimmed(40).optional(),
+  search: trimmed(120).optional(),
 });
 
 function param(req: Request, name: string): string {

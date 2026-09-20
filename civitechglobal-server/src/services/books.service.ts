@@ -14,6 +14,7 @@ import {
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
+import { searchWhere } from './list-search.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
 
 /**
@@ -423,9 +424,19 @@ export async function getCover(id: string, includeUnpublished = false) {
 // The review queue
 // ---------------------------------------------------------------------------
 
-export async function listBooksForReview(query: { status?: string; page: number; pageSize: number }) {
+export async function listBooksForReview(query: {
+  status?: string;
+  search?: string;
+  page: number;
+  pageSize: number;
+}) {
   const where: Prisma.BookListingWhereInput = {
     moderationStatus: (query.status as never) ?? 'PENDING_REVIEW',
+    // A reviewer arrives holding something specific — a tracking code from a
+    // ticket, a title somebody complained about, the seller's email. The
+    // public board searches title and author; a queue also has to find the
+    // person, because half of what staff chase is a who rather than a what.
+    ...searchWhere(query.search, ['title', 'bookAuthor', 'code', ['seller', 'email']]),
   };
 
   const [rows, total] = await Promise.all([

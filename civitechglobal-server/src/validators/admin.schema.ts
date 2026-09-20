@@ -3,7 +3,12 @@ import { paginationQuerySchema } from './common.schema.js';
 import { passwordSchema } from './auth.schema.js';
 import { isPermission, type Permission } from '../auth/permissions.js';
 
-export const userListQuerySchema = paginationQuerySchema;
+export const userListQuerySchema = paginationQuerySchema.extend({
+  search: z.string().trim().max(120).optional(),
+  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN']).optional(),
+  /** Deactivated accounts are soft-deleted rows; see getUsers. */
+  status: z.enum(['active', 'inactive']).optional(),
+});
 
 export type UserListQuery = z.infer<typeof userListQuerySchema>;
 

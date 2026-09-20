@@ -87,6 +87,7 @@ const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(['OPEN', 'ANSWERED', 'CLOSED']).optional(),
+  search: z.string().trim().max(120).optional(),
   unread: z
     .enum(['true', 'false'])
     .optional()

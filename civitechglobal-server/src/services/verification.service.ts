@@ -1,5 +1,6 @@
 import type { Prisma, VerificationDocumentKind } from '@prisma/client';
 import { toPage } from '../utils/page.js';
+import { searchWhere } from './list-search.js';
 import { prisma } from '../config/database.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -223,10 +224,24 @@ export async function assertMarketplaceAllowed(userId: string): Promise<void> {
 // Review
 // ---------------------------------------------------------------------------
 
-export async function listForReview(query: { status?: string; page: number; pageSize: number }) {
-  const where: Prisma.UserVerificationWhereInput = query.status
-    ? { status: query.status as never }
-    : { status: 'PENDING' };
+export async function listForReview(query: {
+  status?: string;
+  search?: string;
+  page: number;
+  pageSize: number;
+}) {
+  const where: Prisma.UserVerificationWhereInput = {
+    status: (query.status as never) ?? 'PENDING',
+    // The legal name, not the account's display name: the whole point of this
+    // queue is checking one against the other, so a reviewer holding a
+    // document searches what the document says.
+    ...searchWhere(query.search, [
+      'legalFirstName',
+      'legalLastName',
+      'companyName',
+      ['user', 'email'],
+    ]),
+  };
 
   const [items, total] = await Promise.all([
     prisma.userVerification.findMany({

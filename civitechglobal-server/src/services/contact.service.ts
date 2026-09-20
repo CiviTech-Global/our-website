@@ -1,5 +1,6 @@
 import { prisma } from '../config/database.js';
 import { toPage } from '../utils/page.js';
+import { searchWhere } from './list-search.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { sha256Hex } from '../utils/hash.js';
 import { generateTrackingCode, isUniqueViolation } from './insurance-request.service.js';
@@ -94,10 +95,12 @@ export async function listTickets(query: {
   pageSize: number;
   status?: string;
   unread?: boolean;
+  search?: string;
 }) {
   const where = {
     ...(query.status ? { status: query.status as never } : {}),
     ...(query.unread ? { readAt: null } : {}),
+    ...searchWhere(query.search, ['trackingCode', 'fullName', 'email', 'subject']),
   };
 
   const [items, total, unread, open] = await Promise.all([

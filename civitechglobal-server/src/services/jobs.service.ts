@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { toPage } from '../utils/page.js';
+import { searchWhere } from './list-search.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { generateTrackingCode } from './insurance-request.service.js';
@@ -671,9 +672,15 @@ export async function reviewApplication(
   return updated;
 }
 
-export async function listJobsForReview(query: { status?: string; page: number; pageSize: number }) {
+export async function listJobsForReview(query: {
+  status?: string;
+  search?: string;
+  page: number;
+  pageSize: number;
+}) {
   const where: Prisma.JobPostWhereInput = {
     moderationStatus: (query.status as never) ?? 'PENDING_REVIEW',
+    ...searchWhere(query.search, ['title', 'companyName', 'code', ['author', 'email']]),
   };
 
   const [items, total] = await Promise.all([
@@ -708,9 +715,23 @@ export async function listJobsForReview(query: { status?: string; page: number; 
  * comes along, since "is this worth the employer's time" cannot be judged
  * without knowing what the role is.
  */
-export async function listApplicationsForReview(query: { status?: string; page: number; pageSize: number }) {
+export async function listApplicationsForReview(query: {
+  status?: string;
+  search?: string;
+  page: number;
+  pageSize: number;
+}) {
   const where: Prisma.JobApplicationWhereInput = {
     moderationStatus: (query.status as never) ?? 'PENDING_REVIEW',
+    // An application is found by the applicant or by the job it is for —
+    // never by its own id, which nobody has ever read off a screen.
+    ...searchWhere(query.search, [
+      ['applicant', 'email'],
+      ['applicant', 'firstName'],
+      ['applicant', 'lastName'],
+      ['job', 'title'],
+      ['job', 'code'],
+    ]),
   };
 
   const [items, total] = await Promise.all([
