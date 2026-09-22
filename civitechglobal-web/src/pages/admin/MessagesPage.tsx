@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/app/PageHeader';
-import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
+import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import type { Paged } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,12 +8,14 @@ import { api } from '@/config/api';
 import { apiMessage } from '@/lib/apiMessage';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { useToast } from '@/contexts/ToastContext';
 import { formatDate } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
@@ -67,17 +69,18 @@ export default function MessagesPage() {
   const { showToast } = useToast();
   const qc = useQueryClient();
 
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<TicketStatus | 'ALL'>('ALL');
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: 'ALL' } });
+  const status = controls.filters.status as TicketStatus | 'ALL';
 
   const { data, isLoading } = useQuery({
-    queryKey: ['contact', 'inbox', page, status],
+    queryKey: ['contact', 'inbox', controls.page, status, controls.search],
     queryFn: async () => {
       const res = await api.get<Inbox>('/contact', {
         params: {
-          page,
+          page: controls.page,
           pageSize: PAGE_SIZE,
           status: status === 'ALL' ? undefined : status,
+          search: controls.search || undefined,
         },
       });
       return res.data;
@@ -98,26 +101,29 @@ export default function MessagesPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.contact.inboxTitle} description={t.contact.inboxSubtitle} className="mb-2" />
-      <Toolbar>
-        <SegmentedControl<TicketStatus | 'ALL'>
-          label={t.app.filterByStatus}
-          value={status}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
-          segments={[
-            { value: 'ALL', label: t.contact.filterAll },
-            // The open count rides on its own filter, where the reader looks
-            // for it, rather than trailing the page description.
-            ...STATUSES.map((s) => ({
-              value: s,
-              label: t.contact.statuses[s],
-              count: s === 'OPEN' && data && data.open > 0 ? data.open : undefined,
-            })),
-          ]}
-        />
-      </Toolbar>
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.contact.searchInbox}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <SegmentedControl<TicketStatus | 'ALL'>
+            label={t.app.filterByStatus}
+            value={status}
+            onChange={(value) => controls.setFilter('status', value)}
+            segments={[
+              { value: 'ALL', label: t.contact.filterAll },
+              // The open count rides on its own filter, where the reader looks
+              // for it, rather than trailing the page description.
+              ...STATUSES.map((s) => ({
+                value: s,
+                label: t.contact.statuses[s],
+                count: s === 'OPEN' && data && data.open > 0 ? data.open : undefined,
+              })),
+            ]}
+          />
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -125,7 +131,12 @@ export default function MessagesPage() {
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && <EmptyState title={t.contact.inboxEmpty} />}
+      {!isLoading && data?.items.length === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.contact.inboxEmpty}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((message) => (
@@ -217,11 +228,11 @@ export default function MessagesPage() {
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
     </div>

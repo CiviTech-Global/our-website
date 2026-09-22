@@ -660,6 +660,7 @@ export interface AuditQuery {
   pageSize: number;
   action?: string;
   targetType?: string;
+  search?: string;
 }
 
 export function useAuditLog(query: AuditQuery, enabled: boolean) {

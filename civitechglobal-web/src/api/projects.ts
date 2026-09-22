@@ -92,7 +92,12 @@ export function useRespondToProposal() {
 // Admin
 // ---------------------------------------------------------------------------
 
-export function useAdminProjects(params: { page: number; pageSize: number; status?: string }) {
+export function useAdminProjects(params: {
+  page: number;
+  pageSize: number;
+  status?: string;
+  search?: string;
+}) {
   return useQuery({
     queryKey: ['projects', 'admin', params],
     queryFn: async () => {
@@ -101,6 +106,7 @@ export function useAdminProjects(params: { page: number; pageSize: number; statu
           page: params.page,
           pageSize: params.pageSize,
           ...(params.status && params.status !== 'ALL' ? { status: params.status } : {}),
+          ...(params.search ? { search: params.search } : {}),
         },
       });
       return res.data;

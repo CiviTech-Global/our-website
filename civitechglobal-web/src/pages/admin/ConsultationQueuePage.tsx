@@ -9,14 +9,16 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
 import { PageHeader } from '@/components/app/PageHeader';
-import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
+import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Pagination } from '@/components/ui/Pagination';
@@ -63,10 +65,17 @@ export default function ConsultationQueuePage() {
   const { t } = useLocale();
   useDocumentTitle(t.consult.queueTitle);
 
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<ConsultationStatus>('NEW');
+  const controls = useListControls({
+    pageSize: PAGE_SIZE,
+    filters: { status: 'NEW' },
+  });
 
-  const { data, isLoading } = useConsultationQueue({ page, pageSize: PAGE_SIZE, status });
+  const { data, isLoading } = useConsultationQueue({
+    page: controls.page,
+    pageSize: PAGE_SIZE,
+    status: controls.filters.status,
+    search: controls.search || undefined,
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -75,17 +84,20 @@ export default function ConsultationQueuePage() {
         description={t.consult.queueDescription}
         className="mb-2"
       />
-      <Toolbar>
-        <SegmentedControl<ConsultationStatus>
-          label={t.consult.filterStatus}
-          value={status}
-          segments={STATUSES.map((value) => ({ value, label: t.consult.statuses[value] }))}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
-        />
-      </Toolbar>
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.consult.searchQueue}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <SegmentedControl<ConsultationStatus>
+            label={t.consult.filterStatus}
+            value={controls.filters.status as ConsultationStatus}
+            segments={STATUSES.map((value) => ({ value, label: t.consult.statuses[value] }))}
+            onChange={(value) => controls.setFilter('status', value)}
+          />
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -94,7 +106,11 @@ export default function ConsultationQueuePage() {
       )}
 
       {!isLoading && data?.items.length === 0 && (
-        <EmptyState title={t.consult.queueEmpty} icon={<MessageCircle aria-hidden="true" />} />
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.consult.queueEmpty}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+          icon={<MessageCircle aria-hidden="true" />}
+        />
       )}
 
       <ul className="flex flex-col gap-3">
@@ -105,8 +121,8 @@ export default function ConsultationQueuePage() {
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
-        <Pagination page={page} totalPages={data.totalPages} onPageChange={setPage} />
+      {data && data.totalPages > 1 && (
+        <Pagination page={controls.page} totalPages={data.totalPages} onPageChange={controls.setPage} />
       )}
     </div>
   );

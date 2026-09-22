@@ -1,4 +1,5 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
+import { searchWhere } from '../services/list-search.js';
 import { toPage } from '../utils/page.js';
 import multer from 'multer';
 import type { z } from 'zod';
@@ -144,6 +145,13 @@ router.get('/admin', async (req, res, next) => {
     const where = {
       ...(status.success ? { status: status.data } : {}),
       ...(tracks.length > 0 ? { track: { in: tracks } } : {}),
+      // A tracking code is what an applicant quotes when they write in, and a
+      // name is what a colleague asks about.
+      ...searchWhere(typeof req.query.search === 'string' ? req.query.search : undefined, [
+        'fullName',
+        'trackingCode',
+        'email',
+      ]),
     };
 
     const [items, total] = await Promise.all([

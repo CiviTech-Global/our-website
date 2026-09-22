@@ -284,6 +284,7 @@ const en: typeof fa = {
     },
   },
   proposal: {
+    searchRequests: 'Search title, contact or tracking code',
     previewDocument: 'Preview document',
     title: 'Our proposal',
     savePdf: 'Save as PDF',
@@ -418,6 +419,7 @@ const en: typeof fa = {
   },
 
   join: {
+    searchResumes: 'Search name, email or tracking code',
     adminNotFound: 'This CV was not found.',
     adminHandling: 'Handling',
     assignedTo: 'Assigned to',
@@ -500,6 +502,7 @@ const en: typeof fa = {
     matchedRole: 'Matched role',
   },
   contact: {
+    searchInbox: 'Search name, email, subject or tracking code',
     title: 'Contact us',
     subtitle: "Have a question? We'd love to help.",
     formName: 'Full name',
@@ -856,6 +859,7 @@ const en: typeof fa = {
     createdOn: 'Created on',
   },
   market: {
+    searchVerifications: 'Search legal name, company or email',
     searchMyBooks: 'Search title, author or code',
     searchMyJobs: 'Search job title or code',
     searchMyProjects: 'Search project title or code',
@@ -1214,6 +1218,7 @@ const en: typeof fa = {
     empty: 'Nothing in this window yet.',
   },
   audit: {
+    searchPlaceholder: 'Search action, target id or actor id',
     title: 'Marketplace audit log',
     actionFilter: 'Event type',
     allActions: 'All events',
@@ -1404,6 +1409,7 @@ const en: typeof fa = {
     },
   },
   consult: {
+    searchQueue: 'Search name, phone or tracking code',
     // The public request page
     title: 'Book a consultation',
     subtitle:

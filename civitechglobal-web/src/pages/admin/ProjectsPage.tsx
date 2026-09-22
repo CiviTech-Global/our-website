@@ -1,19 +1,20 @@
 import { PageHeader } from '@/components/app/PageHeader';
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Paperclip } from 'lucide-react';
 import { useAdminProjects } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Table, type TableColumn } from '@/components/ui/Table';
 import { formatThousands } from '@/lib/persian';
 import { PROJECT_STATUSES, projectStatusBadgeVariant, projectStatusLabel } from '@/lib/projectStatus';
-import type { AdminProjectSummary, ProjectRequestStatus } from '@/types/project';
+import type { AdminProjectSummary } from '@/types/project';
 
 const PAGE_SIZE = 15;
 
@@ -21,10 +22,13 @@ export default function ProjectsPage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.proposal.adminTitle);
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<ProjectRequestStatus | 'ALL'>('ALL');
-
-  const { data, isLoading, isError } = useAdminProjects({ page, pageSize: PAGE_SIZE, status });
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: 'ALL' } });
+  const { data, isLoading, isError } = useAdminProjects({
+    page: controls.page,
+    pageSize: PAGE_SIZE,
+    status: controls.filters.status,
+    search: controls.search || undefined,
+  });
 
   const budget = (row: AdminProjectSummary) => {
     if (row.budgetUnknown) return t.proposal.budgetUnknown;
@@ -111,15 +115,19 @@ export default function ProjectsPage() {
         title={t.proposal.adminTitle}
         description={t.proposal.adminSubtitle}
         className="mb-2"
-        actions={
+      />
+
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.proposal.searchRequests}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
           <Select
-            value={status}
+            value={controls.filters.status}
             className="w-auto min-w-44"
             aria-label={t.admin.status}
-            onChange={(e) => {
-              setStatus(e.target.value as ProjectRequestStatus | 'ALL');
-              setPage(1);
-            }}
+            onChange={(e) => controls.setFilter('status', e.target.value)}
           >
             <option value="ALL">{t.common.all}</option>
             {PROJECT_STATUSES.map((s) => (
@@ -137,16 +145,18 @@ export default function ProjectsPage() {
           data={data?.items ?? []}
           rowKey={(row) => row.id}
           isLoading={isLoading}
-          emptyMessage={isError ? t.common.error : t.proposal.adminEmpty}
+          emptyMessage={
+            isError ? t.common.error : controls.activeCount > 0 ? t.list.noResults : t.proposal.adminEmpty
+          }
           onRowClick={(row) => navigate(`/admin/projects/${row.id}`)}
         />
       </Card>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
     </div>

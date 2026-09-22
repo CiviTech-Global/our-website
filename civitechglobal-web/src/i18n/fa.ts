@@ -282,6 +282,7 @@ const fa = {
     },
   },
   proposal: {
+    searchRequests: 'جستجو در عنوان، نام تماس یا کد پیگیری',
     previewDocument: 'پیش‌نمایش سند',
     title: 'پیشنهاد ما',
     savePdf: 'دریافت PDF',
@@ -416,6 +417,7 @@ const fa = {
   },
 
   join: {
+    searchResumes: 'جستجو در نام، ایمیل یا کد پیگیری',
     adminNotFound: 'این رزومه پیدا نشد.',
     adminHandling: 'بررسی و پیگیری',
     assignedTo: 'مسئول بررسی',
@@ -498,6 +500,7 @@ const fa = {
     matchedRole: 'موقعیت پیشنهادی',
   },
   contact: {
+    searchInbox: 'جستجو در نام، ایمیل، موضوع یا کد پیگیری',
     title: 'تماس با ما',
     subtitle: 'سوالی دارید؟ خوشحال می‌شویم کمک کنیم.',
     formName: 'نام و نام خانوادگی',
@@ -855,6 +858,7 @@ const fa = {
     createdOn: 'تاریخ ایجاد',
   },
   market: {
+    searchVerifications: 'جستجو در نام قانونی، شرکت یا ایمیل',
     searchMyBooks: 'جستجو در عنوان، نویسنده یا کد',
     searchMyJobs: 'جستجو در عنوان یا کد آگهی',
     searchMyProjects: 'جستجو در عنوان یا کد پروژه',
@@ -1213,6 +1217,7 @@ const fa = {
     empty: 'داده‌ای در این بازه وجود ندارد.',
   },
   audit: {
+    searchPlaceholder: 'جستجو در کنش، شناسهٔ هدف یا شناسهٔ کاربر',
     title: 'وقایع بازارگاه',
     actionFilter: 'نوع رویداد',
     allActions: 'همهٔ رویدادها',
@@ -1401,6 +1406,7 @@ const fa = {
     },
   },
   consult: {
+    searchQueue: 'جستجو در نام، شماره یا کد پیگیری',
     title: 'درخواست مشاوره',
     subtitle:
       'مسیر شغلی، یک مسئلهٔ فنی، یا اینکه از کجا شروع کنید — بگویید دربارهٔ چه می‌خواهید صحبت کنید و چه زمانی در دسترس هستید؛ ما با شما تماس می‌گیریم.',

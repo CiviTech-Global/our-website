@@ -1,12 +1,13 @@
 import { PageHeader } from '@/components/app/PageHeader';
-import { useState } from 'react';
 import { useAuditLog } from '@/api/marketplace';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
@@ -36,10 +37,14 @@ export default function AuditLogPage() {
   const isSuper = user?.role === 'SUPER_ADMIN';
   useDocumentTitle(t.audit.title);
 
-  const [page, setPage] = useState(1);
-  const [action, setAction] = useState('');
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { action: '' } });
   const { data, isLoading } = useAuditLog(
-    { page, pageSize: PAGE_SIZE, action: action || undefined },
+    {
+      page: controls.page,
+      pageSize: PAGE_SIZE,
+      action: controls.filters.action || undefined,
+      search: controls.search || undefined,
+    },
     isSuper,
   );
 
@@ -49,23 +54,27 @@ export default function AuditLogPage() {
         title={t.audit.title}
         description={t.app.queueDescriptions.audit}
         className="mb-2"
-        actions={
-        <Select
-          className="w-auto"
-          value={action}
-          aria-label={t.audit.actionFilter}
-          onChange={(e) => {
-            setAction(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">{t.audit.allActions}</option>
-          {ACTIONS.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </Select>
+      />
+
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.audit.searchPlaceholder}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <Select
+            className="w-auto"
+            value={controls.filters.action}
+            aria-label={t.audit.actionFilter}
+            onChange={(e) => controls.setFilter('action', e.target.value)}
+          >
+            <option value="">{t.audit.allActions}</option>
+            {ACTIONS.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </Select>
         }
       />
 
@@ -97,11 +106,11 @@ export default function AuditLogPage() {
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
     </div>

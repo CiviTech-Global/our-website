@@ -56,6 +56,7 @@ export function useAdminResumes(params: {
   status?: string;
   /** One track, or several joined by commas. */
   track?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ['resumes', 'admin', params],
@@ -66,6 +67,7 @@ export function useAdminResumes(params: {
           pageSize: params.pageSize,
           ...(params.status && params.status !== 'ALL' ? { status: params.status } : {}),
           ...(params.track ? { track: params.track } : {}),
+          ...(params.search ? { search: params.search } : {}),
         },
       });
       return res.data;

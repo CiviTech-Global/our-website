@@ -253,7 +253,7 @@ export function useReorderExperts() {
 // --- Staff: the queue ------------------------------------------------------
 
 export function useConsultationQueue(
-  query: { status?: string; expertId?: string; page: number; pageSize: number },
+  query: { status?: string; expertId?: string; search?: string; page: number; pageSize: number },
   enabled = true
 ) {
   return useQuery({

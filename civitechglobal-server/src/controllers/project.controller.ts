@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { searchWhere } from '../services/list-search.js';
 import { toPage } from '../utils/page.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -102,7 +103,15 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
     const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize ?? 20)));
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
 
-    const where = status ? { status: status as never } : {};
+    const where = {
+      ...(status ? { status: status as never } : {}),
+      ...searchWhere(typeof req.query.search === 'string' ? req.query.search : undefined, [
+        'title',
+        'trackingCode',
+        'contactName',
+        'organizationName',
+      ]),
+    };
     const [rows, total] = await Promise.all([
       prisma.projectRequest.findMany({
         where,

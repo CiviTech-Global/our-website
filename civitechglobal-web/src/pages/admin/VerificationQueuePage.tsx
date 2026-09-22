@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/app/PageHeader';
-import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
+import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import { Eye } from 'lucide-react';
 import {
@@ -10,6 +10,7 @@ import {
 } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { verificationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
@@ -18,6 +19,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FilePreview } from '@/components/ui/FilePreview';
 import { Pagination } from '@/components/ui/Pagination';
 import { Spinner } from '@/components/ui/Spinner';
@@ -37,27 +39,40 @@ export default function VerificationQueuePage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.market.queueVerifications);
 
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<VerificationStatus>('PENDING');
+  const controls = useListControls({
+    pageSize: PAGE_SIZE,
+    filters: { status: 'PENDING' },
+  });
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const { data, isLoading } = useVerificationQueue({ page, pageSize: PAGE_SIZE, status });
+  const { data, isLoading } = useVerificationQueue({
+    page: controls.page,
+    pageSize: PAGE_SIZE,
+    status: controls.filters.status,
+    search: controls.search || undefined,
+  });
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.queueVerifications} description={t.app.queueDescriptions.verification} className="mb-2" />
-      <Toolbar>
-        <SegmentedControl<VerificationStatus>
-          label={t.app.filterByStatus}
-          value={status}
-          segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-            setOpenId(null);
-          }}
-        />
-      </Toolbar>
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.market.searchVerifications}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <SegmentedControl<VerificationStatus>
+            label={t.app.filterByStatus}
+            value={controls.filters.status as VerificationStatus}
+            segments={STATUSES.map((value) => ({ value, label: t.market[value] }))}
+            onChange={(value) => {
+              controls.setFilter('status', value);
+              // An expanded row belongs to the list that was on screen.
+              setOpenId(null);
+            }}
+          />
+        }
+      />
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -65,7 +80,12 @@ export default function VerificationQueuePage() {
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && <EmptyState title={t.market.emptyQueue} />}
+      {!isLoading && data?.items.length === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.market.emptyQueue}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((row) => (
@@ -105,11 +125,11 @@ export default function VerificationQueuePage() {
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/app/PageHeader';
-import { SegmentedControl, Toolbar } from '@/components/app/SegmentedControl';
+import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Eye } from 'lucide-react';
@@ -7,12 +7,14 @@ import { resumeFileUrl, useAdminResumes, useUpdateResumeStatus } from '@/api/res
 import { FilePreview } from '@/components/ui/FilePreview';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
@@ -65,61 +67,67 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
   const { t, locale } = useLocale();
   const title = programme ? t.volunteer.adminTitle : t.join.adminTitle;
   useDocumentTitle(title);
-  const [programmeFilter, setProgrammeFilter] = useState<ProgrammeFilter>('VOLUNTEER,INTERNSHIP');
-  const track: string = programme ? programmeFilter : ('JOB' satisfies TalentTrack);
   const { showToast } = useToast();
-  const [page, setPage] = useState(1);
   const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
-  const [status, setStatus] = useState<ResumeStatus | 'ALL'>('ALL');
 
-  const { data, isLoading } = useAdminResumes({ page, pageSize: PAGE_SIZE, status, track });
+  const controls = useListControls({
+    pageSize: PAGE_SIZE,
+    filters: { status: 'ALL', programme: 'VOLUNTEER,INTERNSHIP' },
+  });
+  const programmeFilter = controls.filters.programme as ProgrammeFilter;
+  const track: string = programme ? programmeFilter : ('JOB' satisfies TalentTrack);
+
+  const { data, isLoading } = useAdminResumes({
+    page: controls.page,
+    pageSize: PAGE_SIZE,
+    status: controls.filters.status,
+    track,
+    search: controls.search || undefined,
+  });
   const update = useUpdateResumeStatus();
 
   return (
     <div className="flex flex-col gap-4">
-      {/* The status filter rides in the header rather than on a toolbar of its
-          own: on the CV screen there is nothing else to put beside it, and a
-          row holding one right-aligned select reads as a stray control. */}
       <PageHeader
         title={title}
         description={programme ? t.volunteer.adminSubtitle : t.join.adminSubtitle}
         className="mb-2"
-        actions={
-          <Select
-            value={status}
-            className="w-auto min-w-40"
-            aria-label={t.admin.status}
-            onChange={(e) => {
-              setStatus(e.target.value as ResumeStatus | 'ALL');
-              setPage(1);
-            }}
-          >
-            <option value="ALL">{t.common.all}</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t.join.statuses[s]}
-              </option>
-            ))}
-          </Select>
+      />
+      <ListToolbar
+        controls={controls}
+        searchPlaceholder={t.join.searchResumes}
+        total={data?.total}
+        isLoading={isLoading}
+        filters={
+          <>
+            {programme && (
+              <SegmentedControl<ProgrammeFilter>
+                label={t.volunteer.programme}
+                value={programmeFilter}
+                onChange={(value) => controls.setFilter('programme', value)}
+                segments={[
+                  { value: 'VOLUNTEER,INTERNSHIP', label: t.volunteer.bothTracks },
+                  { value: 'INTERNSHIP', label: t.volunteer.tracks.INTERNSHIP },
+                  { value: 'VOLUNTEER', label: t.volunteer.tracks.VOLUNTEER },
+                ]}
+              />
+            )}
+            <Select
+              value={controls.filters.status}
+              className="w-auto min-w-40"
+              aria-label={t.admin.status}
+              onChange={(e) => controls.setFilter('status', e.target.value)}
+            >
+              <option value="ALL">{t.common.all}</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t.join.statuses[s]}
+                </option>
+              ))}
+            </Select>
+          </>
         }
       />
-      {programme && (
-        <Toolbar>
-          <SegmentedControl<ProgrammeFilter>
-            label={t.volunteer.programme}
-            value={programmeFilter}
-            onChange={(value) => {
-              setProgrammeFilter(value);
-              setPage(1);
-            }}
-            segments={[
-              { value: 'VOLUNTEER,INTERNSHIP', label: t.volunteer.bothTracks },
-              { value: 'INTERNSHIP', label: t.volunteer.tracks.INTERNSHIP },
-              { value: 'VOLUNTEER', label: t.volunteer.tracks.VOLUNTEER },
-            ]}
-          />
-        </Toolbar>
-      )}
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -127,7 +135,18 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
         </div>
       )}
 
-      {!isLoading && data && data.items.length === 0 && <EmptyState title={programme ? t.volunteer.adminEmpty : t.join.adminEmpty} />}
+      {!isLoading && data && data.items.length === 0 && (
+        <EmptyState
+          title={
+            controls.activeCount > 0
+              ? t.list.noResults
+              : programme
+                ? t.volunteer.adminEmpty
+                : t.join.adminEmpty
+          }
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {data?.items.map((cv) => (
@@ -198,11 +217,11 @@ export default function ResumesPage({ programme = false }: { programme?: boolean
         ))}
       </ul>
 
-      {data && data.total > PAGE_SIZE && (
+      {data && data.totalPages > 1 && (
         <Pagination
-          page={page}
+          page={controls.page}
           totalPages={data.totalPages}
-          onPageChange={setPage}
+          onPageChange={controls.setPage}
         />
       )}
 
