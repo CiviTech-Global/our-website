@@ -47,6 +47,44 @@ describe('envelope', () => {
     expect(res.data).toEqual(page);
   });
 
+  /**
+   * Something other than this API answered on /api: a proxy's error page, a
+   * captive portal, or the static server the prerender runs against, which
+   * serves index.html for every path it does not recognise.
+   *
+   * It used to be handed on as the payload. A string is truthy, so a caller
+   * testing `data?.items` sailed past its own guard and read .length of
+   * undefined — which is how the book market, the job board, the club of
+   * experts and the portfolio were all prerendered as the error screen.
+   */
+  it('refuses a 200 that is not JSON', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('<!doctype html><html><body>SPA shell</body></html>', {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' },
+      })
+    );
+
+    await expect(api.get('/market/books')).rejects.toMatchObject({
+      status: 200,
+      message: 'The server did not return JSON',
+    });
+  });
+
+  it('still reports the text of a non-JSON error response', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('<html>502 Bad Gateway</html>', {
+        status: 502,
+        headers: { 'Content-Type': 'text/html' },
+      })
+    );
+
+    await expect(api.get('/market/books')).rejects.toMatchObject({
+      status: 502,
+      response: { status: 502, data: '<html>502 Bad Gateway</html>' },
+    });
+  });
+
   it('passes through a body that is not enveloped', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ plain: true }));
     const res = await api.get<{ plain: boolean }>('/raw');

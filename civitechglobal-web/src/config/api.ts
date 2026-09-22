@@ -108,6 +108,9 @@ async function readBody(response: Response, responseType: 'json' | 'blob'): Prom
   try {
     return JSON.parse(text);
   } catch {
+    // Kept as text rather than thrown here: an error response is often a
+    // proxy's HTML, and that text is worth reporting. The caller decides —
+    // see the JSON check on the success path, which refuses it there.
     return text;
   }
 }
@@ -173,6 +176,25 @@ async function request<T>(
 
   if (response.ok) {
     const raw = await readBody(response, config.responseType ?? 'json');
+
+    // A 200 that is not JSON did not come from this API. It happens whenever
+    // something else answers on /api — a proxy's error page, a captive portal,
+    // or the static server used to prerender, which serves index.html for
+    // every path it does not recognise.
+    //
+    // readBody hands back the raw text in that case, and handing that on as
+    // the payload is what made it dangerous: a string is truthy, so a caller
+    // testing `data?.items` sails past its own guard and reads `.length` of
+    // undefined. That is the crash behind the prerendered book market, job
+    // board, club of experts and portfolio all being captured as the "something
+    // went wrong" screen — which is the version every crawler was served.
+    //
+    // A reply this API cannot have sent is an error, so it is raised as one:
+    // the query reports a failure, and the page shows its empty state.
+    if ((config.responseType ?? 'json') === 'json' && typeof raw === 'string') {
+      throw new ApiError(response.status, raw, 'The server did not return JSON');
+    }
+
     return {
       data: (config.responseType === 'blob' ? raw : unwrap(raw)) as T,
       status: response.status,
