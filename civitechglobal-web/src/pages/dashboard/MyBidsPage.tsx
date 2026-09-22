@@ -5,6 +5,8 @@ import { useOwnBids, useReviseBid } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant } from '@/lib/marketplace';
@@ -12,12 +14,24 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Select } from '@/components/ui/Select';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Pagination } from '@/components/ui/Pagination';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
-import type { OwnBid } from '@/types/marketplace';
+import type { ModerationStatus, OwnBid } from '@/types/marketplace';
+
+const PAGE_SIZE = 10;
+const MODERATION_STATUSES: ModerationStatus[] = [
+  'DRAFT',
+  'PENDING_REVIEW',
+  'APPROVED',
+  'CHANGES_REQUESTED',
+  'REJECTED',
+];
 
 /**
  * The bidder's side.
@@ -32,6 +46,13 @@ export default function MyBidsPage() {
   useDocumentTitle(t.market.myBids);
 
   const { data, isLoading } = useOwnBids();
+
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: '' } });
+  const list = useClientList(data, controls, {
+    searchFields: (bid) => [bid.project.title, bid.project.code],
+    filters: { status: (row, value) => row.moderationStatus === value },
+    pageSize: PAGE_SIZE,
+  });
   const [revising, setRevising] = useState<OwnBid | null>(null);
 
   const days = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
@@ -40,16 +61,45 @@ export default function MyBidsPage() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.myBids} description={t.app.memberDescriptions.myBids} className="mb-2" />
 
+      {(data?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.market.searchMyBids}
+          total={list.total}
+          isLoading={isLoading}
+          filters={
+            <Select
+              className="w-48"
+              value={controls.filters.status}
+              aria-label={t.app.filterByStatus}
+              onChange={(e) => controls.setFilter('status', e.target.value)}
+            >
+              <option value="">{t.list.allOption}</option>
+              {MODERATION_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {t.market[value]}
+                </option>
+              ))}
+            </Select>
+          }
+        />
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.common.noResults} />}
+      {!isLoading && list.total === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.common.noResults}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
-        {data?.map((bid) => (
+        {list.items.map((bid) => (
           <li key={bid.id}>
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -106,6 +156,10 @@ export default function MyBidsPage() {
           </li>
         ))}
       </ul>
+
+      {list.totalPages > 1 && (
+        <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
+      )}
 
       {revising && <ReviseBidModal bid={revising} onClose={() => setRevising(null)} />}
     </div>

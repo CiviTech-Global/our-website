@@ -16,6 +16,8 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant, stateVariant } from '@/lib/marketplace';
@@ -26,13 +28,15 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Pagination } from '@/components/ui/Pagination';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
-import type { BookCondition, OwnBook } from '@/types/marketplace';
+import type { ModerationStatus, BookCondition, OwnBook } from '@/types/marketplace';
 
 const EMPTY_DRAFT = {
   title: '',
@@ -50,6 +54,15 @@ const EMPTY_DRAFT = {
   province: '',
   city: '',
 };
+
+const PAGE_SIZE = 10;
+const MODERATION_STATUSES: ModerationStatus[] = [
+  'DRAFT',
+  'PENDING_REVIEW',
+  'APPROVED',
+  'CHANGES_REQUESTED',
+  'REJECTED',
+];
 
 /**
  * What a seller sees of their own listings.
@@ -69,6 +82,13 @@ export default function MyBooksPage() {
 
   const { data: verification } = useOwnVerification();
   const { data: books, isLoading } = useOwnBooks();
+
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: '' } });
+  const list = useClientList(books, controls, {
+    searchFields: (book) => [book.title, book.bookAuthor, book.code],
+    filters: { status: (row, value) => row.moderationStatus === value },
+    pageSize: PAGE_SIZE,
+  });
   const create = useCreateBook();
   const update = useUpdateBook();
   const submit = useSubmitBook();
@@ -193,13 +213,41 @@ export default function MyBooksPage() {
         </Card>
       )}
 
+      {(books?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.market.searchMyBooks}
+          total={list.total}
+          isLoading={isLoading}
+          filters={
+            <Select
+              className="w-48"
+              value={controls.filters.status}
+              aria-label={t.app.filterByStatus}
+              onChange={(e) => controls.setFilter('status', e.target.value)}
+            >
+              <option value="">{t.list.allOption}</option>
+              {MODERATION_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {t.market[value]}
+                </option>
+              ))}
+            </Select>
+          }
+        />
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
       )}
 
-      {!isLoading && books?.length === 0 && canPost && (
+      {!isLoading && controls.activeCount > 0 && list.total === 0 ? (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
+      ) : null}
+
+      {!isLoading && controls.activeCount === 0 && books?.length === 0 && canPost && (
         <EmptyState
           title={t.books.noBooks}
           description={t.books.noBooksBody}
@@ -214,7 +262,7 @@ export default function MyBooksPage() {
       )}
 
       <ul className="flex flex-col gap-3">
-        {books?.map((book) => {
+        {list.items.map((book) => {
           const price = formatMoney(book.price, locale);
           // Only a draft or a listing sent back for changes can still be
           // edited; the queue's copy is what a reviewer looked at.
@@ -326,6 +374,10 @@ export default function MyBooksPage() {
           );
         })}
       </ul>
+
+      {list.totalPages > 1 && (
+        <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
+      )}
 
       <Modal
         isOpen={editing !== null}

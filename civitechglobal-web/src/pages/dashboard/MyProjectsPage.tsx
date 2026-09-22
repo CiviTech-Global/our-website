@@ -15,6 +15,8 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
@@ -24,12 +26,25 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Select } from '@/components/ui/Select';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Pagination } from '@/components/ui/Pagination';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { DateField } from '@/components/ui/DateField';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
+import type { ModerationStatus } from '@/types/marketplace';
+
+const PAGE_SIZE = 10;
+const MODERATION_STATUSES: ModerationStatus[] = [
+  'DRAFT',
+  'PENDING_REVIEW',
+  'APPROVED',
+  'CHANGES_REQUESTED',
+  'REJECTED',
+];
 
 /**
  * What a client sees of their own projects, and the offers on them.
@@ -45,6 +60,13 @@ export default function MyProjectsPage() {
 
   const { data: verification } = useOwnVerification();
   const { data: projects, isLoading } = useOwnProjects();
+
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: '' } });
+  const list = useClientList(projects, controls, {
+    searchFields: (project) => [project.title, project.code],
+    filters: { status: (row, value) => row.moderationStatus === value },
+    pageSize: PAGE_SIZE,
+  });
   const create = useCreateProject();
   const submitProject = useSubmitProject();
 
@@ -132,18 +154,46 @@ export default function MyProjectsPage() {
         </Card>
       )}
 
+      {(projects?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.market.searchMyProjects}
+          total={list.total}
+          isLoading={isLoading}
+          filters={
+            <Select
+              className="w-48"
+              value={controls.filters.status}
+              aria-label={t.app.filterByStatus}
+              onChange={(e) => controls.setFilter('status', e.target.value)}
+            >
+              <option value="">{t.list.allOption}</option>
+              {MODERATION_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {t.market[value]}
+                </option>
+              ))}
+            </Select>
+          }
+        />
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
       )}
 
-      {!isLoading && isVerified && projects?.length === 0 && (
+      {!isLoading && controls.activeCount > 0 && list.total === 0 ? (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
+      ) : null}
+
+      {!isLoading && controls.activeCount === 0 && isVerified && projects?.length === 0 && (
         <EmptyState title={t.market.noProjects} />
       )}
 
       <ul className="flex flex-col gap-3">
-        {projects?.map((project) => (
+        {list.items.map((project) => (
           <li key={project.id}>
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -200,6 +250,10 @@ export default function MyProjectsPage() {
           </li>
         ))}
       </ul>
+
+      {list.totalPages > 1 && (
+        <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
+      )}
 
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={t.market.newProject}>
         <form className="flex flex-col gap-4" onSubmit={handleCreate}>

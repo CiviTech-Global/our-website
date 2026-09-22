@@ -856,6 +856,11 @@ const en: typeof fa = {
     createdOn: 'Created on',
   },
   market: {
+    searchMyBooks: 'Search title, author or code',
+    searchMyJobs: 'Search job title or code',
+    searchMyProjects: 'Search project title or code',
+    searchMyBids: 'Search project title or code',
+    searchMyApplications: 'Search job title or code',
     searchQueueJobs: 'Search title, company, code or email',
     searchQueueProjects: 'Search title, company, code or email',
     searchQueueApplications: 'Search applicant or job title',

@@ -855,6 +855,11 @@ const fa = {
     createdOn: 'تاریخ ایجاد',
   },
   market: {
+    searchMyBooks: 'جستجو در عنوان، نویسنده یا کد',
+    searchMyJobs: 'جستجو در عنوان یا کد آگهی',
+    searchMyProjects: 'جستجو در عنوان یا کد پروژه',
+    searchMyBids: 'جستجو در عنوان یا کد پروژه',
+    searchMyApplications: 'جستجو در عنوان یا کد آگهی',
     searchQueueJobs: 'جستجو در عنوان، شرکت، کد یا ایمیل',
     searchQueueProjects: 'جستجو در عنوان، شرکت، کد یا ایمیل',
     searchQueueApplications: 'جستجو در نام متقاضی یا عنوان آگهی',

@@ -6,18 +6,32 @@ import { useOwnApplications, useReviseApplication } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Select } from '@/components/ui/Select';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Pagination } from '@/components/ui/Pagination';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
-import type { OwnApplication } from '@/types/marketplace';
+import type { ModerationStatus, OwnApplication } from '@/types/marketplace';
+
+const PAGE_SIZE = 10;
+const MODERATION_STATUSES: ModerationStatus[] = [
+  'DRAFT',
+  'PENDING_REVIEW',
+  'APPROVED',
+  'CHANGES_REQUESTED',
+  'REJECTED',
+];
 
 /**
  * Everything the applicant has sent, and where it got to.
@@ -32,11 +46,42 @@ export default function MyApplicationsPage() {
   useDocumentTitle(t.market.myApplications);
 
   const { data, isLoading } = useOwnApplications();
+
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: '' } });
+  const list = useClientList(data, controls, {
+    searchFields: (application) => [application.job.title, application.job.code],
+    filters: { status: (row, value) => row.moderationStatus === value },
+    pageSize: PAGE_SIZE,
+  });
   const [revising, setRevising] = useState<OwnApplication | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.myApplications} description={t.app.memberDescriptions.myApplications} className="mb-2" />
+
+      {(data?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.market.searchMyApplications}
+          total={list.total}
+          isLoading={isLoading}
+          filters={
+            <Select
+              className="w-48"
+              value={controls.filters.status}
+              aria-label={t.app.filterByStatus}
+              onChange={(e) => controls.setFilter('status', e.target.value)}
+            >
+              <option value="">{t.list.allOption}</option>
+              {MODERATION_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {t.market[value]}
+                </option>
+              ))}
+            </Select>
+          }
+        />
+      )}
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -44,10 +89,15 @@ export default function MyApplicationsPage() {
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.common.noResults} />}
+      {!isLoading && list.total === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.common.noResults}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
-        {data?.map((application) => (
+        {list.items.map((application) => (
           <li key={application.id}>
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -97,6 +147,10 @@ export default function MyApplicationsPage() {
           </li>
         ))}
       </ul>
+
+      {list.totalPages > 1 && (
+        <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
+      )}
 
       {revising && <ReviseModal application={revising} onClose={() => setRevising(null)} />}
     </div>
