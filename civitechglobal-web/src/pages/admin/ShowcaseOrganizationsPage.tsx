@@ -18,6 +18,8 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { normalizePersianDigits } from '@/lib/persian';
 import { MoveButtons } from '@/components/admin/OrderedList';
@@ -26,6 +28,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -57,6 +60,12 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
   const save = useSaveOrganization();
   const list = useOrderedList(data, reorder.mutateAsync, onError);
 
+  const controls = useListControls({ pageSize: Number.MAX_SAFE_INTEGER });
+  const shown = useClientList(list.order, controls, { searchFields: (org) => [org.name, org.industry] });
+  // Reordering only means something on the whole list; see the note in the
+  // admin experts page.
+  const ordering = controls.activeCount === 0;
+
   const [editing, setEditing] = useState<AdminShowcaseOrganization | 'new' | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -79,10 +88,25 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
         }
       />
 
+      {list.order.length > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.showcase.searchAdminOrganizations}
+          total={shown.total}
+          isLoading={isLoading}
+        />
+      )}
+
+      {!ordering && <p className="text-label text-app-text-4">{t.showcase.reorderDisabled}</p>}
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
+      )}
+
+      {!isLoading && shown.total === 0 && list.order.length > 0 && (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
       )}
 
       {!isLoading && list.order.length === 0 && (
@@ -99,7 +123,7 @@ export default function ShowcaseOrganizationsPage({ kind }: { kind: Organization
       )}
 
       <ul className="flex flex-col gap-3">
-        {list.order.map((org, index) => (
+        {shown.items.map((org, index) => (
           <li key={org.id}>
             <Card className={org.published ? undefined : 'opacity-70'}>
               <div className="flex flex-wrap items-center gap-4">

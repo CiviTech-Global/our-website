@@ -4,9 +4,12 @@ import type { Locale } from '@/i18n/locales';
 import { useConversations } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Spinner } from '@/components/ui/Spinner';
 import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
 import type { ConversationSummary } from '@/types/marketplace';
@@ -22,6 +25,11 @@ export default function ConversationsPage() {
 
   const { data, isLoading } = useConversations();
 
+  const controls = useListControls({ pageSize: Number.MAX_SAFE_INTEGER });
+  const shown = useClientList(data, controls, {
+    searchFields: (thread) => [thread.listingTitle, thread.listingCode, thread.counterpartName],
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.messagesNav} description={t.app.memberDescriptions.messages} className="mb-2" />
@@ -32,10 +40,23 @@ export default function ConversationsPage() {
         </div>
       )}
 
+      {(data?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.market.searchConversations}
+          total={shown.total}
+          isLoading={isLoading}
+        />
+      )}
+
       {!isLoading && data?.length === 0 && <EmptyState title={t.market.noConversations} />}
 
+      {!isLoading && shown.total === 0 && (data?.length ?? 0) > 0 && (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
+      )}
+
       <ul className="flex flex-col gap-3">
-        {data?.map((thread) => (
+        {shown.items.map((thread) => (
           <li key={thread.threadId}>
             <ConversationRow thread={thread} locale={locale} />
           </li>

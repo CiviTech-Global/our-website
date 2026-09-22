@@ -17,11 +17,15 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { formatMoney } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Select } from '@/components/ui/Select';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
@@ -46,6 +50,14 @@ export default function MyAwardsPage() {
 
   const { data, isLoading } = useMyAwards();
 
+  const controls = useListControls({ pageSize: Number.MAX_SAFE_INTEGER, filters: { role: '' } });
+  const shown = useClientList(data, controls, {
+    searchFields: (view) => [view.listing.title, view.listing.code, view.counterpartyProfile?.username],
+    // Work somebody was given and work they gave out are two different lists
+    // that happen to share a table.
+    filters: { role: (view, value) => view.myRole === value },
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t.market.myAwards} description={t.app.memberDescriptions.myAwards} className="mb-2" />
@@ -56,9 +68,36 @@ export default function MyAwardsPage() {
         </div>
       )}
 
+      {(data?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.market.searchAwards}
+          total={shown.total}
+          isLoading={isLoading}
+          filters={
+            <Select
+              className="w-48"
+              value={controls.filters.role}
+              aria-label={t.market.filterAwardRole}
+              onChange={(e) => controls.setFilter('role', e.target.value)}
+            >
+              <option value="">{t.list.allOption}</option>
+              <option value="author">{t.market.awardsIGave}</option>
+              <option value="counterparty">{t.market.awardsIReceived}</option>
+            </Select>
+          }
+        />
+      )}
+
       {!isLoading && data?.length === 0 && <EmptyState title={t.market.awardsEmpty} />}
 
-      {data?.map((award) => <AwardCard key={award.award.id} award={award} locale={locale} />)}
+      {!isLoading && shown.total === 0 && (data?.length ?? 0) > 0 && (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
+      )}
+
+      {shown.items.map((award) => (
+        <AwardCard key={award.award.id} award={award} locale={locale} />
+      ))}
     </div>
   );
 }

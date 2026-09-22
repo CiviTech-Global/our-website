@@ -12,6 +12,8 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { toPersianDigits } from '@/i18n/utils';
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
@@ -20,6 +22,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Select } from '@/components/ui/Select';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -57,6 +61,22 @@ export default function AdminExpertsPage() {
   const { showToast } = useToast();
 
   const { data: experts, isLoading } = useAdminExperts();
+
+  // No pager: the order of this list is the order the public page shows, and
+  // it is set here by hand. Cutting it into pages would mean a "move up" on
+  // the first row of page two having nowhere to go.
+  const controls = useListControls({ pageSize: Number.MAX_SAFE_INTEGER, filters: { published: '' } });
+  const filtered = useClientList(experts, controls, {
+    searchFields: (expert) => [expert.fullName, expert.headline, expert.slug, ...expert.specialities],
+    filters: {
+      published: (expert, value) => (value === 'yes' ? expert.published : !expert.published),
+    },
+  });
+
+  // Reordering is disabled while the list is filtered: the arrows move a row
+  // against its neighbours, and under a filter the neighbour on screen is not
+  // the neighbour in the order being changed.
+  const ordering = controls.activeCount === 0;
   const save = useSaveExpert();
   const remove = useDeleteExpert();
   const reorder = useReorderExperts();
@@ -166,10 +186,39 @@ export default function AdminExpertsPage() {
         }
       />
 
+      {(experts?.length ?? 0) > 0 && (
+        <ListToolbar
+          controls={controls}
+          searchPlaceholder={t.experts.searchAdmin}
+          total={filtered.total}
+          isLoading={isLoading}
+          filters={
+            <Select
+              className="w-44"
+              value={controls.filters.published}
+              aria-label={t.experts.filterPublished}
+              onChange={(e) => controls.setFilter('published', e.target.value)}
+            >
+              <option value="">{t.list.allOption}</option>
+              <option value="yes">{t.experts.publishedOnly}</option>
+              <option value="no">{t.experts.unpublishedOnly}</option>
+            </Select>
+          }
+        />
+      )}
+
+      {!ordering && (
+        <p className="text-label text-app-text-4">{t.experts.reorderDisabled}</p>
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
+      )}
+
+      {!isLoading && filtered.total === 0 && experts && experts.length > 0 && (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
       )}
 
       {!isLoading && experts?.length === 0 && (
@@ -187,7 +236,7 @@ export default function AdminExpertsPage() {
       )}
 
       <ul className="flex flex-col gap-3">
-        {experts?.map((expert, index) => (
+        {filtered.items.map((expert, index) => (
           <li key={expert.id}>
             <Card className={expert.published ? undefined : 'opacity-70'}>
               <div className="flex flex-wrap items-center gap-4">
@@ -195,7 +244,7 @@ export default function AdminExpertsPage() {
                   <button
                     type="button"
                     aria-label={t.showcase?.moveUp ?? 'Up'}
-                    disabled={index === 0 || reorder.isPending}
+                    disabled={!ordering || index === 0 || reorder.isPending}
                     className="rounded border border-app-border-light p-1 text-app-text-3 disabled:opacity-40"
                     onClick={() => void move(index, -1)}
                   >
@@ -204,7 +253,7 @@ export default function AdminExpertsPage() {
                   <button
                     type="button"
                     aria-label={t.showcase?.moveDown ?? 'Down'}
-                    disabled={index === (experts?.length ?? 0) - 1 || reorder.isPending}
+                    disabled={!ordering || index === (experts?.length ?? 0) - 1 || reorder.isPending}
                     className="rounded border border-app-border-light p-1 text-app-text-3 disabled:opacity-40"
                     onClick={() => void move(index, 1)}
                   >

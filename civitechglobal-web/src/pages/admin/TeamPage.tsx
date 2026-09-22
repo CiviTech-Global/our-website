@@ -22,6 +22,8 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { MoveButtons } from '@/components/admin/OrderedList';
 import { useOrderedList } from '@/components/admin/useOrderedList';
@@ -29,6 +31,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -72,6 +75,23 @@ export default function AdminTeamPage() {
 
   const members = useOrderedList(data?.members, reorderMembers.mutateAsync, onError);
   const sections = useOrderedList(data?.sections, reorderSections.mutateAsync, onError);
+
+  // Only the members are searched. The sections are a handful of headings
+  // that fit on the screen at once, and a filter over them would hide the
+  // structure this page exists to arrange.
+  const controls = useListControls({
+    pageSize: Number.MAX_SAFE_INTEGER,
+    filters: { section: '', published: '' },
+  });
+  const shownMembers = useClientList(members.order, controls, {
+    searchFields: (member) => [member.name, member.title, member.bio],
+    filters: {
+      section: (member, value) => member.sectionId === value,
+      published: (member, value) => (value === 'yes' ? member.published : !member.published),
+    },
+  });
+  // Reordering acts on position, so it only means something unfiltered.
+  const ordering = controls.activeCount === 0;
 
   const [editingMember, setEditingMember] = useState<AdminTeamMember | 'new' | null>(null);
   const [editingSection, setEditingSection] = useState<AdminTeamSection | 'new' | null>(null);
@@ -179,17 +199,59 @@ export default function AdminTeamPage() {
           </Button>
         </div>
 
+        {members.order.length > 0 && (
+          <ListToolbar
+            controls={controls}
+            searchPlaceholder={t.team.searchMembers}
+            total={shownMembers.total}
+            isLoading={isLoading}
+            filters={
+              <>
+                <Select
+                  className="w-48"
+                  value={controls.filters.section}
+                  aria-label={t.team.sectionLabel}
+                  onChange={(e) => controls.setFilter('section', e.target.value)}
+                >
+                  <option value="">{t.team.allSections}</option>
+                  {sections.order.map((section) => (
+                    <option key={section.id} value={section.id}>
+                      {section.name}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  className="w-40"
+                  value={controls.filters.published}
+                  aria-label={t.team.filterPublished}
+                  onChange={(e) => controls.setFilter('published', e.target.value)}
+                >
+                  <option value="">{t.list.allOption}</option>
+                  <option value="yes">{t.team.publishedOnly}</option>
+                  <option value="no">{t.team.unpublishedOnly}</option>
+                </Select>
+              </>
+            }
+          />
+        )}
+
+        {!ordering && <p className="text-label text-app-text-4">{t.team.reorderDisabled}</p>}
+
         {!isLoading && members.order.length === 0 && <EmptyState title={t.team.empty} />}
 
+        {!isLoading && shownMembers.total === 0 && members.order.length > 0 && (
+          <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
+        )}
+
         <ul className="flex flex-col gap-3">
-          {members.order.map((member, index) => (
+          {shownMembers.items.map((member, index) => (
             <li key={member.id}>
               <Card className={member.published ? undefined : 'opacity-70'}>
                 <div className="flex flex-wrap items-center gap-4">
                   <MoveButtons
                     index={index}
                     count={members.order.length}
-                    busy={reorderMembers.isPending}
+                    busy={reorderMembers.isPending || !ordering}
                     onMove={(i, d) => void members.move(i, d)}
                     upLabel={t.team.moveUp}
                     downLabel={t.team.moveDown}

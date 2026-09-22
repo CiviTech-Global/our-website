@@ -2,10 +2,13 @@ import { PageHeader } from '@/components/app/PageHeader';
 import { Shield } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { useAdminRoles } from '@/api/admin';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Spinner } from '@/components/ui/Spinner';
 
 /**
@@ -18,9 +21,26 @@ export default function RolesPage() {
   useDocumentTitle(t.admin.roles);
   const { data, isLoading, isError } = useAdminRoles();
 
+  // The permissions are searched as well as the name: "who can reach the
+  // books module" is the question this page is opened to answer.
+  const controls = useListControls({ pageSize: Number.MAX_SAFE_INTEGER });
+  const shown = useClientList(data, controls, {
+    searchFields: (role) => [role.name, role.description, ...role.permissions],
+  });
+
   return (
     <div>
       <PageHeader title={t.admin.roles} description={t.admin.rolesEndpointNote} />
+
+      {(data?.length ?? 0) > 0 && (
+        <ListToolbar
+          className="mb-4"
+          controls={controls}
+          searchPlaceholder={t.access.searchRoles}
+          total={shown.total}
+          isLoading={isLoading}
+        />
+      )}
 
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -40,9 +60,19 @@ export default function RolesPage() {
         </Card>
       )}
 
-      {data && data.length > 0 && (
+      {!isLoading && shown.total === 0 && (data?.length ?? 0) > 0 && (
+        <Card>
+          <EmptyState
+            icon={<Shield className="size-8" />}
+            title={t.list.noResults}
+            description={t.list.noResultsBody}
+          />
+        </Card>
+      )}
+
+      {shown.total > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {data.map((role) => (
+          {shown.items.map((role) => (
             <Card key={role.id}>
               <CardHeader>
                 <CardTitle>{role.name}</CardTitle>
