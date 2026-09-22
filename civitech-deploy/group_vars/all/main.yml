@@ -47,6 +47,10 @@ registry_owner: civitech-global
 app_version: latest
 image_api: "{{ registry }}/{{ registry_owner }}/civitechglobal-api:{{ app_version }}"
 image_web: "{{ registry }}/{{ registry_owner }}/civitechglobal-web:{{ app_version }}"
+# Compose prefixes a named volume with its project name, which is the deploy
+# directory's basename. Spelled out here because the ownership repair in the
+# app role addresses the volume directly rather than through compose.
+uploads_volume: "{{ app_root | basename }}_uploads"
 # Only needed while the GHCR packages are private. The token is in vault.
 ghcr_username: ""
 

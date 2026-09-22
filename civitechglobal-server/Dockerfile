@@ -30,6 +30,16 @@ COPY --from=deps --chown=app:app /app/prisma ./prisma
 COPY --from=build --chown=app:app /app/dist ./dist
 COPY --chown=app:app package*.json ./
 
+# The uploads volume mounts here, and this directory has to exist in the image
+# for that mount to be usable. Docker seeds an empty named volume from whatever
+# the image has at the mount point, ownership included; with nothing there it
+# creates the mount point itself, owned by root — and the process runs as `app`,
+# so every write failed with EACCES and every upload in production returned a
+# 500. Creating it here, owned by the user that runs, is what makes a fresh
+# volume writable. An existing volume keeps its own ownership, which is why the
+# deploy also repairs one that was created before this line existed.
+RUN mkdir -p /app/storage/project-attachments && chown -R app:app /app/storage
+
 USER app
 
 EXPOSE 5000

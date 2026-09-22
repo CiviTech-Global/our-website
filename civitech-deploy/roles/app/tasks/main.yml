@@ -92,6 +92,22 @@
     chdir: "{{ app_root }}"
   changed_when: true
 
+- name: Make the uploads volume writable by the user the API runs as
+  # A volume created before the image declared this directory belongs to root,
+  # and the API runs as `app` — so every upload failed with EACCES and answered
+  # 500. The image now ships the directory with the right ownership, which
+  # settles it for any volume created from here on; this repairs the one that
+  # already exists, on a host where nobody would think to look.
+  #
+  # Run as root inside the API's own image rather than with a hardcoded uid, so
+  # the ownership always matches whoever that image runs as.
+  ansible.builtin.command:
+    cmd: >-
+      docker run --rm --user 0 --entrypoint chown
+      -v {{ uploads_volume }}:/app/storage/project-attachments
+      {{ image_api }} -R app:app /app/storage/project-attachments
+  changed_when: true
+
 - name: Wait for Postgres to accept connections
   ansible.builtin.command:
     cmd: >-
