@@ -1297,6 +1297,12 @@ const en: typeof fa = {
   },
 
   blog: {
+    searchPlaceholder: 'Search articles',
+    filterTopic: 'Topic',
+    filterTopicAll: 'All topics',
+    sortNewest: 'Newest first',
+    sortOldest: 'Oldest first',
+    sortShortest: 'Shortest read',
     title: 'CiviTech Global Blog',
     subtitle: 'Practical guides for important decisions: third-party and body insurance, prices, and what to know before you buy.',
     minutes: '{n} min read',
@@ -1493,6 +1499,10 @@ const en: typeof fa = {
     saved: 'Saved.',
   },
   experts: {
+    searchPlaceholder: 'Search name, headline or speciality',
+    filterSpeciality: 'Speciality',
+    filterSpecialityAll: 'All specialities',
+    filterAvailability: 'Takes consultations',
     title: 'Club of experts',
     subtitle: 'The people we turn to, and who you can ask for by name.',
     metaDescription:
@@ -1634,6 +1644,10 @@ const en: typeof fa = {
     reject: 'Reject',
   },
   showcase: {
+    searchOrganizations: 'Search name or industry',
+    searchPlaceholder: 'Search title, summary or technology',
+    filterTechnology: 'Technology',
+    filterTechnologyAll: 'All technologies',
     groupAdmin: 'Showcase',
     visitWebsite: 'Website',
     since: 'Since',

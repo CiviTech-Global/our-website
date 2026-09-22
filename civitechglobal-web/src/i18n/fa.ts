@@ -1296,6 +1296,12 @@ const fa = {
   },
 
   blog: {
+    searchPlaceholder: 'جستجو در مقاله‌ها',
+    filterTopic: 'موضوع',
+    filterTopicAll: 'همهٔ موضوع‌ها',
+    sortNewest: 'تازه‌ترین',
+    sortOldest: 'قدیمی‌ترین',
+    sortShortest: 'کوتاه‌ترین',
     title: 'بلاگ رایان تمدن',
     subtitle: 'راهنمای عملی برای تصمیم‌های مهم: بیمه شخص ثالث و بدنه، قیمت‌ها و نکاتی که قبل از خرید باید بدانید.',
     minutes: '{n} دقیقه مطالعه',
@@ -1486,6 +1492,10 @@ const fa = {
     saved: 'ذخیره شد.',
   },
   experts: {
+    searchPlaceholder: 'جستجو در نام، عنوان یا تخصص',
+    filterSpeciality: 'تخصص',
+    filterSpecialityAll: 'همهٔ تخصص‌ها',
+    filterAvailability: 'پذیرش مشاوره',
     title: 'باشگاه متخصصان',
     subtitle: 'کسانی که به آن‌ها تکیه می‌کنیم، و می‌توانید نامشان را بخواهید.',
     metaDescription:
@@ -1621,6 +1631,10 @@ const fa = {
     reject: 'رد کردن',
   },
   showcase: {
+    searchOrganizations: 'جستجو در نام یا صنعت',
+    searchPlaceholder: 'جستجو در عنوان، شرح یا فناوری',
+    filterTechnology: 'فناوری',
+    filterTechnologyAll: 'همهٔ فناوری‌ها',
     groupAdmin: 'ویترین',
     visitWebsite: 'وبسایت',
     since: 'از سال',

@@ -1,6 +1,6 @@
 import { ProjectGallery } from '@/components/showcase/ProjectGallery';
-import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { Code2, ExternalLink, FolderKanban, Github, Star } from 'lucide-react';
 import {
   showcaseImageSrc,
@@ -12,11 +12,16 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Badge, type BadgeVariant } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Pagination } from '@/components/ui/Pagination';
+import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +41,8 @@ function statusVariant(status: ShowcaseProjectStatus): BadgeVariant {
   }
 }
 
+const PAGE_SIZE = 12;
+
 /**
  * What the company is building, and what it has delivered.
  *
@@ -46,11 +53,33 @@ export default function PortfolioPage() {
   const { t } = useLocale();
   useDocumentTitle(t.showcase.projectsTitle, { description: t.seo.portfolio });
 
-  const [params, setParams] = useSearchParams();
-  const raw = params.get('filter');
+  const controls = useListControls({
+    defaultView: 'cards',
+    pageSize: PAGE_SIZE,
+    filters: { filter: 'all', technology: '' },
+  });
+  const raw = controls.filters.filter;
   const filter: ProjectFilter = raw === 'current' || raw === 'completed' ? raw : 'all';
 
+  // The status filter is the server's — it decides which projects are current
+  // — and the rest is done here, over the set it sent back.
   const { data, isLoading, isFetching } = usePublicProjects(filter);
+  const list = useClientList(data, controls, {
+    searchFields: (project) => [
+      project.title,
+      project.summary,
+      project.category,
+      project.client?.name,
+      ...project.technologies,
+    ],
+    filters: { technology: (project, value) => project.technologies.includes(value) },
+    pageSize: PAGE_SIZE,
+  });
+
+  const technologies = useMemo(
+    () => [...new Set((data ?? []).flatMap((project) => project.technologies))].sort(),
+    [data]
+  );
   const labels: Record<ProjectFilter, string> = {
     all: t.showcase.filterAll,
     current: t.showcase.filterCurrent,
@@ -72,7 +101,7 @@ export default function PortfolioPage() {
               key={value}
               type="button"
               aria-pressed={filter === value}
-              onClick={() => setParams(value === 'all' ? {} : { filter: value }, { replace: true })}
+              onClick={() => controls.setFilter('filter', value)}
               className={cn(
                 'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
                 filter === value
@@ -86,23 +115,56 @@ export default function PortfolioPage() {
         </div>
       </div>
 
+      <ListToolbar
+        className="mb-6"
+        controls={controls}
+        searchPlaceholder={t.showcase.searchPlaceholder}
+        total={list.total}
+        isLoading={isLoading}
+        views={['cards', 'table']}
+        filters={
+          technologies.length > 0 ? (
+            <Select
+              className="w-48"
+              value={controls.filters.technology}
+              aria-label={t.showcase.filterTechnology}
+              onChange={(e) => controls.setFilter('technology', e.target.value)}
+            >
+              <option value="">{t.showcase.filterTechnologyAll}</option>
+              {technologies.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </Select>
+          ) : null
+        }
+      />
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.showcase.projectsEmpty} />}
+      {!isLoading && list.total === 0 && (
+        <EmptyState
+          title={controls.activeCount > 0 ? t.list.noResults : t.showcase.projectsEmpty}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
+      )}
 
       <ul
         className={cn(
-          'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
+          controls.view === 'cards'
+            ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+            : 'flex flex-col gap-3',
           // Kept visible while a new filter loads, just dimmed, so the grid
           // does not collapse to a spinner and jump back.
           isFetching && !isLoading && 'opacity-60 transition-opacity'
         )}
       >
-        {data?.map((project, index) => (
+        {list.items.map((project, index) => (
           <li key={project.id}>
             <AnimatedSection delay={Math.min(index, 6) * 0.04} className="h-full">
               <ProjectCard project={project} />
@@ -110,6 +172,12 @@ export default function PortfolioPage() {
           </li>
         ))}
       </ul>
+
+      {list.totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
+        </div>
+      )}
 
       {!isLoading && (
         <AnimatedSection className="mt-12">

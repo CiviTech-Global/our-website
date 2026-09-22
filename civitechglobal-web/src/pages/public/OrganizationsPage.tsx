@@ -9,11 +9,13 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { toPersianDigits } from '@/i18n/utils';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useListControls } from '@/lib/useListControls';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +39,21 @@ export default function OrganizationsPage({ kind }: { kind: OrganizationKind }) 
   useDocumentTitle(title, { description: isCustomer ? t.seo.customers : t.seo.partners });
 
   const { data, isLoading } = usePublicOrganizations(kind);
-  const all = data ?? [];
+
+  // Search narrows the page without flattening it. The grouping is the
+  // argument this page makes — best-known first, former relationships kept
+  // rather than hidden — so a match keeps the group it belongs to, and a
+  // pager that cut the wall of logos into pages would undo the same point.
+  const controls = useListControls();
+  const rows = data ?? [];
+  const needle = controls.search.toLowerCase();
+  const all = needle
+    ? rows.filter((org) =>
+        [org.name, org.industry, org.testimonialQuote]
+          .filter((field): field is string => Boolean(field))
+          .some((field) => field.toLowerCase().includes(needle))
+      )
+    : rows;
 
   const featured = all.filter((org) => org.featured && org.active);
   const current = all.filter((org) => !org.featured && org.active);
@@ -58,6 +74,16 @@ export default function OrganizationsPage({ kind }: { kind: OrganizationKind }) 
         </p>
       </header>
 
+      {(data?.length ?? 0) > 8 && (
+        <ListToolbar
+          className="mb-8"
+          controls={controls}
+          searchPlaceholder={t.showcase.searchOrganizations}
+          total={all.length}
+          isLoading={isLoading}
+        />
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-16">
           <Spinner label={t.common.loading} />
@@ -65,7 +91,16 @@ export default function OrganizationsPage({ kind }: { kind: OrganizationKind }) 
       )}
 
       {!isLoading && all.length === 0 && (
-        <EmptyState title={isCustomer ? t.showcase.customersEmpty : t.showcase.partnersEmpty} />
+        <EmptyState
+          title={
+            controls.activeCount > 0
+              ? t.list.noResults
+              : isCustomer
+                ? t.showcase.customersEmpty
+                : t.showcase.partnersEmpty
+          }
+          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+        />
       )}
 
       {featured.length > 0 && (

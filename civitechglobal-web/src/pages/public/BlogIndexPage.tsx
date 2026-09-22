@@ -2,14 +2,40 @@ import { Link } from 'react-router';
 import { ArrowLeft, ArrowRight, CalendarDays, Clock } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { useClientList } from '@/lib/clientList';
+import { useListControls } from '@/lib/useListControls';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Pagination } from '@/components/ui/Pagination';
+import { Select } from '@/components/ui/Select';
 import { blogPosts } from '@/content/blog';
+
+const PAGE_SIZE = 8;
+
+// Every keyword any article carries, so the dropdown cannot offer a topic
+// that would return nothing.
+const TOPICS = [...new Set(blogPosts.flatMap((post) => post.keywords))].sort();
 
 export default function BlogIndexPage() {
   const { t, locale } = useLocale();
   useDocumentTitle(t.nav.blog, { description: t.seo.blog });
 
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
+
+  // The posts are bundled with the application, so every word of every article
+  // is already here — the search can read the body, not just the summary.
+  const controls = useListControls({ defaultSort: 'newest', pageSize: PAGE_SIZE, filters: { topic: '' } });
+  const list = useClientList(blogPosts, controls, {
+    searchFields: (post) => [post.title, post.description, post.body, ...post.keywords],
+    filters: { topic: (post, value) => post.keywords.includes(value) },
+    sorts: {
+      newest: (a, b) => (a.date < b.date ? 1 : -1),
+      oldest: (a, b) => (a.date > b.date ? 1 : -1),
+      reading: (a, b) => a.readingMinutes - b.readingMinutes,
+    },
+    pageSize: PAGE_SIZE,
+  });
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
@@ -18,8 +44,46 @@ export default function BlogIndexPage() {
         <p className="mt-3 max-w-2xl text-text-secondary">{t.blog.subtitle}</p>
       </AnimatedSection>
 
+      <ListToolbar
+        className="mb-8"
+        controls={controls}
+        searchPlaceholder={t.blog.searchPlaceholder}
+        total={list.total}
+        filters={
+          <>
+            <Select
+              className="w-48"
+              value={controls.filters.topic}
+              aria-label={t.blog.filterTopic}
+              onChange={(e) => controls.setFilter('topic', e.target.value)}
+            >
+              <option value="">{t.blog.filterTopicAll}</option>
+              {TOPICS.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </Select>
+            <Select
+              className="w-44"
+              value={controls.sort}
+              aria-label={t.list.sortLabel}
+              onChange={(e) => controls.setSort(e.target.value)}
+            >
+              <option value="newest">{t.blog.sortNewest}</option>
+              <option value="oldest">{t.blog.sortOldest}</option>
+              <option value="reading">{t.blog.sortShortest}</option>
+            </Select>
+          </>
+        }
+      />
+
+      {list.total === 0 && (
+        <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
+      )}
+
       <div className="flex flex-col gap-6">
-        {blogPosts.map((post, index) => (
+        {list.items.map((post, index) => (
           <AnimatedSection key={post.slug} delay={index * 0.05}>
             <article className="rounded-2xl border border-border-default bg-surface-50 p-6 transition-colors hover:border-brand-green-500/40">
               <h2 className="text-xl font-semibold text-text-primary">
@@ -49,6 +113,12 @@ export default function BlogIndexPage() {
           </AnimatedSection>
         ))}
       </div>
+
+      {list.totalPages > 1 && (
+        <div className="mt-10">
+          <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
+        </div>
+      )}
     </div>
   );
 }
