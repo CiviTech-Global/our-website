@@ -210,6 +210,24 @@ async function main() {
         await new Promise((wait) => setTimeout(wait, 1200));
         const html = await page.content();
 
+        /*
+         * A page with no canonical is not a page worth publishing.
+         *
+         * The app writes canonical, hreflang and og:url only when it knows its
+         * own origin, and the origin arrives as a build argument. An image
+         * built without one therefore prerenders perfectly valid HTML carrying
+         * none of its indexing metadata — which is what shipped, unnoticed,
+         * because every page looked right and every test passed. The build now
+         * refuses it, which is the only place this can be caught.
+         */
+        const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
+        if (!canonical || /localhost|127\.0\.0\.1/.test(canonical)) {
+          throw new Error(
+            `canonical is ${canonical ? `"${canonical}"` : 'missing'} — ` +
+              'VITE_CANONICAL_ORIGIN was not set at build time'
+          );
+        }
+
         mkdirSync(dirname(route.out), { recursive: true });
         writeFileSync(route.out, html);
 

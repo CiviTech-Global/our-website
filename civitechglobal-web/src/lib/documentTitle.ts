@@ -26,8 +26,13 @@ export const SITE_NAME = {
  * declare itself canonical for production. It falls back to the current origin,
  * which is right for local development.
  */
+// `||`, not `??`: the Docker build declares the variable, so what arrives when
+// nobody sets it is an empty string rather than undefined — which a nullish
+// check accepts, leaving the origin empty and every canonical, hreflang and
+// og:url tag silently unwritten. scripts/build-sitemap.mjs learned this the
+// same way and says so in the same words.
 export const CANONICAL_ORIGIN: string =
-  import.meta.env.VITE_CANONICAL_ORIGIN ??
+  import.meta.env.VITE_CANONICAL_ORIGIN ||
   (typeof window === 'undefined' ? '' : window.location.origin);
 
 /**
