@@ -4,7 +4,9 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTitle';
 import { articleSchema, breadcrumbSchema, faqPageSchema } from '@/lib/structuredData';
 import { Markdown } from '@/lib/markdown';
-import { getBlogPost } from '@/content/blog';
+import { blogPostLocales, getBlogPost } from '@/content/blog';
+import { localeHref } from '@/i18n/localePath';
+import { LOCALE_NAMES, LOCALE_TAGS } from '@/i18n/locales';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,19 +15,35 @@ import { EmptyState } from '@/components/ui/EmptyState';
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const { t, locale } = useLocale();
-  const post = slug ? getBlogPost(slug) : undefined;
+  const post = slug ? getBlogPost(slug, locale) : undefined;
+
+  // The post exists, but not in this language. Offering the editions it does
+  // have is a better answer than "not found" — see the note below.
+  const elsewhere = slug && !post ? blogPostLocales(slug) : [];
 
   const siteName = locale === 'fa' ? SITE_NAME.fa : SITE_NAME.en;
-  const faqLd = post ? faqPageSchema(post.faqs, 'fa-IR') : null;
-  // Posts are Persian-first; the structured data states the language the
-  // post is actually written in regardless of the UI chrome around it.
-  const contentLocale = 'fa-IR';
-  const postUrl = post ? `${CANONICAL_ORIGIN}/blog/${post.slug}` : CANONICAL_ORIGIN;
+  // The language the article is actually written in, which is the post's own
+  // and not the chrome's: an English reader browsing a Persian-only guide is
+  // reading Persian, and the structured data should say so.
+  const contentLocale = post ? LOCALE_TAGS[post.locale] : LOCALE_TAGS[locale];
+  const faqLd = post ? faqPageSchema(post.faqs, contentLocale) : null;
+  const postUrl = post
+    ? `${CANONICAL_ORIGIN}${localeHref(post.locale, `/blog/${post.slug}`)}`
+    : CANONICAL_ORIGIN;
 
   useDocumentTitle(post?.title, {
     description: post?.description,
     type: 'article',
     noindex: !post,
+    // Only the languages this post was written in. Naming one it does not have
+    // would tell search engines to send those readers here, to prose they
+    // cannot read.
+    alternates: post
+      ? post.locales.map((other) => ({
+          locale: other,
+          href: `${CANONICAL_ORIGIN}${localeHref(other, `/blog/${post.slug}`)}`,
+        }))
+      : [],
     jsonLd: post
       ? [
           articleSchema({
@@ -40,8 +58,8 @@ export default function BlogPostPage() {
             siteName,
           }),
           breadcrumbSchema(CANONICAL_ORIGIN, [
-            { name: t.nav.blog, path: locale === 'fa' ? '/blog' : `/${locale}/blog` },
-            { name: post.title, path: `/blog/${post.slug}` },
+            { name: t.nav.blog, path: localeHref(post.locale, '/blog') },
+            { name: post.title, path: localeHref(post.locale, `/blog/${post.slug}`) },
           ]),
           ...(faqLd ? [faqLd] : []),
         ]
@@ -49,12 +67,26 @@ export default function BlogPostPage() {
   });
 
   if (!post) {
+    /*
+     * A slug that exists in another language is not a missing page. Most of
+     * the insurance writing is Persian only — the products, the regulator and
+     * the readers are — so an English visitor following a link to one should
+     * be handed the Persian edition rather than a dead end.
+     */
     return (
       <div className="mx-auto max-w-2xl px-4 py-16">
-        <EmptyState title={t.blog.notFoundTitle} description={t.blog.notFoundBody} />
-        <div className="mt-6 text-center">
+        <EmptyState
+          title={elsewhere.length > 0 ? t.blog.otherLanguageTitle : t.blog.notFoundTitle}
+          description={elsewhere.length > 0 ? t.blog.otherLanguageBody : t.blog.notFoundBody}
+        />
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {elsewhere.map((other) => (
+            <a key={other} href={localeHref(other, `/blog/${slug}`)}>
+              <Button variant="outline">{LOCALE_NAMES[other]}</Button>
+            </a>
+          ))}
           <Link to="/blog">
-            <Button variant="outline">{t.blog.backToBlog}</Button>
+            <Button variant={elsewhere.length > 0 ? 'ghost' : 'outline'}>{t.blog.backToBlog}</Button>
           </Link>
         </div>
       </div>

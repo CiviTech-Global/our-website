@@ -1316,6 +1316,8 @@ const en: typeof fa = {
   },
 
   blog: {
+    otherLanguageTitle: 'This article has not been published in your language',
+    otherLanguageBody: 'You can read the edition that does exist, in one of these languages.',
     searchPlaceholder: 'Search articles',
     filterTopic: 'Topic',
     filterTopicAll: 'All topics',

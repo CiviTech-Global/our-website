@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { localeAlternates, localeHref } from '@/i18n/localePath';
 import { DEFAULT_LOCALE, LOCALE_TAGS, OG_LOCALES } from '@/i18n/locales';
+import type { Locale } from '@/i18n/locales';
 
 /**
  * The name in the tab.
@@ -85,6 +86,19 @@ export interface PageMeta {
   image?: string;
   /** JSON-LD for this page. One object or several. */
   jsonLd?: object | object[];
+  /**
+   * Which languages this page exists in, when that is not all of them.
+   *
+   * Ordinary pages exist in every language — the interface is translated, and
+   * an untranslated section falls back to English on a page that is still the
+   * German page. Blog posts do not work that way: a guide to Iranian motor
+   * insurance is written in Persian and has no German edition at all. Naming
+   * German in its hreflang set would tell a search engine to send German
+   * readers to Persian prose, so a post names only the editions it has.
+   *
+   * Paths, not URLs — the origin is added here, as it is for the default set.
+   */
+  alternates?: Array<{ locale: Locale; href: string }>;
 }
 
 function clearOwned(): void {
@@ -132,6 +146,11 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
   const { pathname } = useLocation();
   const { description, type = 'website', image = DEFAULT_OG_IMAGE, jsonLd } = meta;
   const noindex = meta.noindex === true || isPrivatePath(pathname);
+  // Every language by default: the interface is translated, so each address
+  // is a real page even where a section still falls back to English.
+  const alternates = meta.alternates ?? localeAlternates(pathname);
+  // A fresh array arrives on every render; its contents are what matter.
+  const alternatesKey = alternates.map((alternate) => alternate.locale).join(',');
 
   // The options object is rebuilt on every render by every caller, so the
   // effect keys off its fields rather than its identity.
@@ -172,10 +191,16 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
        * search never surfaces the German page. x-default names where to send
        * a reader whose language is not among them.
        */
-      for (const alternate of localeAlternates(pathname)) {
+      for (const alternate of alternates) {
         addLink('alternate', `${CANONICAL_ORIGIN}${alternate.href}`, LOCALE_TAGS[alternate.locale]);
       }
-      addLink('alternate', `${CANONICAL_ORIGIN}${localeHref(DEFAULT_LOCALE, pathname)}`, 'x-default');
+      // x-default names where a reader whose language is not in the set should
+      // go. For a page that exists in every language that is Persian, the
+      // default; for a post written only in English it is the English one,
+      // because sending them to a Persian article they cannot read is worse.
+      const fallback =
+        alternates.find((alternate) => alternate.locale === DEFAULT_LOCALE) ?? alternates[0];
+      if (fallback) addLink('alternate', `${CANONICAL_ORIGIN}${fallback.href}`, 'x-default');
     }
 
     addMeta('property', 'og:url', canonical);
@@ -185,7 +210,7 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
     addMeta('property', 'og:site_name', site);
     addMeta('property', 'og:image', image.startsWith('http') ? image : `${CANONICAL_ORIGIN}${image}`);
     addMeta('property', 'og:locale', OG_LOCALES[locale]);
-    for (const alternate of localeAlternates(pathname)) {
+    for (const alternate of alternates) {
       if (alternate.locale !== locale) {
         addMeta('property', 'og:locale:alternate', OG_LOCALES[alternate.locale]);
       }
@@ -211,5 +236,6 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
 
     // Deliberately not restored on unmount: the next page sets its own, and
     // putting the old one back first makes the tab flicker.
-  }, [title, locale, pathname, description, noindex, type, image, jsonLdKey, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, locale, pathname, description, noindex, type, image, jsonLdKey, t, alternatesKey]);
 }

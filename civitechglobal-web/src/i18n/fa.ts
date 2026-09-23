@@ -1315,6 +1315,8 @@ const fa = {
   },
 
   blog: {
+    otherLanguageTitle: 'این نوشته به زبان شما منتشر نشده است',
+    otherLanguageBody: 'می‌توانید نسخهٔ موجود را به زبان‌های زیر بخوانید.',
     searchPlaceholder: 'جستجو در مقاله‌ها',
     filterTopic: 'موضوع',
     filterTopicAll: 'همهٔ موضوع‌ها',

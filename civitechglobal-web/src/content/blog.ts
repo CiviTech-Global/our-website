@@ -1,20 +1,37 @@
 import { countWords, extractFaqs, parseMarkdown, type MarkdownBlock } from '@/lib/markdown';
+import { DEFAULT_LOCALE, LOCALES, isLocale, type Locale } from '@/i18n/locales';
 
 /**
  * The blog's content model.
  *
- * Posts are Markdown files in ./blog/*.md with a small frontmatter block
- * (key: value lines between --- markers). They are imported with Vite's `?raw`
- * at build time, so a post is code-reviewed, versioned and prerendered like
- * any other page — no CMS, no runtime fetch, no unpublished draft reaching
- * the bundle. Files are matched by glob, so adding a post is adding a file.
+ * Posts are Markdown files in ./blog with a small frontmatter block (key: value
+ * lines between --- markers). They are imported with Vite's `?raw` at build
+ * time, so a post is code-reviewed, versioned and prerendered like any other
+ * page — no CMS, no runtime fetch, no unpublished draft reaching the bundle.
+ * Files are matched by glob, so adding a post is adding a file.
  *
- * Posts are Persian-first: the article URL exists only in the default locale,
- * which the sitemap and the prerender script mirror.
+ * Language is carried by the filename rather than by frontmatter, because it
+ * decides which glob entry a file is rather than what it says:
+ *
+ *   third-party-insurance-guide.md       Persian — the default, no suffix
+ *   what-we-build.en.md                  the English edition of the same post
+ *   what-we-build.de.md                  the German one
+ *
+ * Not every post exists in every language, and that is the point. The insurance
+ * writing is Persian because the products, the regulator and the readers are;
+ * translating a guide to a compulsory Iranian motor policy into Spanish would
+ * be work nobody reads. What the company does and how it works is written for
+ * everyone, so those posts carry every language. Each post therefore declares
+ * which languages it actually has, and the index, the sitemap, the hreflang set
+ * and the prerender all follow that rather than assuming.
  */
 
 export interface BlogPost {
   slug: string;
+  /** The language this edition is written in. */
+  locale: Locale;
+  /** Every language this post exists in, for hreflang and the picker. */
+  locales: Locale[];
   title: string;
   description: string;
   /** ISO date — feeds Article structured data and the sitemap's lastmod. */
@@ -78,11 +95,31 @@ export function parseFrontmatter(raw: string): { frontmatter: Frontmatter; body:
   return { frontmatter: fields as unknown as Frontmatter, body: match[2].trim() };
 }
 
-function toPost(raw: string): BlogPost {
+/**
+ * The language a file declares, from its name.
+ *
+ * `what-we-build.en.md` is English; `third-party-guide.md` is Persian. An
+ * unknown suffix is not silently treated as Persian — that would file a typo
+ * like `.ne.md` under the default language, where nobody would notice it until
+ * a reader met Dutch prose on the Persian blog.
+ */
+export function localeFromFilename(path: string): Locale {
+  const name = path.split('/').pop() ?? '';
+  const match = /\.([a-z]{2})\.md$/.exec(name);
+  if (!match) return DEFAULT_LOCALE;
+  if (!isLocale(match[1])) {
+    throw new Error(`blog post "${name}" names a language this site does not have`);
+  }
+  return match[1];
+}
+
+function toPost(raw: string, locale: Locale, locales: Locale[]): BlogPost {
   const { frontmatter, body } = parseFrontmatter(raw);
   const blocks = parseMarkdown(body);
   return {
     slug: frontmatter.slug,
+    locale,
+    locales,
     title: frontmatter.title,
     description: frontmatter.description,
     date: frontmatter.date,
@@ -97,17 +134,66 @@ function toPost(raw: string): BlogPost {
   };
 }
 
-const files = import.meta.glob('./blog/*.md', {
+const files = import.meta.glob('./blog/**/*.md', {
   eager: true,
   query: '?raw',
   import: 'default',
 }) as Record<string, string>;
 
-const posts: BlogPost[] = Object.values(files).map((raw) => toPost(raw));
+/**
+ * Every edition, keyed by slug then language.
+ *
+ * Built in two passes because a post has to know its whole language set before
+ * any edition of it is constructed: the English edition's hreflang has to name
+ * the German one, and the German file may be read after it.
+ */
+const editions = new Map<string, Map<Locale, string>>();
+for (const [path, raw] of Object.entries(files)) {
+  const locale = localeFromFilename(path);
+  const { frontmatter } = parseFrontmatter(raw);
+  const bySlug = editions.get(frontmatter.slug) ?? new Map<Locale, string>();
+  if (bySlug.has(locale)) {
+    throw new Error(`two blog files claim slug "${frontmatter.slug}" in the same language`);
+  }
+  bySlug.set(locale, raw);
+  editions.set(frontmatter.slug, bySlug);
+}
 
-// Newest first. date is ISO, so lexicographic order is chronological.
-export const blogPosts: BlogPost[] = posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+const posts: BlogPost[] = [];
+for (const [, byLocale] of editions) {
+  // Ordered by the site's own language list rather than by whichever file the
+  // glob happened to return first, so hreflang sets read the same everywhere.
+  const available = LOCALES.filter((locale) => byLocale.has(locale));
+  for (const locale of available) {
+    posts.push(toPost(byLocale.get(locale)!, locale, available));
+  }
+}
 
-export function getBlogPost(slug: string): BlogPost | undefined {
-  return posts.find((post) => post.slug === slug);
+/** Newest first. `date` is ISO, so lexicographic order is chronological. */
+function newestFirst(list: BlogPost[]): BlogPost[] {
+  return [...list].sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+/** Every edition in every language. The sitemap and the prerender want this. */
+export const allBlogPosts: BlogPost[] = newestFirst(posts);
+
+/**
+ * What a reader of this language can actually read.
+ *
+ * Only editions written in their language — never a Persian article on the
+ * German blog. A reader who follows a link to a post that has no edition in
+ * their language is a different case, handled by the post page.
+ */
+export function blogPostsFor(locale: Locale): BlogPost[] {
+  return newestFirst(posts.filter((post) => post.locale === locale));
+}
+
+export function getBlogPost(slug: string, locale: Locale): BlogPost | undefined {
+  return posts.find((post) => post.slug === slug && post.locale === locale);
+}
+
+/** Which languages a post has, for a link that offers one of them. */
+export function blogPostLocales(slug: string): Locale[] {
+  const byLocale = editions.get(slug);
+  return byLocale ? LOCALES.filter((locale) => byLocale.has(locale)) : [];
 }

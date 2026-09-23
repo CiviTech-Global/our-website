@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { ArrowLeft, ArrowRight, CalendarDays, Clock } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -9,13 +10,9 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
-import { blogPosts } from '@/content/blog';
+import { blogPostsFor } from '@/content/blog';
 
 const PAGE_SIZE = 8;
-
-// Every keyword any article carries, so the dropdown cannot offer a topic
-// that would return nothing.
-const TOPICS = [...new Set(blogPosts.flatMap((post) => post.keywords))].sort();
 
 export default function BlogIndexPage() {
   const { t, locale } = useLocale();
@@ -23,10 +20,21 @@ export default function BlogIndexPage() {
 
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
+  // Only the editions written in this reader's language. The Persian blog is
+  // the long one; the others carry what was written for everybody.
+  const posts = useMemo(() => blogPostsFor(locale), [locale]);
+
+  // Every keyword the posts on this page carry, so the dropdown cannot offer a
+  // topic that would return nothing.
+  const topics = useMemo(
+    () => [...new Set(posts.flatMap((post) => post.keywords))].sort(),
+    [posts]
+  );
+
   // The posts are bundled with the application, so every word of every article
   // is already here — the search can read the body, not just the summary.
   const controls = useListControls({ defaultSort: 'newest', pageSize: PAGE_SIZE, filters: { topic: '' } });
-  const list = useClientList(blogPosts, controls, {
+  const list = useClientList(posts, controls, {
     searchFields: (post) => [post.title, post.description, post.body, ...post.keywords],
     filters: { topic: (post, value) => post.keywords.includes(value) },
     sorts: {
@@ -58,7 +66,7 @@ export default function BlogIndexPage() {
               onChange={(e) => controls.setFilter('topic', e.target.value)}
             >
               <option value="">{t.blog.filterTopicAll}</option>
-              {TOPICS.map((topic) => (
+              {topics.map((topic) => (
                 <option key={topic} value={topic}>
                   {topic}
                 </option>

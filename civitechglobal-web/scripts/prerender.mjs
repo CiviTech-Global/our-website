@@ -72,13 +72,22 @@ function blogArticleRoutes() {
       .filter((name) => name.endsWith('.md'))
       .map((name) => {
         const raw = readFileSync(resolve(dir, name), 'utf8');
-        return /slug:\s*(.+)/.exec(raw)?.[1]?.trim() ?? '';
+        const slug = /slug:\s*(.+)/.exec(raw)?.[1]?.trim() ?? '';
+        // The language lives in the filename — see src/content/blog.ts — and
+        // each edition has its own address, so each is prerendered.
+        const suffix = /\.([a-z]{2})\.md$/.exec(name);
+        return { slug, locale: suffix ? suffix[1] : 'fa' };
       })
-      .filter(Boolean)
-      .map((slug) => ({
-        url: `/blog/${slug}`,
-        out: join(DIST, 'blog', slug, 'index.html'),
-      }));
+      .filter((post) => post.slug)
+      .map(({ slug, locale }) => {
+        // Persian owns the root, as everywhere else on the site; the other
+        // languages sit under their prefix. Mirrors localeHref.
+        const prefix = locale === 'fa' ? '' : `/${locale}`;
+        return {
+          url: `${prefix}/blog/${slug}`,
+          out: join(DIST, ...(locale === 'fa' ? [] : [locale]), 'blog', slug, 'index.html'),
+        };
+      });
   } catch {
     return [];
   }

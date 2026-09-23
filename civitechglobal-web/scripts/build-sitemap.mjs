@@ -76,14 +76,34 @@ const PAGES = [
 function blogPosts() {
   const dir = resolve(HERE, '..', 'src', 'content', 'blog');
   try {
-    return readdirSync(dir)
-      .filter((name) => name.endsWith('.md'))
-      .map((name) => {
-        const raw = readFileSync(resolve(dir, name), 'utf8');
-        const field = (key) => new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(raw)?.[1]?.trim() ?? '';
-        return { slug: field('slug'), lastmod: field('updated') || field('date') };
-      })
-      .filter((post) => post.slug.length > 0);
+    // Grouped by slug, because one article is several files — one per language
+    // it was written in. Mirrors localeFromFilename in src/content/blog.ts: an
+    // unsuffixed name is Persian, `.de.md` is German.
+    const bySlug = new Map();
+
+    for (const name of readdirSync(dir).filter((file) => file.endsWith('.md'))) {
+      const raw = readFileSync(resolve(dir, name), 'utf8');
+      const field = (key) => new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(raw)?.[1]?.trim() ?? '';
+      const slug = field('slug');
+      if (!slug) continue;
+
+      const suffix = /\.([a-z]{2})\.md$/.exec(name);
+      const locale = suffix ? suffix[1] : DEFAULT_LOCALE;
+      if (!LOCALES.includes(locale)) continue;
+
+      const post = bySlug.get(slug) ?? { slug, locales: [], lastmod: '' };
+      post.locales.push(locale);
+      // The newest edition's date speaks for the article: a translation added
+      // this week is a change to the page a crawler already has.
+      const lastmod = field('updated') || field('date');
+      if (lastmod > post.lastmod) post.lastmod = lastmod;
+      bySlug.set(slug, post);
+    }
+
+    return [...bySlug.values()].map((post) => ({
+      ...post,
+      locales: LOCALES.filter((locale) => post.locales.includes(locale)),
+    }));
   } catch {
     return [];
   }
@@ -109,18 +129,39 @@ function landingEntry(landing) {
   ].join('\n');
 }
 
-function articleEntry(post) {
-  const url = `${ORIGIN}/blog/${post.slug}`;
-  return [
-    '  <url>',
-    `    <loc>${url}</loc>`,
-    `    <xhtml:link rel="alternate" hreflang="fa-IR" href="${url}"/>`,
-    `    <xhtml:link rel="alternate" hreflang="x-default" href="${url}"/>`,
-    ...(post.lastmod ? [`    <lastmod>${post.lastmod}</lastmod>`] : []),
-    '    <changefreq>monthly</changefreq>',
-    '    <priority>0.7</priority>',
-    '  </url>',
-  ].join('\n');
+/**
+ * One entry per language an article was actually written in.
+ *
+ * Not per language the site has. The insurance writing is Persian — the
+ * products, the regulator and the readers are — while what the company does is
+ * written for everybody. Listing a German URL for a Persian-only guide would
+ * publish an address that does not exist, and naming German in its hreflang
+ * set would ask search engines to send German readers to prose they cannot
+ * read.
+ */
+function articleEntries(post) {
+  const path = `/blog/${post.slug}`;
+  const alternates = post.locales.map(
+    (locale) =>
+      `    <xhtml:link rel="alternate" hreflang="${LOCALE_TAGS[locale]}" href="${href(locale, path)}"/>`
+  );
+  // x-default is the Persian edition where there is one, and otherwise the
+  // first that exists: a reader whose language is missing should land on a
+  // real article rather than on nothing.
+  const fallback = post.locales.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : post.locales[0];
+
+  return post.locales.map((locale) =>
+    [
+      '  <url>',
+      `    <loc>${href(locale, path)}</loc>`,
+      ...alternates,
+      `    <xhtml:link rel="alternate" hreflang="x-default" href="${href(fallback, path)}"/>`,
+      ...(post.lastmod ? [`    <lastmod>${post.lastmod}</lastmod>`] : []),
+      '    <changefreq>monthly</changefreq>',
+      '    <priority>0.7</priority>',
+      '  </url>',
+    ].join('\n')
+  );
 }
 
 /** Signed-in areas and one-time links. Mirrors PRIVATE_PREFIXES in the app. */
@@ -171,7 +212,7 @@ const sitemap = [
   '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
   ...PAGES.flatMap((page) => LOCALES.map((locale) => urlEntry(locale, page))),
   ...LANDINGS.map(landingEntry),
-  ...blogPosts().map(articleEntry),
+  ...blogPosts().flatMap(articleEntries),
   '</urlset>',
   '',
 ].join('\n');
@@ -199,5 +240,5 @@ writeFileSync(resolve(PUBLIC, 'sitemap.xml'), sitemap);
 writeFileSync(resolve(PUBLIC, 'robots.txt'), robots);
 
 console.log(
-  `sitemap: ${PAGES.length * LOCALES.length + LANDINGS.length + blogPosts().length} urls, robots: ${PRIVATE.length * LOCALES.length} disallow rules (${ORIGIN})`
+  `sitemap: ${PAGES.length * LOCALES.length + LANDINGS.length + blogPosts().flatMap(articleEntries).length} urls, robots: ${PRIVATE.length * LOCALES.length} disallow rules (${ORIGIN})`
 );
