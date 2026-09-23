@@ -39,9 +39,12 @@ export default function BlogPostPage() {
     // would tell search engines to send those readers here, to prose they
     // cannot read.
     alternates: post
-      ? post.locales.map((other) => ({
+      ? // Paths, not URLs: documentTitle adds the origin, as it does for the
+        // default set. Passing a whole URL here emitted every blog hreflang
+        // with the origin twice over.
+        post.locales.map((other) => ({
           locale: other,
-          href: `${CANONICAL_ORIGIN}${localeHref(other, `/blog/${post.slug}`)}`,
+          href: localeHref(other, `/blog/${post.slug}`),
         }))
       : [],
     jsonLd: post

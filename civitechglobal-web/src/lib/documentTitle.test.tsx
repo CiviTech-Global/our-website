@@ -78,6 +78,59 @@ describe('page head', () => {
     ]);
   });
 
+  /**
+   * A blog post exists only in the languages it was written in, so it names
+   * those and no others. Naming a language it does not have would ask a
+   * search engine to send those readers to prose they cannot read.
+   */
+  it('lets a page name only the languages it actually has', () => {
+    at('/blog/how-we-work', {
+      title: 'How we work',
+      meta: {
+        alternates: [
+          { locale: 'fa', href: '/blog/how-we-work' },
+          { locale: 'en', href: '/en/blog/how-we-work' },
+        ],
+      },
+    });
+
+    expect(links('alternate')).toEqual([
+      { href: `${origin}/blog/how-we-work`, hreflang: 'fa-IR' },
+      { href: `${origin}/en/blog/how-we-work`, hreflang: 'en' },
+      { href: `${origin}/blog/how-we-work`, hreflang: 'x-default' },
+    ]);
+  });
+
+  // The option takes paths and adds the origin itself. Passing whole URLs
+  // emitted every blog hreflang with the origin twice over, which is a link
+  // to nowhere that nothing in a type check or a render would notice.
+  it('adds the origin exactly once to a page-supplied alternate', () => {
+    at('/blog/one', {
+      title: 'One',
+      meta: { alternates: [{ locale: 'fa', href: '/blog/one' }] },
+    });
+
+    for (const link of links('alternate')) {
+      expect(link.href).toBe(`${origin}/blog/one`);
+      expect(link.href?.match(/https?:\/\//g) ?? []).toHaveLength(1);
+    }
+  });
+
+  // An article with no Persian edition still needs somewhere to send a reader
+  // whose language is not in the set.
+  it('falls back to the first edition when there is no default-language one', () => {
+    at('/en/blog/english-only', {
+      locale: 'en',
+      title: 'English only',
+      meta: { alternates: [{ locale: 'en', href: '/en/blog/english-only' }] },
+    });
+
+    expect(links('alternate')).toEqual([
+      { href: `${origin}/en/blog/english-only`, hreflang: 'en' },
+      { href: `${origin}/en/blog/english-only`, hreflang: 'x-default' },
+    ]);
+  });
+
   it('gives each page its own description', () => {
     at('/services', { meta: { description: 'What we build.' } });
     expect(meta('description')).toBe('What we build.');
