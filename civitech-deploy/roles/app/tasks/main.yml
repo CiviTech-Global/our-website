@@ -225,6 +225,41 @@
   ansible.builtin.command: docker image prune -f
   changed_when: false
 
+- name: Drop release images older than the ones worth rolling back to
+  # Every deploy leaves a tagged pair behind, and nothing removed them: sixty
+  # images had accumulated, and the disk they share with the build cache had
+  # reached 71% — enough that a build was killed partway through.
+  #
+  # The release being deployed is held back by name before anything is sorted.
+  # Sorting alone is not enough: an image that was retagged rather than rebuilt
+  # keeps its original creation time, so several releases share a timestamp and
+  # order arbitrarily among themselves — which put the live release in the
+  # removal list the first time this was tried.
+  #
+  # Everything else is ordered newest first, {{ keep_releases | int - 1 }} more
+  # are kept for rollback.yml to reach for, and the rest go. An image a running
+  # container holds cannot be removed, so the worst case is failing to free
+  # space rather than taking the site down.
+  ansible.builtin.shell:
+    executable: /bin/bash
+    cmd: |
+      set -o pipefail
+      for repo in civitechglobal-api civitechglobal-web; do
+        image="{{ registry }}/{{ registry_owner }}/${repo}"
+        listed=$(docker images --filter "reference=${image}" --format '{{ "{{" }}.CreatedAt{{ "}}" }} {{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }}')
+        stale=$(echo "${listed}" | grep -v ":{{ app_version }}\$" | sort -r | tail -n +{{ keep_releases | int }} | awk '{print $NF}')
+        if [ -n "${stale}" ]; then echo "${stale}" | xargs -r docker rmi >/dev/null 2>&1 || true; fi
+      done
+  changed_when: false
+
+- name: Prune build cache that is no longer worth keeping
+  # Not a blanket prune. The cache holds the npm layers, and this host reaches
+  # the npm registry unreliably — a build that has to re-download everything
+  # is a build that can fail on the network. Recent cache is therefore an
+  # asset; cache older than a week is just disk.
+  ansible.builtin.command: docker builder prune -f --filter until={{ build_cache_ttl_hours }}h
+  changed_when: false
+
 - name: Report
   ansible.builtin.debug:
     msg: >-

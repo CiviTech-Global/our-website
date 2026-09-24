@@ -51,6 +51,16 @@ image_web: "{{ registry }}/{{ registry_owner }}/civitechglobal-web:{{ app_versio
 # directory's basename. Spelled out here because the ownership repair in the
 # app role addresses the volume directly rather than through compose.
 uploads_volume: "{{ app_root | basename }}_uploads"
+
+# How many tagged releases of each image to keep on the host. Three is the
+# current one plus two to roll back to; older ones are only occupying disk,
+# and the source they were built from is in git either way.
+keep_releases: 3
+
+# Build cache older than this is deleted on each deploy. A week keeps the npm
+# layers that let a rebuild succeed when the registry is unreachable, without
+# letting the cache grow to the tens of gigabytes it reached before.
+build_cache_ttl_hours: 168
 # Only needed while the GHCR packages are private. The token is in vault.
 ghcr_username: ""
 
