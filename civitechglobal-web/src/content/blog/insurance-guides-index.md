@@ -75,6 +75,7 @@ faqHeading: سوال‌های متداول انتخاب بیمه
 
 - [چه چیزهایی می‌سازیم؟](/blog/what-we-build)
 - [چطور کار می‌کنیم؟](/blog/how-we-work)
+- [باشگاه کارشناسان، بازار کتاب و تابلوی شغل](/blog/community-platform)
 - [هزینهٔ ساخت یک اپلیکیشن چقدر است؟](/blog/app-development-cost)
 - [چطور یک شرکت نرم‌افزاری خوب انتخاب کنیم؟](/blog/choose-software-company)
 - [راهنمای درآمد فریلنسری](/blog/freelance-income-guide)

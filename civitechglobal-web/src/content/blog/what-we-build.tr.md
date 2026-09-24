@@ -60,6 +60,8 @@ Bu yolun ayrıntısı [nasıl çalışıyoruz](/blog/how-we-work) yazısında.
 
 ## Önceki işler
 
+Teknik topluluk için yaptığımız araçları — uzmanlar kulübü, kitap pazarı ve iş ilanları — [bu yazıda](/blog/community-platform) anlattık.
+
 [Projeler sayfası](/portfolio) süren ve tamamlanan işleri ekran görüntüleriyle gösterir. Kimlerle çalıştığımızı [müşteriler](/customers) ve [iş ortakları](/partners) sayfalarında görebilirsiniz.
 
 ## Yazılım hizmetlerimizle ilgili sık sorulanlar

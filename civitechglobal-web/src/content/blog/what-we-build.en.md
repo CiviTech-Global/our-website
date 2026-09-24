@@ -60,6 +60,8 @@ The detail of that path is in [how we work](/blog/how-we-work).
 
 ## Previous work
 
+The tools we built for the technical community — the experts club, the book market and the job board — are described in [this article](/blog/community-platform).
+
 The [projects page](/portfolio) shows current and completed work with screenshots and detail. If you want to know who we have worked with, see [customers](/customers) and [partners](/partners).
 
 ## Common questions about our software work

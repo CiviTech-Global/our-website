@@ -60,6 +60,8 @@ El detalle de ese recorrido está en [cómo trabajamos](/blog/how-we-work).
 
 ## Trabajos anteriores
 
+Las herramientas que hemos construido para la comunidad técnica — el club de expertos, el mercado de libros y el tablón de empleo — se describen en [este artículo](/blog/community-platform).
+
 La [página de proyectos](/portfolio) muestra trabajos en curso y terminados, con capturas y detalles. Para saber con quién hemos trabajado, vea [clientes](/customers) y [socios](/partners).
 
 ## Preguntas frecuentes sobre nuestro trabajo de software

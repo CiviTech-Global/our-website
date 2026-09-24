@@ -60,6 +60,8 @@ Der Weg im Detail steht in [Wie wir arbeiten](/blog/how-we-work).
 
 ## Bisherige Arbeiten
 
+Die Werkzeuge für die technische Community — Expertenclub, Büchermarkt und Stellenbörse — beschreibt [dieser Beitrag](/blog/community-platform).
+
 Die [Projektseite](/portfolio) zeigt laufende und abgeschlossene Arbeiten mit Bildern und Details. Wen wir begleitet haben, sehen Sie unter [Kunden](/customers) und [Partner](/partners).
 
 ## Häufige Fragen zu unserer Softwarearbeit
