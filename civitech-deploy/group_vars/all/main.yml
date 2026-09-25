@@ -93,7 +93,17 @@ db_pool_timeout: 20
 # api container is healthy, then set it true and deploy again. Splitting the
 # cutover from the migration means a privilege mistake shows up as one failed
 # deploy you can roll back, not as a migration you cannot.
-db_use_least_privilege_role: false
+#
+# Turned on 2026-09-25, after checking on the live database that the cutover
+# could not fail for a privilege reason:
+#   - all 37 application tables have RLS enabled AND a policy for civitech_app
+#   - no table is missing SELECT/INSERT/UPDATE/DELETE for the role
+#   - no sequence is missing USAGE, so inserts can still get an id
+#   - vault_db_app_password is populated, so ALTER ROLE ... LOGIN has something
+#     to set
+# Until this was true, every policy in 20260910180000 was inert: the owner
+# bypasses RLS, and the owner is what the app connected as.
+db_use_least_privilege_role: true
 db_app_user: civitech_app
 
 # NOTE: there is no Telegram bot in this deployment. The company offers
