@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LocaleProvider, useLocale } from './LocaleProvider';
 import en from './en';
+import { withFallback } from './merge';
 
 const STORAGE_KEY = 'civitech-locale';
 
@@ -96,17 +97,27 @@ describe('LocaleProvider RTL/i18n', () => {
   });
 
   it('fills an untranslated key from English rather than rendering nothing', () => {
+    // A hand-made partial dictionary, not a real one: as the real dictionaries
+    // fill up, a test that names a key it expects to be missing goes stale and
+    // stops testing the fallback at all.
+    const merged = withFallback({ market: { title: 'Başlık' } }, en);
+
+    expect(merged.market.title).toBe('Başlık');
+    expect(merged.market.description).toBe(en.market.description);
+    expect(merged.common.loading).toBe(en.common.loading);
+  });
+
+  it('renders a translated dictionary with no empty nodes', () => {
     render(
       <LocaleProvider locale="tr">
         <Probe />
       </LocaleProvider>
     );
 
-    // "common.loading" is translated into Turkish; "market.title" is not, and
-    // must arrive as the English sentence — an empty node here would be a
-    // blank heading on a live page.
+    // An empty node here would be a blank heading on a live page, whether the
+    // key was translated or fell back.
     expect(screen.getByTestId('greeting')).toHaveTextContent('Yükleniyor');
-    expect(screen.getByTestId('deep')).toHaveTextContent(en.market.title);
+    expect(screen.getByTestId('deep').textContent?.trim()).not.toBe('');
   });
 
   it('picking a language moves to that language address and remembers the choice', () => {

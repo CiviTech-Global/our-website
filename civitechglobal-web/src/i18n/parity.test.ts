@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import fa from './fa';
 import en from './en';
+import tr from './tr';
+import de from './de';
+import fr from './fr';
+import es from './es';
 
 function keys(o: unknown, p = ''): string[] {
   return Object.entries(o as Record<string, unknown>).flatMap(([k, v]) =>
@@ -49,7 +53,33 @@ describe('i18n', () => {
     expect([...E].filter((k) => !F.includes(k))).toEqual([]);
   });
 
-  it.each(['./fa.ts', './en.ts'])('%s defines each key once', (file) => {
-    expect(duplicateKeysIn(file)).toEqual([]);
+  it.each(['./fa.ts', './en.ts', './tr.ts', './de.ts', './fr.ts', './es.ts'])(
+    '%s defines each key once',
+    (file) => {
+      expect(duplicateKeysIn(file)).toEqual([]);
+    }
+  );
+
+  /**
+   * The other dictionaries are typed as partial, so a missing key is not a
+   * type error — it just falls back to English at runtime, which nobody
+   * notices until a German speaker reads an English sentence.
+   *
+   * `landing.*` is the exception and is meant to be: the insurance product
+   * pages are Persian-only by decision, so they are not translated and not
+   * counted here.
+   */
+  it.each([
+    ['tr', tr],
+    ['de', de],
+    ['fr', fr],
+    ['es', es],
+  ])('%s translates every key outside the Persian-only insurance pages', (_locale, dict) => {
+    const translated = new Set(keys(dict));
+    const untranslated = keys(en)
+      .filter((k) => !k.startsWith('landing.'))
+      .filter((k) => !translated.has(k));
+
+    expect(untranslated).toEqual([]);
   });
 });
