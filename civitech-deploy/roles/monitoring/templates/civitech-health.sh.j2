@@ -48,8 +48,21 @@ notify() {
 failures=0
 failed_urls=""
 
+# The nginx checks go to 127.0.0.1, so curl sends `Host: 127.0.0.1` and nginx
+# — which only has a server block for the real domain — falls through to its
+# default server and answers 404. The app is fine; the probe was asking the
+# wrong question, and a monitor that cries wolf on a healthy site gets muted.
+#
+# Sending the real Host makes the request match the vhost, so this checks what
+# it was always meant to check: nginx routing to the application, without
+# leaving the machine or depending on DNS.
 for url in "${URLS[@]}"; do
-  if ! curl -fsS --max-time "$TIMEOUT" -o /dev/null "$url"; then
+  case "$url" in
+    *://127.0.0.1*|*://localhost*) host_args=(-H "Host: {{ domain_name }}") ;;
+    *) host_args=() ;;
+  esac
+
+  if ! curl -fsS --max-time "$TIMEOUT" "${host_args[@]}" -o /dev/null "$url"; then
     failures=$((failures + 1))
     failed_urls="${failed_urls} ${url}"
   fi
