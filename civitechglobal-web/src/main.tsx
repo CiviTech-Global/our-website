@@ -7,6 +7,7 @@ import App from './App';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
 import { localePrefix, splitLocalePath } from '@/i18n/localePath';
+import { preloadLocale } from '@/i18n/dictionaries';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastViewport } from '@/components/ui/Toast';
 import { AuthProvider } from '@/contexts/AuthProvider';
@@ -34,6 +35,22 @@ installAnalytics();
  */
 const { locale: initialLocale } = splitLocalePath(window.location.pathname);
 
+/**
+ * The one language this visitor needs, fetched before anything mounts.
+ *
+ * Awaiting here rather than inside the provider is deliberate. The language is
+ * already decided by the URL, so there is nothing to wait *for* once the chunk
+ * has landed — and a provider that resolved asynchronously would paint one
+ * frame of the wrong language, or of nothing, on every page load.
+ *
+ * The cost is one module fetch before first paint. It is a small chunk, the
+ * prerendered HTML is already on screen while it loads, and it replaces the
+ * ~155 KB of dictionaries that used to sit in the main bundle.
+ *
+ * An async IIFE rather than a top-level await: the build targets Safari 14 and
+ * Chrome 87, which predate top-level await, and raising the target to get
+ * prettier syntax here would drop browsers this audience actually uses.
+ */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -44,23 +61,25 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <LocaleProvider locale={initialLocale}>
-          <ToastProvider>
-            <BrowserRouter basename={localePrefix(initialLocale) || undefined}>
-              <AuthProvider>
-                <ErrorBoundary>
-                  <App />
-                </ErrorBoundary>
-              </AuthProvider>
-            </BrowserRouter>
-            <ToastViewport />
-          </ToastProvider>
-        </LocaleProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </StrictMode>
-);
+void preloadLocale(initialLocale).then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <LocaleProvider locale={initialLocale}>
+            <ToastProvider>
+              <BrowserRouter basename={localePrefix(initialLocale) || undefined}>
+                <AuthProvider>
+                  <ErrorBoundary>
+                    <App />
+                  </ErrorBoundary>
+                </AuthProvider>
+              </BrowserRouter>
+              <ToastViewport />
+            </ToastProvider>
+          </LocaleProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  );
+});

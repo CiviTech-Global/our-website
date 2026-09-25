@@ -23,7 +23,18 @@ import type { Request } from 'express';
 export const LOCALES = ['fa', 'en', 'tr', 'de', 'fr', 'es'] as const;
 export type Locale = (typeof LOCALES)[number];
 
-const DEFAULT_LOCALE: Locale = 'fa';
+
+/**
+ * What a visitor gets when neither signal matches.
+ *
+ * Not the site default. Persian is right for the home market and it is what
+ * the unprefixed URLs serve, but somebody whose country we have no mapping for
+ * and whose browser asked for a language we do not speak is, by construction,
+ * not a Persian reader — handing them Persian is the one answer we can be
+ * fairly sure is wrong. English is the language most likely to be readable by
+ * someone we know nothing else about.
+ */
+const UNMATCHED_LOCALE: Locale = 'en';
 
 /** Country to language. Only where one language is clearly the working one. */
 const COUNTRY_LOCALE: Record<string, Locale> = {
@@ -101,5 +112,5 @@ export function detectLocale(req: Request): DetectedLocale {
   );
   if (byHeader) return { locale: byHeader, source: 'accept-language' };
 
-  return { locale: DEFAULT_LOCALE, source: 'default' };
+  return { locale: UNMATCHED_LOCALE, source: 'default' };
 }

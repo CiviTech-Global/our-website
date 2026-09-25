@@ -70,8 +70,27 @@ describe('detectLocale', () => {
     });
   });
 
-  it('falls back to Persian when nothing says otherwise', () => {
-    expect(detectLocale(req({}))).toEqual({ locale: 'fa', source: 'default' });
+  /**
+   * Not Persian, deliberately. A visitor with no country we recognise and no
+   * language we speak is the one visitor we can be fairly confident does not
+   * read Persian, so the site default is the wrong answer for them.
+   */
+  it('falls back to English when nothing says otherwise', () => {
+    expect(detectLocale(req({}))).toEqual({ locale: 'en', source: 'default' });
+  });
+
+  it('still sends the Persian-speaking countries to Persian', () => {
+    expect(detectLocale(req({ 'cf-ipcountry': 'IR' }))).toEqual({
+      locale: 'fa',
+      source: 'country',
+    });
+  });
+
+  it('still honours a browser that asks for Persian from anywhere', () => {
+    expect(detectLocale(req({ 'accept-language': 'fa-IR,fa;q=0.9' }))).toEqual({
+      locale: 'fa',
+      source: 'accept-language',
+    });
   });
 
   it('maps the Persian-speaking countries', () => {

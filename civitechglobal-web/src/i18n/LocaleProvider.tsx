@@ -1,11 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
-import fa from './fa';
-import en from './en';
-import tr from './tr';
-import de from './de';
-import fr from './fr';
-import es from './es';
-import { withFallback } from './merge';
+import { fallbackDictionary, loadedDictionary } from './dictionaries';
 import { navigateToLocale } from './localePath';
 import {
   DEFAULT_LOCALE,
@@ -19,23 +13,6 @@ import {
 // Types only: a value re-export here would make this a mixed module and cost
 // fast refresh for every screen the provider wraps.
 export type { Locale, Translations };
-
-/**
- * Every language, complete.
- *
- * The four newer ones are partial dictionaries filled out from English, so a
- * key nobody has translated yet renders an English sentence rather than the
- * word "undefined" in the middle of a paragraph. Persian and English are whole
- * and need no filling.
- */
-const DICTIONARIES: Record<Locale, Translations> = {
-  fa,
-  en,
-  tr: withFallback(tr, en),
-  de: withFallback(de, en),
-  fr: withFallback(fr, en),
-  es: withFallback(es, en),
-};
 
 const STORAGE_KEY = 'civitech-locale';
 
@@ -135,7 +112,16 @@ export function LocaleProvider({
   );
 
   const value = useMemo<LocaleContextValue>(
-    () => ({ locale, dir: DIRECTIONS[locale], t: DICTIONARIES[locale], setLocale }),
+    () => ({
+      locale,
+      dir: DIRECTIONS[locale],
+      // Preloaded by main.tsx before mount, and by the vitest setup file in
+      // tests, so this is a cache hit. The fallback is for the case that
+      // should not happen: rendering a language nobody fetched. English text
+      // is a better failure than a thrown provider, which is a blank page.
+      t: (loadedDictionary(locale) ?? fallbackDictionary()) as Translations,
+      setLocale,
+    }),
     [locale, setLocale],
   );
 
