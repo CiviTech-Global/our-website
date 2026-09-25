@@ -129,11 +129,17 @@ model User {
   books         BookListing[] @relation("BookSeller")
   booksReviewed BookListing[] @relation("BookReviewer")
 
-  bids             ProjectBid[]       @relation("Bidder")
-  bidsReviewed     ProjectBid[]       @relation("BidReviewer")
-  awardsMade       MarketplaceAward[] @relation("AwardedBy")
-  assignedRequests InsuranceRequest[] @relation("LeadAssignee")
-  consultationsAssigned   ConsultationRequest[] @relation("ConsultationAssignee")
+  /// TradeMaster. A shop belongs to the person who opened it; the reviewer
+  /// side is staff, and is the same shape as every other moderation queue.
+  businesses         Business[] @relation("BusinessOwner")
+  businessesReviewed Business[] @relation("BusinessReviewer")
+  productsReviewed   Product[]  @relation("ProductReviewer")
+
+  bids                  ProjectBid[]          @relation("Bidder")
+  bidsReviewed          ProjectBid[]          @relation("BidReviewer")
+  awardsMade            MarketplaceAward[]    @relation("AwardedBy")
+  assignedRequests      InsuranceRequest[]    @relation("LeadAssignee")
+  consultationsAssigned ConsultationRequest[] @relation("ConsultationAssignee")
 
   assignedProjectRequests ProjectRequest[]   @relation("AssignedProjectRequests")
   authoredProposals       ProjectProposal[]  @relation("AuthoredProposals")
@@ -2025,9 +2031,9 @@ model ConsultationRequest {
   phoneNumberHash String? @map("phone_number_hash")
   email           String?
 
-  topic ConsultationTopic
+  topic      ConsultationTopic
   /// What they want out of the session, in their words.
-  goal  String?
+  goal       String?
   /// Where they are now: student, switching field, three years in.
   background String?
 
@@ -2080,4 +2086,243 @@ model ConsultationAvailability {
   @@unique([requestId, day, part])
   @@index([day, part])
   @@map("consultation_availability")
+}
+
+// ---------------------------------------------------------------------------
+// TradeMaster
+//
+// The company's own product, arriving here as a module rather than a separate
+// application: shops, a product catalogue, and — in a later phase — orders.
+//
+// It came from a codebase using Sequelize, integer primary keys and its own
+// auth. None of that is reproduced. A shop's owner is a `User` from this
+// schema, a shop can only be opened by somebody `UserVerification` has
+// cleared, listings go through the same `ModerationStatus` pipeline as jobs,
+// freelance projects and books, and buyers and sellers talk through the
+// messaging that already exists. What is genuinely new is the shop, the
+// product and the stock — the rest was already here and is reused.
+//
+// Not reachable in production until FEATURE_TRADEMASTER says so; see
+// src/config/features.ts.
+// ---------------------------------------------------------------------------
+
+/// A seller's storefront.
+model Business {
+  id String @id @default(cuid())
+
+  /// Quotable public reference, as on every other listing.
+  code String @unique
+
+  /// The part of the URL a seller hands out. Immutable once published: a shop
+  /// that renames itself and breaks every link anyone shared is worse off than
+  /// one with a dated name.
+  slug String @unique
+
+  ownerId String @map("owner_id")
+  owner   User   @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  name        String
+  /// One or two sentences for the shop card.
+  summary     String
+  description String?
+
+  /// Free text rather than a foreign key. A shop's trade is how it describes
+  /// itself to buyers, not a taxonomy anyone maintains.
+  industry String?
+
+  province String?
+  city     String?
+  address  String?
+
+  /// Where the shop is, for the map and for "near me".
+  ///
+  /// Nullable because a shop that only ships has no doorstep worth pinning,
+  /// and forcing a coordinate would produce fictional ones. Two columns rather
+  /// than PostGIS: the search this needs is "within N km", which an index on
+  /// latitude and longitude answers well enough, and adding an extension to
+  /// the production database is a bigger decision than a distance filter
+  /// justifies.
+  latitude  Float?
+  longitude Float?
+
+  phone   String?
+  email   String?
+  website String?
+
+  logoStoredName   String? @map("logo_stored_name")
+  logoOriginalName String? @map("logo_original_name")
+
+  /// The same review pipeline every other listing goes through.
+  status       ModerationStatus @default(DRAFT)
+  /// Shown to the seller when their shop is sent back or refused.
+  reviewNote   String?          @map("review_note")
+  /// Never shown to the seller.
+  internalNote String?          @map("internal_note")
+  reviewedAt   DateTime?        @map("reviewed_at")
+  reviewedById String?          @map("reviewed_by_id")
+  reviewedBy   User?            @relation("BusinessReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  /// What has happened since approval. A shop can be closed by its owner or by
+  /// staff without being un-approved, exactly like a job post.
+  state ListingState @default(OPEN)
+
+  /// Editorial promotion, set by staff. Never bought.
+  featured Boolean @default(false)
+
+  products Product[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@index([status, state])
+  @@index([province, city])
+  @@index([latitude, longitude])
+  @@index([featured, createdAt])
+  @@map("businesses")
+}
+
+/// The catalogue tree products hang from.
+///
+/// A real table rather than free text, because buyers browse by it and a
+/// typo'd category is a product nobody finds. Self-referencing so a shallow
+/// tree is possible without a second model.
+model ProductCategory {
+  id String @id @default(cuid())
+
+  slug String @unique
+  name String
+
+  parentId String?           @map("parent_id")
+  parent   ProductCategory?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children ProductCategory[] @relation("CategoryTree")
+
+  /// Where it sits among its siblings. Editorial, like the showcase ordering.
+  position Int     @default(0)
+  active   Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, position])
+  @@map("product_categories")
+}
+
+/// Something a shop sells.
+model Product {
+  id String @id @default(cuid())
+
+  code String @unique
+  slug String
+
+  businessId String   @map("business_id")
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  categoryId String?          @map("category_id")
+  category   ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  title       String
+  summary     String
+  description String?
+
+  /// Minor units, as everywhere else in this schema. BigInt because rial
+  /// figures overflow a 32-bit integer at surprisingly ordinary prices.
+  price    BigInt
+  currency String @default("IRT")
+
+  /// Stock for a product with no variants. When variants exist they carry
+  /// their own and this is ignored — see ProductVariant.
+  stock Int @default(0)
+
+  /// Whether the seller will consider offers. Display only; nothing here
+  /// negotiates or charges.
+  negotiable Boolean @default(false)
+
+  status       ModerationStatus @default(DRAFT)
+  reviewNote   String?          @map("review_note")
+  internalNote String?          @map("internal_note")
+  reviewedAt   DateTime?        @map("reviewed_at")
+  reviewedById String?          @map("reviewed_by_id")
+  reviewedBy   User?            @relation("ProductReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  state    ListingState @default(OPEN)
+  featured Boolean      @default(false)
+
+  /// Denormalised counter, as on the other listings. Cheap to read on a
+  /// listing page and not worth a join.
+  views Int @default(0)
+
+  images   ProductImage[]
+  variants ProductVariant[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// Unique per shop, not globally: two different shops may both sell a
+  /// "blue-ceramic-mug" and neither should have to invent a worse name.
+  @@unique([businessId, slug])
+  @@index([businessId, status])
+  @@index([status, state, createdAt])
+  @@index([categoryId, status])
+  @@index([featured, createdAt])
+  @@map("products")
+}
+
+/// A picture of a product. Up to a documented maximum, enforced in the service.
+model ProductImage {
+  id String @id @default(cuid())
+
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  storedName   String @map("stored_name")
+  originalName String @map("original_name")
+
+  /// Shown under the picture and used as its alt text, so a screen reader gets
+  /// something better than a file name.
+  caption String?
+
+  position Int @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([productId, position])
+  @@map("product_images")
+}
+
+/// A variation of a product that has its own price and stock.
+///
+/// Size, colour, that sort of thing. Deliberately one flat level rather than a
+/// general option/value matrix: the shops this serves sell mugs and shoes, and
+/// a two-dimensional variant system is a great deal of machinery to get wrong
+/// for sellers who mostly have none at all.
+model ProductVariant {
+  id String @id @default(cuid())
+
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  /// What distinguishes it: "Large", "Blue", "42".
+  label String
+
+  /// The seller's own stock-keeping code, if they use one.
+  sku String?
+
+  /// Overrides the product price when set. Null means "same as the product",
+  /// which is the common case and better than copying the number and letting
+  /// the two drift apart.
+  price BigInt?
+
+  stock Int @default(0)
+
+  position Int @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, label])
+  @@index([productId, position])
+  @@map("product_variants")
 }
