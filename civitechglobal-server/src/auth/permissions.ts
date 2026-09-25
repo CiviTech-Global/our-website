@@ -80,6 +80,16 @@ export const PERMISSIONS = {
    * hand to marketing, whereas who represents the company as its people is not.
    */
   showcase: 'showcase',
+
+  /**
+   * TradeMaster: reviewing shops and the products in them.
+   *
+   * One key for both, unlike the jobs/freelance/books split. A shop and its
+   * catalogue are judged together — whether a storefront is honest is mostly
+   * a question about what it is selling — and splitting them would mean a
+   * refused shop whose products nobody on that desk could take down.
+   */
+  tradeMaster: 'trademaster',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

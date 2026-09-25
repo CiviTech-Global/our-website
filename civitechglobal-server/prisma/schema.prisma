@@ -2151,20 +2151,22 @@ model Business {
 
   logoStoredName   String? @map("logo_stored_name")
   logoOriginalName String? @map("logo_original_name")
+  logoMimeType     String? @map("logo_mime_type")
 
   /// The same review pipeline every other listing goes through.
-  status       ModerationStatus @default(DRAFT)
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
   /// Shown to the seller when their shop is sent back or refused.
-  reviewNote   String?          @map("review_note")
+  reviewNote       String?          @map("review_note")
   /// Never shown to the seller.
-  internalNote String?          @map("internal_note")
-  reviewedAt   DateTime?        @map("reviewed_at")
-  reviewedById String?          @map("reviewed_by_id")
-  reviewedBy   User?            @relation("BusinessReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  internalNote     String?          @map("internal_note")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("BusinessReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
   /// What has happened since approval. A shop can be closed by its owner or by
   /// staff without being un-approved, exactly like a job post.
-  state ListingState @default(OPEN)
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
 
   /// Editorial promotion, set by staff. Never bought.
   featured Boolean @default(false)
@@ -2175,7 +2177,8 @@ model Business {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([ownerId])
-  @@index([status, state])
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
   @@index([province, city])
   @@index([latitude, longitude])
   @@index([featured, createdAt])
@@ -2240,15 +2243,16 @@ model Product {
   /// negotiates or charges.
   negotiable Boolean @default(false)
 
-  status       ModerationStatus @default(DRAFT)
-  reviewNote   String?          @map("review_note")
-  internalNote String?          @map("internal_note")
-  reviewedAt   DateTime?        @map("reviewed_at")
-  reviewedById String?          @map("reviewed_by_id")
-  reviewedBy   User?            @relation("ProductReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewedBy       User?            @relation("ProductReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
-  state    ListingState @default(OPEN)
-  featured Boolean      @default(false)
+  state       ListingState @default(OPEN)
+  publishedAt DateTime?    @map("published_at")
+  featured    Boolean      @default(false)
 
   /// Denormalised counter, as on the other listings. Cheap to read on a
   /// listing page and not worth a join.
@@ -2263,9 +2267,10 @@ model Product {
   /// Unique per shop, not globally: two different shops may both sell a
   /// "blue-ceramic-mug" and neither should have to invent a worse name.
   @@unique([businessId, slug])
-  @@index([businessId, status])
-  @@index([status, state, createdAt])
-  @@index([categoryId, status])
+  @@index([businessId, moderationStatus])
+  @@index([moderationStatus])
+  @@index([state, publishedAt])
+  @@index([categoryId, moderationStatus])
   @@index([featured, createdAt])
   @@map("products")
 }
@@ -2279,6 +2284,7 @@ model ProductImage {
 
   storedName   String @map("stored_name")
   originalName String @map("original_name")
+  mimeType     String @map("mime_type")
 
   /// Shown under the picture and used as its alt text, so a screen reader gets
   /// something better than a file name.

@@ -13,6 +13,7 @@ import consultationRoutes from './consultation.routes.js';
 import i18nRoutes from './i18n.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
+import tradeMasterRoutes from './trademaster.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
 import sitemapRoutes from './sitemap.routes.js';
@@ -60,6 +61,10 @@ router.use('/sitemap', sitemapRoutes);
 
 // The job and freelance boards, their verification gate, and their queues.
 router.use('/market', marketplaceRoutes);
+
+// TradeMaster: shops and their catalogues. Every route inside answers 404
+// unless FEATURE_TRADEMASTER is on, so mounting it here does not expose it.
+router.use('/trademaster', tradeMasterRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper

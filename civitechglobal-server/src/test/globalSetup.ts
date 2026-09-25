@@ -30,10 +30,32 @@ export async function setup(): Promise<void> {
     );
   }
 
-  const client = new Redis(TEST_REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 1 });
+  const client = new Redis(TEST_REDIS_URL, {
+    lazyConnect: true,
+    maxRetriesPerRequest: 1,
+    connectTimeout: 1000,
+    // Without this ioredis keeps retrying a refused connection forever and
+    // the whole suite hangs on a developer machine with Docker stopped —
+    // which is a worse failure than the one this file exists to fix.
+    retryStrategy: () => null,
+  });
+
+  // ioredis treats an 'error' event with no listener as an unhandled error and
+  // takes the process down with it. With Docker stopped that killed the vitest
+  // worker mid-file, which surfaces as a handful of unrelated tests "failing"
+  // with no message — a far more confusing symptom than the missing Redis.
+  client.on('error', () => {});
+
   try {
-    await client.connect();
-    await client.flushdb();
+    await Promise.race([
+      (async () => {
+        await client.connect();
+        await client.flushdb();
+      })(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('redis flush timed out')), 3000)
+      ),
+    ]);
   } catch {
     // No Redis locally is not a reason to fail the suite. The limiters are
     // built to fail open, so the tests that do not care about them still pass,
