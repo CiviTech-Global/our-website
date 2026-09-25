@@ -44,7 +44,7 @@ ENV CHROME_PATH=/usr/bin/chromium-browser
 RUN npm run prerender
 
 # --- Production stage: static serving via nginx ---
-FROM nginx:1.27-alpine AS production
+FROM nginx:1.29-alpine AS production
 
 # nginx:alpine already ships an unprivileged "nginx" user; reuse it and just
 # make sure it can read the app files and write to the paths nginx needs at
