@@ -87,3 +87,42 @@ describe('the TradeMaster feature gate', () => {
     expect(res.status).toBe(401);
   });
 });
+
+/**
+ * One route in this module only works because of where it is declared.
+ *
+ * `/products/images/:id` and `/products/:shopSlug/:productSlug` both match two
+ * segments after /products, so Express hands the request to whichever was
+ * declared first. Declared the other way round, every image request would be
+ * answered by the product handler looking for a shop called "images" — a 404
+ * that looks like a missing product rather than a routing mistake, which is
+ * exactly the kind of thing that survives a code review.
+ *
+ * Asserted against the router's own stack rather than by making requests,
+ * because the distinguishing behaviour needs a database and this invariant
+ * does not.
+ */
+describe('route declaration order', () => {
+  interface Layer {
+    route?: { path: string };
+  }
+
+  async function paths(): Promise<string[]> {
+    vi.resetModules();
+    process.env.FEATURE_TRADEMASTER = 'true';
+    const router = (await import('./trademaster.routes.js')).default;
+    return ((router as unknown as { stack: Layer[] }).stack ?? [])
+      .map((layer) => layer.route?.path)
+      .filter((path): path is string => typeof path === 'string');
+  }
+
+  it('declares the image route before the catch-all product route', async () => {
+    const declared = await paths();
+    const image = declared.indexOf('/products/images/:id');
+    const product = declared.indexOf('/products/:shopSlug/:productSlug');
+
+    expect(image, '/products/images/:id is not declared at all').toBeGreaterThanOrEqual(0);
+    expect(product, '/products/:shopSlug/:productSlug is not declared at all').toBeGreaterThanOrEqual(0);
+    expect(image).toBeLessThan(product);
+  });
+});

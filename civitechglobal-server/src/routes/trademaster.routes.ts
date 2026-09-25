@@ -10,12 +10,18 @@ import { features } from '../config/features.js';
 import { MAX_FILE_BYTES, MAX_FILES, openStoredFile } from '../services/attachment.service.js';
 import { serveStoredFile } from '../services/file-response.js';
 import * as shops from '../services/trademaster-shop.service.js';
+import * as products from '../services/trademaster-product.service.js';
 import {
   reviewDecisionSchema,
   reviewQueueSchema,
   shopBoardSchema,
   shopSchema,
   shopUpdateSchema,
+  productSchema,
+  productUpdateSchema,
+  productBoardSchema,
+  variantSchema,
+  imageCaptionSchema,
 } from '../validators/trademaster.schema.js';
 
 /**
@@ -84,6 +90,36 @@ function payloadOf(req: Request): unknown {
 
 const fileOf = (req: Request) =>
   req.file ? { originalName: req.file.originalname, buffer: req.file.buffer } : null;
+
+/** Several uploaded files, in the shape the attachment service takes. */
+const filesOf = (req: Request) =>
+  ((req.files as Express.Multer.File[] | undefined) ?? []).map((file) => ({
+    originalName: file.originalname,
+    buffer: file.buffer,
+  }));
+
+/**
+ * Captions travel beside the files as one JSON array, positionally.
+ *
+ * Multipart has no way to attach a field to a particular file, so the caption
+ * at index 2 belongs to the third file. A malformed array is answered rather
+ * than ignored: silently dropping captions would look like the server losing
+ * what somebody typed.
+ */
+function captionsOf(req: Request): Array<string | null> {
+  const raw = req.body?.captions;
+  if (typeof raw !== 'string' || !raw) return [];
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new AppError('قالب «captions» نامعتبر است.', 400);
+  }
+
+  if (!Array.isArray(parsed)) throw new AppError('«captions» باید یک آرایه باشد.', 400);
+  return parsed.map((value) => (typeof value === 'string' ? value : null));
+}
 
 type Handler = (req: Request, res: Response) => Promise<void>;
 const wrap =
@@ -216,6 +252,234 @@ router.post(
       body.decision,
       { reviewNote: body.reviewNote, internalNote: body.internalNote }
     );
+    successResponse(res, serialize(result), 'بررسی ثبت شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Products — public
+// ---------------------------------------------------------------------------
+
+router.get(
+  '/categories',
+  publicCache({ maxAgeSeconds: 300, staleWhileRevalidateSeconds: 900 }),
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await products.listCategories()));
+  })
+);
+
+router.get(
+  '/products',
+  publicCache({ maxAgeSeconds: 60, staleWhileRevalidateSeconds: 300 }),
+  wrap(async (req, res) => {
+    const query = productBoardSchema.parse(req.query);
+    successResponse(res, serialize(await products.listPublicProducts(query)));
+  })
+);
+
+/**
+ * Images are addressed by their own id rather than nested under the product.
+ *
+ * Mounted above `/products/:shopSlug/:productSlug` on purpose: Express matches
+ * in declaration order, and `/products/images/abc` fits that two-segment
+ * pattern perfectly well. Declared the other way round, every image request
+ * would be answered by the product handler looking for a shop called
+ * "images".
+ */
+router.get(
+  '/products/images/:id',
+  wrap(async (req, res) => {
+    const image = await products.getImage(param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), {
+      ...image,
+      disposition: 'inline',
+    });
+  })
+);
+
+router.get(
+  '/products/:shopSlug/:productSlug',
+  publicCache({ maxAgeSeconds: 60, staleWhileRevalidateSeconds: 300 }),
+  wrap(async (req, res) => {
+    const result = await products.getPublicProduct(
+      param(req, 'shopSlug'),
+      param(req, 'productSlug')
+    );
+    successResponse(res, serialize(result));
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Products — the seller's own
+// ---------------------------------------------------------------------------
+
+router.get(
+  '/me/shops/:id/products',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.listShopProducts(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result));
+  })
+);
+
+router.post(
+  '/me/shops/:id/products',
+  authenticate,
+  wrap(async (req, res) => {
+    const input = productSchema.parse(req.body);
+    const result = await products.createProduct(req.user!.userId, param(req, 'id'), input);
+    successResponse(res, serialize(result), 'پیش‌نویس کالا ساخته شد.', 201);
+  })
+);
+
+router.patch(
+  '/me/products/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const input = productUpdateSchema.parse(req.body);
+    const result = await products.updateProduct(req.user!.userId, param(req, 'id'), input);
+    successResponse(res, serialize(result), 'ذخیره شد.');
+  })
+);
+
+router.post(
+  '/me/products/:id/submit',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.submitProduct(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'کالا برای بررسی ارسال شد.');
+  })
+);
+
+router.post(
+  '/me/products/:id/close',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.closeProduct(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'کالا بسته شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Products — pictures
+// ---------------------------------------------------------------------------
+
+router.post(
+  '/me/products/:id/images',
+  authenticate,
+  upload.array('images', MAX_FILES),
+  wrap(async (req, res) => {
+    const captions = captionsOf(req);
+    const result = await products.addImages(
+      req.user!.userId,
+      param(req, 'id'),
+      filesOf(req),
+      captions
+    );
+    successResponse(res, serialize(result), 'تصاویر افزوده شد.', 201);
+  })
+);
+
+router.patch(
+  '/me/products/images/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const body = imageCaptionSchema.parse(req.body);
+    const result = await products.updateImageCaption(
+      req.user!.userId,
+      param(req, 'id'),
+      body.caption
+    );
+    successResponse(res, serialize(result), 'ذخیره شد.');
+  })
+);
+
+router.delete(
+  '/me/products/images/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.removeImage(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'تصویر حذف شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Products — variants
+// ---------------------------------------------------------------------------
+
+router.post(
+  '/me/products/:id/variants',
+  authenticate,
+  wrap(async (req, res) => {
+    const input = variantSchema.parse(req.body);
+    const result = await products.addVariant(req.user!.userId, param(req, 'id'), input);
+    successResponse(res, serialize(result), 'تنوع افزوده شد.', 201);
+  })
+);
+
+router.patch(
+  '/me/products/variants/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const input = variantSchema.partial().parse(req.body);
+    const result = await products.updateVariant(req.user!.userId, param(req, 'id'), input);
+    successResponse(res, serialize(result), 'ذخیره شد.');
+  })
+);
+
+router.delete(
+  '/me/products/variants/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.removeVariant(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'تنوع حذف شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Products — the review desk
+// ---------------------------------------------------------------------------
+
+router.get(
+  '/admin/products',
+  ...canReview,
+  wrap(async (req, res) => {
+    const query = reviewQueueSchema.parse(req.query);
+    successResponse(res, serialize(await products.listProductsForReview(query)));
+  })
+);
+
+router.get(
+  '/admin/products/images/:id',
+  ...canReview,
+  wrap(async (req, res) => {
+    // includeUnpublished: a reviewer has to see the picture before anybody has
+    // approved it, which is the entire point of the queue.
+    const image = await products.getImage(param(req, 'id'), true);
+    serveStoredFile(res, await openStoredFile(image.storedName), {
+      ...image,
+      disposition: 'inline',
+    });
+  })
+);
+
+router.get(
+  '/admin/products/:id',
+  ...canReview,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await products.getProductForReview(param(req, 'id'))));
+  })
+);
+
+router.post(
+  '/admin/products/:id/review',
+  ...canReview,
+  wrap(async (req, res) => {
+    const body = reviewDecisionSchema.parse(req.body);
+    const result = await products.reviewProduct(req.user!.userId, param(req, 'id'), body.decision, {
+      reviewNote: body.reviewNote,
+      internalNote: body.internalNote,
+    });
     successResponse(res, serialize(result), 'بررسی ثبت شد.');
   })
 );
