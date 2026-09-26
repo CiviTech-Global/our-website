@@ -256,16 +256,28 @@ export async function listShopProducts(userId: string, shopId: string) {
       views: true,
       publishedAt: true,
       createdAt: true,
-      images: { orderBy: { position: 'asc' }, take: 1, select: { id: true } },
-      _count: { select: { images: true, variants: true } },
+      /**
+       * The whole set, not just a cover.
+       *
+       * The seller's own list is where pictures and options are managed, and a
+       * screen that can add but not remove them is half a feature. Bounded by
+       * MAX_IMAGES and MAX_VARIANTS, and this is one seller's own shop rather
+       * than a public board, so the extra rows are cheap.
+       */
+      images: { orderBy: { position: 'asc' }, select: { id: true, caption: true, position: true } },
+      variants: {
+        orderBy: { position: 'asc' },
+        select: { id: true, label: true, sku: true, price: true, stock: true, position: true },
+      },
     },
   });
 
-  return rows.map(({ images, _count, ...row }) => ({
+  return rows.map(({ images, ...row }) => ({
     ...row,
     coverUrl: images[0] ? imageUrl(images[0].id) : null,
-    imageCount: _count.images,
-    variantCount: _count.variants,
+    images: images.map((image) => ({ ...image, url: imageUrl(image.id) })),
+    imageCount: images.length,
+    variantCount: row.variants.length,
   }));
 }
 

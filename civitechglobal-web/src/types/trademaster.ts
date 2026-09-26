@@ -227,6 +227,9 @@ export interface OwnProduct {
   publishedAt: string | null;
   createdAt: string;
   coverUrl: string | null;
+  /** The whole set: this is where the seller manages them. */
+  images: ProductImage[];
+  variants: ProductVariant[];
   imageCount: number;
   variantCount: number;
 }

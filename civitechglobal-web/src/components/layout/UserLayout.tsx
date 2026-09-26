@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   MessagesSquare,
   ShieldCheck,
+  ShoppingBag,
   Store,
   UserCircle,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useUnreadCounts } from '@/api/marketplace';
 import { AppShell } from '@/components/app/AppShell';
 import type { NavModule } from '@/components/app/navigation';
+import { features } from '@/lib/features';
 
 /**
  * The account holder's panel.
@@ -56,6 +58,9 @@ export function UserLayout() {
           id: 'main',
           items: [
             { to: '/dashboard/books', label: t.books.myBooks, icon: <BookOpen /> },
+            ...(features.tradeMaster
+              ? [{ to: '/dashboard/shops', label: t.trademaster.myShops, icon: <ShoppingBag /> }]
+              : []),
             { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase /> },
             { to: '/dashboard/applications', label: t.market.myApplications, icon: <FileText /> },
             { to: '/dashboard/projects', label: t.market.myProjects, icon: <FolderKanban /> },

@@ -76,6 +76,8 @@ const UserDashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
 const VerificationPage = lazy(() => import('@/pages/dashboard/VerificationPage'));
 const MyBooksPage = lazy(() => import('@/pages/dashboard/MyBooksPage'));
+const MyShopsPage = lazy(() => import('@/pages/dashboard/MyShopsPage'));
+const ShopProductsPage = lazy(() => import('@/pages/dashboard/ShopProductsPage'));
 const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
@@ -398,6 +400,26 @@ export default function App() {
             </Suspense>
           }
         />
+        {features.tradeMaster && (
+          <>
+            <Route
+              path="shops"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MyShopsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="shops/:shopId/products"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ShopProductsPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         <Route
           path="books"
           element={
