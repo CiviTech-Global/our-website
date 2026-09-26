@@ -6,6 +6,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { RequirePermission } from '@/components/layout/RequirePermission';
 import { Spinner } from '@/components/ui/Spinner';
+import { features } from '@/lib/features';
 
 // HomePage stays eager: it is the landing route, and lazy-loading the first
 // thing a visitor sees would trade bundle size for a blank frame and an extra
@@ -59,6 +60,10 @@ const ConsultPage = lazy(() => import('@/pages/public/ConsultPage'));
 const ExpertsPage = lazy(() => import('@/pages/public/ExpertsPage'));
 const ExpertProfilePage = lazy(() => import('@/pages/public/ExpertProfilePage'));
 const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
+const ShopsPage = lazy(() => import('@/pages/public/ShopsPage'));
+const ShopDetailPage = lazy(() => import('@/pages/public/ShopDetailPage'));
+const MarketProductsPage = lazy(() => import('@/pages/public/MarketProductsPage'));
+const MarketProductDetailPage = lazy(() => import('@/pages/public/MarketProductDetailPage'));
 const BookDetailPage = lazy(() => import('@/pages/public/BookDetailPage'));
 const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
 const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
@@ -206,6 +211,42 @@ export default function App() {
             </Suspense>
           }
         />
+        {features.tradeMaster && (
+          <>
+            <Route
+              path="/marketplace/shops"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ShopsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/marketplace/shops/:slug"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ShopDetailPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/marketplace/products"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MarketProductsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/marketplace/products/:shopSlug/:productSlug"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MarketProductDetailPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         <Route
           path="/books"
           element={
