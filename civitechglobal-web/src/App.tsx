@@ -61,6 +61,7 @@ const ExpertsPage = lazy(() => import('@/pages/public/ExpertsPage'));
 const ExpertProfilePage = lazy(() => import('@/pages/public/ExpertProfilePage'));
 const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
 const ShopsPage = lazy(() => import('@/pages/public/ShopsPage'));
+const CartPage = lazy(() => import('@/pages/public/CartPage'));
 const ShopDetailPage = lazy(() => import('@/pages/public/ShopDetailPage'));
 const MarketProductsPage = lazy(() => import('@/pages/public/MarketProductsPage'));
 const MarketProductDetailPage = lazy(() => import('@/pages/public/MarketProductDetailPage'));
@@ -77,6 +78,8 @@ const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
 const VerificationPage = lazy(() => import('@/pages/dashboard/VerificationPage'));
 const MyBooksPage = lazy(() => import('@/pages/dashboard/MyBooksPage'));
 const MyShopsPage = lazy(() => import('@/pages/dashboard/MyShopsPage'));
+const MyOrdersPage = lazy(() => import('@/pages/dashboard/MyOrdersPage'));
+const ShopOrdersPage = lazy(() => import('@/pages/dashboard/ShopOrdersPage'));
 const ShopProductsPage = lazy(() => import('@/pages/dashboard/ShopProductsPage'));
 const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
@@ -230,6 +233,14 @@ export default function App() {
               element={
                 <Suspense fallback={<RouteLoadingFallback />}>
                   <ShopDetailPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/marketplace/cart"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <CartPage />
                 </Suspense>
               }
             />
@@ -409,6 +420,22 @@ export default function App() {
               element={
                 <Suspense fallback={<RouteLoadingFallback />}>
                   <MyShopsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MyOrdersPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="shops/:shopId/orders"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ShopOrdersPage />
                 </Suspense>
               }
             />

@@ -20,6 +20,7 @@ import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
 import { features } from '@/lib/features';
 
 type NavKey =
+  | 'cart'
   | 'shops'
   | 'marketProducts'
   | 'services'
@@ -89,6 +90,7 @@ const NAV_ENTRIES: NavEntry[] = [
         ? ([
             { to: '/marketplace/shops', key: 'shops' },
             { to: '/marketplace/products', key: 'marketProducts' },
+            { to: '/marketplace/cart', key: 'cart' },
           ] as const)
         : []),
       { to: '/consult', key: 'consult' },

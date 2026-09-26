@@ -10,6 +10,7 @@ import {
   Inbox,
   LayoutDashboard,
   MessagesSquare,
+  Package,
   ShieldCheck,
   ShoppingBag,
   Store,
@@ -59,7 +60,10 @@ export function UserLayout() {
           items: [
             { to: '/dashboard/books', label: t.books.myBooks, icon: <BookOpen /> },
             ...(features.tradeMaster
-              ? [{ to: '/dashboard/shops', label: t.trademaster.myShops, icon: <ShoppingBag /> }]
+              ? [
+                  { to: '/dashboard/shops', label: t.trademaster.myShops, icon: <ShoppingBag /> },
+                  { to: '/dashboard/orders', label: t.trademaster.myOrders, icon: <Package /> },
+                ]
               : []),
             { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase /> },
             { to: '/dashboard/applications', label: t.market.myApplications, icon: <FileText /> },
