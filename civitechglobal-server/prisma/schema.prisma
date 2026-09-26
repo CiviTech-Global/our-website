@@ -134,6 +134,7 @@ model User {
   businesses         Business[] @relation("BusinessOwner")
   businessesReviewed Business[] @relation("BusinessReviewer")
   productsReviewed   Product[]  @relation("ProductReviewer")
+  orders             Order[]    @relation("OrderBuyer")
 
   bids                  ProjectBid[]          @relation("Bidder")
   bidsReviewed          ProjectBid[]          @relation("BidReviewer")
@@ -1887,6 +1888,11 @@ model BookListing {
   @@index([moderationStatus])
   @@index([state, publishedAt])
   @@index([sellerId])
+  /// Trigram index for ILIKE search. Declared here rather than only in the
+  /// migration so that prisma migrate diff stops proposing to drop it — which
+  /// it did, silently, the first time a later migration was generated.
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "book_listings_title_trgm_idx", type: Gin)
+  @@index([bookAuthor(ops: raw("gin_trgm_ops"))], map: "book_listings_book_author_trgm_idx", type: Gin)
   @@index([featured, state])
   @@map("book_listings")
 }
@@ -2172,6 +2178,7 @@ model Business {
   featured Boolean @default(false)
 
   products Product[]
+  orders   Order[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2181,6 +2188,10 @@ model Business {
   @@index([state, publishedAt])
   @@index([province, city])
   @@index([latitude, longitude])
+  /// Trigram index for ILIKE search. Declared here rather than only in the
+  /// migration so that prisma migrate diff stops proposing to drop it — which
+  /// it did, silently, the first time a later migration was generated.
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "businesses_name_trgm_idx", type: Gin)
   @@index([featured, createdAt])
   @@map("businesses")
 }
@@ -2258,8 +2269,9 @@ model Product {
   /// listing page and not worth a join.
   views Int @default(0)
 
-  images   ProductImage[]
-  variants ProductVariant[]
+  images     ProductImage[]
+  variants   ProductVariant[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2271,6 +2283,10 @@ model Product {
   @@index([moderationStatus])
   @@index([state, publishedAt])
   @@index([categoryId, moderationStatus])
+  /// Trigram index for ILIKE search. Declared here rather than only in the
+  /// migration so that prisma migrate diff stops proposing to drop it — which
+  /// it did, silently, the first time a later migration was generated.
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "products_title_trgm_idx", type: Gin)
   @@index([featured, createdAt])
   @@map("products")
 }
@@ -2325,10 +2341,208 @@ model ProductVariant {
 
   position Int @default(0)
 
+  orderItems OrderItem[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([productId, label])
   @@index([productId, position])
   @@map("product_variants")
+}
+
+// ---------------------------------------------------------------------------
+// TradeMaster, phase two: orders
+//
+// ONE ORDER BELONGS TO ONE SHOP. A basket spanning three shops becomes three
+// orders, because three different people pack and post it, each confirms and
+// ships on their own schedule, and each is owed their own money. Modelling one
+// order across shops would mean every status is really several statuses and
+// every refund is partial — the split has to happen somewhere, and doing it at
+// checkout is far cheaper than unpicking it later.
+//
+// Nothing here charges anybody yet. PaymentIntent is the seam a real gateway
+// drops into: the sandbox driver marks an intent paid on request so the rest of
+// the lifecycle can be built and tested, and ZarinPal becomes one more driver
+// rather than a change to any of this.
+// ---------------------------------------------------------------------------
+
+/// What has happened to an order.
+enum OrderStatus {
+  /// Created, nothing paid. Stock is already held — see the note on Order.
+  PENDING
+  /// The buyer has been sent to a gateway and has not come back yet.
+  AWAITING_PAYMENT
+  /// Money confirmed by the gateway. The seller has not acted yet.
+  PAID
+  /// The seller has accepted it and is preparing it.
+  CONFIRMED
+  /// Handed to a courier.
+  SHIPPED
+  /// The buyer has it. Terminal, and the only state a review may follow.
+  DELIVERED
+  /// Called off by either side before delivery. Stock is returned.
+  CANCELLED
+  /// Money sent back after payment. Stock is returned.
+  REFUNDED
+}
+
+/// Where a payment attempt stands.
+enum PaymentStatus {
+  /// Created, nobody has been sent anywhere yet.
+  CREATED
+  /// The buyer is at the gateway.
+  PENDING
+  /// The gateway confirmed it.
+  SUCCEEDED
+  /// The gateway refused it, or the buyer abandoned it.
+  FAILED
+  /// Sent back to the buyer.
+  REFUNDED
+}
+
+/// One buyer's order from one shop.
+model Order {
+  id String @id @default(cuid())
+
+  /// Quotable public reference, as on every other record here.
+  code String @unique
+
+  buyerId String @map("buyer_id")
+  buyer   User   @relation("OrderBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  businessId String   @map("business_id")
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  status OrderStatus @default(PENDING)
+
+  /**
+   * Totals frozen at checkout.
+   * Not recomputed from the items on read, and not read back from the products:
+   * a seller who raises a price next week must not change what somebody already
+   * agreed to pay. The items carry their own frozen copies for the same reason.
+   */
+  subtotal BigInt
+  /// Set by the seller when confirming, since it depends on where it is going.
+  shipping BigInt @default(0)
+  total    BigInt
+  currency String @default("IRT")
+
+  /**
+   * Where it goes, copied rather than referenced.
+   * A buyer editing their profile address later must not rewrite where a
+   * delivered parcel was sent — the address on an order is a historical fact
+   * about that order.
+   */
+  recipientName  String  @map("recipient_name")
+  recipientPhone String  @map("recipient_phone")
+  province       String
+  city           String
+  address        String
+  postalCode     String? @map("postal_code")
+  /// Anything the buyer wants the seller to know. Not instructions we enforce.
+  buyerNote      String? @map("buyer_note")
+
+  /// Why it was called off, when it was. Shown to both sides.
+  cancelReason String? @map("cancel_reason")
+  /// Never shown to the buyer or the seller.
+  internalNote String? @map("internal_note")
+
+  /// Courier and consignment number, as the seller typed them.
+  trackingCarrier String? @map("tracking_carrier")
+  trackingCode    String? @map("tracking_code")
+
+  paidAt      DateTime? @map("paid_at")
+  confirmedAt DateTime? @map("confirmed_at")
+  shippedAt   DateTime? @map("shipped_at")
+  deliveredAt DateTime? @map("delivered_at")
+  cancelledAt DateTime? @map("cancelled_at")
+
+  items    OrderItem[]
+  payments PaymentIntent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([buyerId, status])
+  @@index([businessId, status])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+/// One line of an order.
+model OrderItem {
+  id String @id @default(cuid())
+
+  orderId String @map("order_id")
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /**
+   * SetNull, not Cascade.
+   * A seller deleting a product must not delete the record that somebody
+   * bought it. The frozen title and price below are what the order displays,
+   * so a null product is a link that no longer resolves rather than a line
+   * that disappears.
+   */
+  productId String?  @map("product_id")
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variantId String?         @map("variant_id")
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  /// Frozen at checkout. See the note on Order's totals.
+  titleAtPurchase   String  @map("title_at_purchase")
+  variantAtPurchase String? @map("variant_at_purchase")
+  unitPrice         BigInt  @map("unit_price")
+  quantity          Int
+
+  /// unitPrice * quantity, stored rather than derived so a total cannot drift
+  /// from the lines that make it up.
+  lineTotal BigInt @map("line_total")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+/**
+ * One attempt to take money for an order.
+ * A row per attempt, not a column on the order: a buyer who abandons a gateway
+ * and tries again has two attempts, and collapsing them loses the fact that
+ * the first one failed — which is exactly what somebody asks about when money
+ * seems to have left their account.
+ * `driver` names which implementation created it, so a sandbox intent can
+ * never be mistaken for a real one after a gateway is wired up.
+ */
+model PaymentIntent {
+  id String @id @default(cuid())
+
+  orderId String @map("order_id")
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// 'sandbox' today. 'zarinpal' when that lands.
+  driver String
+
+  status PaymentStatus @default(CREATED)
+
+  amount   BigInt
+  currency String @default("IRT")
+
+  /// The gateway's own identifier for this attempt, when it issues one.
+  reference   String? @unique
+  /// Where the buyer is sent. Null for a driver that needs no redirect.
+  redirectUrl String? @map("redirect_url")
+
+  /// The gateway's reason for a refusal, verbatim. Never translated.
+  failureReason String? @map("failure_reason")
+
+  settledAt DateTime? @map("settled_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId, status])
+  @@map("payment_intents")
 }

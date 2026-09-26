@@ -1,0 +1,27 @@
+# Line endings for files whose bytes are part of a contract.
+#
+# core.autocrlf is true on the Windows checkout and unset on the Linux server,
+# so the same commit lands as CRLF here and LF there. For most source that is
+# harmless. For Prisma migrations it is not: `prisma migrate` records a sha256
+# of each migration file when it applies it, so a file that arrives with
+# different line endings than it had at apply time reads as "modified after it
+# was applied", and every subsequent `migrate dev` offers to reset the
+# database instead.
+#
+# That cost an afternoon twice. Pinning these to LF makes the working tree
+# match what the server records, which is the only checksum that matters.
+*.sql text eol=lf
+*.prisma text eol=lf
+
+# Shell scripts and Ansible templates are executed on Linux; a CR at the end of
+# a shebang line or a `fi` is a syntax error there, not a cosmetic difference.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.j2 text eol=lf
+
+# Markdown content is read by the blog parser, which normalises CRLF itself —
+# see src/content/blog.ts, which had to learn that the hard way. Pinned anyway
+# so the parser's normalisation is a belt rather than the only thing holding
+# it up.
+*.md text eol=lf
