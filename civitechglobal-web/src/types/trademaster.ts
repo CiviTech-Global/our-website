@@ -328,3 +328,125 @@ export interface ReviewDecisionPayload {
   reviewNote?: string;
   internalNote?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+export type OrderStatus =
+  | 'PENDING'
+  | 'AWAITING_PAYMENT'
+  | 'PAID'
+  | 'CONFIRMED'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'REFUNDED';
+
+export type PaymentStatus = 'CREATED' | 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+
+/** Which moves a client may ask for. PAID is absent: only the gateway causes it. */
+export type OrderMove =
+  | 'AWAITING_PAYMENT'
+  | 'CONFIRMED'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'REFUNDED';
+
+/** A basket line as it travels. No price: the server reads that from the database. */
+export interface BasketLine {
+  productId: string;
+  variantId?: string;
+  quantity: number;
+}
+
+/**
+ * A basket line as the browser holds it.
+ *
+ * Carries enough to draw the cart without a round trip per item — and a price
+ * that is display-only. The order's real prices come from the server at
+ * checkout, so a stale cart shows an old figure and then charges the right one.
+ */
+export interface CartLine extends BasketLine {
+  title: string;
+  variantLabel?: string;
+  unitPrice: string;
+  currency: string;
+  coverUrl: string | null;
+  shopSlug: string;
+  shopName: string;
+}
+
+export interface DeliveryInput {
+  recipientName: string;
+  recipientPhone: string;
+  province: string;
+  city: string;
+  address: string;
+  postalCode?: string;
+  buyerNote?: string;
+}
+
+export interface OrderItem {
+  id: string;
+  productId: string | null;
+  titleAtPurchase: string;
+  variantAtPurchase: string | null;
+  unitPrice: string;
+  quantity: number;
+  lineTotal: string;
+}
+
+export interface OrderPayment {
+  id: string;
+  driver: string;
+  status: PaymentStatus;
+  amount: string;
+  failureReason: string | null;
+  settledAt: string | null;
+  createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  code: string;
+  status: OrderStatus;
+  subtotal: string;
+  shipping: string;
+  total: string;
+  currency: string;
+  recipientName: string;
+  recipientPhone: string;
+  province: string;
+  city: string;
+  address: string;
+  postalCode: string | null;
+  buyerNote: string | null;
+  cancelReason: string | null;
+  trackingCarrier: string | null;
+  trackingCode: string | null;
+  paidAt: string | null;
+  confirmedAt: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+  items: OrderItem[];
+  business?: { id?: string; slug: string; name: string; phone?: string | null; email?: string | null };
+  buyer?: { id: string; firstName: string | null; lastName: string | null; email: string };
+  payments?: OrderPayment[];
+}
+
+export interface OrderListQuery extends Record<string, string | number | boolean | null | undefined> {
+  status?: OrderStatus;
+  page: number;
+  pageSize: number;
+}
+
+export interface CheckoutResult {
+  id: string;
+  code: string;
+  total: string;
+  shopName: string;
+}

@@ -21,6 +21,13 @@ import type {
   ShopQueueRow,
   ShopReviewDetail,
   VariantPayload,
+  BasketLine,
+  CheckoutResult,
+  DeliveryInput,
+  Order,
+  OrderListQuery,
+  OrderMove,
+  PaymentStatus,
 } from '@/types/trademaster';
 
 /**
@@ -420,5 +427,115 @@ export function useReviewProduct() {
       await api.post(`/trademaster/admin/products/${input.id}/review`, input.payload);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.productQueue }),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+const orderKeys = {
+  mine: ['trademaster', 'me', 'orders'] as const,
+  shop: ['trademaster', 'me', 'shop-orders'] as const,
+};
+
+export function useCheckout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { lines: BasketLine[]; delivery: DeliveryInput }) => {
+      const res = await api.post<CheckoutResult[]>('/trademaster/checkout', {
+        lines: input.lines,
+        ...input.delivery,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: orderKeys.mine });
+      // Stock was taken at checkout, so every board showing it is now stale.
+      void qc.invalidateQueries({ queryKey: keys.products });
+    },
+  });
+}
+
+export function useMyOrders(query: OrderListQuery) {
+  return useQuery({
+    queryKey: [...orderKeys.mine, query],
+    queryFn: async () => {
+      const res = await api.get<Paged<Order>>('/trademaster/me/orders', { params: query });
+      return res.data;
+    },
+  });
+}
+
+export function useOrder(id: string | undefined) {
+  return useQuery({
+    queryKey: [...orderKeys.mine, 'detail', id],
+    queryFn: async () => {
+      const res = await api.get<Order>(`/trademaster/me/orders/${id!}`);
+      return res.data;
+    },
+    enabled: Boolean(id),
+  });
+}
+
+export function useShopOrders(shopId: string | undefined, query: OrderListQuery) {
+  return useQuery({
+    queryKey: [...orderKeys.shop, shopId, query],
+    queryFn: async () => {
+      const res = await api.get<Paged<Order>>(`/trademaster/me/shops/${shopId!}/orders`, {
+        params: query,
+      });
+      return res.data;
+    },
+    enabled: Boolean(shopId),
+  });
+}
+
+export function useStartPayment() {
+  return useMutation({
+    mutationFn: async (input: { orderId: string; returnPath?: string }) => {
+      const res = await api.post<{ redirectUrl: string | null; reference: string }>(
+        `/trademaster/me/orders/${input.orderId}/pay`,
+        { returnPath: input.returnPath }
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useConfirmPayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (reference: string) => {
+      const res = await api.post<{ status: PaymentStatus; orderId: string }>(
+        '/trademaster/me/payments/confirm',
+        { reference }
+      );
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orderKeys.mine }),
+  });
+}
+
+export function useMoveOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      to: OrderMove;
+      note?: string;
+      shipping?: string;
+      trackingCarrier?: string;
+      trackingCode?: string;
+    }) => {
+      const { id, ...body } = input;
+      const res = await api.post<Order>(`/trademaster/me/orders/${id}/move`, body);
+      return res.data;
+    },
+    onSuccess: () => {
+      // Both sides of the same order; whichever list the caller is looking at.
+      void qc.invalidateQueries({ queryKey: orderKeys.mine });
+      void qc.invalidateQueries({ queryKey: orderKeys.shop });
+    },
   });
 }
