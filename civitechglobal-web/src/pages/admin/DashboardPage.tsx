@@ -1,5 +1,7 @@
 import { Link } from 'react-router';
 import {
+  Store,
+  Package,
   AlertCircle,
   BookOpen,
   Briefcase,
@@ -61,6 +63,12 @@ function queueMeta(t: Translations): Record<QueueKey, QueueMeta> {
     books: { label: t.books.queueTitle, to: '/admin/books', icon: BookOpen },
     consultations: { label: t.consult.queueTitle, to: '/admin/consultations', icon: MessageCircle },
     disputes: { label: t.analytics.title, to: '/admin/marketplace', icon: AlertCircle },
+    tradeMasterShops: { label: t.trademaster.queueShops, to: '/admin/trademaster/shops', icon: Store },
+    tradeMasterProducts: {
+      label: t.trademaster.queueProducts,
+      to: '/admin/trademaster/products',
+      icon: Package,
+    },
   };
 }
 

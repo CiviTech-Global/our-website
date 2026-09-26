@@ -690,6 +690,14 @@ export async function listProductsForReview(query: {
   const items = rows.map(({ images, ...row }) => ({
     ...row,
     coverUrl: images[0] ? imageUrl(images[0].id) : null,
+    /**
+     * The id as well as the URL.
+     *
+     * The staff image endpoint takes an image id, and the reviewer UI would
+     * otherwise have to pull it back out of coverUrl with a string split —
+     * which breaks silently the first time the public route changes shape.
+     */
+    coverImageId: images[0]?.id ?? null,
   }));
 
   return toPage(items, total, query.page, query.pageSize);

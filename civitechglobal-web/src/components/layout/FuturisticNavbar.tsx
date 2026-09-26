@@ -17,8 +17,11 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import logoSrc from '@/assets/logos/concept logo - no bg - white.png';
+import { features } from '@/lib/features';
 
 type NavKey =
+  | 'shops'
+  | 'marketProducts'
   | 'services'
   | 'startProject'
   | 'joinUs'
@@ -80,6 +83,14 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/jobs', key: 'jobs' },
       { to: '/projects', key: 'freelance' },
       { to: '/books', key: 'books' },
+      // Absent rather than disabled while the module is off: a menu item that
+      // leads to a route that does not resolve is worse than no item.
+      ...(features.tradeMaster
+        ? ([
+            { to: '/marketplace/shops', key: 'shops' },
+            { to: '/marketplace/products', key: 'marketProducts' },
+          ] as const)
+        : []),
       { to: '/consult', key: 'consult' },
       { to: '/join', key: 'joinUs' },
       { to: '/volunteer', key: 'volunteer' },

@@ -50,7 +50,9 @@ export type QueueKey =
   | 'bids'
   | 'books'
   | 'consultations'
-  | 'disputes';
+  | 'disputes'
+  | 'tradeMasterShops'
+  | 'tradeMasterProducts';
 
 export type ActivityKind = 'project' | 'resume' | 'programme' | 'insurance' | 'message';
 

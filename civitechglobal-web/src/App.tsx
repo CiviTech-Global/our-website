@@ -99,6 +99,8 @@ const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueue
 const AdminExpertsPage = lazy(() => import('@/pages/admin/ExpertsPage'));
 const ConsultationQueuePage = lazy(() => import('@/pages/admin/ConsultationQueuePage'));
 const BookQueuePage = lazy(() => import('@/pages/admin/BookQueuePage'));
+const ShopQueuePage = lazy(() => import('@/pages/admin/ShopQueuePage'));
+const ProductQueuePage = lazy(() => import('@/pages/admin/ProductQueuePage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
 const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
@@ -684,6 +686,30 @@ export default function App() {
             </RequirePermission>
           }
         />
+        {features.tradeMaster && (
+          <>
+            <Route
+              path="trademaster/shops"
+              element={
+                <RequirePermission permission="trademaster">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <ShopQueuePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+            <Route
+              path="trademaster/products"
+              element={
+                <RequirePermission permission="trademaster">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <ProductQueuePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+          </>
+        )}
         <Route
           path="books"
           element={

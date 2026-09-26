@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 import {
+  Package,
   BarChart3,
   BookOpen,
   Briefcase,
@@ -33,6 +34,7 @@ import { useWorkload } from '@/api/admin';
 import { AppShell } from '@/components/app/AppShell';
 import type { NavItem, NavModule } from '@/components/app/navigation';
 import type { QueueKey } from '@/types/admin';
+import { features } from '@/lib/features';
 
 /**
  * The admin panel's navigation, as modules on the rail and screens in the
@@ -85,6 +87,18 @@ export function AdminLayout() {
     },
     bids: { to: '/admin/bids', label: t.market.queueBids, icon: <Gavel />, count: open('bids') },
     books: { to: '/admin/books', label: t.books.queueTitle, icon: <BookOpen />, count: open('books') },
+    tradeMasterShops: {
+      to: '/admin/trademaster/shops',
+      label: t.trademaster.queueShops,
+      icon: <Store />,
+      count: open('tradeMasterShops'),
+    },
+    tradeMasterProducts: {
+      to: '/admin/trademaster/products',
+      label: t.trademaster.queueProducts,
+      icon: <Package />,
+      count: open('tradeMasterProducts'),
+    },
     consultations: {
       to: '/admin/consultations',
       label: t.consult.queueTitle,
@@ -143,6 +157,10 @@ export function AdminLayout() {
             ...when(can('jobs'), queue.jobPosts, queue.applications),
             ...when(can('freelance'), queue.freelanceProjects, queue.bids),
             ...when(can('books'), queue.books),
+            // Both behind one permission: a shop and its catalogue are
+            // judged together, and a refused shop whose products nobody on
+            // that desk could take down would be a strange arrangement.
+            ...when(features.tradeMaster && can('trademaster'), queue.tradeMasterShops, queue.tradeMasterProducts),
           ],
         },
         {

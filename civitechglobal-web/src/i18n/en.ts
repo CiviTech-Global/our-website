@@ -86,6 +86,8 @@ const en: typeof fa = {
     logout: 'Logout',
     profile: 'Profile',
     viewSite: 'View website',
+    shops: 'Shops',
+    marketProducts: 'Products',
   },
   theme: {
     light: 'Light mode',

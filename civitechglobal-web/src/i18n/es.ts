@@ -83,6 +83,8 @@ const es: PartialTranslations = {
     consult: 'Asesoría',
     experts: 'Club de expertos',
     blog: 'Blog',
+    shops: 'Tiendas',
+    marketProducts: 'Productos',
   },
 
   theme: { light: 'Modo claro', dark: 'Modo oscuro' },

@@ -79,6 +79,8 @@ const fr: PartialTranslations = {
     consult: 'Conseil',
     experts: 'Club d’experts',
     blog: 'Blog',
+    shops: 'Boutiques',
+    marketProducts: 'Produits',
   },
 
   theme: { light: 'Thème clair', dark: 'Thème sombre' },

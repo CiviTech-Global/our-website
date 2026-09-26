@@ -84,6 +84,8 @@ const fa = {
     logout: 'خروج',
     profile: 'پروفایل',
     viewSite: 'مشاهده سایت',
+    shops: 'فروشگاه‌ها',
+    marketProducts: 'کالاها',
   },
   theme: {
     light: 'حالت روشن',

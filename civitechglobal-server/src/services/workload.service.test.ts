@@ -21,6 +21,8 @@ const mocks = vi.hoisted(() => {
     marketplaceAward: model(),
     showcaseOrganization: model(),
     showcaseProject: model(),
+    business: model(),
+    product: model(),
   };
   return { prisma };
 });
@@ -83,7 +85,28 @@ describe('workload scoping', () => {
     const workload = await getWorkload({ userId: 'root', role: 'SUPER_ADMIN' });
 
     expect(mocks.prisma.user.findUnique).not.toHaveBeenCalled();
-    expect(Object.keys(workload.queues)).toHaveLength(13);
+    // Every key in the union, so adding a queue without giving a super admin
+    // access to it fails here. A bare length was what this asserted before and
+    // it only said "fifteen of something".
+    expect(Object.keys(workload.queues).sort()).toEqual(
+      [
+        'applications',
+        'bids',
+        'books',
+        'consultations',
+        'disputes',
+        'freelanceProjects',
+        'insurance',
+        'jobPosts',
+        'messages',
+        'programme',
+        'projects',
+        'resumes',
+        'tradeMasterProducts',
+        'tradeMasterShops',
+        'verification',
+      ].sort()
+    );
     expect(workload.users).toBeDefined();
     expect(workload.showcase).toBeDefined();
   });

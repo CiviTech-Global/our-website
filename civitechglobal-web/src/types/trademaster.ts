@@ -244,6 +244,8 @@ export interface ProductQueueRow {
   moderationStatus: ModerationStatus;
   createdAt: string;
   coverUrl: string | null;
+  /** For the staff image endpoint, which takes an id rather than a URL. */
+  coverImageId: string | null;
   business: { id: string; name: string; slug: string };
 }
 

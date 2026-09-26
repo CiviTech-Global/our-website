@@ -89,6 +89,8 @@ const tr: PartialTranslations = {
     consult: 'Danışmanlık',
     experts: 'Uzmanlar kulübü',
     blog: 'Blog',
+    shops: 'Dükkânlar',
+    marketProducts: 'Ürünler',
   },
 
   theme: { light: 'Açık tema', dark: 'Koyu tema' },

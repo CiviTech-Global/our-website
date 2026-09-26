@@ -1,5 +1,6 @@
 import type { Role } from '@prisma/client';
 import { prisma } from '../config/database.js';
+import { features } from '../config/features.js';
 import { ALL_PERMISSIONS, PERMISSIONS, type Permission } from '../auth/permissions.js';
 
 /**
@@ -60,7 +61,9 @@ export type QueueKey =
   | 'bids'
   | 'books'
   | 'consultations'
-  | 'disputes';
+  | 'disputes'
+  | 'tradeMasterShops'
+  | 'tradeMasterProducts';
 
 export const TREND_DAYS = 14;
 
@@ -282,6 +285,28 @@ export async function getWorkload(principal: Principal, now = new Date()): Promi
         queues.books = await pair(
           prisma.bookListing.count({ where: { moderationStatus: 'PENDING_REVIEW' } }),
           prisma.bookListing.count(),
+        );
+      })(),
+    );
+  }
+
+  // Only while the module is switched on. Counting for a module nobody can
+  // reach would put two permanent zeroes on the overview of anybody holding
+  // the grant, which trains people to ignore the page.
+  if (features.tradeMaster && can(PERMISSIONS.tradeMaster)) {
+    tasks.push(
+      (async () => {
+        queues.tradeMasterShops = await pair(
+          prisma.business.count({ where: { moderationStatus: 'PENDING_REVIEW' } }),
+          prisma.business.count(),
+        );
+      })(),
+    );
+    tasks.push(
+      (async () => {
+        queues.tradeMasterProducts = await pair(
+          prisma.product.count({ where: { moderationStatus: 'PENDING_REVIEW' } }),
+          prisma.product.count(),
         );
       })(),
     );
