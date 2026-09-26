@@ -353,9 +353,14 @@ export async function startPayment(userId: string, orderId: string, returnUrl: s
  * already SUCCEEDED short-circuits, so a refreshed return page cannot pay an
  * order twice or move it out of a state the seller has since advanced.
  */
-export async function confirmPayment(reference: string) {
-  const intent = await prisma.paymentIntent.findUnique({
-    where: { reference },
+export async function confirmPayment(reference: string, buyerId?: string) {
+  const intent = await prisma.paymentIntent.findFirst({
+    // Scoped to the buyer when one is given, which the return route always
+    // does. Verifying somebody else's reference would only ever record what
+    // the gateway already believes, so it is not a way to pay for a stranger's
+    // order — but it is a way to learn that an order exists and what happened
+    // to it, and that is nobody else's business.
+    where: { reference, ...(buyerId ? { order: { buyerId } } : {}) },
     select: {
       id: true,
       driver: true,

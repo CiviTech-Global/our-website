@@ -7,10 +7,13 @@ import { AppError } from '../middleware/errorHandler.js';
 import { publicCache } from '../middleware/cacheControl.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { features } from '../config/features.js';
+import { env } from '../config/env.js';
+import { checkoutRateLimiter } from '../middleware/rateLimit.js';
 import { MAX_FILE_BYTES, MAX_FILES, openStoredFile } from '../services/attachment.service.js';
 import { serveStoredFile } from '../services/file-response.js';
 import * as shops from '../services/trademaster-shop.service.js';
 import * as products from '../services/trademaster-product.service.js';
+import * as orders from '../services/trademaster-order.service.js';
 import {
   reviewDecisionSchema,
   reviewQueueSchema,
@@ -22,6 +25,11 @@ import {
   productBoardSchema,
   variantSchema,
   imageCaptionSchema,
+  checkoutSchema,
+  startPaymentSchema,
+  paymentReturnSchema,
+  orderMoveSchema,
+  orderListSchema,
 } from '../validators/trademaster.schema.js';
 
 /**
@@ -481,6 +489,106 @@ router.post(
       internalNote: body.internalNote,
     });
     successResponse(res, serialize(result), 'بررسی ثبت شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Orders — the buyer
+// ---------------------------------------------------------------------------
+
+router.post(
+  '/checkout',
+  authenticate,
+  // Each checkout takes stock out of real inventory and holds it; see the note
+  // on the limiter.
+  checkoutRateLimiter,
+  wrap(async (req, res) => {
+    const body = checkoutSchema.parse(req.body);
+    const { lines, ...delivery } = body;
+    const created = await orders.checkout(req.user!.userId, lines, delivery);
+    successResponse(res, serialize(created), 'سفارش ثبت شد.', 201);
+  })
+);
+
+router.get(
+  '/me/orders',
+  authenticate,
+  wrap(async (req, res) => {
+    const query = orderListSchema.parse(req.query);
+    const result = await orders.listBuyerOrders(req.user!.userId, query);
+    successResponse(res, serialize(result));
+  })
+);
+
+router.get(
+  '/me/orders/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    // Readable by either side of the order; the service decides which.
+    successResponse(res, serialize(await orders.getOrder(req.user!.userId, param(req, 'id'))));
+  })
+);
+
+router.post(
+  '/me/orders/:id/pay',
+  authenticate,
+  wrap(async (req, res) => {
+    const body = startPaymentSchema.parse(req.body);
+
+    /**
+     * The return URL is built here, from our own origin and a path the
+     * validator has already restricted.
+     *
+     * Never from anything the client sends whole: a caller-supplied absolute
+     * URL would be an open redirect with a live payment reference attached to
+     * it, which is a good way to hand somebody else's payment confirmation to
+     * a site of your choosing.
+     */
+    const origin = env.APP_URL.replace(/\/+$/, '');
+    const returnUrl = `${origin}${body.returnPath ?? '/dashboard/orders'}`;
+
+    const result = await orders.startPayment(req.user!.userId, param(req, 'id'), returnUrl);
+    successResponse(res, serialize(result));
+  })
+);
+
+router.post(
+  '/me/payments/confirm',
+  authenticate,
+  wrap(async (req, res) => {
+    const body = paymentReturnSchema.parse(req.body);
+    // Scoped to the caller: see the note in confirmPayment.
+    const result = await orders.confirmPayment(body.reference, req.user!.userId);
+    successResponse(res, serialize(result));
+  })
+);
+
+router.post(
+  '/me/orders/:id/move',
+  authenticate,
+  wrap(async (req, res) => {
+    const body = orderMoveSchema.parse(req.body);
+    const result = await orders.moveOrder(req.user!.userId, param(req, 'id'), body.to, {
+      note: body.note,
+      shipping: body.shipping,
+      trackingCarrier: body.trackingCarrier,
+      trackingCode: body.trackingCode,
+    });
+    successResponse(res, serialize(result), 'وضعیت سفارش به‌روزرسانی شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Orders — the seller
+// ---------------------------------------------------------------------------
+
+router.get(
+  '/me/shops/:id/orders',
+  authenticate,
+  wrap(async (req, res) => {
+    const query = orderListSchema.parse(req.query);
+    const result = await orders.listShopOrders(req.user!.userId, param(req, 'id'), query);
+    successResponse(res, serialize(result));
   })
 );
 

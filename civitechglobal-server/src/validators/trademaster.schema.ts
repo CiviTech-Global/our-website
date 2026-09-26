@@ -171,3 +171,100 @@ export const reviewDecisionSchema = z
     internalNote: trimmed(2000).optional(),
   })
   .strict();
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+/**
+ * One basket line.
+ *
+ * No price field, deliberately. The service reads the price from the database,
+ * so accepting one here would create a field that looks authoritative, is
+ * ignored, and eventually gets trusted by somebody.
+ */
+const basketLine = z
+  .object({
+    productId: required(1, 40, 'کالا مشخص نشده است'),
+    variantId: trimmed(40).optional(),
+    quantity: z.coerce.number().int().min(1, 'تعداد باید حداقل ۱ باشد').max(100),
+  })
+  .strict();
+
+export const checkoutSchema = z
+  .object({
+    lines: z.array(basketLine).min(1, 'سبد خرید خالی است').max(50),
+    recipientName: required(2, 120, 'نام گیرنده الزامی است'),
+    recipientPhone: required(6, 30, 'شمارهٔ تماس گیرنده الزامی است'),
+    province: required(2, 60, 'استان الزامی است'),
+    city: required(2, 60, 'شهر الزامی است'),
+    address: required(10, 400, 'نشانی الزامی است'),
+    postalCode: trimmed(20).optional(),
+    buyerNote: trimmed(1000).optional(),
+  })
+  .strict();
+
+/**
+ * Where the gateway should send the buyer back to.
+ *
+ * A path, not a URL. Accepting a full URL would let a caller choose where the
+ * payment flow lands, which is an open redirect with a payment reference
+ * attached; the route turns this into an absolute URL against our own origin.
+ */
+export const startPaymentSchema = z
+  .object({
+    returnPath: z
+      .string()
+      .trim()
+      .max(200)
+      /**
+       * One leading slash, and not two.
+       *
+       * `//evil.test/steal` is a protocol-relative URL: it satisfies "starts
+       * with a slash" and contains nothing but permitted characters, and a
+       * browser resolves it to https://evil.test/steal. The first version of
+       * this pattern allowed it, which made the whole restriction decorative —
+       * a test caught it, not a review.
+       */
+      .regex(/^\/(?!\/)[A-Za-z0-9\-._~/]*$/, 'مسیر بازگشت نامعتبر است')
+      .optional(),
+  })
+  .strict();
+
+export const paymentReturnSchema = z.object({
+  reference: required(1, 200, 'شناسهٔ پرداخت ارسال نشده است'),
+});
+
+/**
+ * Moving an order.
+ *
+ * Which transitions are legal, and who may perform them, is decided by the
+ * table in trademaster-order.service.ts rather than here — one place, so the
+ * wire format cannot come to disagree with the rule.
+ */
+export const orderMoveSchema = z
+  .object({
+    to: z.enum(['AWAITING_PAYMENT', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']),
+    note: trimmed(1000).optional(),
+    shipping: money.optional(),
+    trackingCarrier: trimmed(80).optional(),
+    trackingCode: trimmed(80).optional(),
+  })
+  .strict();
+
+export const orderListSchema = z.object({
+  status: z
+    .enum([
+      'PENDING',
+      'AWAITING_PAYMENT',
+      'PAID',
+      'CONFIRMED',
+      'SHIPPED',
+      'DELIVERED',
+      'CANCELLED',
+      'REFUNDED',
+    ])
+    .optional(),
+  page,
+  pageSize,
+});

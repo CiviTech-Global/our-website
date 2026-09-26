@@ -165,3 +165,24 @@ export const generalRateLimiter = rateLimit({
   store: createStore('rl:general:'),
   passOnStoreError: true,
 });
+
+/**
+ * Checkout.
+ *
+ * Tighter than it looks necessary, because a checkout is not a read: each one
+ * takes stock out of a seller's inventory and holds it until the order is
+ * cancelled. A flood does not cost us rows, it empties shops — every listing in
+ * the basket shows "out of stock" to real buyers while the attacker's abandoned
+ * orders sit there. Twenty an hour is far above what anybody shopping does and
+ * far below what that costs.
+ */
+export const checkoutRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator,
+  message: rateLimitMessage,
+  store: createStore('rl:checkout:'),
+  passOnStoreError: true,
+});
