@@ -493,11 +493,31 @@ router.post(
 );
 
 // ---------------------------------------------------------------------------
-// Orders — the buyer
+// Orders
+//
+// Everything below is behind a second gate, off in every environment including
+// development. The module is a catalogue for now: shops show what they sell and
+// buyers contact them directly.
+//
+// 404 rather than 403, for the same reason the module gate does it — an
+// unfinished checkout should be indistinguishable from one that was never
+// built. Applied per route rather than with router.use, because a router.use
+// here would also catch the catalogue routes declared above it in the file
+// order Express cares about.
 // ---------------------------------------------------------------------------
+
+const ordersEnabled = (_req: Request, _res: Response, next: NextFunction): void => {
+  if (!features.tradeMasterOrders) {
+    next(new AppError('یافت نشد.', 404));
+    return;
+  }
+  next();
+};
+
 
 router.post(
   '/checkout',
+  ordersEnabled,
   authenticate,
   // Each checkout takes stock out of real inventory and holds it; see the note
   // on the limiter.
@@ -512,6 +532,7 @@ router.post(
 
 router.get(
   '/me/orders',
+  ordersEnabled,
   authenticate,
   wrap(async (req, res) => {
     const query = orderListSchema.parse(req.query);
@@ -522,6 +543,7 @@ router.get(
 
 router.get(
   '/me/orders/:id',
+  ordersEnabled,
   authenticate,
   wrap(async (req, res) => {
     // Readable by either side of the order; the service decides which.
@@ -531,6 +553,7 @@ router.get(
 
 router.post(
   '/me/orders/:id/pay',
+  ordersEnabled,
   authenticate,
   wrap(async (req, res) => {
     const body = startPaymentSchema.parse(req.body);
@@ -554,6 +577,7 @@ router.post(
 
 router.post(
   '/me/payments/confirm',
+  ordersEnabled,
   authenticate,
   wrap(async (req, res) => {
     const body = paymentReturnSchema.parse(req.body);
@@ -565,6 +589,7 @@ router.post(
 
 router.post(
   '/me/orders/:id/move',
+  ordersEnabled,
   authenticate,
   wrap(async (req, res) => {
     const body = orderMoveSchema.parse(req.body);
@@ -584,6 +609,7 @@ router.post(
 
 router.get(
   '/me/shops/:id/orders',
+  ordersEnabled,
   authenticate,
   wrap(async (req, res) => {
     const query = orderListSchema.parse(req.query);

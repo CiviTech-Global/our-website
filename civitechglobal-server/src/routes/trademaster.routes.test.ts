@@ -126,3 +126,88 @@ describe('route declaration order', () => {
     expect(image).toBeLessThan(product);
   });
 });
+
+/**
+ * The purchase path is built and not offered.
+ *
+ * The module is a catalogue for now, so every order route must be absent —
+ * including in development, where the module itself is on. That asymmetry is
+ * the whole point of the second flag, and it is the kind of thing that quietly
+ * stops being true when somebody adds a route and copies the wrong neighbour.
+ */
+describe('the TradeMaster orders gate', () => {
+  const original = { ...process.env };
+
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    process.env = { ...original };
+    vi.resetModules();
+  });
+
+  const ORDER_ROUTES: Array<[string, string]> = [
+    ['post', '/api/v1/trademaster/checkout'],
+    ['get', '/api/v1/trademaster/me/orders'],
+    ['get', '/api/v1/trademaster/me/orders/abc'],
+    ['post', '/api/v1/trademaster/me/orders/abc/pay'],
+    ['post', '/api/v1/trademaster/me/payments/confirm'],
+    ['post', '/api/v1/trademaster/me/orders/abc/move'],
+    ['get', '/api/v1/trademaster/me/shops/abc/orders'],
+  ];
+
+  it('answers 404 on every order route with the module on and orders off', async () => {
+    // One app for all seven, not one per route. vi.resetModules() gives each
+    // fresh app its own Redis client which then retries a connection it may not
+    // have; building seven of them made the later assertions time out purely
+    // from accumulated retry delay, which looked like a routing failure.
+    const app = await appWith({
+      NODE_ENV: 'development',
+      FEATURE_TRADEMASTER: 'true',
+      FEATURE_TRADEMASTER_ORDERS: undefined,
+    });
+
+    for (const [method, url] of ORDER_ROUTES) {
+      const res = await (method === 'get'
+        ? request(app).get(url)
+        : request(app).post(url).send({}));
+
+      // 404, not 401: the gate sits in front of `authenticate`, so an
+      // unauthenticated probe cannot even learn that the route exists. The
+      // first version of this had the two the other way round and returned 401,
+      // which a test caught and a reading of the code had not.
+      expect(res.status, `${method} ${url}`).toBe(404);
+    }
+
+    // The same app must still serve the catalogue. Without this, the seven
+    // assertions above would pass just as well if the orders gate had
+    // accidentally taken the whole module down with it — which is the more
+    // likely mistake of the two.
+    const catalogue = await request(app).get('/api/v1/trademaster/shops');
+    expect(looksUnrouted(catalogue.body as { message?: string })).toBe(false);
+  });
+
+  it('routes the order path when the flag is explicitly on', async () => {
+    // So the negative tests above cannot pass because of a typo in a URL.
+    const app = await appWith({
+      NODE_ENV: 'development',
+      FEATURE_TRADEMASTER: 'true',
+      FEATURE_TRADEMASTER_ORDERS: 'true',
+    });
+
+    const res = await request(app).get('/api/v1/trademaster/me/orders');
+    // 401 rather than 404: reachable, and still behind authentication.
+    expect(res.status).toBe(401);
+  });
+
+  it('keeps orders off in production even when the module is on', async () => {
+    const app = await appWith({
+      NODE_ENV: 'production',
+      FEATURE_TRADEMASTER: 'true',
+      FEATURE_TRADEMASTER_ORDERS: undefined,
+    });
+
+    expect((await request(app).post('/api/v1/trademaster/checkout').send({})).status).toBe(404);
+  });
+});

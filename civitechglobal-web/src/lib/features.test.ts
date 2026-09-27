@@ -19,9 +19,16 @@ describe('client feature flags', () => {
     expect(features.tradeMaster).toBe(true);
   });
 
+  it('has the purchase path off even outside production', () => {
+    // The module is a catalogue for now. Unlike the module flag there is no
+    // environment where this defaults on — a basket that appears in
+    // development and not in production is a demo that misleads.
+    expect(features.tradeMasterOrders).toBe(false);
+  });
+
   it('exposes flags as a frozen-shaped constant object', () => {
     // A mutable flag object invites somebody to flip it at runtime to "test
     // something", which then ships.
-    expect(Object.keys(features)).toEqual(['tradeMaster']);
+    expect(Object.keys(features)).toEqual(['tradeMaster', 'tradeMasterOrders']);
   });
 });

@@ -236,14 +236,17 @@ export default function App() {
                 </Suspense>
               }
             />
-            <Route
-              path="/marketplace/cart"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <CartPage />
-                </Suspense>
-              }
-            />
+            {/* The basket only exists while buying does. */}
+            {features.tradeMasterOrders && (
+              <Route
+                path="/marketplace/cart"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <CartPage />
+                  </Suspense>
+                }
+              />
+            )}
             <Route
               path="/marketplace/products"
               element={
@@ -423,22 +426,26 @@ export default function App() {
                 </Suspense>
               }
             />
-            <Route
-              path="orders"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <MyOrdersPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="shops/:shopId/orders"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <ShopOrdersPage />
-                </Suspense>
-              }
-            />
+            {features.tradeMasterOrders && (
+              <>
+                <Route
+                  path="orders"
+                  element={
+                    <Suspense fallback={<RouteLoadingFallback />}>
+                      <MyOrdersPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="shops/:shopId/orders"
+                  element={
+                    <Suspense fallback={<RouteLoadingFallback />}>
+                      <ShopOrdersPage />
+                    </Suspense>
+                  }
+                />
+              </>
+            )}
             <Route
               path="shops/:shopId/products"
               element={

@@ -62,7 +62,9 @@ export function UserLayout() {
             ...(features.tradeMaster
               ? [
                   { to: '/dashboard/shops', label: t.trademaster.myShops, icon: <ShoppingBag /> },
-                  { to: '/dashboard/orders', label: t.trademaster.myOrders, icon: <Package /> },
+                  ...(features.tradeMasterOrders
+                    ? [{ to: '/dashboard/orders', label: t.trademaster.myOrders, icon: <Package /> }]
+                    : []),
                 ]
               : []),
             { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase /> },

@@ -32,4 +32,17 @@ function flag(value: unknown, enabledByDefaultOutsideProduction: boolean): boole
 export const features = {
   /** The TradeMaster module: shops and the product catalogue. */
   tradeMaster: flag(import.meta.env.VITE_FEATURE_TRADEMASTER, true),
+
+  /**
+   * Buying things: the basket, checkout and orders.
+   *
+   * OFF EVERYWHERE, matching config/features.ts on the server. The module is a
+   * catalogue for now — shops show what they sell and buyers contact them
+   * directly — so the basket must not appear in navigation, on a product page,
+   * or as a route that loads and then finds every endpoint answering 404.
+   *
+   * Second argument false, not true: unlike the module flag there is no
+   * environment where this should be on by default, including development.
+   */
+  tradeMasterOrders: flag(import.meta.env.VITE_FEATURE_TRADEMASTER_ORDERS, false),
 } as const;

@@ -90,7 +90,9 @@ const NAV_ENTRIES: NavEntry[] = [
         ? ([
             { to: '/marketplace/shops', key: 'shops' },
             { to: '/marketplace/products', key: 'marketProducts' },
-            { to: '/marketplace/cart', key: 'cart' },
+            ...(features.tradeMasterOrders
+              ? ([{ to: '/marketplace/cart', key: 'cart' }] as const)
+              : []),
           ] as const)
         : []),
       { to: '/consult', key: 'consult' },

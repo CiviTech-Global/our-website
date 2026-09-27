@@ -4,6 +4,7 @@ import { Eye, ImageOff, Info, Mail, MapPin, Phone, ShoppingBag, Store } from 'lu
 import { apiAssetSrc } from '@/lib/apiAsset';
 import { usePublicProduct } from '@/api/trademaster';
 import { useCart } from '@/lib/cart';
+import { features } from '@/lib/features';
 import { useToast } from '@/contexts/ToastContext';
 import { toPersianDigits } from '@/i18n/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -222,7 +223,10 @@ export default function MarketProductDetailPage() {
             </fieldset>
           )}
 
-          {/* Add to the basket */}
+          {/* Add to the basket, while buying exists at all. The seller block
+              below carries their phone and email, which is how a buyer reaches
+              them while the module is a catalogue. */}
+          {features.tradeMasterOrders && (
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-1">
               <span className="text-sm text-text-secondary">{t.trademaster.quantity}</span>
@@ -262,6 +266,7 @@ export default function MarketProductDetailPage() {
               </Link>
             )}
           </div>
+          )}
 
           {/* Money still does not move on the site; the basket ends in an order
               the seller fulfils and is paid for off-platform for now. */}

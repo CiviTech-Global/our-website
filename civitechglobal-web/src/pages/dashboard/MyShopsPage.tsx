@@ -19,6 +19,7 @@ import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { toPersianDigits } from '@/i18n/utils';
 import { moderationVariant, stateVariant } from '@/lib/marketplace';
+import { features } from '@/lib/features';
 import { PageHeader } from '@/components/app/PageHeader';
 import { CoverField } from '@/components/marketplace/CoverField';
 import { Badge } from '@/components/ui/Badge';
@@ -359,6 +360,18 @@ export default function MyShopsPage() {
                   <Link to={`/dashboard/shops/${shop.id}/products`}>
                     <Button variant="outline" size="sm">
                       {t.trademaster.products}
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Closing a gap: the shop-orders screen and its route existed
+                    with nothing linking to them, reachable only by typing the
+                    URL. Behind the orders flag, so it appears when buying
+                    does. */}
+                {features.tradeMasterOrders && shop.moderationStatus === 'APPROVED' && (
+                  <Link to={`/dashboard/shops/${shop.id}/orders`}>
+                    <Button variant="outline" size="sm">
+                      {t.trademaster.shopOrders}
                     </Button>
                   </Link>
                 )}

@@ -35,11 +35,30 @@ function flag(key: string, enabledByDefaultOutsideProduction: boolean): boolean 
 
 export const features = {
   /**
-   * The TradeMaster module: businesses, product catalogue, orders.
+   * The TradeMaster module: shops and the product catalogue.
    *
    * On in development and test, off in production unless explicitly set.
    */
   tradeMaster: flag('FEATURE_TRADEMASTER', true),
+
+  /**
+   * Buying things: the basket, checkout, orders and payment.
+   *
+   * OFF EVERYWHERE, including development. TradeMaster is a catalogue for now —
+   * shops show what they sell and buyers contact them directly — and the
+   * purchase path is deliberately not reachable until that changes.
+   *
+   * The code behind it is finished and tested rather than deleted: the order
+   * lifecycle, the stock holding and the payment seam took real care to get
+   * right, and throwing them away to re-derive them later would be the
+   * expensive kind of tidiness. A flag that defaults off in every environment
+   * is the honest way to say "built, not offered".
+   *
+   * Turning it on means setting FEATURE_TRADEMASTER_ORDERS=true deliberately,
+   * in one place, and the tests for the lifecycle keep passing meanwhile — so
+   * it cannot rot quietly while it waits.
+   */
+  tradeMasterOrders: flag('FEATURE_TRADEMASTER_ORDERS', false),
 } as const;
 
 export type FeatureName = keyof typeof features;
