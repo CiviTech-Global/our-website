@@ -1995,6 +1995,7 @@ const tr: PartialTranslations = {
       FAILED: 'Başarısız',
       REFUNDED: 'İade edildi',
     },
+    addedToCart: 'Sepete eklendi.',
   },
 };
 

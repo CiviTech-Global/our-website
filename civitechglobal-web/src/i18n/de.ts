@@ -1985,6 +1985,7 @@ const de: PartialTranslations = {
       FAILED: 'Fehlgeschlagen',
       REFUNDED: 'Erstattet',
     },
+    addedToCart: 'In den Warenkorb gelegt.',
   },
 };
 

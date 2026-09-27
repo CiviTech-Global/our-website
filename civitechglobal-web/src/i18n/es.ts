@@ -1989,6 +1989,7 @@ const es: PartialTranslations = {
       FAILED: 'Fallido',
       REFUNDED: 'Reembolsado',
     },
+    addedToCart: 'Añadido a su cesta.',
   },
 };
 

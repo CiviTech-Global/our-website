@@ -2168,6 +2168,7 @@ const en: typeof fa = {
       FAILED: 'Failed',
       REFUNDED: 'Refunded',
     },
+    addedToCart: 'Added to your basket.',
   },
 };
 

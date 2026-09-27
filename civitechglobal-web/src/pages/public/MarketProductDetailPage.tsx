@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { Eye, ImageOff, Info, Mail, MapPin, Phone, Store } from 'lucide-react';
+import { Eye, ImageOff, Info, Mail, MapPin, Phone, ShoppingBag, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
 import { usePublicProduct } from '@/api/trademaster';
+import { useCart } from '@/lib/cart';
+import { useToast } from '@/contexts/ToastContext';
+import { toPersianDigits } from '@/i18n/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatMoney } from '@/lib/marketplace';
@@ -34,6 +37,10 @@ export default function MarketProductDetailPage() {
 
   const [activeImage, setActiveImage] = useState(0);
   const [variantId, setVariantId] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+
+  const cart = useCart();
+  const { showToast } = useToast();
 
   useDocumentTitle(product?.title ?? t.trademaster.products, { description: product?.summary });
 
@@ -69,6 +76,33 @@ export default function MarketProductDetailPage() {
 
   const images = product.images;
   const cover = images[Math.min(activeImage, images.length - 1)];
+
+  const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
+
+  /** How many of this exact product-and-variant are already in the basket. */
+  const inBasket = cart.lines
+    .filter((line) => line.productId === product.id && (line.variantId ?? null) === variantId)
+    .reduce((total, line) => total + line.quantity, 0);
+
+  const handleAdd = () => {
+    cart.add({
+      productId: product.id,
+      variantId: variantId ?? undefined,
+      quantity,
+      title: product.title,
+      variantLabel: variant?.label,
+      // The variant's own price when it has one, the product's otherwise —
+      // the same rule the server applies, so the basket shows what will be
+      // charged rather than a different number.
+      unitPrice: variant?.price ?? product.price,
+      currency: product.currency,
+      coverUrl: images[0]?.url ?? null,
+      shopSlug: product.shop.slug,
+      shopName: product.shop.name,
+    });
+
+    showToast(t.trademaster.addedToCart, 'success');
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -188,7 +222,49 @@ export default function MarketProductDetailPage() {
             </fieldset>
           )}
 
-          {/* No basket, no checkout. See the note at the top of this file. */}
+          {/* Add to the basket */}
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-sm text-text-secondary">{t.trademaster.quantity}</span>
+              <input
+                type="number"
+                min={1}
+                max={Math.max(1, Math.min(100, shownStock))}
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value.replace(/[^0-9]/g, '')) || 1))}
+                disabled={!anyStock}
+                dir="ltr"
+                className="w-24 rounded-lg border border-border-default bg-surface-default px-3 py-2 text-text-primary disabled:opacity-50"
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={handleAdd}
+              // Out of stock, or a product with options and none chosen. The
+              // server refuses both, so this only saves the round trip — and
+              // says which of the two it is, which the server's message cannot.
+              disabled={!anyStock || (product.variants.length > 0 && !variantId)}
+              className="inline-flex items-center gap-2 rounded-lg bg-surface-inverse px-4 py-2 font-medium text-text-inverse transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ShoppingBag className="h-4 w-4" aria-hidden="true" />
+              {product.variants.length > 0 && !variantId
+                ? t.trademaster.chooseVariant
+                : t.trademaster.addToCart}
+            </button>
+
+            {inBasket > 0 && (
+              <Link
+                to="/marketplace/cart"
+                className="text-sm text-text-secondary underline hover:text-text-primary"
+              >
+                {t.trademaster.inCart}: {number(inBasket)}
+              </Link>
+            )}
+          </div>
+
+          {/* Money still does not move on the site; the basket ends in an order
+              the seller fulfils and is paid for off-platform for now. */}
           <div className="flex items-start gap-2 rounded-lg border border-border-default bg-surface-muted p-3 text-sm text-text-secondary">
             <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <p>{t.trademaster.noPaymentYet}</p>

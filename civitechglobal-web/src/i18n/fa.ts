@@ -2155,6 +2155,7 @@ const fa = {
       FAILED: 'ناموفق',
       REFUNDED: 'بازگشت‌شده',
     },
+    addedToCart: 'به سبد خرید افزوده شد.',
   },
 };
 
