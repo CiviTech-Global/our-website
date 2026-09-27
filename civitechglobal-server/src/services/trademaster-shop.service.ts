@@ -15,6 +15,7 @@ import { assertMarketplaceAllowed, assertVerified } from './verification.service
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
+import { boundingBox, distanceKm, isValidPoint, type Point } from '../utils/geo.js';
 
 /**
  * Shops, in the TradeMaster module.
@@ -60,10 +61,28 @@ export interface ShopQuery {
   search?: string;
   province?: string;
   industry?: string;
-  sort?: 'newest' | 'name';
+  sort?: 'newest' | 'name' | 'nearest';
+  /** Both or neither; half a coordinate is refused rather than guessed at. */
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   page: number;
   pageSize: number;
 }
+
+/**
+ * How many shops the bounding box may return before the search stops being
+ * exhaustive.
+ *
+ * Beyond this the answer is "the nearest of the first 500 in the box" rather
+ * than "the nearest 500", which is a real difference and worth naming. A shop
+ * directory does not reach it; if this ever serves products it will need a
+ * PostGIS index and a different query.
+ */
+const MAX_NEARBY_CANDIDATES = 500;
+
+/** The widest radius a caller may ask for, in kilometres. */
+export const MAX_RADIUS_KM = 200;
 
 function trimmed(value: string | undefined): string | undefined {
   const next = value?.trim();
@@ -353,7 +372,115 @@ function shopSort(query: ShopQuery): Prisma.BusinessOrderByWithRelationInput[] {
   return [featuredFirst, { publishedAt: 'desc' }];
 }
 
+/**
+ * Shops within a radius, nearest first.
+ *
+ * Separate from listPublicShops rather than a branch inside it: the paging is
+ * different in kind — this sorts by a value the database does not hold, so the
+ * page is taken after the distances are known, and mixing that into the ordinary
+ * query would mean two paging strategies behind one signature.
+ */
+async function listNearbyShops(query: ShopQuery, centre: Point) {
+  const radiusKm = Math.min(query.radiusKm ?? 25, MAX_RADIUS_KM);
+  const box = boundingBox(centre, radiusKm);
+
+  const longitudeFilter: Prisma.BusinessWhereInput = box.crossesAntimeridian
+    ? // Two ranges, because the box wraps: everything east of the minimum OR
+      // everything west of the maximum.
+      {
+        OR: [
+          { longitude: { gte: box.minLongitude } },
+          { longitude: { lte: box.maxLongitude } },
+        ],
+      }
+    : { longitude: { gte: box.minLongitude, lte: box.maxLongitude } };
+
+  const where: Prisma.BusinessWhereInput = {
+    AND: [
+      PUBLIC_LISTING_WHERE,
+      { latitude: { gte: box.minLatitude, lte: box.maxLatitude } },
+      longitudeFilter,
+      {
+        ...(query.province ? { province: query.province } : {}),
+        ...(query.industry ? { industry: query.industry } : {}),
+        ...(query.search?.trim()
+          ? { name: { contains: query.search.trim(), mode: 'insensitive' } }
+          : {}),
+      },
+    ],
+  };
+
+  const candidates = await prisma.business.findMany({
+    where,
+    take: MAX_NEARBY_CANDIDATES,
+    select: {
+      ...publicShopFields(),
+      latitude: true,
+      longitude: true,
+      ownerId: true,
+      _count: { select: { products: { where: PUBLIC_LISTING_WHERE } } },
+    },
+  });
+
+  // The box is a rectangle and the radius is a circle, so its corners have to
+  // go. Featured first within the radius, then by distance — the same
+  // precedence the other boards use, because featuring is editorial rather than
+  // a tie-break.
+  const withDistance = candidates
+    .filter((shop) => shop.latitude !== null && shop.longitude !== null)
+    .map((shop) => ({
+      shop,
+      distanceKm: distanceKm(centre, {
+        latitude: shop.latitude as number,
+        longitude: shop.longitude as number,
+      }),
+    }))
+    .filter((row) => row.distanceKm <= radiusKm)
+    .sort((a, b) => {
+      if (a.shop.featured !== b.shop.featured) return a.shop.featured ? -1 : 1;
+      return a.distanceKm - b.distanceKm;
+    });
+
+  const total = withDistance.length;
+  const start = (query.page - 1) * query.pageSize;
+  const page = withDistance.slice(start, start + query.pageSize);
+
+  const profiles = await authorProfileSummaries(page.map((row) => row.shop.ownerId));
+
+  const items = page.map(({ shop, distanceKm: km }) => {
+    const { ownerId, logoStoredName, _count, latitude, longitude, ...rest } = shop;
+    return {
+      ...rest,
+      latitude,
+      longitude,
+      logoUrl: logoUrl(shop.id, logoStoredName),
+      productCount: _count.products,
+      ownerProfile: profiles.get(ownerId) ?? null,
+      /** Rounded to 100 m: a precise figure implies precision this does not have. */
+      distanceKm: Math.round(km * 10) / 10,
+    };
+  });
+
+  return toPage(items, total, query.page, query.pageSize);
+}
+
 export async function listPublicShops(query: ShopQuery) {
+  // A coordinate pair turns this into a proximity search. Half a pair is
+  // refused rather than silently ignored, because ignoring it would answer a
+  // different question than the one asked.
+  const hasLatitude = query.latitude !== undefined;
+  const hasLongitude = query.longitude !== undefined;
+
+  if (hasLatitude !== hasLongitude) {
+    throw new AppError('برای جست‌وجوی نزدیکی، هر دو مقدار طول و عرض جغرافیایی لازم است.', 400);
+  }
+
+  if (hasLatitude && hasLongitude) {
+    const centre = { latitude: query.latitude as number, longitude: query.longitude as number };
+    if (!isValidPoint(centre)) throw new AppError('موقعیت واردشده معتبر نیست.', 400);
+    return listNearbyShops(query, centre);
+  }
+
   const search = query.search?.trim();
 
   const where: Prisma.BusinessWhereInput = {

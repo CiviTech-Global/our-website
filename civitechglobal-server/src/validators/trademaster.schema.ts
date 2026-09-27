@@ -132,7 +132,18 @@ export const shopBoardSchema = z.object({
   search: trimmed(120).optional(),
   province: trimmed(60).optional(),
   industry: trimmed(80).optional(),
-  sort: z.enum(['newest', 'name']).optional(),
+  sort: z.enum(['newest', 'name', 'nearest']).optional(),
+  /**
+   * A coordinate pair turns the board into a proximity search.
+   *
+   * Both or neither: the service refuses half a pair rather than ignoring it,
+   * because ignoring it would answer a different question than the one asked
+   * and look like the feature is broken.
+   */
+  latitude: latitude.optional(),
+  longitude: longitude.optional(),
+  /** Capped in the service at MAX_RADIUS_KM; capped here so the number is sane. */
+  radiusKm: z.coerce.number().min(0.1).max(200).optional(),
   page,
   pageSize,
 });

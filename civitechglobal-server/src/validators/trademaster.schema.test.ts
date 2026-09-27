@@ -8,6 +8,7 @@ import {
   checkoutSchema,
   startPaymentSchema,
   orderMoveSchema,
+  shopBoardSchema,
 } from './trademaster.schema.js';
 
 const validShop = {
@@ -229,5 +230,49 @@ describe('order moves', () => {
 
   it('refuses unknown fields', () => {
     expect(() => orderMoveSchema.parse({ to: 'SHIPPED', status: 'DELIVERED' })).toThrow();
+  });
+});
+
+describe('the nearby shop search', () => {
+  it('accepts a coordinate pair and a radius', () => {
+    const parsed = shopBoardSchema.parse({
+      latitude: '35.6892',
+      longitude: '51.389',
+      radiusKm: '10',
+    });
+
+    expect(parsed).toMatchObject({ latitude: 35.6892, longitude: 51.389, radiusKm: 10 });
+  });
+
+  it('accepts neither, which is the ordinary board', () => {
+    const parsed = shopBoardSchema.parse({});
+    expect(parsed.latitude).toBeUndefined();
+    expect(parsed.longitude).toBeUndefined();
+  });
+
+  it('parses half a pair here and leaves the service to refuse it', () => {
+    // Deliberately not rejected at this layer: the schema validates shapes, and
+    // "these two fields go together" is a rule about meaning that lives in one
+    // place — the service — so the wire format and the rule cannot drift.
+    expect(shopBoardSchema.parse({ latitude: '35' }).latitude).toBe(35);
+  });
+
+  it('refuses a coordinate off the Earth', () => {
+    expect(() => shopBoardSchema.parse({ latitude: '91', longitude: '0' })).toThrow();
+    expect(() => shopBoardSchema.parse({ latitude: '0', longitude: '181' })).toThrow();
+  });
+
+  it('refuses a radius of zero or a negative one', () => {
+    for (const radiusKm of ['0', '-5']) {
+      expect(() => shopBoardSchema.parse({ radiusKm })).toThrow();
+    }
+  });
+
+  it('caps the radius, so one request cannot ask for the whole country', () => {
+    expect(() => shopBoardSchema.parse({ radiusKm: '5000' })).toThrow();
+  });
+
+  it('accepts nearest as a sort', () => {
+    expect(shopBoardSchema.parse({ sort: 'nearest' }).sort).toBe('nearest');
   });
 });
