@@ -2546,3 +2546,50 @@ model PaymentIntent {
   @@index([orderId, status])
   @@map("payment_intents")
 }
+
+// ---------------------------------------------------------------------------
+// Demo data
+//
+// A manifest of every row a demo seed created, so removing it is exact rather
+// than inferred. The alternative — recognising demo data by a naming
+// convention, an email domain or a code prefix — works until somebody's real
+// shop is called "Demo Ceramics", and then the teardown deletes a customer's
+// data. A manifest cannot make that mistake: it removes what it wrote and
+// nothing else.
+//
+// Deliberately NOT tied to the rows it names by a foreign key. A manifest row
+// has to survive its subject being deleted by other means, so that teardown can
+// report "this one was already gone" instead of failing; and a foreign key per
+// model would mean thirty nullable columns.
+// ---------------------------------------------------------------------------
+
+/// One row created by a demo seed.
+model DemoRecord {
+  id String @id @default(cuid())
+
+  /// Groups one seed run, so a batch can be removed without touching another.
+  batch String
+
+  /// The Prisma model name, e.g. "business". Used to dispatch the delete.
+  model String
+
+  /// The row's own id. Not a relation — see the note above.
+  recordId String @map("record_id")
+
+  /**
+   * Creation order within the batch.
+   * Teardown walks it backwards so children go before parents. Cascades would
+   * cover most of it, but not all — a Product whose Business is deleted
+   * cascades, while a ProductCategory referenced by a Product does not, and
+   * deleting in the wrong order there fails on a foreign key instead of
+   * telling you why.
+   */
+  sequence Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  /// One manifest row per record, so a re-seed cannot double-count.
+  @@unique([model, recordId])
+  @@index([batch, sequence])
+  @@map("demo_records")
+}

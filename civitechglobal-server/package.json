@@ -19,7 +19,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "demo:seed": "tsx src/demo-cli.ts seed",
+    "demo:clear": "tsx src/demo-cli.ts clear",
+    "demo:status": "tsx src/demo-cli.ts status"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
