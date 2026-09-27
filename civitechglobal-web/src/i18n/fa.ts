@@ -2156,6 +2156,13 @@ const fa = {
       REFUNDED: 'بازگشت‌شده',
     },
     addedToCart: 'به سبد خرید افزوده شد.',
+    nearMe: 'فروشگاه‌های نزدیک من',
+    locating: 'در حال یافتن موقعیت…',
+    locationDenied: 'دسترسی به موقعیت داده نشد.',
+    locationUnavailable: 'موقعیت شما در دسترس نیست.',
+    clearNearMe: 'نمایش همهٔ فروشگاه‌ها',
+    radiusKm: 'شعاع (کیلومتر)',
+    distanceAway: '{km} کیلومتر',
   },
 };
 

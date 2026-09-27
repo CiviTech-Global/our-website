@@ -1,17 +1,24 @@
+import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router';
-import { MapPin, Package, Store } from 'lucide-react';
+import { LocateFixed, MapPin, Package, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
 import { usePublicShops } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
+import { toPersianDigits } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import { useGeolocation } from '@/lib/useGeolocation';
 import type { PublicShopSummary, ShopSort } from '@/types/trademaster';
+
+// Lazy: around 45 KB gzipped, and it is only drawn once somebody asks where
+// the shops are.
+const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
 const PAGE_SIZE = 24;
 
@@ -36,14 +43,37 @@ export default function ShopsPage() {
     filters: { province: '', industry: '' },
   });
 
+  const geo = useGeolocation();
+  const [radiusKm, setRadiusKm] = useState(25);
+
+  const near = geo.state.status === 'ready' ? geo.state : null;
+
   const { data, isLoading } = usePublicShops({
     page: controls.page,
     pageSize: PAGE_SIZE,
     search: controls.search || undefined,
     province: controls.filters.province || undefined,
     industry: controls.filters.industry || undefined,
-    sort: controls.sort as ShopSort,
+    // Sent together or not at all; the server refuses half a pair rather than
+    // quietly answering a different question.
+    latitude: near?.latitude,
+    longitude: near?.longitude,
+    radiusKm: near ? radiusKm : undefined,
+    sort: near ? 'nearest' : (controls.sort as ShopSort),
   });
+
+  // Every shop in the answer that has a location. A shop that only ships has
+  // none, and is in the list without being on the map.
+  const pins = (data?.items ?? [])
+    .filter((shop) => shop.latitude != null && shop.longitude != null)
+    .map((shop) => ({
+      id: shop.id,
+      latitude: shop.latitude as number,
+      longitude: shop.longitude as number,
+      label: shop.name,
+      detail: shop.summary,
+      href: `/marketplace/shops/${shop.slug}`,
+    }));
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -51,6 +81,59 @@ export default function ShopsPage() {
         <h1 className="text-3xl font-bold text-text-primary">{t.trademaster.shops}</h1>
         <p className="mt-2 text-text-secondary">{t.trademaster.subtitle}</p>
       </header>
+
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        {near ? (
+          <>
+            <label className="flex items-center gap-2 text-sm text-text-secondary">
+              {t.trademaster.radiusKm}
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={radiusKm}
+                onChange={(e) => setRadiusKm(Math.max(1, Number(e.target.value) || 1))}
+                dir="ltr"
+                className="w-20 rounded-lg border border-border-default bg-surface-default px-2 py-1"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={geo.clear}
+              className="text-sm text-text-secondary underline hover:text-text-primary"
+            >
+              {t.trademaster.clearNearMe}
+            </button>
+          </>
+        ) : (
+          // Only offered while it could still work. After a refusal, asking
+          // again achieves nothing but a second refusal.
+          geo.state.status !== 'denied' && (
+            <button
+              type="button"
+              onClick={geo.locate}
+              disabled={geo.state.status === 'locating'}
+              className="inline-flex items-center gap-2 rounded-lg border border-border-default px-3 py-1.5 text-sm text-text-secondary transition hover:border-border-strong disabled:opacity-50"
+            >
+              <LocateFixed className="h-4 w-4" aria-hidden="true" />
+              {geo.state.status === 'locating' ? t.trademaster.locating : t.trademaster.nearMe}
+            </button>
+          )
+        )}
+
+        {geo.state.status === 'denied' && (
+          <p className="text-sm text-text-tertiary">{t.trademaster.locationDenied}</p>
+        )}
+        {geo.state.status === 'unavailable' && (
+          <p className="text-sm text-text-tertiary">{t.trademaster.locationUnavailable}</p>
+        )}
+      </div>
+
+      {near && pins.length > 0 && (
+        <Suspense fallback={<div className="mb-6 h-72 animate-pulse rounded-xl bg-surface-muted" />}>
+          <ShopMap pins={pins} className="mb-6" height={288} />
+        </Suspense>
+      )}
 
       <ListToolbar
         className="mb-6"
@@ -142,13 +225,25 @@ function ShopLogo({ shop, size }: { shop: PublicShopSummary; size: 'sm' | 'lg' }
 }
 
 function Where({ shop }: { shop: PublicShopSummary }) {
+  const { t, locale } = useLocale();
   const where = [shop.city, shop.province].filter(Boolean).join('، ');
-  if (!where) return null;
+
+  // The distance is the more useful of the two on a proximity search, so it
+  // shows even for a shop that never filled in a town.
+  const distance =
+    shop.distanceKm === undefined
+      ? null
+      : t.trademaster.distanceAway.replace(
+          '{km}',
+          locale === 'fa' ? toPersianDigits(shop.distanceKm) : String(shop.distanceKm)
+        );
+
+  if (!where && !distance) return null;
 
   return (
     <span className="inline-flex items-center gap-1 text-sm text-text-secondary">
       <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-      {where}
+      {[where, distance].filter(Boolean).join(' · ')}
     </span>
   );
 }

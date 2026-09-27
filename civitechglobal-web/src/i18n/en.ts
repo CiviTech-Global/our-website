@@ -2169,6 +2169,13 @@ const en: typeof fa = {
       REFUNDED: 'Refunded',
     },
     addedToCart: 'Added to your basket.',
+    nearMe: 'Shops near me',
+    locating: 'Finding your location…',
+    locationDenied: 'Location permission was refused.',
+    locationUnavailable: 'Your location is not available.',
+    clearNearMe: 'Show every shop',
+    radiusKm: 'Radius (km)',
+    distanceAway: '{km} km away',
   },
 };
 

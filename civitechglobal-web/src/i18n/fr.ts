@@ -1986,6 +1986,13 @@ const fr: PartialTranslations = {
       REFUNDED: 'Remboursé',
     },
     addedToCart: 'Ajouté à votre panier.',
+    nearMe: 'Boutiques près de moi',
+    locating: 'Recherche de votre position…',
+    locationDenied: 'L’accès à la position a été refusé.',
+    locationUnavailable: 'Votre position n’est pas disponible.',
+    clearNearMe: 'Afficher toutes les boutiques',
+    radiusKm: 'Rayon (km)',
+    distanceAway: 'à {km} km',
   },
 };
 

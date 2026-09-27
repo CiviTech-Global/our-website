@@ -1996,6 +1996,13 @@ const tr: PartialTranslations = {
       REFUNDED: 'İade edildi',
     },
     addedToCart: 'Sepete eklendi.',
+    nearMe: 'Yakınımdaki dükkânlar',
+    locating: 'Konumunuz bulunuyor…',
+    locationDenied: 'Konum izni verilmedi.',
+    locationUnavailable: 'Konumunuz kullanılamıyor.',
+    clearNearMe: 'Tüm dükkânları göster',
+    radiusKm: 'Yarıçap (km)',
+    distanceAway: '{km} km uzakta',
   },
 };
 

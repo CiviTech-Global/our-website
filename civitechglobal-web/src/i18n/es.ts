@@ -1990,6 +1990,13 @@ const es: PartialTranslations = {
       REFUNDED: 'Reembolsado',
     },
     addedToCart: 'Añadido a su cesta.',
+    nearMe: 'Tiendas cerca de mí',
+    locating: 'Buscando su ubicación…',
+    locationDenied: 'Se ha denegado el permiso de ubicación.',
+    locationUnavailable: 'Su ubicación no está disponible.',
+    clearNearMe: 'Mostrar todas las tiendas',
+    radiusKm: 'Radio (km)',
+    distanceAway: 'a {km} km',
   },
 };
 

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { lazy, Suspense, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Package, Plus, Store } from 'lucide-react';
 import { IDLE, type UploadState } from '@/components/ui/UploadStatus';
@@ -33,6 +33,12 @@ import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
 import type { ModerationStatus, OwnShop } from '@/types/trademaster';
+
+// Lazy, like every other use of the map: a seller editing their opening hours
+// should not download Leaflet to do it.
+const LocationPicker = lazy(() =>
+  import('@/components/trademaster/ShopMap').then((m) => ({ default: m.LocationPicker }))
+);
 
 const EMPTY_DRAFT = {
   name: '',
@@ -479,6 +485,26 @@ export default function MyShopsPage() {
                 dir="ltr"
               />
             </FormField>
+
+            {/* The map fills the fields above; it does not replace them. A map
+                cannot be used with a keyboard alone, and somebody who already
+                has their coordinates should not hunt for the right pixel. */}
+            <div className="col-span-full">
+              <Suspense
+                fallback={<div className="h-64 animate-pulse rounded-xl bg-app-surface-2" />}
+              >
+                <LocationPicker
+                  latitude={draft.latitude ? Number(draft.latitude) : undefined}
+                  longitude={draft.longitude ? Number(draft.longitude) : undefined}
+                  onPick={(lat, lng) => {
+                    // Six decimals is about 10 cm, which is far past what a
+                    // shop front needs and keeps the field readable.
+                    set('latitude')(lat.toFixed(6));
+                    set('longitude')(lng.toFixed(6));
+                  }}
+                />
+              </Suspense>
+            </div>
           </fieldset>
 
           <p className="text-caption text-app-text-3">{t.trademaster.submitWarning}</p>

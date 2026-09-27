@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router';
 import { Globe, Mail, MapPin, Phone, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
@@ -9,6 +10,10 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Pagination } from '@/components/ui/Pagination';
 import { useListControls } from '@/lib/useListControls';
 import { ProductCard } from './MarketProductsPage';
+
+// Lazy, always: Leaflet is around 45 KB gzipped and most visitors to a shop
+// page never scroll to the map.
+const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
 const PAGE_SIZE = 24;
 
@@ -134,6 +139,25 @@ export default function ShopDetailPage() {
       {shop.description && (
         <section className="mb-10 max-w-3xl">
           <p className="whitespace-pre-line text-text-secondary">{shop.description}</p>
+        </section>
+      )}
+
+      {shop.latitude !== null && shop.longitude !== null && (
+        <section className="mb-10">
+          <h2 className="mb-3 text-xl font-semibold text-text-primary">{t.trademaster.location}</h2>
+          <Suspense fallback={<div className="h-80 animate-pulse rounded-xl bg-surface-muted" />}>
+            <ShopMap
+              pins={[
+                {
+                  id: shop.id,
+                  latitude: shop.latitude,
+                  longitude: shop.longitude,
+                  label: shop.name,
+                  detail: shop.summary,
+                },
+              ]}
+            />
+          </Suspense>
         </section>
       )}
 

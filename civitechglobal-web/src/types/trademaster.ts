@@ -61,6 +61,11 @@ export interface PublicShopSummary {
   logoUrl: string | null;
   productCount: number;
   ownerProfile: OwnerProfile | null;
+  /// Present on every shop that has one; a shop that only ships has none.
+  latitude?: number | null;
+  longitude?: number | null;
+  /// Only on a proximity search, rounded to 100 m.
+  distanceKm?: number;
 }
 
 export interface PublicShopDetail extends Omit<PublicShopSummary, 'productCount'> {
@@ -291,7 +296,7 @@ export interface ProductCategoryNode {
 // Queries and decisions
 // ---------------------------------------------------------------------------
 
-export type ShopSort = 'newest' | 'name';
+export type ShopSort = 'newest' | 'name' | 'nearest';
 export type ProductSort = 'newest' | 'priceAsc' | 'priceDesc';
 
 export interface ShopBoardQuery extends Record<string, string | number | boolean | null | undefined> {
@@ -299,6 +304,9 @@ export interface ShopBoardQuery extends Record<string, string | number | boolean
   province?: string;
   industry?: string;
   sort?: ShopSort;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   page: number;
   pageSize: number;
 }
