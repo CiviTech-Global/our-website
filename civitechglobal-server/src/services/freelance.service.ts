@@ -287,6 +287,7 @@ function publicProjectFields() {
   } as const;
 }
 
+/** The author's own projects, with everything they may still change. See listOwnJobs. */
 export async function listOwnProjects(userId: string) {
   return prisma.freelanceProject.findMany({
     where: { authorId: userId },
@@ -295,6 +296,14 @@ export async function listOwnProjects(userId: string) {
       id: true,
       code: true,
       title: true,
+      description: true,
+      category: true,
+      skills: true,
+      budgetMin: true,
+      budgetMax: true,
+      budgetUnknown: true,
+      deliverBy: true,
+      openToCompanyOffer: true,
       moderationStatus: true,
       state: true,
       reviewNote: true,

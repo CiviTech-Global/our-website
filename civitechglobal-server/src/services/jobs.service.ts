@@ -312,6 +312,14 @@ function publicJobFields() {
 }
 
 /** Everything the author sees about their own postings, drafts included. */
+/**
+ * The author's own postings, with everything they may still change.
+ *
+ * The editable fields are here rather than behind a second request for one
+ * posting: this is one person's own handful of listings, and the screen that
+ * shows them is the screen that edits them. Returning only the title meant the
+ * edit form had nothing to open with, which is why there was no edit form.
+ */
 export async function listOwnJobs(userId: string) {
   return prisma.jobPost.findMany({
     where: { authorId: userId },
@@ -320,6 +328,15 @@ export async function listOwnJobs(userId: string) {
       id: true,
       code: true,
       title: true,
+      description: true,
+      employmentType: true,
+      workArrangement: true,
+      province: true,
+      city: true,
+      salaryMin: true,
+      salaryMax: true,
+      salaryUndisclosed: true,
+      skills: true,
       moderationStatus: true,
       state: true,
       reviewNote: true,

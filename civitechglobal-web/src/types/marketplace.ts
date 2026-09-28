@@ -310,10 +310,26 @@ export interface JobPayload {
   closesAt?: string;
 }
 
+/**
+ * The author's own posting, carrying everything they may still change.
+ *
+ * Wider than the public row on purpose: the screen that lists these is the
+ * screen that edits them, and a list of titles alone left the edit form with
+ * nothing to open with.
+ */
 export interface OwnJob {
   id: string;
   code: string;
   title: string;
+  description: string;
+  employmentType: JobEmploymentType;
+  workArrangement: JobWorkArrangement;
+  province: string | null;
+  city: string | null;
+  salaryMin: string | null;
+  salaryMax: string | null;
+  salaryUndisclosed: boolean;
+  skills: string[];
   moderationStatus: ModerationStatus;
   state: ListingState;
   reviewNote: string | null;
@@ -394,10 +410,19 @@ export interface ProjectPayload {
   openToCompanyOffer?: boolean;
 }
 
+/** The author's own project, with everything they may still change. See OwnJob. */
 export interface OwnProject {
   id: string;
   code: string;
   title: string;
+  description: string;
+  category: string | null;
+  skills: string[];
+  budgetMin: string | null;
+  budgetMax: string | null;
+  budgetUnknown: boolean;
+  deliverBy: string | null;
+  openToCompanyOffer: boolean;
   moderationStatus: ModerationStatus;
   state: ListingState;
   reviewNote: string | null;

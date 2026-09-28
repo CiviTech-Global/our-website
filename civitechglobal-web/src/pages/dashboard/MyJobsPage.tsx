@@ -1,10 +1,11 @@
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
-import { Plus, Users } from 'lucide-react';
+import { Pencil, Plus, Users } from 'lucide-react';
 import {
   useCloseJob,
   useCreateJob,
+  useUpdateJob,
   useJobApplications,
   useOwnJobs,
   useOwnVerification,
@@ -33,7 +34,12 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
-import type { ModerationStatus, JobEmploymentType, JobWorkArrangement } from '@/types/marketplace';
+import type {
+  ModerationStatus,
+  JobEmploymentType,
+  JobWorkArrangement,
+  OwnJob,
+} from '@/types/marketplace';
 
 const EMPLOYMENT: JobEmploymentType[] = [
   'FULL_TIME',
@@ -43,6 +49,19 @@ const EMPLOYMENT: JobEmploymentType[] = [
   'FREELANCE',
 ];
 const ARRANGEMENT: JobWorkArrangement[] = ['ONSITE', 'HYBRID', 'REMOTE'];
+
+const EMPTY_DRAFT = {
+  title: '',
+  description: '',
+  employmentType: 'FULL_TIME' as JobEmploymentType,
+  workArrangement: 'ONSITE' as JobWorkArrangement,
+  province: '',
+  city: '',
+  salaryMin: '',
+  salaryMax: '',
+  salaryUndisclosed: false,
+  skills: '',
+};
 
 const PAGE_SIZE = 10;
 const MODERATION_STATUSES: ModerationStatus[] = [
@@ -75,35 +94,56 @@ export default function MyJobsPage() {
     pageSize: PAGE_SIZE,
   });
   const create = useCreateJob();
+  const updateJob = useUpdateJob();
   const submitJob = useSubmitJob();
   const closeJob = useCloseJob();
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  /**
+   * The posting being written: 'new' for a fresh one, the row itself for an
+   * edit, null while the form is shut.
+   *
+   * One form for both, rather than a second dialog holding a second copy of
+   * the rules about salaries — that a number alongside "undisclosed" states
+   * two different things, and that an empty box is not a zero.
+   */
+  const [editing, setEditing] = useState<OwnJob | 'new' | null>(null);
   const [openApplicants, setOpenApplicants] = useState<string | null>(null);
 
   const isVerified = verification?.status === 'APPROVED';
   const num = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
-  const [draft, setDraft] = useState({
-    title: '',
-    description: '',
-    employmentType: 'FULL_TIME' as JobEmploymentType,
-    workArrangement: 'ONSITE' as JobWorkArrangement,
-    province: '',
-    city: '',
-    salaryMin: '',
-    salaryMax: '',
-    salaryUndisclosed: false,
-    skills: '',
-  });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
 
   const set = (name: keyof typeof draft) => (value: string | boolean) =>
     setDraft((prev) => ({ ...prev, [name]: value }));
 
-  async function handleCreate(event: FormEvent) {
+  /** Opens the form on a fresh posting, or on one that already exists. */
+  function openForm(target: OwnJob | 'new') {
+    setEditing(target);
+    setDraft(
+      target === 'new'
+        ? EMPTY_DRAFT
+        : {
+            title: target.title,
+            description: target.description,
+            employmentType: target.employmentType,
+            workArrangement: target.workArrangement,
+            province: target.province ?? '',
+            city: target.city ?? '',
+            // Digit strings on the wire, and an absent salary stays absent
+            // rather than becoming a zero nobody typed.
+            salaryMin: target.salaryMin ?? '',
+            salaryMax: target.salaryMax ?? '',
+            salaryUndisclosed: target.salaryUndisclosed,
+            skills: target.skills.join('، '),
+          }
+    );
+  }
+
+  async function handleSave(event: FormEvent) {
     event.preventDefault();
     try {
-      await create.mutateAsync({
+      const payload = {
         title: draft.title.trim(),
         description: draft.description.trim(),
         employmentType: draft.employmentType,
@@ -120,12 +160,21 @@ export default function MyJobsPage() {
           ? undefined
           : draft.salaryMax.replace(/[^0-9]/g, '') || undefined,
         skills: draft.skills
-          .split(',')
+          // Both commas: somebody typing Persian gets the Persian one, and a
+          // list split on the Latin comma alone arrives as a single skill.
+          .split(/[,،]/)
           .map((skill) => skill.trim())
           .filter(Boolean),
-      });
-      setIsFormOpen(false);
-      showToast(t.market.draftCreated, 'success');
+      };
+
+      if (editing && editing !== 'new') {
+        await updateJob.mutateAsync({ id: editing.id, payload });
+      } else {
+        await create.mutateAsync(payload);
+      }
+
+      setEditing(null);
+      showToast(editing === 'new' ? t.market.draftCreated : t.market.draftUpdated, 'success');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
     }
@@ -148,7 +197,7 @@ export default function MyJobsPage() {
         className="mb-2"
         actions={
           isVerified && (
-            <Button onClick={() => setIsFormOpen(true)}>
+            <Button onClick={() => openForm('new')}>
               <Plus className="size-4" aria-hidden="true" />
               {t.market.newJob}
             </Button>
@@ -232,15 +281,24 @@ export default function MyJobsPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {(job.moderationStatus === 'DRAFT' ||
                   job.moderationStatus === 'CHANGES_REQUESTED') && (
-                  <Button
-                    size="sm"
-                    isLoading={submitJob.isPending}
-                    onClick={() =>
-                      void run(submitJob.mutateAsync(job.id), t.market.sentForReview)
-                    }
-                  >
-                    {t.market.submitForReview}
-                  </Button>
+                  <>
+                    {/* The same two statuses the server lets an author edit.
+                        Before this the only way past a typo in a draft was to
+                        leave it there. */}
+                    <Button size="sm" variant="outline" onClick={() => openForm(job)}>
+                      <Pencil className="size-4" aria-hidden="true" />
+                      {t.common.edit}
+                    </Button>
+                    <Button
+                      size="sm"
+                      isLoading={submitJob.isPending}
+                      onClick={() =>
+                        void run(submitJob.mutateAsync(job.id), t.market.sentForReview)
+                      }
+                    >
+                      {t.market.submitForReview}
+                    </Button>
+                  </>
                 )}
 
                 {job.moderationStatus === 'APPROVED' && (
@@ -274,8 +332,12 @@ export default function MyJobsPage() {
         <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
       )}
 
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={t.market.newJob}>
-        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+      <Modal
+        isOpen={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing === 'new' ? t.market.newJob : t.market.editJob}
+      >
+        <form className="flex flex-col gap-4" onSubmit={handleSave}>
           <FormField label={t.market.title} htmlFor="title">
             <Input
               id="title"
@@ -381,10 +443,10 @@ export default function MyJobsPage() {
           <p className="text-label text-app-text-4">{t.market.submitWarning}</p>
 
           <div className="flex gap-2">
-            <Button type="submit" isLoading={create.isPending}>
+            <Button type="submit" isLoading={create.isPending || updateJob.isPending}>
               {t.market.saveDraft}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)}>
+            <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
               {t.common.cancel}
             </Button>
           </div>

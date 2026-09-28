@@ -3,10 +3,11 @@ import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
-import { Building2, Plus, Users } from 'lucide-react';
+import { Building2, Pencil, Plus, Users } from 'lucide-react';
 import {
   useAcceptBid,
   useCreateProject,
+  useUpdateProject,
   useOwnProjects,
   useOwnVerification,
   useProjectBids,
@@ -35,7 +36,19 @@ import { DateField } from '@/components/ui/DateField';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
-import type { ModerationStatus } from '@/types/marketplace';
+import type { ModerationStatus, OwnProject } from '@/types/marketplace';
+
+const EMPTY_DRAFT = {
+  title: '',
+  description: '',
+  category: '',
+  budgetMin: '',
+  budgetMax: '',
+  budgetUnknown: false,
+  skills: '',
+  deliverBy: '',
+  openToCompanyOffer: true,
+};
 
 const PAGE_SIZE = 10;
 const MODERATION_STATUSES: ModerationStatus[] = [
@@ -68,39 +81,53 @@ export default function MyProjectsPage() {
     pageSize: PAGE_SIZE,
   });
   const create = useCreateProject();
+  const updateProject = useUpdateProject();
   const submitProject = useSubmitProject();
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  /**
+   * The project being written: 'new' for a fresh one, the row itself for an
+   * edit, null while the form is shut.
+   */
+  const [editing, setEditing] = useState<OwnProject | 'new' | null>(null);
   const [openBids, setOpenBids] = useState<string | null>(null);
 
   const isVerified = verification?.status === 'APPROVED';
   const num = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
-  const [draft, setDraft] = useState({
-    title: '',
-    description: '',
-    category: '',
-    budgetMin: '',
-    budgetMax: '',
-    budgetUnknown: false,
-    skills: '',
-    deliverBy: '',
-    openToCompanyOffer: true,
-  });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [attachments, setAttachments] = useState<File[]>([]);
   const upload = useUploadFeedback('project-attachments');
 
   const set = (name: keyof typeof draft) => (value: string | boolean) =>
     setDraft((prev) => ({ ...prev, [name]: value }));
 
-  // The event is absent when this is a retry of a failed upload.
-  async function handleCreate(event?: FormEvent) {
-    event?.preventDefault();
-    upload.start(attachments);
+  /** Opens the form on a fresh project, or on one that already exists. */
+  function openForm(target: OwnProject | 'new') {
+    setEditing(target);
+    setAttachments([]);
+    setDraft(
+      target === 'new'
+        ? EMPTY_DRAFT
+        : {
+            title: target.title,
+            description: target.description,
+            category: target.category ?? '',
+            budgetMin: target.budgetMin ?? '',
+            budgetMax: target.budgetMax ?? '',
+            budgetUnknown: target.budgetUnknown,
+            skills: target.skills.join('، '),
+            // The field wants a date, and the server sends a timestamp.
+            deliverBy: target.deliverBy ? target.deliverBy.slice(0, 10) : '',
+            openToCompanyOffer: target.openToCompanyOffer,
+          }
+    );
+  }
 
-    try {
-      await create.mutateAsync({
-        payload: {
+  // The event is absent when this is a retry of a failed upload.
+  async function handleSave(event?: FormEvent) {
+    event?.preventDefault();
+
+    const payload = {
           title: draft.title.trim(),
           description: draft.description.trim(),
           category: draft.category.trim() || undefined,
@@ -113,16 +140,33 @@ export default function MyProjectsPage() {
             : draft.budgetMax.replace(/[^0-9]/g, '') || undefined,
           deliverBy: draft.deliverBy || undefined,
           openToCompanyOffer: draft.openToCompanyOffer,
-          skills: draft.skills
-            .split(',')
-            .map((skill) => skill.trim())
-            .filter(Boolean),
-        },
-        attachments,
-        onProgress: upload.onProgress,
-      });
+      skills: draft.skills
+        // Both commas: somebody typing Persian gets the Persian one, and a
+        // list split on the Latin comma alone arrives as a single skill.
+        .split(/[,،]/)
+        .map((skill) => skill.trim())
+        .filter(Boolean),
+    };
+
+    // An edit is a plain PATCH. The attachment flow belongs to creation —
+    // there is no endpoint that replaces a project's files, and running the
+    // upload feedback here would show a progress bar for nothing.
+    if (editing && editing !== 'new') {
+      try {
+        await updateProject.mutateAsync({ id: editing.id, payload });
+        setEditing(null);
+        showToast(t.market.draftUpdated, 'success');
+      } catch (error) {
+        showToast(apiMessage(error, t.common.error), 'error');
+      }
+      return;
+    }
+
+    upload.start(attachments);
+    try {
+      await create.mutateAsync({ payload, attachments, onProgress: upload.onProgress });
       upload.done();
-      setIsFormOpen(false);
+      setEditing(null);
       showToast(t.market.draftCreated, 'success');
     } catch (error) {
       showToast(upload.fail(error).message, 'error');
@@ -137,7 +181,7 @@ export default function MyProjectsPage() {
         className="mb-2"
         actions={
           isVerified && (
-            <Button onClick={() => setIsFormOpen(true)}>
+            <Button onClick={() => openForm('new')}>
               <Plus className="size-4" aria-hidden="true" />
               {t.market.newProject}
             </Button>
@@ -223,6 +267,14 @@ export default function MyProjectsPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {(project.moderationStatus === 'DRAFT' ||
                   project.moderationStatus === 'CHANGES_REQUESTED') && (
+                  <Button size="sm" variant="outline" onClick={() => openForm(project)}>
+                    <Pencil className="size-4" aria-hidden="true" />
+                    {t.common.edit}
+                  </Button>
+                )}
+
+                {(project.moderationStatus === 'DRAFT' ||
+                  project.moderationStatus === 'CHANGES_REQUESTED') && (
                   <Button
                     size="sm"
                     isLoading={submitProject.isPending}
@@ -255,8 +307,12 @@ export default function MyProjectsPage() {
         <Pagination page={controls.page} totalPages={list.totalPages} onPageChange={controls.setPage} />
       )}
 
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={t.market.newProject}>
-        <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+      <Modal
+        isOpen={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing === 'new' ? t.market.newProject : t.market.editProject}
+      >
+        <form className="flex flex-col gap-4" onSubmit={handleSave}>
           <FormField label={t.market.title} htmlFor="projectTitle">
             <Input
               id="projectTitle"
@@ -344,7 +400,7 @@ export default function MyProjectsPage() {
           </FormField>
 
           {upload.state.phase !== 'idle' && (
-            <UploadStatus state={upload.state} onRetry={() => void handleCreate()} />
+            <UploadStatus state={upload.state} onRetry={() => void handleSave()} />
           )}
 
           <label className="flex items-start gap-2 text-body text-app-text-3">
@@ -363,7 +419,7 @@ export default function MyProjectsPage() {
             <Button type="submit" isLoading={create.isPending}>
               {t.market.saveDraft}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)}>
+            <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
               {t.common.cancel}
             </Button>
           </div>

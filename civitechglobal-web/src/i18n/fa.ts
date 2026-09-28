@@ -1106,6 +1106,9 @@ const fa = {
     submitForReview: 'ارسال برای بررسی',
     closeListing: 'بستن آگهی',
     draftCreated: 'پیش‌نویس ساخته شد.',
+    editJob: 'ویرایش آگهی',
+    editProject: 'ویرایش پروژه',
+    draftUpdated: 'تغییرات ذخیره شد.',
     sentForReview: 'برای بررسی ارسال شد.',
     submitWarning: 'پس از ارسال تا پایان بررسی امکان ویرایش وجود ندارد.',
 

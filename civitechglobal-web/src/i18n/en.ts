@@ -1107,6 +1107,9 @@ const en: typeof fa = {
     submitForReview: 'Send for review',
     closeListing: 'Close posting',
     draftCreated: 'Draft created.',
+    editJob: 'Edit posting',
+    editProject: 'Edit project',
+    draftUpdated: 'Changes saved.',
     sentForReview: 'Sent for review.',
     submitWarning: 'Once sent, you cannot edit it until the review is finished.',
 
