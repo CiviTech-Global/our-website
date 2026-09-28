@@ -493,6 +493,14 @@ router.post(
   }),
 );
 
+router.post(
+  '/me/projects/:id/close',
+  wrap(async (req, res) => {
+    const result = await freelance.closeProject(req.user!.userId, param(req, 'id'));
+    successResponse(res, result, 'پروژه بسته شد.');
+  }),
+);
+
 router.get(
   '/me/projects/:id/bids',
   wrap(async (req, res) => {

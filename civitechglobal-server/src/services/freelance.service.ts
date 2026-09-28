@@ -114,6 +114,23 @@ export async function submitProject(userId: string, projectId: string) {
   });
 }
 
+/**
+ * The author takes their own project off the board.
+ *
+ * The counterpart of closeJob, which a posting has had all along. Accepting a
+ * bid already moves a project to AWARDED, but that is not the only way one
+ * ends: somebody who found a developer elsewhere, or no longer needs the work,
+ * had no way to stop bids arriving.
+ */
+export async function closeProject(userId: string, projectId: string) {
+  await requireOwnProject(userId, projectId);
+  return prisma.freelanceProject.update({
+    where: { id: projectId },
+    data: { state: 'CLOSED' },
+    select: { id: true, state: true },
+  });
+}
+
 async function requireOwnProject(userId: string, projectId: string) {
   const project = await prisma.freelanceProject.findUnique({
     where: { id: projectId },

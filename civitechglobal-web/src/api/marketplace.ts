@@ -393,6 +393,16 @@ export function useUpdateProject() {
   });
 }
 
+export function useCloseProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/market/me/projects/${id}/close`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProjects }),
+  });
+}
+
 export function useSubmitProject() {
   const qc = useQueryClient();
   return useMutation({

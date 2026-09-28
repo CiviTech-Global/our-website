@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { Building2, Pencil, Plus, Users } from 'lucide-react';
 import {
   useAcceptBid,
+  useCloseProject,
   useCreateProject,
   useUpdateProject,
   useOwnProjects,
@@ -82,6 +83,7 @@ export default function MyProjectsPage() {
   });
   const create = useCreateProject();
   const updateProject = useUpdateProject();
+  const closeProject = useCloseProject();
   const submitProject = useSubmitProject();
 
   /**
@@ -295,6 +297,27 @@ export default function MyProjectsPage() {
                   <Button size="sm" variant="outline" onClick={() => setOpenBids(project.id)}>
                     <Users className="size-4" aria-hidden="true" />
                     {t.market.bids} ({num(project._count.bids)})
+                  </Button>
+                )}
+
+                {/* The same offer a job posting has had all along. Accepting a
+                    bid moves a project to AWARDED on its own; this is for the
+                    ones that end another way. */}
+                {project.moderationStatus === 'APPROVED' && project.state === 'OPEN' && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    isLoading={closeProject.isPending}
+                    onClick={async () => {
+                      try {
+                        await closeProject.mutateAsync(project.id);
+                        showToast(t.market.CLOSED, 'success');
+                      } catch (error) {
+                        showToast(apiMessage(error, t.common.error), 'error');
+                      }
+                    }}
+                  >
+                    {t.market.closeListing}
                   </Button>
                 )}
               </div>
