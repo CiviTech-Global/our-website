@@ -292,6 +292,33 @@ export interface ProductCategoryNode {
   productCount: number;
 }
 
+/**
+ * A category as the desk sees it, which is more than the public does.
+ *
+ * `productCount` here counts every product including drafts, unlike the public
+ * node above — the desk is deciding whether deactivating this hides work in
+ * progress, and a count of only the published ones would understate that.
+ */
+export interface AdminProductCategory {
+  id: string;
+  slug: string;
+  name: string;
+  parentId: string | null;
+  position: number;
+  active: boolean;
+  createdAt: string;
+  productCount: number;
+  childCount: number;
+}
+
+export interface CategoryPayload {
+  name: string;
+  slug?: string;
+  parentId?: string | null;
+  position?: number;
+  active?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Queries and decisions
 // ---------------------------------------------------------------------------

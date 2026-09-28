@@ -104,6 +104,7 @@ const ConsultationQueuePage = lazy(() => import('@/pages/admin/ConsultationQueue
 const BookQueuePage = lazy(() => import('@/pages/admin/BookQueuePage'));
 const ShopQueuePage = lazy(() => import('@/pages/admin/ShopQueuePage'));
 const ProductQueuePage = lazy(() => import('@/pages/admin/ProductQueuePage'));
+const ProductCategoriesPage = lazy(() => import('@/pages/admin/ProductCategoriesPage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
 const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
@@ -750,6 +751,16 @@ export default function App() {
                 <RequirePermission permission="trademaster">
                   <Suspense fallback={<RouteLoadingFallback />}>
                     <ProductQueuePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+            <Route
+              path="trademaster/categories"
+              element={
+                <RequirePermission permission="trademaster">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <ProductCategoriesPage />
                   </Suspense>
                 </RequirePermission>
               }

@@ -279,3 +279,26 @@ export const orderListSchema = z.object({
   page,
   pageSize,
 });
+
+/**
+ * A category, as the desk sends it.
+ *
+ * `parentId` is nullable on purpose and the two absent-ish values mean
+ * different things: omitted leaves the parent alone, explicit null moves the
+ * category to the top level. The service relies on that distinction, so the
+ * schema must preserve it rather than normalising null away.
+ *
+ * No `slug` is required — the service derives one from the name and suffixes
+ * it until it is free. A slug may still be sent to fix an ugly transliteration.
+ */
+export const categorySchema = z
+  .object({
+    name: required(2, 80, 'نام دسته‌بندی را وارد کنید'),
+    slug: trimmed(60).optional(),
+    parentId: z.string().cuid('دستهٔ والد نامعتبر است').nullable().optional(),
+    position: z.coerce.number().int().min(0).max(9999).optional(),
+    active: z.boolean().optional(),
+  })
+  .strict();
+
+export const categoryUpdateSchema = categorySchema.partial();

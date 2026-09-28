@@ -11,6 +11,7 @@ import {
   FileText,
   FolderGit2,
   FolderKanban,
+  FolderTree,
   Gavel,
   GraduationCap,
   Handshake,
@@ -108,6 +109,18 @@ export function AdminLayout() {
     },
   } satisfies Partial<Record<QueueKey, NavItem>>;
 
+  /**
+   * Not a queue, so not in the map above: that one is keyed by QueueKey and
+   * feeds "waiting on you", and a screen with no backlog would sit there
+   * forever at zero. It still belongs beside the two queues in the sidebar —
+   * filing the catalogue and judging what goes in it are the same desk's job.
+   */
+  const tradeMasterCategories: NavItem = {
+    to: '/admin/trademaster/categories',
+    label: t.categoryDesk.title,
+    icon: <FolderTree />,
+  };
+
   const when = (condition: boolean, ...items: NavItem[]) => (condition ? items : []);
 
   // Everything with work waiting, busiest first — the overview module's
@@ -161,7 +174,12 @@ export function AdminLayout() {
             // Both behind one permission: a shop and its catalogue are
             // judged together, and a refused shop whose products nobody on
             // that desk could take down would be a strange arrangement.
-            ...when(features.tradeMaster && can('trademaster'), queue.tradeMasterShops, queue.tradeMasterProducts),
+            ...when(
+              features.tradeMaster && can('trademaster'),
+              queue.tradeMasterShops,
+              queue.tradeMasterProducts,
+              tradeMasterCategories
+            ),
           ],
         },
         {

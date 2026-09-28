@@ -6,6 +6,8 @@ import type {
   Paged,
   ProductBoardQuery,
   ProductCategoryNode,
+  AdminProductCategory,
+  CategoryPayload,
   ProductPayload,
   ProductQueueRow,
   ProductReviewDetail,
@@ -51,6 +53,7 @@ const keys = {
   ownProducts: ['trademaster', 'me', 'products'] as const,
   shopQueue: ['trademaster', 'admin', 'shops'] as const,
   productQueue: ['trademaster', 'admin', 'products'] as const,
+  categoryDesk: ['trademaster', 'admin', 'categories'] as const,
 };
 
 /** The structured half as one JSON field, as everywhere else that carries a file. */
@@ -427,6 +430,54 @@ export function useReviewProduct() {
       await api.post(`/trademaster/admin/products/${input.id}/review`, input.payload);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.productQueue }),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Categories — the desk
+//
+// Every write invalidates the public category list as well as the desk's own.
+// The two are different queries over the same rows, and a rename that shows on
+// one screen and not the other is the kind of thing somebody reports as "the
+// save did not work".
+// ---------------------------------------------------------------------------
+
+export function useCategoryDesk() {
+  return useQuery({
+    queryKey: keys.categoryDesk,
+    queryFn: async () => {
+      const res = await api.get<AdminProductCategory[]>('/trademaster/admin/categories');
+      return res.data;
+    },
+  });
+}
+
+function useCategoryWrite<TArgs>(write: (args: TArgs) => Promise<void>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: write,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.categoryDesk });
+      void qc.invalidateQueries({ queryKey: keys.categories });
+    },
+  });
+}
+
+export function useCreateCategory() {
+  return useCategoryWrite(async (payload: CategoryPayload) => {
+    await api.post('/trademaster/admin/categories', payload);
+  });
+}
+
+export function useUpdateCategory() {
+  return useCategoryWrite(async (input: { id: string; payload: Partial<CategoryPayload> }) => {
+    await api.patch(`/trademaster/admin/categories/${input.id}`, input.payload);
+  });
+}
+
+export function useDeleteCategory() {
+  return useCategoryWrite(async (id: string) => {
+    await api.delete(`/trademaster/admin/categories/${id}`);
   });
 }
 

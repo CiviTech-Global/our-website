@@ -14,6 +14,7 @@ import { serveStoredFile } from '../services/file-response.js';
 import * as shops from '../services/trademaster-shop.service.js';
 import * as products from '../services/trademaster-product.service.js';
 import * as orders from '../services/trademaster-order.service.js';
+import * as categories from '../services/trademaster-category.service.js';
 import {
   reviewDecisionSchema,
   reviewQueueSchema,
@@ -30,6 +31,8 @@ import {
   paymentReturnSchema,
   orderMoveSchema,
   orderListSchema,
+  categorySchema,
+  categoryUpdateSchema,
 } from '../validators/trademaster.schema.js';
 
 /**
@@ -261,6 +264,48 @@ router.post(
       { reviewNote: body.reviewNote, internalNote: body.internalNote }
     );
     successResponse(res, serialize(result), 'بررسی ثبت شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Categories — the desk
+//
+// Staff-only, and behind the same permission as the review queue: deciding how
+// the catalogue is filed is the same job as deciding what goes in it. Sellers
+// only ever read the list, through the public route further down.
+// ---------------------------------------------------------------------------
+
+router.get(
+  '/admin/categories',
+  ...canReview,
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await categories.listCategoriesForAdmin()));
+  })
+);
+
+router.post(
+  '/admin/categories',
+  ...canReview,
+  wrap(async (req, res) => {
+    const body = categorySchema.parse(req.body);
+    successResponse(res, serialize(await categories.createCategory(body)), 'دسته‌بندی ساخته شد.', 201);
+  })
+);
+
+router.patch(
+  '/admin/categories/:id',
+  ...canReview,
+  wrap(async (req, res) => {
+    const body = categoryUpdateSchema.parse(req.body);
+    successResponse(res, serialize(await categories.updateCategory(param(req, 'id'), body)), 'دسته‌بندی به‌روز شد.');
+  })
+);
+
+router.delete(
+  '/admin/categories/:id',
+  ...canReview,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await categories.deleteCategory(param(req, 'id'))), 'دسته‌بندی حذف شد.');
   })
 );
 

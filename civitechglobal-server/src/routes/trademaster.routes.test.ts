@@ -86,6 +86,25 @@ describe('the TradeMaster feature gate', () => {
 
     expect(res.status).toBe(401);
   });
+
+  it('keeps the category desk behind the gate and behind a token', async () => {
+    // Writing the catalogue's shape is staff work. Every method has to be
+    // covered, not just the one the screen happens to call today: DELETE here
+    // removes a category, and an unauthenticated DELETE that reached the
+    // handler would be found by whoever scans for it, not by us.
+    const off = await appWith({ NODE_ENV: 'production', FEATURE_TRADEMASTER: undefined });
+    const on = await appWith({ NODE_ENV: 'production', FEATURE_TRADEMASTER: 'true' });
+
+    for (const send of [
+      (app: Parameters<typeof request>[0]) => request(app).get('/api/v1/trademaster/admin/categories'),
+      (app: Parameters<typeof request>[0]) => request(app).post('/api/v1/trademaster/admin/categories').send({}),
+      (app: Parameters<typeof request>[0]) => request(app).patch('/api/v1/trademaster/admin/categories/c1').send({}),
+      (app: Parameters<typeof request>[0]) => request(app).delete('/api/v1/trademaster/admin/categories/c1'),
+    ]) {
+      expect((await send(off)).status).toBe(404);
+      expect((await send(on)).status).toBe(401);
+    }
+  });
 });
 
 /**
