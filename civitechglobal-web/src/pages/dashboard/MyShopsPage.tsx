@@ -5,6 +5,7 @@ import { IDLE, type UploadState } from '@/components/ui/UploadStatus';
 import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import {
   useCloseShop,
+  useReopenShop,
   useCreateShop,
   useOwnShops,
   useSubmitShop,
@@ -97,6 +98,7 @@ export default function MyShopsPage() {
   const update = useUpdateShop();
   const submit = useSubmitShop();
   const close = useCloseShop();
+  const reopen = useReopenShop();
 
   const [editing, setEditing] = useState<'new' | OwnShop | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
@@ -231,6 +233,15 @@ export default function MyShopsPage() {
     }
   }
 
+  async function handleReopen(shop: OwnShop) {
+    try {
+      await reopen.mutateAsync(shop.id);
+      showToast(t.trademaster.shopReopened, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
@@ -351,6 +362,14 @@ export default function MyShopsPage() {
                     {shop.reviewNote}
                   </p>
                 )}
+
+                {/* Said here rather than in a confirmation, because it stays
+                    true for as long as the shop is shut and the seller may
+                    well be looking at this screen days later wondering why
+                    their products vanished. */}
+                {shop.state === 'CLOSED' && (
+                  <p className="mt-2 text-caption text-app-text-3">{t.trademaster.closedHint}</p>
+                )}
               </div>
 
               <div className="flex shrink-0 flex-wrap gap-2">
@@ -391,6 +410,14 @@ export default function MyShopsPage() {
                 {shop.state === 'OPEN' && shop.moderationStatus === 'APPROVED' && (
                   <Button variant="ghost" size="sm" onClick={() => void handleClose(shop)}>
                     {t.trademaster.closeShop}
+                  </Button>
+                )}
+
+                {/* Only from CLOSED. An EXPIRED shop is not the seller's to
+                    revive, and the server says so. */}
+                {shop.state === 'CLOSED' && (
+                  <Button size="sm" onClick={() => void handleReopen(shop)}>
+                    {t.trademaster.reopenShop}
                   </Button>
                 )}
               </div>

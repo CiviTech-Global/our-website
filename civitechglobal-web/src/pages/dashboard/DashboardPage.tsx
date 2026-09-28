@@ -12,12 +12,18 @@ import {
   Handshake,
   MailWarning,
   MessagesSquare,
+  Package,
   PackageSearch,
+  Store,
   UserPlus,
 } from 'lucide-react';
 import { useSendVerificationEmail } from '@/api/accountRecovery';
 import { useCapabilities } from '@/api/capabilities';
 import { useOwnMarketplaceStats, useOwnVerification } from '@/api/marketplace';
+import { useOwnShops } from '@/api/trademaster';
+import type { OwnShop } from '@/types/trademaster';
+import { moderationVariant } from '@/lib/marketplace';
+import { features } from '@/lib/features';
 import { isApiError } from '@/config/api';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -64,6 +70,10 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useOwnMarketplaceStats(Boolean(user));
   const { data: verification } = useOwnVerification(Boolean(user));
+  // Only when the module exists. Asking every member for a shop list on a
+  // deployment that has no marketplace is a request that can only ever answer
+  // 404, once per visit to the home screen.
+  const { data: shops } = useOwnShops(features.tradeMaster && Boolean(user));
 
   const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : value.toLocaleString('en'));
 
@@ -238,6 +248,23 @@ export default function DashboardPage() {
             </Panel>
           )}
 
+          {/* Only for people who actually sell something. A panel headed "your
+              shops" that is empty for every other member is a permanent
+              reminder of a thing they did not ask to do. */}
+          {(shops?.length ?? 0) > 0 && (
+            <Panel
+              title={t.trademaster.myShops}
+              viewAll={{ to: '/dashboard/shops', label: t.common.view }}
+              flush
+            >
+              <ul className="divide-y divide-app-border-light">
+                {shops?.map((shop) => (
+                  <ShopRow key={shop.id} shop={shop} number={number} />
+                ))}
+              </ul>
+            </Panel>
+          )}
+
           <Panel title={t.dashboard.quickActions} flush>
             <ul className="grid grid-cols-1 divide-y divide-app-border-light sm:grid-cols-3 sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse">
               <QuickAction to="/start-project" icon={<Code2 />} label={t.nav.startProject} />
@@ -273,6 +300,41 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * One shop, as its owner needs to see it from the home screen.
+ *
+ * The moderation status and the reviewer's note are the whole point. A seller
+ * whose shop is sitting in CHANGES_REQUESTED has something to do and no way
+ * to find that out without opening the shops screen; here it is the first
+ * thing on the row, in the colour that says so.
+ */
+function ShopRow({ shop, number }: { shop: OwnShop; number: (value: number) => string }) {
+  const { t } = useLocale();
+
+  return (
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+      <Store className="size-4 shrink-0 text-app-icon" aria-hidden="true" />
+      <span className="min-w-0 flex-1 truncate text-body font-medium text-app-text">{shop.name}</span>
+
+      <span className="inline-flex items-center gap-1 text-caption text-app-text-3">
+        <Package className="size-3.5" aria-hidden="true" />
+        {t.trademaster.productCount.replace('{count}', number(shop.productCount))}
+      </span>
+
+      <Badge variant={moderationVariant(shop.moderationStatus)}>
+        {t.market[shop.moderationStatus]}
+      </Badge>
+
+      {shop.reviewNote && (
+        <p className="w-full text-caption text-app-text-2">
+          <span className="font-medium">{t.market.reviewNote}: </span>
+          {shop.reviewNote}
+        </p>
+      )}
+    </li>
   );
 }
 

@@ -131,13 +131,14 @@ export function useProductCategories() {
 // The seller's shops
 // ---------------------------------------------------------------------------
 
-export function useOwnShops() {
+export function useOwnShops(enabled = true) {
   return useQuery({
     queryKey: keys.ownShops,
     queryFn: async () => {
       const res = await api.get<OwnShop[]>('/trademaster/me/shops');
       return res.data;
     },
+    enabled,
   });
 }
 
@@ -200,7 +201,8 @@ export function useCloseShop() {
     mutationFn: async (id: string) => {
       await api.post(`/trademaster/me/shops/${id}/close`);
     },
-    // Closing a shop closes its products too, so both lists are stale.
+    // The products keep their own state, but what the public can see of them
+    // changed, and so did the shop, so both lists are stale.
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.ownShops });
       void qc.invalidateQueries({ queryKey: keys.ownProducts });
@@ -258,11 +260,34 @@ export function useSubmitProduct() {
   });
 }
 
+export function useReopenShop() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/trademaster/me/shops/${id}/reopen`);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.ownShops });
+      void qc.invalidateQueries({ queryKey: keys.ownProducts });
+    },
+  });
+}
+
 export function useCloseProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
       await api.post(`/trademaster/me/products/${id}/close`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+  });
+}
+
+export function useReopenProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/trademaster/me/products/${id}/reopen`);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
   });

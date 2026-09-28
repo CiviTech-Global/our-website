@@ -220,6 +220,15 @@ router.post(
   })
 );
 
+router.post(
+  '/me/shops/:id/reopen',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await shops.reopenShop(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'فروشگاه دوباره باز شد.');
+  })
+);
+
 // ---------------------------------------------------------------------------
 // The review desk
 // ---------------------------------------------------------------------------
@@ -410,6 +419,15 @@ router.post(
   wrap(async (req, res) => {
     const result = await products.closeProduct(req.user!.userId, param(req, 'id'));
     successResponse(res, serialize(result), 'کالا بسته شد.');
+  })
+);
+
+router.post(
+  '/me/products/:id/reopen',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.reopenProduct(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'کالا دوباره باز شد.');
   })
 );
 

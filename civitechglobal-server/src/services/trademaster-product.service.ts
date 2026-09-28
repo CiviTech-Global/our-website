@@ -113,6 +113,7 @@ async function ownedProduct(userId: string, productId: string) {
       code: true,
       businessId: true,
       moderationStatus: true,
+      state: true,
       publishedAt: true,
       business: { select: { moderationStatus: true, state: true } },
       _count: { select: { images: true, variants: true } },
@@ -230,6 +231,28 @@ export async function closeProduct(userId: string, productId: string) {
   return prisma.product.update({
     where: { id: product.id },
     data: { state: 'CLOSED' },
+    select: { id: true, code: true, state: true },
+  });
+}
+
+/**
+ * And puts it back on sale.
+ *
+ * Refused unless it is actually closed, so that a stray second click cannot
+ * quietly turn EXPIRED into OPEN. As with a shop, this touches the state and
+ * not the moderation status, so it can only restore what the desk had already
+ * approved.
+ */
+export async function reopenProduct(userId: string, productId: string) {
+  const product = await ownedProduct(userId, productId);
+
+  if (product.state !== 'CLOSED') {
+    throw new AppError('این کالا بسته نیست.', 409);
+  }
+
+  return prisma.product.update({
+    where: { id: product.id },
+    data: { state: 'OPEN' },
     select: { id: true, code: true, state: true },
   });
 }

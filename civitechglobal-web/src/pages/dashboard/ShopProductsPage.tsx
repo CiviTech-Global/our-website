@@ -12,6 +12,7 @@ import {
   useProductCategories,
   useRemoveProductImage,
   useRemoveVariant,
+  useReopenProduct,
   useShopProducts,
   useSubmitProduct,
   useUpdateProduct,
@@ -91,6 +92,7 @@ export default function ShopProductsPage() {
   const update = useUpdateProduct();
   const submit = useSubmitProduct();
   const close = useCloseProduct();
+  const reopen = useReopenProduct();
   const addImages = useAddProductImages();
   const removeImage = useRemoveProductImage();
   const addVariant = useAddVariant();
@@ -357,6 +359,19 @@ export default function ShopProductsPage() {
                     onClick={() => void run(close.mutateAsync(product.id), t.trademaster.productClosed)}
                   >
                     {t.common.close}
+                  </Button>
+                )}
+
+                {/* Closed by its seller, so theirs to put back. A product in a
+                    closed shop can be reopened here too — it simply stays
+                    invisible until the shop is open, which is what the shops
+                    screen says. */}
+                {product.state === 'CLOSED' && (
+                  <Button
+                    size="sm"
+                    onClick={() => void run(reopen.mutateAsync(product.id), t.trademaster.productReopened)}
+                  >
+                    {t.trademaster.reopenProduct}
                   </Button>
                 )}
               </div>

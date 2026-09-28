@@ -223,6 +223,9 @@ async function ownedShop(userId: string, shopId: string) {
       code: true,
       slug: true,
       moderationStatus: true,
+      // Whether the owner has taken it down, which reopenShop needs and
+      // nothing else here reads. Cheap enough to fetch once for every caller.
+      state: true,
       publishedAt: true,
       logoStoredName: true,
     },
@@ -294,22 +297,49 @@ export async function submitShop(userId: string, shopId: string) {
  * of what happened. Closing hides the shop and everything under it from the
  * public queries without removing anything.
  */
+/**
+ * The owner takes their own shop down.
+ *
+ * The products are deliberately left alone. Every public query filters on the
+ * shop as well as on the product — see PUBLIC_PRODUCT_WHERE — so a closed
+ * shop's catalogue is already unreachable, and closing each product too would
+ * only destroy the one fact reopening needs: which of them the seller had
+ * taken down by hand. It did that until now, and reopening the shop then left
+ * the whole catalogue dark with nothing to say why.
+ *
+ * State, not moderation. Closing is the owner's own decision and reopenShop
+ * undoes it; whether the shop may be seen at all stays with the review desk.
+ */
 export async function closeShop(userId: string, shopId: string) {
   const shop = await ownedShop(userId, shopId);
 
-  return prisma.$transaction(async (tx) => {
-    const closed = await tx.business.update({
-      where: { id: shop.id },
-      data: { state: 'CLOSED' },
-      select: { id: true, code: true, state: true },
-    });
+  return prisma.business.update({
+    where: { id: shop.id },
+    data: { state: 'CLOSED' },
+    select: { id: true, code: true, state: true },
+  });
+}
 
-    await tx.product.updateMany({
-      where: { businessId: shop.id, state: 'OPEN' },
-      data: { state: 'CLOSED' },
-    });
+/**
+ * And puts it back.
+ *
+ * Only from CLOSED, and only the owner's own closing: EXPIRED is not something
+ * a seller may undo by calling this, and a shop the desk has not approved goes
+ * back to being open-but-unpublished, exactly as it was before it was closed.
+ * Reopening therefore cannot publish anything the desk has not already agreed
+ * to, because visibility needs both facts and this one only touches the state.
+ */
+export async function reopenShop(userId: string, shopId: string) {
+  const shop = await ownedShop(userId, shopId);
 
-    return closed;
+  if (shop.state !== 'CLOSED') {
+    throw new AppError('این فروشگاه بسته نیست.', 409);
+  }
+
+  return prisma.business.update({
+    where: { id: shop.id },
+    data: { state: 'OPEN' },
+    select: { id: true, code: true, state: true },
   });
 }
 
