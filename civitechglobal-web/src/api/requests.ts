@@ -6,18 +6,7 @@ import type {
   LeadStatus,
   RequestDetail,
   RequestSource,
-  RequestStats,
 } from '@/types/requests';
-
-export function useRequestStats() {
-  return useQuery({
-    queryKey: ['requests', 'stats'],
-    queryFn: async () => {
-      const res = await api.get<RequestStats>('/requests/stats');
-      return res.data;
-    },
-  });
-}
 
 export interface UseRequestsParams {
   page: number;

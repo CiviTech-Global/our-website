@@ -1,5 +1,5 @@
 import { MapPin, Store } from 'lucide-react';
-import { useReviewShop, useShopQueue } from '@/api/trademaster';
+import { useReviewShop, useShopQueue, useShopReview } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
@@ -114,6 +114,17 @@ function ShopCard({ row }: { row: ShopQueueRow }) {
   const { t, locale } = useLocale();
   const review = useReviewShop();
 
+  /**
+   * Fetched for every card in the page, as the product queue does.
+   *
+   * The queue row carries a name, a one-line summary and a city. Everything a
+   * shop is actually judged on — the description, the address, the phone
+   * number, the website — is only in the detail, so without this the desk was
+   * approving storefronts it had not read. Twenty rows at most, and a reviewer
+   * who has to click into each one reads fewer of them.
+   */
+  const { data: detail } = useShopReview(row.id);
+
   const where = [row.city, row.province].filter(Boolean).join('، ');
   const owner = [row.owner.firstName, row.owner.lastName].filter(Boolean).join(' ');
 
@@ -167,6 +178,49 @@ function ShopCard({ row }: { row: ShopQueueRow }) {
           <p className="mt-3 whitespace-pre-line text-body leading-6 text-app-text">
             {row.summary}
           </p>
+
+          {detail?.description && (
+            <p className="mt-2 whitespace-pre-line text-body leading-6 text-app-text-3">
+              {detail.description}
+            </p>
+          )}
+
+          {detail && (
+            <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-label sm:grid-cols-2">
+              {detail.address && (
+                <Field label={t.trademaster.address} value={detail.address} />
+              )}
+              {detail.phone && <Field label={t.trademaster.phone} value={detail.phone} ltr />}
+              {detail.email && <Field label={t.trademaster.email} value={detail.email} ltr />}
+              {detail.website && (
+                <Field
+                  label={t.trademaster.website}
+                  ltr
+                  value={
+                    // Not a link. Opening an unreviewed seller's URL from the
+                    // admin panel on a click meant for reading is the kind of
+                    // thing a review desk should not do by accident.
+                    detail.website
+                  }
+                />
+              )}
+            </dl>
+          )}
+
+          {/* What the desk said last time, so a second look does not repeat
+              feedback the seller has already acted on. */}
+          {detail?.reviewNote && (
+            <p className="mt-3 rounded border border-app-border-light bg-app-fill p-2 text-label text-app-text-3">
+              <span className="font-medium">{t.market.reviewNote}: </span>
+              {detail.reviewNote}
+            </p>
+          )}
+          {detail?.internalNote && (
+            <p className="mt-1.5 rounded border border-app-border-light bg-app-subtle p-2 text-label text-app-text-4">
+              <span className="font-medium">{t.market.internalNote}: </span>
+              {detail.internalNote}
+            </p>
+          )}
         </div>
       </div>
 
@@ -175,5 +229,17 @@ function ShopCard({ row }: { row: ShopQueueRow }) {
         onReview={(input) => review.mutateAsync({ id: row.id, payload: input })}
       />
     </Card>
+  );
+}
+
+/** One label-and-value pair in the reviewer's summary of a shop. */
+function Field({ label, value, ltr }: { label: string; value: string; ltr?: boolean }) {
+  return (
+    <div className="flex gap-2">
+      <dt className="shrink-0 text-app-text-4">{label}:</dt>
+      <dd className={ltr ? 'ltr min-w-0 truncate text-app-text-2' : 'min-w-0 text-app-text-2'}>
+        {value}
+      </dd>
+    </div>
   );
 }

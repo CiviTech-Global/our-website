@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { PackageSearch, Search } from 'lucide-react';
 import { useTracking } from '@/api/tracking';
+import { useCancelConsultation } from '@/api/consult';
+import { useToast } from '@/contexts/ToastContext';
+import { apiMessage } from '@/lib/apiMessage';
 import { ProposalView } from '@/components/project/ProposalView';
 import { projectStatusBadgeVariant, projectStatusLabel } from '@/lib/projectStatus';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -29,7 +32,15 @@ export default function TrackRequestPage() {
   // all three intakes on a single connection; the browser used to fire one
   // request per intake and throw away the losers.
   const tracking = useTracking(code);
-  const { result, insurance: data, project: projectData, resume: resumeData } = tracking;
+  const {
+    result,
+    insurance: data,
+    project: projectData,
+    resume: resumeData,
+    consultation: consultationData,
+  } = tracking;
+  const { showToast } = useToast();
+  const cancelConsultation = useCancelConsultation();
   const isFetching = tracking.isFetching;
   const isError = Boolean(code) && !isFetching && !result;
 
@@ -142,6 +153,111 @@ export default function TrackRequestPage() {
             </dl>
 
             <p className="mt-6 text-sm text-text-secondary">{t.join.successBody}</p>
+          </Card>
+        </AnimatedSection>
+      )}
+
+      {consultationData && !isFetching && (
+        <AnimatedSection className="mt-8">
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-text-muted">{t.insurance.trackingCode}</p>
+                <p className="ltr font-mono text-base font-semibold tracking-widest text-text-primary">
+                  {consultationData.trackingCode}
+                </p>
+              </div>
+              <Badge
+                variant={
+                  consultationData.status === 'CANCELLED'
+                    ? 'danger'
+                    : consultationData.status === 'COMPLETED'
+                      ? 'success'
+                      : 'info'
+                }
+              >
+                {t.consult.statuses[consultationData.status]}
+              </Badge>
+            </div>
+
+            <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <dt className="text-xs text-text-muted">{t.consult.topicLabel}</dt>
+                <dd className="mt-1 text-sm text-text-primary">
+                  {t.consult.topics[consultationData.topic]}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-text-muted">{t.consult.modeLabel}</dt>
+                <dd className="mt-1 text-sm text-text-primary">
+                  {t.consult.modes[consultationData.preferredMode]}
+                </dd>
+              </div>
+              {consultationData.expert && (
+                <div>
+                  <dt className="text-xs text-text-muted">{t.consult.expertLabel}</dt>
+                  <dd className="mt-1 text-sm text-text-primary">
+                    {consultationData.expert.fullName}
+                  </dd>
+                </div>
+              )}
+              {consultationData.scheduledAt && (
+                <div>
+                  <dt className="text-xs text-text-muted">{t.consult.scheduledFor}</dt>
+                  <dd className="mt-1 text-sm text-text-primary">
+                    {formatDate(consultationData.scheduledAt, locale)}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-xs text-text-muted">{t.insurance.submittedAt}</dt>
+                <dd className="mt-1 text-sm text-text-primary">
+                  {formatDate(consultationData.createdAt, locale)}
+                </dd>
+              </div>
+            </dl>
+
+            {consultationData.availability.length > 0 && (
+              <div className="mt-6">
+                <p className="text-xs text-text-muted">{t.consult.yourWindows}</p>
+                <ul className="mt-1 flex flex-wrap gap-2">
+                  {consultationData.availability.map((window) => (
+                    <li key={`${window.day}-${window.part}`}>
+                      <Badge variant="default">
+                        {formatDate(window.day, locale)} · {t.consult.parts[window.part]}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Only while there is something to call off. The server refuses a
+                completed or already cancelled request, and a button that can
+                only produce an error is worse than no button. There is no
+                email or SMS here, so the code is the only way back to this
+                request — which is exactly why cancelling has to live on it. */}
+            {consultationData.status !== 'COMPLETED' &&
+              consultationData.status !== 'CANCELLED' && (
+                <div className="mt-6 border-t border-border-default pt-4">
+                  <Button
+                    variant="outline"
+                    isLoading={cancelConsultation.isPending}
+                    onClick={async () => {
+                      if (!window.confirm(t.consult.cancelConfirm)) return;
+                      try {
+                        await cancelConsultation.mutateAsync(consultationData.trackingCode);
+                        await tracking.refetch();
+                        showToast(t.consult.cancelled, 'success');
+                      } catch (error) {
+                        showToast(apiMessage(error, t.common.error), 'error');
+                      }
+                    }}
+                  >
+                    {t.consult.cancel}
+                  </Button>
+                </div>
+              )}
           </Card>
         </AnimatedSection>
       )}

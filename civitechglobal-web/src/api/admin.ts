@@ -1,18 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
-import type { AdminDashboardStats } from '@/types/requests';
 import type { AdminRole, AdminUserListItem, CreateAdminInput, Permission, Workload } from '@/types/admin';
 import type { Paged } from '@/types/api';
-
-export function useAdminDashboard() {
-  return useQuery({
-    queryKey: ['admin', 'dashboard'],
-    queryFn: async () => {
-      const res = await api.get<AdminDashboardStats>('/admin/dashboard');
-      return res.data;
-    },
-  });
-}
 
 /**
  * What is waiting for the signed-in member of staff.

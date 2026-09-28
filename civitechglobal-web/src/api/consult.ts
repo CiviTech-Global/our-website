@@ -171,17 +171,6 @@ export function useRequestConsultation() {
   });
 }
 
-export function useTrackedConsultation(code: string | undefined) {
-  return useQuery({
-    queryKey: ['consult', 'track', code],
-    queryFn: async () => {
-      const res = await api.get<TrackedConsultation>(`/consult/requests/${code!}`);
-      return res.data;
-    },
-    enabled: Boolean(code),
-  });
-}
-
 export function useCancelConsultation() {
   const qc = useQueryClient();
   return useMutation({

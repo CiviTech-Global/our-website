@@ -3,15 +3,21 @@ import { api } from '@/config/api';
 import type { TrackedRequest } from '@/types/insurance';
 import type { ProjectTrackResult } from '@/types/project';
 import type { ResumeStatus } from '@/types/resume';
+import type { TrackedConsultation } from '@/api/consult';
 
 /**
  * One lookup for any tracking code.
  *
- * There are three intakes now and they draw codes from the same alphabet, so a
+ * There are four intakes now and they draw codes from the same alphabet, so a
  * code is indistinguishable by eye — and the person holding one has no reason
- * to know which system issued it. The server resolves it across all three on a
- * single connection, which replaced three parallel browser requests of which
- * two were always 404s.
+ * to know which system issued it. The server resolves it across all four on a
+ * single connection, which replaced parallel browser requests of which all but
+ * one were always 404s.
+ *
+ * Every kind the server can answer with has to appear in the union below. A
+ * consultation code was missing from it for a while, and because the query
+ * still succeeded the page showed no result, no error and no spinner — a
+ * blank answer to a code that was perfectly valid.
  */
 // Declared as interfaces rather than `{ kind } & T` intersections: an
 // intersection does not give TypeScript a discriminant it will narrow on, so
@@ -32,7 +38,11 @@ export interface TrackedResume {
   updatedAt: string;
 }
 
-export type TrackedAnything = TrackedInsurance | TrackedProject | TrackedResume;
+export type TrackedAnything =
+  | TrackedInsurance
+  | TrackedProject
+  | TrackedResume
+  | TrackedConsultation;
 
 /** Narrow a result to one intake, or `undefined` if the code belongs elsewhere. */
 function pick<K extends TrackedAnything['kind']>(
@@ -65,5 +75,6 @@ export function useTracking(code: string | undefined) {
     insurance: pick(result, 'insurance'),
     project: pick(result, 'project'),
     resume: pick(result, 'resume'),
+    consultation: pick(result, 'consultation'),
   };
 }

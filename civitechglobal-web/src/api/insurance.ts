@@ -6,7 +6,6 @@ import type {
   OtpSendResult,
   OtpVerifyResult,
   ProductDetail,
-  ProductSummary,
   SubmitResult,
 } from '@/types/insurance';
 
@@ -18,17 +17,6 @@ export function useInsuranceCatalog() {
     queryKey: ['insurance', 'catalog'],
     queryFn: async () => {
       const res = await api.get<CategoryWithProducts[]>('/insurance/catalog');
-      return res.data;
-    },
-    staleTime: CATALOG_STALE_TIME,
-  });
-}
-
-export function useInsuranceProducts() {
-  return useQuery({
-    queryKey: ['insurance', 'products'],
-    queryFn: async () => {
-      const res = await api.get<ProductSummary[]>('/insurance/products');
       return res.data;
     },
     staleTime: CATALOG_STALE_TIME,
