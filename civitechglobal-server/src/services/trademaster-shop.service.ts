@@ -5,6 +5,7 @@ import { toPage } from '../utils/page.js';
 import { generateTrackingCode } from './insurance-request.service.js';
 import {
   PUBLIC_LISTING_WHERE,
+  assertWithdrawable,
   assertAuthorEditable,
   assertReviewable,
   assertSubmittable,
@@ -291,17 +292,41 @@ export async function submitShop(userId: string, shopId: string) {
 }
 
 /**
- * Close a shop, and take its products down with it.
+ * Back to a draft, so the owner can change it.
+ *
+ * Editing is refused once a listing is in the queue or published — an edit
+ * there would change what a reviewer approved without anybody seeing the
+ * change — so this is the way back: unpublish it, edit it, submit it again.
+ *
+ * The products are left as they are. They become unreachable while the shop
+ * is not approved, because every public query filters on the shop too, and
+ * they come back exactly as they were when it is approved again. Sending them
+ * all to PENDING_REVIEW instead would put a fresh pile on the review desk
+ * every time a seller fixed a spelling mistake in their own address.
+ */
+export async function withdrawShop(userId: string, shopId: string) {
+  const shop = await ownedShop(userId, shopId);
+  assertWithdrawable(shop.moderationStatus);
+
+  return prisma.business.update({
+    where: { id: shop.id },
+    // publishedAt is left alone: it records that this shop was once public,
+    // which is what reviewPatch reads to tell a republication from a first
+    // approval.
+    data: { moderationStatus: 'DRAFT', reviewNote: null },
+    select: { id: true, code: true, moderationStatus: true },
+  });
+}
+
+/**
+ * The owner takes their own shop down.
  *
  * Not a delete: the products, and later the orders against them, are a record
  * of what happened. Closing hides the shop and everything under it from the
  * public queries without removing anything.
- */
-/**
- * The owner takes their own shop down.
  *
- * The products are deliberately left alone. Every public query filters on the
- * shop as well as on the product — see PUBLIC_PRODUCT_WHERE — so a closed
+ * The products themselves are deliberately left alone. Every public query
+ * filters on the shop as well as on the product — see PUBLIC_PRODUCT_WHERE — so a closed
  * shop's catalogue is already unreachable, and closing each product too would
  * only destroy the one fact reopening needs: which of them the seller had
  * taken down by hand. It did that until now, and reopening the shop then left

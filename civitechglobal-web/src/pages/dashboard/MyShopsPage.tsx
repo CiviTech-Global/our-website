@@ -6,6 +6,7 @@ import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import {
   useCloseShop,
   useReopenShop,
+  useWithdrawShop,
   useCreateShop,
   useOwnShops,
   useSubmitShop,
@@ -99,6 +100,7 @@ export default function MyShopsPage() {
   const submit = useSubmitShop();
   const close = useCloseShop();
   const reopen = useReopenShop();
+  const withdraw = useWithdrawShop();
 
   const [editing, setEditing] = useState<'new' | OwnShop | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
@@ -228,6 +230,15 @@ export default function MyShopsPage() {
     try {
       await close.mutateAsync(shop.id);
       showToast(t.trademaster.shopClosed, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  async function handleWithdraw(shop: OwnShop) {
+    try {
+      await withdraw.mutateAsync(shop.id);
+      showToast(t.trademaster.withdrawn, 'success');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
     }
@@ -405,6 +416,22 @@ export default function MyShopsPage() {
                       {t.trademaster.submitForReview}
                     </Button>
                   </>
+                )}
+
+                {/* The way back to editing. Offered for anything the desk has
+                    seen — waiting or approved — because both are states an
+                    owner may want to correct, and neither can be edited in
+                    place without changing what a reviewer looked at. */}
+                {(shop.moderationStatus === 'APPROVED' ||
+                  shop.moderationStatus === 'PENDING_REVIEW') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    title={t.trademaster.withdrawHint}
+                    onClick={() => void handleWithdraw(shop)}
+                  >
+                    {t.trademaster.withdraw}
+                  </Button>
                 )}
 
                 {shop.state === 'OPEN' && shop.moderationStatus === 'APPROVED' && (

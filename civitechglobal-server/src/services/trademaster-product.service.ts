@@ -7,6 +7,7 @@ import {
   PUBLIC_LISTING_WHERE,
   assertAuthorEditable,
   assertReviewable,
+  assertWithdrawable,
   assertSubmittable,
   reviewPatch,
   type ReviewDecision,
@@ -66,8 +67,9 @@ function trimmed(value: string | undefined): string | undefined {
 }
 
 /** Rejects a price that no currency can express, before it reaches the column. */
-function assertSanePrice(price: bigint | undefined): void {
-  if (price === undefined) return;
+function assertSanePrice(price: bigint | null | undefined): void {
+  // null is "no override", which is always sane.
+  if (price === undefined || price === null) return;
   if (price < 0n) throw new AppError('قیمت نمی‌تواند منفی باشد.', 400);
   if (price > 100_000_000_000n) throw new AppError('قیمت واردشده معتبر نیست.', 400);
 }
@@ -221,6 +223,24 @@ export async function submitProduct(userId: string, productId: string) {
   return prisma.product.update({
     where: { id: product.id },
     data: { moderationStatus: 'PENDING_REVIEW' },
+    select: { id: true, code: true, moderationStatus: true },
+  });
+}
+
+/**
+ * Back to a draft, so the seller can change it.
+ *
+ * The counterpart of submitProduct, and the route assertAuthorEditable has
+ * been pointing at all along. A published product with the wrong price had no
+ * way to be corrected before this.
+ */
+export async function withdrawProduct(userId: string, productId: string) {
+  const product = await ownedProduct(userId, productId);
+  assertWithdrawable(product.moderationStatus);
+
+  return prisma.product.update({
+    where: { id: product.id },
+    data: { moderationStatus: 'DRAFT', reviewNote: null },
     select: { id: true, code: true, moderationStatus: true },
   });
 }
@@ -409,7 +429,8 @@ export async function getImage(imageId: string, includeUnpublished = false) {
 export interface VariantInput {
   label: string;
   sku?: string;
-  price?: bigint;
+  /** Absent leaves it alone on an edit; null clears the override. */
+  price?: bigint | null;
   stock?: number;
 }
 

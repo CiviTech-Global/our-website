@@ -212,6 +212,15 @@ router.post(
 );
 
 router.post(
+  '/me/shops/:id/withdraw',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await shops.withdrawShop(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'فروشگاه به پیش‌نویس بازگشت.');
+  })
+);
+
+router.post(
   '/me/shops/:id/close',
   authenticate,
   wrap(async (req, res) => {
@@ -410,6 +419,15 @@ router.post(
   wrap(async (req, res) => {
     const result = await products.submitProduct(req.user!.userId, param(req, 'id'));
     successResponse(res, serialize(result), 'کالا برای بررسی ارسال شد.');
+  })
+);
+
+router.post(
+  '/me/products/:id/withdraw',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.withdrawProduct(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'کالا به پیش‌نویس بازگشت.');
   })
 );
 

@@ -195,6 +195,21 @@ export function useSubmitShop() {
   });
 }
 
+export function useWithdrawShop() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/trademaster/me/shops/${id}/withdraw`);
+    },
+    // The products become unreachable while the shop is a draft, so their
+    // list is stale too even though none of them changed.
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.ownShops });
+      void qc.invalidateQueries({ queryKey: keys.ownProducts });
+    },
+  });
+}
+
 export function useCloseShop() {
   const qc = useQueryClient();
   return useMutation({
@@ -270,6 +285,16 @@ export function useReopenShop() {
       void qc.invalidateQueries({ queryKey: keys.ownShops });
       void qc.invalidateQueries({ queryKey: keys.ownProducts });
     },
+  });
+}
+
+export function useWithdrawProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/trademaster/me/products/${id}/withdraw`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
   });
 }
 

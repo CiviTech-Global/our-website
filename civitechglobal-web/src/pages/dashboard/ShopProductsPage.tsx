@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
-import { ImageOff, Package, Plus, Trash2 } from 'lucide-react';
+import { Eye, ImageOff, Package, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { IDLE, type UploadState } from '@/components/ui/UploadStatus';
 import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import {
@@ -13,6 +13,9 @@ import {
   useRemoveProductImage,
   useRemoveVariant,
   useReopenProduct,
+  useWithdrawProduct,
+  useUpdateImageCaption,
+  useUpdateVariant,
   useShopProducts,
   useSubmitProduct,
   useUpdateProduct,
@@ -93,15 +96,27 @@ export default function ShopProductsPage() {
   const submit = useSubmitProduct();
   const close = useCloseProduct();
   const reopen = useReopenProduct();
+  const withdraw = useWithdrawProduct();
   const addImages = useAddProductImages();
   const removeImage = useRemoveProductImage();
   const addVariant = useAddVariant();
   const removeVariant = useRemoveVariant();
+  const updateVariant = useUpdateVariant();
+  const setCaption = useUpdateImageCaption();
 
   const [editing, setEditing] = useState<'new' | OwnProduct | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [managing, setManaging] = useState<OwnProduct | null>(null);
   const [variant, setVariant] = useState(EMPTY_VARIANT);
+  /**
+   * The option being corrected, or null while the form is adding a new one.
+   *
+   * One form in two modes rather than two forms: the fields are the same four
+   * either way, and a separate edit dialog would be the same inputs again with
+   * its own copy of the parsing rules — including the one about an empty price
+   * meaning "same as the product" rather than free.
+   */
+  const [editingVariant, setEditingVariant] = useState<string | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>(IDLE);
 
   /**
@@ -218,18 +233,25 @@ export default function ShopProductsPage() {
     if (!managing) return;
 
     try {
-      await addVariant.mutateAsync({
-        productId: managing.id,
-        payload: {
-          label: variant.label.trim(),
-          sku: variant.sku.trim() || undefined,
-          // Empty means "same as the product", which is not the same as zero.
-          price: digits(variant.price) || undefined,
-          stock: variant.stock ? Number(digits(variant.stock)) : undefined,
-        },
-      });
+      const payload = {
+        label: variant.label.trim(),
+        sku: variant.sku.trim() || undefined,
+        // Empty means "same as the product", which is not the same as zero —
+        // and null rather than undefined, so emptying the box on an edit
+        // actually removes the override instead of leaving the old one.
+        price: digits(variant.price) || null,
+        stock: variant.stock ? Number(digits(variant.stock)) : undefined,
+      };
+
+      if (editingVariant) {
+        await updateVariant.mutateAsync({ id: editingVariant, payload });
+      } else {
+        await addVariant.mutateAsync({ productId: managing.id, payload });
+      }
+
       setVariant(EMPTY_VARIANT);
-      showToast(t.trademaster.variantAdded, 'success');
+      setEditingVariant(null);
+      showToast(editingVariant ? t.trademaster.variantUpdated : t.trademaster.variantAdded, 'success');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
     }
@@ -326,6 +348,15 @@ export default function ShopProductsPage() {
                   <span>
                     {t.trademaster.variants}: {number(product.variantCount)}
                   </span>
+                  {/* Counted on every public view since the module was built,
+                      and shown to nobody until now. The one number a seller
+                      actually wants from a catalogue that cannot yet sell. */}
+                  {product.publishedAt && (
+                    <span className="inline-flex items-center gap-1">
+                      <Eye className="size-3.5" aria-hidden="true" />
+                      {t.trademaster.viewsLabel}: {number(product.views)}
+                    </span>
+                  )}
                 </p>
 
                 {product.reviewNote && (
@@ -350,6 +381,20 @@ export default function ShopProductsPage() {
                       {t.trademaster.submitForReview}
                     </Button>
                   </>
+                )}
+
+                {(product.moderationStatus === 'APPROVED' ||
+                  product.moderationStatus === 'PENDING_REVIEW') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    title={t.trademaster.withdrawHint}
+                    onClick={() =>
+                      void run(withdraw.mutateAsync(product.id), t.trademaster.withdrawn)
+                    }
+                  >
+                    {t.trademaster.withdraw}
+                  </Button>
                 )}
 
                 {product.moderationStatus === 'APPROVED' && product.state === 'OPEN' && (
@@ -469,6 +514,11 @@ export default function ShopProductsPage() {
         onClose={() => {
           setManaging(null);
           setUploadState(IDLE);
+          // Otherwise the next product's form opens holding the last one's
+          // half-corrected option, and submitting it would write those values
+          // onto a variant that belongs to something else.
+          setVariant(EMPTY_VARIANT);
+          setEditingVariant(null);
         }}
         title={live?.title ?? managing?.title ?? t.trademaster.images}
       >
@@ -480,7 +530,7 @@ export default function ShopProductsPage() {
             {live && live.images.length > 0 && (
               <ul className="mb-3 flex flex-wrap gap-2">
                 {live.images.map((image) => (
-                  <li key={image.id} className="relative">
+                  <li key={image.id} className="relative w-28">
                     <img
                       src={image.url}
                       alt={image.caption || live.title}
@@ -496,6 +546,28 @@ export default function ShopProductsPage() {
                     >
                       <Trash2 className="size-3.5" aria-hidden="true" />
                     </button>
+
+                    {/* Uncontrolled and saved on the way out: a caption is a
+                        sentence somebody types once, and a request per
+                        keystroke would be a request per keystroke. Keyed by
+                        the image id so a fresh list does not put one picture's
+                        words under another's. */}
+                    <Input
+                      key={image.id}
+                      defaultValue={image.caption ?? ''}
+                      aria-label={t.trademaster.imageCaption}
+                      placeholder={t.trademaster.imageCaption}
+                      maxLength={200}
+                      className="mt-1 h-7 text-caption"
+                      onBlur={(event) => {
+                        const caption = event.target.value.trim();
+                        if (caption === (image.caption ?? '')) return;
+                        void run(
+                          setCaption.mutateAsync({ imageId: image.id, caption }),
+                          t.trademaster.captionSaved
+                        );
+                      }}
+                    />
                   </li>
                 ))}
               </ul>
@@ -545,6 +617,25 @@ export default function ShopProductsPage() {
                     <span className="text-caption text-app-text-3">
                       {t.trademaster.stock}: {number(option.stock)}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingVariant(option.id);
+                        setVariant({
+                          label: option.label,
+                          sku: option.sku ?? '',
+                          // Back into the form in the shape the form speaks:
+                          // digit strings, with an absent price staying absent
+                          // rather than becoming a zero the seller did not type.
+                          price: option.price ?? '',
+                          stock: String(option.stock),
+                        });
+                      }}
+                      aria-label={t.trademaster.editVariant}
+                      className="text-app-text-3 hover:text-app-text"
+                    >
+                      <Pencil className="size-4" aria-hidden="true" />
+                    </button>
                     <button
                       type="button"
                       onClick={() =>
@@ -598,11 +689,34 @@ export default function ShopProductsPage() {
                 />
               </FormField>
 
-              <div className="sm:col-span-2">
-                <Button type="submit" size="sm" disabled={addVariant.isPending}>
-                  <Plus className="size-4" aria-hidden="true" />
-                  {t.trademaster.addVariant}
+              <div className="flex gap-2 sm:col-span-2">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={addVariant.isPending || updateVariant.isPending}
+                >
+                  {editingVariant ? (
+                    <Pencil className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Plus className="size-4" aria-hidden="true" />
+                  )}
+                  {editingVariant ? t.common.save : t.trademaster.addVariant}
                 </Button>
+
+                {editingVariant && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditingVariant(null);
+                      setVariant(EMPTY_VARIANT);
+                    }}
+                  >
+                    <X className="size-4" aria-hidden="true" />
+                    {t.common.cancel}
+                  </Button>
+                )}
               </div>
             </form>
           </section>

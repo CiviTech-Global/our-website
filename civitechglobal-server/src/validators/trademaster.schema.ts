@@ -106,11 +106,20 @@ export const productUpdateSchema = z
   .strict()
   .refine((body) => Object.keys(body).length > 0, 'هیچ تغییری ارسال نشده است');
 
+/**
+ * One option of a product — "Large", "Red" — with its own price if it needs one.
+ *
+ * `price` is nullable as well as optional, and the two are different
+ * instructions on an edit: absent leaves the override alone, null removes it
+ * so the option costs whatever the product costs. Without the null there was
+ * no way back from a price once set, which made the edit form able to raise a
+ * price and never to undo it.
+ */
 export const variantSchema = z
   .object({
     label: required(1, 60, 'عنوان تنوع الزامی است'),
     sku: trimmed(60).optional(),
-    price: money.optional(),
+    price: money.nullable().optional(),
     stock: z.coerce.number().int().min(0).max(1_000_000).optional(),
   })
   .strict();

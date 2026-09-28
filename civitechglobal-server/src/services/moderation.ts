@@ -28,6 +28,28 @@ const REVIEWABLE: ModerationStatus[] = ['PENDING_REVIEW', 'CHANGES_REQUESTED', '
 /** Which statuses the author may still edit. */
 const AUTHOR_EDITABLE: ModerationStatus[] = ['DRAFT', 'CHANGES_REQUESTED'];
 
+/**
+ * Which statuses the author may pull back to a draft.
+ *
+ * APPROVED, because the alternative is that a published typo can never be
+ * corrected — assertAuthorEditable has always said "withdrawing and
+ * resubmitting is the honest route" while there was nothing to withdraw with.
+ * PENDING_REVIEW, because sending something too early is the other half of
+ * the same mistake, and a reviewer would rather not spend time on a listing
+ * its author already wants back.
+ *
+ * REJECTED is absent on purpose: that is the desk's decision, and a seller
+ * who could withdraw it would be able to loop it back into the queue
+ * unchanged.
+ */
+const AUTHOR_WITHDRAWABLE: ModerationStatus[] = ['PENDING_REVIEW', 'APPROVED'];
+
+export function assertWithdrawable(status: ModerationStatus): void {
+  if (!AUTHOR_WITHDRAWABLE.includes(status)) {
+    throw new AppError('این مورد قابل بازگردانی به پیش‌نویس نیست.', 409);
+  }
+}
+
 export function assertReviewable(status: ModerationStatus): void {
   if (!REVIEWABLE.includes(status)) {
     throw new AppError('این مورد هنوز برای بررسی ارسال نشده است.', 409);

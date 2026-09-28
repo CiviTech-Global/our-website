@@ -158,7 +158,13 @@ export interface ProductVariant {
 export interface VariantPayload {
   label: string;
   sku?: string;
-  price?: string;
+  /**
+   * Absent leaves an existing override alone; null removes it, so the option
+   * costs whatever the product costs. The edit form sends null rather than
+   * omitting the field, because a seller who empties the price box means
+   * "no special price", not "forget I said anything".
+   */
+  price?: string | null;
   stock?: number;
 }
 
