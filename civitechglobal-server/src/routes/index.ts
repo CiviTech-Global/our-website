@@ -14,6 +14,7 @@ import i18nRoutes from './i18n.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
 import tradeMasterRoutes from './trademaster.routes.js';
+import demoRoutes from './demo.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
 import sitemapRoutes from './sitemap.routes.js';
@@ -26,6 +27,11 @@ router.use('/auth', authRoutes);
 // request.routes.ts for why.
 router.use('/requests', requestRoutes);
 router.use('/admin/dashboard', dashboardRoutes);
+// Before '/admin': that router applies authenticate to everything under it, so
+// mounted after, a request here would be answered 401 by it rather than 404 by
+// the production guard below — which is the difference between 'this does not
+// exist' and 'this exists, bring a token'.
+router.use('/admin/demo', demoRoutes);
 router.use('/admin', adminRoutes);
 // Public: catalog, phone verification, submission, tracking.
 router.use('/insurance', insuranceRoutes);

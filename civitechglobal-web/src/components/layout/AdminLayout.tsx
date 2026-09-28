@@ -7,6 +7,7 @@ import {
   Building2,
   ClipboardList,
   Code2,
+  Database,
   FileText,
   FolderGit2,
   FolderKanban,
@@ -216,6 +217,15 @@ export function AdminLayout() {
               { to: '/admin/roles', label: t.admin.roles, icon: <Shield /> }
             ),
             ...when(isSuper, { to: '/admin/audit', label: t.audit.title, icon: <ScrollText /> }),
+            // Only in development: features.demoData is false in a production
+            // build, so this link cannot appear on the live site even for the
+            // owner. Super admin as well, because in development the staff
+            // accounts are real accounts.
+            ...when(features.demoData && isSuper, {
+              to: '/admin/demo',
+              label: t.demo.title,
+              icon: <Database />,
+            }),
           ],
         },
       ],

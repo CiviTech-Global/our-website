@@ -1998,6 +1998,25 @@ const es: PartialTranslations = {
     radiusKm: 'Radio (km)',
     distanceAway: 'a {km} km',
   },
+  demo: {
+    title: 'Datos de demostración',
+    subtitle: 'Cree y elimine datos de demostración para ver cómo son realmente las páginas.',
+    devOnly: 'Esta herramienta solo está disponible en desarrollo.',
+    seed: 'Crear datos de demostración',
+    clear: 'Eliminar datos de demostración',
+    refresh: 'Actualizar',
+    seeding: 'Creando…',
+    clearing: 'Eliminando…',
+    seeded: 'Datos de demostración creados.',
+    cleared: 'Datos de demostración eliminados.',
+    nothing: 'Ahora mismo no hay datos de demostración.',
+    batches: 'Lotes',
+    rows: '{count} filas',
+    confirmClear: 'Esto elimina todo lo que la herramienta creó. Los datos reales no se tocan.',
+    warning: 'La eliminación solo retira las filas que creó esta herramienta. El catálogo de seguros y las cuentas reales quedan intactos.',
+    accounts: 'Cuentas de vendedor de demostración: seller1@demo.invalid a seller5@demo.invalid — contraseña: demo-password',
+    location: 'Las tiendas de demostración se sitúan en Qazvin.',
+  },
 };
 
 export default es;

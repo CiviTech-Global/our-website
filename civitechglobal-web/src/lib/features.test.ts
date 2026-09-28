@@ -29,6 +29,13 @@ describe('client feature flags', () => {
   it('exposes flags as a frozen-shaped constant object', () => {
     // A mutable flag object invites somebody to flip it at runtime to "test
     // something", which then ships.
-    expect(Object.keys(features)).toEqual(['tradeMaster', 'tradeMasterOrders']);
+    expect(Object.keys(features)).toEqual(['tradeMaster', 'tradeMasterOrders', 'demoData']);
+  });
+
+  it('has the demo panel on outside a production build', () => {
+    // `import.meta.env.PROD` is false under vitest, so this is the development
+    // answer. This flag only hides the navigation link; that the page is absent
+    // from a production bundle is a property of App.tsx, checked against dist.
+    expect(features.demoData).toBe(true);
   });
 });

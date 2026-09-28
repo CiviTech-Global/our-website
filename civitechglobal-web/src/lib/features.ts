@@ -45,4 +45,19 @@ export const features = {
    * environment where this should be on by default, including development.
    */
   tradeMasterOrders: flag(import.meta.env.VITE_FEATURE_TRADEMASTER_ORDERS, false),
+
+  /**
+   * The demo-data panel: fill the site with example records, and empty it again.
+   *
+   * No environment override, unlike the two above: there is no production where
+   * a button that empties the database should appear, and a variable is a way
+   * to be wrong about that. The server agrees and answers 404 outside
+   * development.
+   *
+   * This flag governs the navigation link. It does NOT remove the page from the
+   * bundle — see the note at the top of this file for why a flag cannot. The
+   * route in App.tsx does that separately, by making the component itself null
+   * in a production build.
+   */
+  demoData: !import.meta.env.PROD,
 } as const;

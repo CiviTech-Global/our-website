@@ -1994,6 +1994,25 @@ const de: PartialTranslations = {
     radiusKm: 'Radius (km)',
     distanceAway: '{km} km entfernt',
   },
+  demo: {
+    title: 'Demodaten',
+    subtitle: 'Demodaten anlegen und entfernen, um zu sehen, wie die Seiten wirklich aussehen.',
+    devOnly: 'Dieses Werkzeug gibt es nur in der Entwicklung.',
+    seed: 'Demodaten anlegen',
+    clear: 'Demodaten entfernen',
+    refresh: 'Aktualisieren',
+    seeding: 'Wird angelegt …',
+    clearing: 'Wird entfernt …',
+    seeded: 'Demodaten angelegt.',
+    cleared: 'Demodaten entfernt.',
+    nothing: 'Derzeit gibt es keine Demodaten.',
+    batches: 'Durchläufe',
+    rows: '{count} Zeilen',
+    confirmClear: 'Entfernt alles, was dieses Werkzeug angelegt hat. Echte Daten bleiben unberührt.',
+    warning: 'Entfernt werden nur Zeilen, die dieses Werkzeug angelegt hat. Der Versicherungskatalog und echte Konten bleiben unberührt.',
+    accounts: 'Demo-Verkaufskonten: seller1@demo.invalid bis seller5@demo.invalid — Passwort: demo-password',
+    location: 'Die Demoläden liegen in Qazvin.',
+  },
 };
 
 export default de;

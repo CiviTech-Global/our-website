@@ -2004,6 +2004,25 @@ const tr: PartialTranslations = {
     radiusKm: 'Yarıçap (km)',
     distanceAway: '{km} km uzakta',
   },
+  demo: {
+    title: 'Örnek veriler',
+    subtitle: 'Sayfaların gerçekte nasıl göründüğünü görmek için örnek veri oluşturun ve silin.',
+    devOnly: 'Bu araç yalnızca geliştirme ortamında kullanılabilir.',
+    seed: 'Örnek veri oluştur',
+    clear: 'Örnek verileri sil',
+    refresh: 'Yenile',
+    seeding: 'Oluşturuluyor…',
+    clearing: 'Siliniyor…',
+    seeded: 'Örnek veriler oluşturuldu.',
+    cleared: 'Örnek veriler silindi.',
+    nothing: 'Şu anda örnek veri yok.',
+    batches: 'Gruplar',
+    rows: '{count} satır',
+    confirmClear: 'Bu araç tarafından oluşturulan her şey silinir. Gerçek verilere dokunulmaz.',
+    warning: 'Silme yalnızca bu aracın oluşturduğu satırları kaldırır. Sigorta kataloğu ve gerçek hesaplar dokunulmadan kalır.',
+    accounts: 'Örnek satıcı hesapları: seller1@demo.invalid – seller5@demo.invalid — parola: demo-password',
+    location: 'Örnek dükkânlar Qazvin şehrine yerleştirilir.',
+  },
 };
 
 export default tr;

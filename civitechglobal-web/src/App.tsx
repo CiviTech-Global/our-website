@@ -110,6 +110,18 @@ const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
 const ApplicationQueuePage = lazy(() => import('@/pages/admin/ApplicationQueuePage'));
 const ProjectQueuePage = lazy(() => import('@/pages/admin/ProjectQueuePage'));
 const BidQueuePage = lazy(() => import('@/pages/admin/BidQueuePage'));
+/**
+ * Null in a production build, so the page is not merely unreachable there but
+ * absent from the bundle.
+ *
+ * `import.meta.env.PROD` is substituted literally by Vite, so this folds to
+ * `null`, the dynamic import goes with it and Rollup emits no chunk. A plain
+ * `lazy(...)` behind a runtime flag does not do that: the call is a side
+ * effect Rollup keeps, and the chunk ships — measured, because that is exactly
+ * what the first version of this did. Worth the odd shape here and nowhere
+ * else: this page's buttons delete rows.
+ */
+const DemoDataPage = import.meta.env.PROD ? null : lazy(() => import('@/pages/admin/DemoDataPage'));
 
 function RouteLoadingFallback() {
   return (
@@ -810,6 +822,27 @@ export default function App() {
             </RequirePermission>
           }
         />
+        {/*
+          Demo data: fill the site with example records, or empty it again.
+
+          The route exists only if the component does — see above, where it is
+          null in a production build. superAdminOnly then keeps it to the owner
+          of the site in development, where staff accounts are real accounts
+          too. The server refuses everybody else regardless, and answers 404
+          rather than 403 outside development.
+        */}
+        {DemoDataPage && (
+          <Route
+            path="demo"
+            element={
+              <RequirePermission superAdminOnly>
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <DemoDataPage />
+                </Suspense>
+              </RequirePermission>
+            }
+          />
+        )}
       </Route>
       </Routes>
     </Suspense>

@@ -1994,6 +1994,25 @@ const fr: PartialTranslations = {
     radiusKm: 'Rayon (km)',
     distanceAway: 'à {km} km',
   },
+  demo: {
+    title: 'Données de démonstration',
+    subtitle: 'Créer et supprimer des données de démonstration, pour voir à quoi ressemblent vraiment les pages.',
+    devOnly: 'Cet outil n’existe qu’en développement.',
+    seed: 'Créer les données',
+    clear: 'Supprimer les données',
+    refresh: 'Actualiser',
+    seeding: 'Création…',
+    clearing: 'Suppression…',
+    seeded: 'Données de démonstration créées.',
+    cleared: 'Données de démonstration supprimées.',
+    nothing: 'Il n’y a aucune donnée de démonstration pour l’instant.',
+    batches: 'Lots',
+    rows: '{count} lignes',
+    confirmClear: 'Supprime tout ce que cet outil a créé. Les données réelles ne sont pas touchées.',
+    warning: 'La suppression ne retire que les lignes créées par cet outil. Le catalogue d’assurance et les comptes réels restent intacts.',
+    accounts: 'Comptes vendeurs de démonstration : seller1@demo.invalid à seller5@demo.invalid — mot de passe : demo-password',
+    location: 'Les boutiques de démonstration sont placées à Qazvin.',
+  },
 };
 
 export default fr;

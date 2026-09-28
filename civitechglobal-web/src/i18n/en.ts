@@ -2177,6 +2177,25 @@ const en: typeof fa = {
     radiusKm: 'Radius (km)',
     distanceAway: '{km} km away',
   },
+  demo: {
+    title: 'Demo data',
+    subtitle: 'Create and remove demonstration data, to see what the pages really look like.',
+    devOnly: 'This tool is only available in development.',
+    seed: 'Create demo data',
+    clear: 'Remove demo data',
+    refresh: 'Refresh',
+    seeding: 'Creating…',
+    clearing: 'Removing…',
+    seeded: 'Demo data created.',
+    cleared: 'Demo data removed.',
+    nothing: 'There is no demo data at the moment.',
+    batches: 'Batches',
+    rows: '{count} rows',
+    confirmClear: 'This removes everything the tool created. Real data is left alone.',
+    warning: 'Removal takes only the rows this tool created. The insurance catalogue and real accounts are untouched.',
+    accounts: 'Demo seller accounts: seller1@demo.invalid to seller5@demo.invalid — password: demo-password',
+    location: 'Demo shops are placed in Qazvin.',
+  },
 };
 
 export default en;
