@@ -87,7 +87,8 @@ function normalize(input: Partial<ProductInput>): Partial<ProductInput> {
 }
 
 export function imageUrl(id: string): string {
-  return `/api/v1/trademaster/products/images/${id}`;
+  // Relative to the API root. See the note on logoUrl in the shop service.
+  return `/trademaster/products/images/${id}`;
 }
 
 /**
@@ -408,6 +409,22 @@ export async function updateImageCaption(userId: string, imageId: string, captio
  * the review desk. `includeUnpublished` is the second case: a reviewer has to
  * see the picture before anybody has approved it.
  */
+/**
+ * A picture on the owner's own product, published or not.
+ *
+ * Same reason as getOwnLogo: the screen where a seller manages pictures is the
+ * screen where the product is still a draft, so the public route answers 404
+ * for every one of them.
+ */
+export async function getOwnImage(userId: string, imageId: string) {
+  const image = await prisma.productImage.findFirst({
+    where: { id: imageId, product: { business: { ownerId: userId } } },
+    select: { storedName: true, originalName: true, mimeType: true },
+  });
+  if (!image) throw new AppError('این تصویر پیدا نشد.', 404);
+  return image;
+}
+
 export async function getImage(imageId: string, includeUnpublished = false) {
   const image = await prisma.productImage.findFirst({
     where: {
@@ -661,7 +678,7 @@ export async function getPublicProduct(shopSlug: string, productSlug: string) {
     images: images.map((image) => ({ ...image, url: imageUrl(image.id) })),
     shop: {
       ...shop,
-      logoUrl: logoStoredName ? `/api/v1/trademaster/shops/${business.id}/logo` : null,
+      logoUrl: logoStoredName ? `/trademaster/shops/${business.id}/logo` : null,
     },
   };
 }

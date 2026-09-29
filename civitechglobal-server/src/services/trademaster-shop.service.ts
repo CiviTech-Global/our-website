@@ -170,7 +170,12 @@ async function storeLogo(file: IncomingFile | null) {
 }
 
 export function logoUrl(id: string, storedName: string | null): string | null {
-  return storedName ? `/api/v1/trademaster/shops/${id}/logo` : null;
+  // Relative to the API root, like every other asset path here — see
+  // books.service and showcase.service. The browser puts the base back on
+  // (apiAssetSrc). Written absolute, it came out doubled as /api/api/v1/…
+  // once the base was prepended, and every TradeMaster picture on the site
+  // showed its alt text instead.
+  return storedName ? `/trademaster/shops/${id}/logo` : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -641,6 +646,30 @@ export async function getPublicShop(slug: string) {
  * where the picture has to be visible before anybody has approved it. An
  * unpublished shop's logo is as private as the rest of the row.
  */
+/**
+ * The owner's own logo, whatever the review desk has decided.
+ *
+ * The public route serves an approved shop's logo and nothing else, which is
+ * right — but it meant a seller could not see the logo they had just uploaded
+ * until somebody approved the shop. A blank where the picture should be reads
+ * as "it did not save", and the obvious next move is to upload it again.
+ *
+ * Scoped by owner rather than reusing the staff route: a seller may see their
+ * own drafts and nobody else's.
+ */
+export async function getOwnLogo(userId: string, shopId: string) {
+  const shop = await prisma.business.findFirst({
+    where: { id: shopId, ownerId: userId },
+    select: { logoStoredName: true, logoOriginalName: true, logoMimeType: true },
+  });
+  if (!shop?.logoStoredName) throw new AppError('تصویری برای این فروشگاه ثبت نشده است.', 404);
+  return {
+    storedName: shop.logoStoredName,
+    originalName: shop.logoOriginalName ?? 'logo',
+    mimeType: shop.logoMimeType ?? 'application/octet-stream',
+  };
+}
+
 export async function getLogo(id: string, includeUnpublished = false) {
   const shop = await prisma.business.findFirst({
     where: { id, ...(includeUnpublished ? {} : PUBLIC_LISTING_WHERE) },

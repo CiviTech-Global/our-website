@@ -226,6 +226,21 @@ router.post(
   })
 );
 
+/**
+ * The owner's own logo, at any moment in its life.
+ *
+ * Declared before '/me/shops/:id' would ever be reached for it, and separate
+ * from the public '/shops/:id/logo', which serves approved shops only.
+ */
+router.get(
+  '/me/shops/:id/logo',
+  authenticate,
+  wrap(async (req, res) => {
+    const image = await shops.getOwnLogo(req.user!.userId, param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  })
+);
+
 router.post(
   '/me/shops/:id/withdraw',
   authenticate,
@@ -434,6 +449,15 @@ router.post(
   wrap(async (req, res) => {
     const result = await products.submitProduct(req.user!.userId, param(req, 'id'));
     successResponse(res, serialize(result), 'کالا برای بررسی ارسال شد.');
+  })
+);
+
+router.get(
+  '/me/products/images/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const image = await products.getOwnImage(req.user!.userId, param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
   })
 );
 

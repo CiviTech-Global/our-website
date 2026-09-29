@@ -39,6 +39,7 @@ import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import { StaffImage } from '@/components/ui/StaffImage';
 import { TextArea } from '@/components/ui/TextArea';
 import type { OwnProduct } from '@/types/trademaster';
 
@@ -311,20 +312,25 @@ export default function ShopProductsPage() {
         {list.items.map((product) => (
           <li key={product.id}>
             <Card className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              {product.coverUrl ? (
-                <img
-                  src={product.coverUrl}
-                  alt={product.title}
-                  className="size-16 shrink-0 rounded-lg object-cover"
-                />
-              ) : (
+              {/* The owner's own route, for the same reason as the shop
+                  logo: the screen where a seller manages pictures is the
+                  screen where the product is still a draft, and the public
+                  route answers 404 for every one of those. */}
+              <StaffImage
+                path={
+                  product.images[0] ? `/trademaster/me/products/images/${product.images[0].id}` : null
+                }
+                alt={product.title}
+                className="size-16 shrink-0 rounded-lg object-cover"
+                fallback={
                 <div
                   className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-app-surface-2 text-app-text-3"
                   aria-hidden="true"
                 >
-                  <ImageOff className="size-6" />
-                </div>
-              )}
+                    <ImageOff className="size-6" />
+                  </div>
+                }
+              />
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -536,10 +542,15 @@ export default function ShopProductsPage() {
               <ul className="mb-3 flex flex-wrap gap-2">
                 {live.images.map((image) => (
                   <li key={image.id} className="relative w-28">
-                    <img
-                      src={image.url}
+                    <StaffImage
+                      path={`/trademaster/me/products/images/${image.id}`}
                       alt={image.caption || live.title}
                       className="size-20 rounded-lg object-cover"
+                      fallback={
+                        <div className="flex size-20 items-center justify-center rounded-lg bg-app-surface-2 text-app-text-3">
+                          <ImageOff className="size-5" aria-hidden="true" />
+                        </div>
+                      }
                     />
                     <button
                       type="button"

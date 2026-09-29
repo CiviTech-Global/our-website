@@ -34,6 +34,7 @@ import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import { StaffImage } from '@/components/ui/StaffImage';
 import { TextArea } from '@/components/ui/TextArea';
 import type { ModerationStatus, OwnShop } from '@/types/trademaster';
 
@@ -330,20 +331,23 @@ export default function MyShopsPage() {
         {list.items.map((shop) => (
           <li key={shop.id}>
             <Card className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              {shop.logoUrl ? (
-                <img
-                  src={shop.logoUrl}
-                  alt={shop.name}
-                  className="size-16 shrink-0 rounded-lg object-cover"
-                />
-              ) : (
+              {/* The owner's own route, fetched with the session. The public
+                  one serves approved shops only, so a seller's own logo was
+                  a broken image for as long as the shop sat in review — which
+                  reads as "it did not save", and invites uploading it again. */}
+              <StaffImage
+                path={shop.logoUrl ? `/trademaster/me/shops/${shop.id}/logo` : null}
+                alt={shop.name}
+                className="size-16 shrink-0 rounded-lg object-cover"
+                fallback={
                 <div
                   className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-app-surface-2 text-app-text-3"
                   aria-hidden="true"
                 >
-                  <Store className="size-7" />
-                </div>
-              )}
+                    <Store className="size-7" />
+                  </div>
+                }
+              />
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
