@@ -10,7 +10,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
 import { useToast } from '@/contexts/ToastContext';
-import { formatDate } from '@/i18n/utils';
+import { formatDate, toPersianDigits } from '@/i18n/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -69,17 +69,23 @@ export default function MessagesPage() {
   const { showToast } = useToast();
   const qc = useQueryClient();
 
-  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: 'ALL' } });
+  const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: 'ALL', unread: '' } });
   const status = controls.filters.status as TicketStatus | 'ALL';
+  const unreadOnly = controls.filters.unread === 'true';
+  const num = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
   const { data, isLoading } = useQuery({
-    queryKey: ['contact', 'inbox', controls.page, status, controls.search],
+    queryKey: ['contact', 'inbox', controls.page, status, unreadOnly, controls.search],
     queryFn: async () => {
       const res = await api.get<Inbox>('/contact', {
         params: {
           page: controls.page,
           pageSize: PAGE_SIZE,
           status: status === 'ALL' ? undefined : status,
+          // Sent only when it is on. The server reads this as a boolean and
+          // "false" is a string, so passing it always would filter the inbox
+          // down to nothing the moment somebody turned it off.
+          unread: unreadOnly ? 'true' : undefined,
           search: controls.search || undefined,
         },
       });
@@ -107,7 +113,23 @@ export default function MessagesPage() {
         total={data?.total}
         isLoading={isLoading}
         filters={
-          <SegmentedControl<TicketStatus | 'ALL'>
+          <>
+            {/* The first thing anybody wants on opening an inbox, and the
+                server has always accepted it. The count is the reason to
+                press it, so it is on the button. */}
+            <Button
+              type="button"
+              variant={unreadOnly ? 'primary' : 'outline'}
+              size="sm"
+              aria-pressed={unreadOnly}
+              onClick={() => controls.setFilter('unread', unreadOnly ? '' : 'true')}
+            >
+              <MailOpen className="size-4" aria-hidden="true" />
+              {t.contact.inboxUnreadOnly}
+              {data && data.unread > 0 ? ` (${num(data.unread)})` : ''}
+            </Button>
+
+            <SegmentedControl<TicketStatus | 'ALL'>
             label={t.app.filterByStatus}
             value={status}
             onChange={(value) => controls.setFilter('status', value)}
@@ -121,7 +143,8 @@ export default function MessagesPage() {
                 count: s === 'OPEN' && data && data.open > 0 ? data.open : undefined,
               })),
             ]}
-          />
+            />
+          </>
         }
       />
 
