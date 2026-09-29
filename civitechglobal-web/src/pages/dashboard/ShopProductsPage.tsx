@@ -658,24 +658,27 @@ export default function ShopProductsPage() {
               onSubmit={(event) => void handleAddVariant(event)}
               className="grid gap-3 sm:grid-cols-2"
             >
-              <FormField label={t.trademaster.variantLabel} hint={t.trademaster.variantLabelHint}>
+              <FormField htmlFor="variant-label" label={t.trademaster.variantLabel} hint={t.trademaster.variantLabelHint}>
                 <Input
+                  id="variant-label"
                   value={variant.label}
                   onChange={(e) => setVariant((prev) => ({ ...prev, label: e.target.value }))}
                   required
                 />
               </FormField>
 
-              <FormField label={t.trademaster.variantSku}>
+              <FormField htmlFor="variant-sku" label={t.trademaster.variantSku}>
                 <Input
+                  id="variant-sku"
                   value={variant.sku}
                   onChange={(e) => setVariant((prev) => ({ ...prev, sku: e.target.value }))}
                   dir="ltr"
                 />
               </FormField>
 
-              <FormField label={t.trademaster.variantPrice}>
+              <FormField htmlFor="variant-price" label={t.trademaster.variantPrice}>
                 <Input
+                  id="variant-price"
                   value={variant.price}
                   onChange={(e) => setVariant((prev) => ({ ...prev, price: e.target.value }))}
                   inputMode="numeric"
@@ -683,8 +686,9 @@ export default function ShopProductsPage() {
                 />
               </FormField>
 
-              <FormField label={t.trademaster.variantStock}>
+              <FormField htmlFor="variant-stock" label={t.trademaster.variantStock}>
                 <Input
+                  id="variant-stock"
                   value={variant.stock}
                   onChange={(e) => setVariant((prev) => ({ ...prev, stock: e.target.value }))}
                   inputMode="numeric"
