@@ -557,6 +557,9 @@ export default function ShopProductsPage() {
                       defaultValue={image.caption ?? ''}
                       aria-label={t.trademaster.imageCaption}
                       placeholder={t.trademaster.imageCaption}
+                      // Says it becomes the picture's alt text, which is the
+                      // reason to bother writing one.
+                      title={t.trademaster.imageCaptionHint}
                       maxLength={200}
                       className="mt-1 h-7 text-caption"
                       onBlur={(event) => {
