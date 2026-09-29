@@ -213,33 +213,37 @@ export default function CartPage() {
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label={t.trademaster.recipientName}>
+          <FormField htmlFor="cart-recipient-name" label={t.trademaster.recipientName}>
             <Input
+              id="cart-recipient-name"
               value={delivery.recipientName}
               onChange={(e) => set('recipientName')(e.target.value)}
               required
             />
           </FormField>
-          <FormField label={t.trademaster.recipientPhone}>
+          <FormField htmlFor="cart-recipient-phone" label={t.trademaster.recipientPhone}>
             <Input
+              id="cart-recipient-phone"
               value={delivery.recipientPhone}
               onChange={(e) => set('recipientPhone')(e.target.value)}
               dir="ltr"
               required
             />
           </FormField>
-          <FormField label={t.trademaster.province}>
+          <FormField htmlFor="cart-province" label={t.trademaster.province}>
             <Input
+              id="cart-province"
               value={delivery.province}
               onChange={(e) => set('province')(e.target.value)}
               required
             />
           </FormField>
-          <FormField label={t.trademaster.city}>
-            <Input value={delivery.city} onChange={(e) => set('city')(e.target.value)} required />
+          <FormField htmlFor="cart-city" label={t.trademaster.city}>
+            <Input id="cart-city" value={delivery.city} onChange={(e) => set('city')(e.target.value)} required />
           </FormField>
-          <FormField label={t.trademaster.postalCode}>
+          <FormField htmlFor="cart-postal-code" label={t.trademaster.postalCode}>
             <Input
+              id="cart-postal-code"
               value={delivery.postalCode}
               onChange={(e) => set('postalCode')(e.target.value)}
               dir="ltr"
@@ -247,8 +251,9 @@ export default function CartPage() {
           </FormField>
         </div>
 
-        <FormField label={t.trademaster.address} className="mt-4">
+        <FormField htmlFor="cart-address" label={t.trademaster.address} className="mt-4">
           <TextArea
+            id="cart-address"
             value={delivery.address}
             onChange={(e) => set('address')(e.target.value)}
             rows={3}
@@ -256,8 +261,9 @@ export default function CartPage() {
           />
         </FormField>
 
-        <FormField label={t.trademaster.buyerNote} className="mt-4">
+        <FormField htmlFor="cart-buyer-note" label={t.trademaster.buyerNote} className="mt-4">
           <TextArea
+            id="cart-buyer-note"
             value={delivery.buyerNote}
             onChange={(e) => set('buyerNote')(e.target.value)}
             rows={2}

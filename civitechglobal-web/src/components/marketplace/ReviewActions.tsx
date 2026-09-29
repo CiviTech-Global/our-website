@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, useId } from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { apiMessage } from '@/lib/apiMessage';
@@ -33,6 +33,9 @@ export interface ReviewActionsProps {
 export function ReviewActions({ onReview, isPending, children }: ReviewActionsProps) {
   const { t } = useLocale();
   const { showToast } = useToast();
+  // Unique per instance: a queue renders one of these per row.
+  const fieldId = useId();
+
 
   const [reviewNote, setReviewNote] = useState('');
   const [internalNote, setInternalNote] = useState('');
@@ -61,8 +64,9 @@ export function ReviewActions({ onReview, isPending, children }: ReviewActionsPr
     <div className="mt-4 flex flex-col gap-3 border-t border-app-border-light pt-4">
       {children}
 
-      <FormField label={t.market.reviewNoteLabel}>
+      <FormField htmlFor={`${fieldId}-review`} label={t.market.reviewNoteLabel}>
         <TextArea
+          id={`${fieldId}-review`}
           rows={2}
           value={reviewNote}
           onChange={(e) => setReviewNote(e.target.value)}
@@ -70,8 +74,17 @@ export function ReviewActions({ onReview, isPending, children }: ReviewActionsPr
         />
       </FormField>
 
-      <FormField label={t.market.internalNote} hint={t.market.internalNoteHint}>
-        <TextArea rows={2} value={internalNote} onChange={(e) => setInternalNote(e.target.value)} />
+      <FormField
+        htmlFor={`${fieldId}-internal`}
+        label={t.market.internalNote}
+        hint={t.market.internalNoteHint}
+      >
+        <TextArea
+          id={`${fieldId}-internal`}
+          rows={2}
+          value={internalNote}
+          onChange={(e) => setInternalNote(e.target.value)}
+        />
       </FormField>
 
       <div className="flex flex-wrap gap-2">

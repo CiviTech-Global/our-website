@@ -459,12 +459,13 @@ export default function MyShopsPage() {
         title={editing === 'new' ? t.trademaster.newShop : t.trademaster.editShop}
       >
         <form onSubmit={(event) => void handleSave(event)} className="flex flex-col gap-4">
-          <FormField label={t.trademaster.shopName}>
-            <Input value={draft.name} onChange={(e) => set('name')(e.target.value)} required />
+          <FormField htmlFor="my-shops-shop-name" label={t.trademaster.shopName}>
+            <Input id="my-shops-shop-name" value={draft.name} onChange={(e) => set('name')(e.target.value)} required />
           </FormField>
 
-          <FormField label={t.trademaster.shopSummary}>
+          <FormField htmlFor="my-shops-shop-summary" label={t.trademaster.shopSummary}>
             <TextArea
+              id="my-shops-shop-summary"
               value={draft.summary}
               onChange={(e) => set('summary')(e.target.value)}
               rows={2}
@@ -472,8 +473,9 @@ export default function MyShopsPage() {
             />
           </FormField>
 
-          <FormField label={t.trademaster.shopDescription}>
+          <FormField htmlFor="my-shops-shop-description" label={t.trademaster.shopDescription}>
             <TextArea
+              id="my-shops-shop-description"
               value={draft.description}
               onChange={(e) => set('description')(e.target.value)}
               rows={4}
@@ -496,28 +498,30 @@ export default function MyShopsPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label={t.trademaster.industry}>
-              <Input value={draft.industry} onChange={(e) => set('industry')(e.target.value)} />
+            <FormField htmlFor="my-shops-industry" label={t.trademaster.industry}>
+              <Input id="my-shops-industry" value={draft.industry} onChange={(e) => set('industry')(e.target.value)} />
             </FormField>
-            <FormField label={t.trademaster.province}>
-              <Input value={draft.province} onChange={(e) => set('province')(e.target.value)} />
+            <FormField htmlFor="my-shops-province" label={t.trademaster.province}>
+              <Input id="my-shops-province" value={draft.province} onChange={(e) => set('province')(e.target.value)} />
             </FormField>
-            <FormField label={t.trademaster.city}>
-              <Input value={draft.city} onChange={(e) => set('city')(e.target.value)} />
+            <FormField htmlFor="my-shops-city" label={t.trademaster.city}>
+              <Input id="my-shops-city" value={draft.city} onChange={(e) => set('city')(e.target.value)} />
             </FormField>
-            <FormField label={t.trademaster.phone}>
-              <Input value={draft.phone} onChange={(e) => set('phone')(e.target.value)} dir="ltr" />
+            <FormField htmlFor="my-shops-phone" label={t.trademaster.phone}>
+              <Input id="my-shops-phone" value={draft.phone} onChange={(e) => set('phone')(e.target.value)} dir="ltr" />
             </FormField>
-            <FormField label={t.trademaster.email}>
+            <FormField htmlFor="my-shops-email" label={t.trademaster.email}>
               <Input
+                id="my-shops-email"
                 type="email"
                 value={draft.email}
                 onChange={(e) => set('email')(e.target.value)}
                 dir="ltr"
               />
             </FormField>
-            <FormField label={t.trademaster.website}>
+            <FormField htmlFor="my-shops-website" label={t.trademaster.website}>
               <Input
+                id="my-shops-website"
                 type="url"
                 value={draft.website}
                 onChange={(e) => set('website')(e.target.value)}
@@ -527,8 +531,8 @@ export default function MyShopsPage() {
             </FormField>
           </div>
 
-          <FormField label={t.trademaster.address}>
-            <Input value={draft.address} onChange={(e) => set('address')(e.target.value)} />
+          <FormField htmlFor="my-shops-address" label={t.trademaster.address}>
+            <Input id="my-shops-address" value={draft.address} onChange={(e) => set('address')(e.target.value)} />
           </FormField>
 
           <fieldset className="grid gap-4 sm:grid-cols-2">
@@ -536,16 +540,18 @@ export default function MyShopsPage() {
             <p className="col-span-full text-caption text-app-text-3">
               {t.trademaster.locationHint}
             </p>
-            <FormField label={t.trademaster.latitude}>
+            <FormField htmlFor="my-shops-latitude" label={t.trademaster.latitude}>
               <Input
+                id="my-shops-latitude"
                 value={draft.latitude}
                 onChange={(e) => set('latitude')(e.target.value)}
                 inputMode="decimal"
                 dir="ltr"
               />
             </FormField>
-            <FormField label={t.trademaster.longitude}>
+            <FormField htmlFor="my-shops-longitude" label={t.trademaster.longitude}>
               <Input
+                id="my-shops-longitude"
                 value={draft.longitude}
                 onChange={(e) => set('longitude')(e.target.value)}
                 inputMode="decimal"

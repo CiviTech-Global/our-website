@@ -255,8 +255,9 @@ export default function ShopOrdersPage() {
         title={t.trademaster.confirmOrder}
       >
         <form onSubmit={(event) => void handleConfirm(event)} className="flex flex-col gap-4">
-          <FormField label={t.trademaster.shippingLabel} hint={t.market.currency}>
+          <FormField htmlFor="shop-orders-shipping-label" label={t.trademaster.shippingLabel} hint={t.market.currency}>
             <Input
+              id="shop-orders-shipping-label"
               value={shipping}
               onChange={(e) => setShipping(e.target.value)}
               inputMode="numeric"

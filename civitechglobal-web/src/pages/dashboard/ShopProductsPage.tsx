@@ -432,12 +432,13 @@ export default function ShopProductsPage() {
         title={editing === 'new' ? t.trademaster.newProduct : t.trademaster.editProduct}
       >
         <form onSubmit={(event) => void handleSave(event)} className="flex flex-col gap-4">
-          <FormField label={t.trademaster.productTitle}>
-            <Input value={draft.title} onChange={(e) => set('title')(e.target.value)} required />
+          <FormField htmlFor="shop-products-product-title" label={t.trademaster.productTitle}>
+            <Input id="shop-products-product-title" value={draft.title} onChange={(e) => set('title')(e.target.value)} required />
           </FormField>
 
-          <FormField label={t.trademaster.productSummary}>
+          <FormField htmlFor="shop-products-product-summary" label={t.trademaster.productSummary}>
             <TextArea
+              id="shop-products-product-summary"
               value={draft.summary}
               onChange={(e) => set('summary')(e.target.value)}
               rows={2}
@@ -445,8 +446,9 @@ export default function ShopProductsPage() {
             />
           </FormField>
 
-          <FormField label={t.trademaster.productDescription}>
+          <FormField htmlFor="shop-products-product-description" label={t.trademaster.productDescription}>
             <TextArea
+              id="shop-products-product-description"
               value={draft.description}
               onChange={(e) => set('description')(e.target.value)}
               rows={4}
@@ -454,8 +456,9 @@ export default function ShopProductsPage() {
           </FormField>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label={t.trademaster.category}>
+            <FormField htmlFor="shop-products-category" label={t.trademaster.category}>
               <Select
+                id="shop-products-category"
                 value={draft.categoryId}
                 onChange={(e) => set('categoryId')(e.target.value)}
               >
@@ -468,8 +471,9 @@ export default function ShopProductsPage() {
               </Select>
             </FormField>
 
-            <FormField label={t.trademaster.price} hint={t.market.currency}>
+            <FormField htmlFor="shop-products-price" label={t.trademaster.price} hint={t.market.currency}>
               <Input
+                id="shop-products-price"
                 value={draft.price}
                 onChange={(e) => set('price')(e.target.value)}
                 inputMode="numeric"
@@ -478,8 +482,9 @@ export default function ShopProductsPage() {
               />
             </FormField>
 
-            <FormField label={t.trademaster.stock}>
+            <FormField htmlFor="shop-products-stock" label={t.trademaster.stock}>
               <Input
+                id="shop-products-stock"
                 value={draft.stock}
                 onChange={(e) => set('stock')(e.target.value)}
                 inputMode="numeric"
