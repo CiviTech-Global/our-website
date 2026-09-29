@@ -368,6 +368,36 @@ export async function reopenShop(userId: string, shopId: string) {
   });
 }
 
+/**
+ * The values the board's filters may actually offer.
+ *
+ * Province and trade are free text on the shop form — there is no canonical
+ * list of either, and inventing one would mean refusing a shop in a town the
+ * list forgot. So the filters are built from what approved shops have really
+ * written, which has the useful property that no option can return nothing.
+ *
+ * Only shops the public can see, for the same reason: a trade that exists
+ * solely in an unapproved draft would otherwise appear in a dropdown and then
+ * find nothing.
+ */
+export async function listFacets() {
+  const rows = await prisma.business.findMany({
+    where: PUBLIC_LISTING_WHERE,
+    select: { province: true, industry: true },
+    distinct: ['province', 'industry'],
+  });
+
+  const unique = (values: Array<string | null>) =>
+    [...new Set(values.filter((value): value is string => Boolean(value?.trim())))].sort((a, b) =>
+      a.localeCompare(b, 'fa')
+    );
+
+  return {
+    provinces: unique(rows.map((row) => row.province)),
+    industries: unique(rows.map((row) => row.industry)),
+  };
+}
+
 export async function listOwnShops(userId: string) {
   const rows = await prisma.business.findMany({
     where: { ownerId: userId },

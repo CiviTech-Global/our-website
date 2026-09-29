@@ -143,6 +143,21 @@ const wrap =
 // Public
 // ---------------------------------------------------------------------------
 
+/**
+ * What the board's filters may offer.
+ *
+ * Cached longer than the boards themselves: the set of provinces a shop can
+ * be in changes when a new town joins the marketplace, not when a shop is
+ * edited.
+ */
+router.get(
+  '/facets',
+  publicCache({ maxAgeSeconds: 600, staleWhileRevalidateSeconds: 1800 }),
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await shops.listFacets()));
+  })
+);
+
 router.get(
   '/shops',
   publicCache({ maxAgeSeconds: 60, staleWhileRevalidateSeconds: 300 }),

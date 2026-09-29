@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { ImageOff, MapPin } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
-import { usePublicProducts, useProductCategories } from '@/api/trademaster';
+import { useShopFacets, usePublicProducts, useProductCategories } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatMoney } from '@/lib/marketplace';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
+import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import type { ProductSort, PublicProductSummary } from '@/types/trademaster';
@@ -27,6 +28,11 @@ const PAGE_SIZE = 24;
  * server enforces; nothing here needs to know that, which is the point of
  * putting it in one predicate back there.
  */
+/** Only the digits, so a typed separator or space does not become a 400. */
+function digitsOnly(value: string): string {
+  return value.replace(/[^0-9]/g, '');
+}
+
 export default function MarketProductsPage() {
   const { t } = useLocale();
   useDocumentTitle(t.trademaster.products, { description: t.trademaster.metaDescription });
@@ -35,10 +41,11 @@ export default function MarketProductsPage() {
     defaultView: 'cards',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
-    filters: { categoryId: '', inStock: '' },
+    filters: { categoryId: '', inStock: '', province: '', priceMin: '', priceMax: '' },
   });
 
   const { data: categories } = useProductCategories();
+  const { data: facets } = useShopFacets();
 
   const { data, isLoading } = usePublicProducts({
     page: controls.page,
@@ -46,6 +53,13 @@ export default function MarketProductsPage() {
     search: controls.search || undefined,
     categoryId: controls.filters.categoryId || undefined,
     inStock: controls.filters.inStock === 'true' ? true : undefined,
+    province: controls.filters.province || undefined,
+    // Digit strings on the wire, because a toman amount outgrows what a JSON
+    // number carries. Anything the reader types that is not a digit is
+    // dropped rather than refused: a price box is not the place to argue
+    // about a stray space or a thousands separator.
+    priceMin: digitsOnly(controls.filters.priceMin) || undefined,
+    priceMax: digitsOnly(controls.filters.priceMax) || undefined,
     sort: controls.sort as ProductSort,
   });
 
@@ -88,6 +102,45 @@ export default function MarketProductsPage() {
               <option value="">{t.list.allOption}</option>
               <option value="true">{t.trademaster.inStockOnly}</option>
             </Select>
+
+            {/* From the provinces shops have really written, so no option
+                here can come back empty. A single province is not a choice,
+                so it is not offered as one. */}
+            {(facets?.provinces.length ?? 0) > 1 && (
+              <Select
+                className="w-40"
+                value={controls.filters.province}
+                aria-label={t.trademaster.filterProvince}
+                onChange={(e) => controls.setFilter('province', e.target.value)}
+              >
+                <option value="">{t.trademaster.filterAllProvinces}</option>
+                {facets?.provinces.map((province) => (
+                  <option key={province} value={province}>
+                    {province}
+                  </option>
+                ))}
+              </Select>
+            )}
+
+            <Input
+              className="w-32"
+              inputMode="numeric"
+              dir="ltr"
+              placeholder={t.trademaster.priceFrom}
+              aria-label={t.trademaster.priceFrom}
+              value={controls.filters.priceMin}
+              onChange={(e) => controls.setFilter('priceMin', e.target.value)}
+            />
+
+            <Input
+              className="w-32"
+              inputMode="numeric"
+              dir="ltr"
+              placeholder={t.trademaster.priceTo}
+              aria-label={t.trademaster.priceTo}
+              value={controls.filters.priceMax}
+              onChange={(e) => controls.setFilter('priceMax', e.target.value)}
+            />
 
             <Select
               className="w-44"

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { Eye, ImageOff, Info, Mail, MapPin, Phone, ShoppingBag, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
-import { usePublicProduct } from '@/api/trademaster';
+import { usePublicProduct, usePublicProducts } from '@/api/trademaster';
 import { useCart } from '@/lib/cart';
 import { features } from '@/lib/features';
 import { useToast } from '@/contexts/ToastContext';
@@ -13,6 +13,7 @@ import { formatMoney } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
+import { ProductCard } from './MarketProductsPage';
 import type { ProductVariant } from '@/types/trademaster';
 
 /** Below this, say how many are left rather than just "in stock". */
@@ -307,7 +308,13 @@ export default function MarketProductDetailPage() {
                   {product.shop.summary}
                 </p>
 
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {(product.shop.phone || product.shop.email) && (
+                  <p className="mt-2 text-xs font-medium text-text-tertiary">
+                    {t.trademaster.contactSeller}
+                  </p>
+                )}
+
+                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                   {[product.shop.city, product.shop.province].filter(Boolean).length > 0 && (
                     <span className="inline-flex items-center gap-1 text-text-tertiary">
                       <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
@@ -354,6 +361,42 @@ export default function MarketProductDetailPage() {
           <p className="whitespace-pre-line text-text-secondary">{product.description}</p>
         </section>
       )}
+
+      <MoreFromShop shopSlug={product.shop.slug} exceptId={product.id} />
     </div>
+  );
+}
+
+/**
+ * The rest of this seller's catalogue.
+ *
+ * A shop is the unit a buyer actually trusts here — they are choosing a
+ * potter, not a mug — and without this the only way from one of their things
+ * to the next was back out to the board and a search. Four at most: this is a
+ * footnote to the product above it, not a second board.
+ */
+function MoreFromShop({ shopSlug, exceptId }: { shopSlug: string; exceptId: string }) {
+  const { t } = useLocale();
+
+  // Five asked for, four shown: the product being read is in this shop too,
+  // so asking for exactly four would leave three whenever it comes back.
+  const { data } = usePublicProducts({ shopSlug, page: 1, pageSize: 5, sort: 'newest' });
+
+  const others = (data?.items ?? []).filter((item) => item.id !== exceptId).slice(0, 4);
+  if (others.length === 0) return null;
+
+  return (
+    <section className="mt-12">
+      <h2 className="mb-4 text-xl font-semibold text-text-primary">
+        {t.trademaster.moreFromShop}
+      </h2>
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {others.map((item) => (
+          <li key={item.id}>
+            <ProductCard product={item} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

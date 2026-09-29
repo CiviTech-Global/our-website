@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router';
 import { LocateFixed, MapPin, Package, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
-import { usePublicShops } from '@/api/trademaster';
+import { useShopFacets, usePublicShops } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
@@ -45,6 +45,8 @@ export default function ShopsPage() {
 
   const geo = useGeolocation();
   const [radiusKm, setRadiusKm] = useState(25);
+
+  const { data: facets } = useShopFacets();
 
   const near = geo.state.status === 'ready' ? geo.state : null;
 
@@ -144,15 +146,52 @@ export default function ShopsPage() {
         isLoading={isLoading}
         views={['cards', 'table']}
         filters={
-          <Select
-            className="w-48"
-            value={controls.sort}
-            aria-label={t.list.sortLabel}
-            onChange={(e) => controls.setSort(e.target.value)}
-          >
-            <option value="newest">{t.trademaster.sortNewest}</option>
-            <option value="name">{t.trademaster.sortName}</option>
-          </Select>
+          <>
+            {/* Built from the provinces and trades shops have actually
+                written, so no option here can come back empty. Hidden
+                entirely when there is only one of a kind to choose. */}
+            {(facets?.provinces.length ?? 0) > 1 && (
+              <Select
+                className="w-44"
+                value={controls.filters.province}
+                aria-label={t.trademaster.filterProvince}
+                onChange={(e) => controls.setFilter('province', e.target.value)}
+              >
+                <option value="">{t.trademaster.filterAllProvinces}</option>
+                {facets?.provinces.map((province) => (
+                  <option key={province} value={province}>
+                    {province}
+                  </option>
+                ))}
+              </Select>
+            )}
+
+            {(facets?.industries.length ?? 0) > 1 && (
+              <Select
+                className="w-44"
+                value={controls.filters.industry}
+                aria-label={t.trademaster.filterIndustry}
+                onChange={(e) => controls.setFilter('industry', e.target.value)}
+              >
+                <option value="">{t.trademaster.filterAllIndustries}</option>
+                {facets?.industries.map((industry) => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
+                ))}
+              </Select>
+            )}
+
+            <Select
+              className="w-48"
+              value={controls.sort}
+              aria-label={t.list.sortLabel}
+              onChange={(e) => controls.setSort(e.target.value)}
+            >
+              <option value="newest">{t.trademaster.sortNewest}</option>
+              <option value="name">{t.trademaster.sortName}</option>
+            </Select>
+          </>
         }
       />
 

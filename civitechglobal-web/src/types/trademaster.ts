@@ -290,6 +290,12 @@ export interface ProductReviewDetail {
   };
 }
 
+/** The values the public boards' filters may offer, as really used by shops. */
+export interface ShopFacets {
+  provinces: string[];
+  industries: string[];
+}
+
 export interface ProductCategoryNode {
   id: string;
   slug: string;

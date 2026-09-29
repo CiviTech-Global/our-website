@@ -232,6 +232,7 @@ function CategoryForm({
     name: category?.name ?? '',
     slug: category?.slug ?? '',
     parentId: category?.parentId ?? null,
+    position: category?.position,
     active: category?.active ?? true,
   });
 
@@ -299,6 +300,22 @@ function CategoryForm({
               </option>
             ))}
           </Select>
+        </FormField>
+
+        <FormField label={t.categoryDesk.position} htmlFor="category-position">
+          <Input
+            id="category-position"
+            className="ltr"
+            inputMode="numeric"
+            value={values.position ?? ''}
+            onChange={(event) => {
+              const digits = event.target.value.replace(/[^0-9]/g, '');
+              // Cleared means "leave it where it is", which on a new category
+              // is the end of its siblings — not position zero, which would
+              // silently put every new category first.
+              setValues({ ...values, position: digits === '' ? undefined : Number(digits) });
+            }}
+          />
         </FormField>
 
         <label className="flex items-center gap-2 text-body text-app-text-2">

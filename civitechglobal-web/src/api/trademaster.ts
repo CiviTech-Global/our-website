@@ -6,6 +6,7 @@ import type {
   Paged,
   ProductBoardQuery,
   ProductCategoryNode,
+  ShopFacets,
   AdminProductCategory,
   CategoryPayload,
   ProductPayload,
@@ -49,6 +50,7 @@ const keys = {
   shops: ['trademaster', 'shops'] as const,
   products: ['trademaster', 'products'] as const,
   categories: ['trademaster', 'categories'] as const,
+  facets: ['trademaster', 'facets'] as const,
   ownShops: ['trademaster', 'me', 'shops'] as const,
   ownProducts: ['trademaster', 'me', 'products'] as const,
   shopQueue: ['trademaster', 'admin', 'shops'] as const,
@@ -67,6 +69,24 @@ function multipart(payload: unknown, files: Array<[string, File]> = []): FormDat
 // ---------------------------------------------------------------------------
 // Public
 // ---------------------------------------------------------------------------
+
+/**
+ * What the boards' filters may offer.
+ *
+ * Its own query rather than part of the board's: it changes when a new town
+ * joins the marketplace, not when somebody turns a page, so refetching it with
+ * every filter change would be work for nothing.
+ */
+export function useShopFacets() {
+  return useQuery({
+    queryKey: keys.facets,
+    queryFn: async () => {
+      const res = await api.get<ShopFacets>('/trademaster/facets');
+      return res.data;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+}
 
 export function usePublicShops(query: ShopBoardQuery) {
   return useQuery({
