@@ -1,0 +1,23 @@
+# Findings reviewed on 2026-10-01 and confirmed not to be secrets.
+# Checked by matching every value in the production Ansible vault against the
+# full git history: none appears. These are illustrative values in the
+# Ansible/Semaphore guides (truncated keys, made-up tokens) and a test fixture.
+# One fingerprint per finding (commit:file:rule:line); anything not listed
+# here fails the Secret scan workflow.
+
+07fe32c791507794d8db5e2844d967bea09a075a:civitechglobal-server/src/services/auth.service.test.ts:generic-api-key:98
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:1077
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:1078
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:1079
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:1081
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:1120
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:1121
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:947
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:948
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:952
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-getting-started.md:generic-api-key:998
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:generic-api-key:215
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:generic-api-key:216
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:generic-api-key:217
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:private-key:425
+6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:private-key:443
