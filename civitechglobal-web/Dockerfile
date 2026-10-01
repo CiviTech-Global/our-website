@@ -44,16 +44,45 @@ ENV CHROME_PATH=/usr/bin/chromium-browser
 RUN npm run prerender
 
 # --- Production stage: static serving via nginx ---
-FROM nginx:1.27-alpine AS production
+#
+# Alpine plus its own nginx package, not the official nginx:*-alpine image.
+#
+# The CI vulnerability gate (CRITICAL/HIGH, fixable only) failed on every build
+# this project has ever run, and the web image was half of why. Measured with
+# the gate's own settings on 2026-10-01:
+#
+#   nginx:1.27-alpine (what this used to be)   43 findings, 2 CRITICAL
+#   nginx:1.28-alpine                          56
+#   nginx:1.29-alpine                          39
+#   nginx:1.28-alpine + apk upgrade             5 — all in nginx itself
+#   alpine:3.23 + apk add nginx + apk upgrade   0
+#
+# No nginx:*-alpine tag is clean, so bumping the tag was not the answer. The
+# last five were the giveaway: Alpine ships nginx 1.28.3-r7 while the official
+# image installs 1.28.3-r1 from nginx.org's own repository, so apk upgrade
+# cannot reach it. Taking nginx from Alpine gets the same 1.28.3 with the
+# patched package revision, and puts every package in the image under one
+# updater.
+#
+# Re-check rather than trust this: a pinned base is clean on the day it is
+# pinned and decays from then on. The gate is what notices, which is a reason
+# to keep it failing loudly rather than to lower it. 04-local-dev.md in the
+# ops notes has the command.
+FROM alpine:3.23 AS production
 
-# nginx:alpine already ships an unprivileged "nginx" user; reuse it and just
-# make sure it can read the app files and write to the paths nginx needs at
-# runtime (pid file, cache dirs) when not running as root.
+RUN apk add --no-cache nginx && apk upgrade --no-cache
+
+# The package makes the nginx user and /etc/nginx/http.d; the official image's
+# conf.d is not a path here. Logs go to the container's stdout and stderr,
+# which the official image arranges and the package does not.
 COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html
-COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chown=nginx:nginx nginx.conf /etc/nginx/http.d/default.conf
 
-RUN touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid /var/cache/nginx /etc/nginx/conf.d
+RUN rm -f /etc/nginx/http.d/default.conf.apk-new \
+    && mkdir -p /var/cache/nginx /var/lib/nginx/tmp /run/nginx /var/log/nginx \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
+    && chown -R nginx:nginx /var/cache/nginx /var/lib/nginx /run/nginx /etc/nginx/http.d
 
 USER nginx
 

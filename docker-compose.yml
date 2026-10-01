@@ -38,7 +38,11 @@ services:
     build:
       context: ./civitechglobal-server
       dockerfile: Dockerfile
-    entrypoint: ["npx", "prisma", "migrate", "deploy"]
+    # The CLI directly, not through npx. prisma is a production dependency,
+    # so it is already in the image — npx was only locating it, and needing
+    # npx is what kept the npm CLI in the runtime image. See the note in
+    # civitechglobal-server/Dockerfile.
+    entrypoint: ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
     restart: "no"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-civitech}:${POSTGRES_PASSWORD:-civitech}@postgres:5432/${POSTGRES_DB:-civitechglobal}
