@@ -25,3 +25,4 @@
 # so the parser's normalisation is a belt rather than the only thing holding
 # it up.
 *.md text eol=lf
+.gitleaksignore text eol=lf
