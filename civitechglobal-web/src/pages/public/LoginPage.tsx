@@ -100,7 +100,12 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
-  const from = (location.state as { from?: Location })?.from?.pathname;
+  // The path and its query, so a sign-in started from a filtered page or a
+  // "?new=1" link comes back to exactly that, not to its bare path.
+  const fromLocation = (location.state as { from?: Location })?.from;
+  const from = fromLocation?.pathname
+    ? `${fromLocation.pathname}${fromLocation.search ?? ''}`
+    : undefined;
 
   async function onSubmit(values: LoginFormValues) {
     setServerError(null);

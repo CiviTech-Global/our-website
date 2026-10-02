@@ -1,6 +1,6 @@
-import { lazy, Suspense, useState, type FormEvent } from 'react';
-import { Link } from 'react-router';
-import { Package, Plus, Store } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
+import { Link, useSearchParams } from 'react-router';
+import { LocateFixed, Package, Plus, Store, X } from 'lucide-react';
 import { IDLE, type UploadState } from '@/components/ui/UploadStatus';
 import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import {
@@ -8,6 +8,7 @@ import {
   useReopenShop,
   useWithdrawShop,
   useCreateShop,
+  useOwnShop,
   useOwnShops,
   useSubmitShop,
   useUpdateShop,
@@ -18,9 +19,18 @@ import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
+import { useGeolocation } from '@/lib/useGeolocation';
 import { apiMessage } from '@/lib/apiMessage';
 import { toPersianDigits } from '@/i18n/utils';
 import { moderationVariant, stateVariant } from '@/lib/marketplace';
+import {
+  EMPTY_SHOP,
+  parseCoordinate,
+  shopPayload,
+  validateShop,
+  type FieldErrors,
+  type ShopDraft,
+} from '@/lib/marketForms';
 import { features } from '@/lib/features';
 import { PageHeader } from '@/components/app/PageHeader';
 import { CoverField } from '@/components/marketplace/CoverField';
@@ -36,28 +46,13 @@ import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { StaffImage } from '@/components/ui/StaffImage';
 import { TextArea } from '@/components/ui/TextArea';
-import type { ModerationStatus, OwnShop } from '@/types/trademaster';
+import type { ModerationStatus, OwnShop, OwnShopDetail } from '@/types/trademaster';
 
 // Lazy, like every other use of the map: a seller editing their opening hours
 // should not download Leaflet to do it.
 const LocationPicker = lazy(() =>
   import('@/components/trademaster/ShopMap').then((m) => ({ default: m.LocationPicker }))
 );
-
-const EMPTY_DRAFT = {
-  name: '',
-  summary: '',
-  description: '',
-  industry: '',
-  province: '',
-  city: '',
-  address: '',
-  phone: '',
-  email: '',
-  website: '',
-  latitude: '',
-  longitude: '',
-};
 
 const PAGE_SIZE = 10;
 
@@ -69,6 +64,24 @@ const MODERATION_STATUSES: ModerationStatus[] = [
   'REJECTED',
 ];
 
+/** The saved shop, as the form's text boxes hold it. */
+function draftFrom(shop: OwnShopDetail): ShopDraft {
+  return {
+    name: shop.name,
+    summary: shop.summary,
+    description: shop.description ?? '',
+    industry: shop.industry ?? '',
+    province: shop.province ?? '',
+    city: shop.city ?? '',
+    address: shop.address ?? '',
+    phone: shop.phone ?? '',
+    email: shop.email ?? '',
+    website: shop.website ?? '',
+    latitude: shop.latitude == null ? '' : String(shop.latitude),
+    longitude: shop.longitude == null ? '' : String(shop.longitude),
+  };
+}
+
 /**
  * A seller's own shops.
  *
@@ -76,15 +89,24 @@ const MODERATION_STATUSES: ModerationStatus[] = [
  * the moderation state is visible to the person it concerns, with the
  * reviewer's note when one came back.
  *
- * Unlike the book market, verification is required of everyone here including
- * staff: a shop is a trading identity rather than a listing attributed to the
- * company, so there is no case where somebody should be able to open one
- * without having proved who they are.
+ * Verification is required of everyone here including staff: a shop is a
+ * trading identity rather than a listing attributed to the company, so there
+ * is no case where somebody should be able to open one without having proved
+ * who they are.
+ *
+ * THE FORM. An existing shop is loaded whole before the form opens — it used
+ * to be filled from the list row, which lacks the description, address, phone,
+ * email, website and location, so all of those opened blank and could be
+ * neither checked nor corrected. Every field is checked before anything is
+ * sent, with the problem shown under the field; and on an edit every field is
+ * sent, so emptying one actually removes it.
  */
 export default function MyShopsPage() {
   const { t, locale } = useLocale();
+  const hub = t.trademaster.hub;
   useDocumentTitle(t.trademaster.myShops);
   const { showToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: verification } = useOwnVerification();
   const { data: shops, isLoading } = useOwnShops();
@@ -104,75 +126,93 @@ export default function MyShopsPage() {
   const withdraw = useWithdrawShop();
 
   const [editing, setEditing] = useState<'new' | OwnShop | null>(null);
-  const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [draft, setDraft] = useState<ShopDraft>(EMPTY_SHOP);
+  const [errors, setErrors] = useState<FieldErrors<keyof ShopDraft>>({});
+  const [loadedId, setLoadedId] = useState<string | null>(null);
   const [logo, setLogo] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>(IDLE);
 
+  const editingId = editing && editing !== 'new' ? editing.id : undefined;
+  const existing = useOwnShop(editingId);
+  const geo = useGeolocation();
+
   const canPost = verification?.status === 'APPROVED';
   const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
-  const set = (name: keyof typeof draft) => (value: string) =>
+  const set = (name: keyof ShopDraft) => (value: string) => {
     setDraft((prev) => ({ ...prev, [name]: value }));
+    // The complaint goes as soon as the field is touched again; it comes back
+    // on the next save if the field is still wrong.
+    setErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
+  };
+  const errorOf = (name: keyof ShopDraft) => (errors[name] ? hub[errors[name]] : undefined);
+
+  // The whole shop, once it arrives — not before, so a slow response cannot
+  // land on top of what the seller has started typing.
+  useEffect(() => {
+    if (existing.data && editingId && loadedId !== editingId) {
+      setDraft(draftFrom(existing.data));
+      setLoadedId(editingId);
+    }
+  }, [existing.data, editingId, loadedId]);
+
+  // "Create your shop" on the join page lands here with ?new=1.
+  useEffect(() => {
+    if (searchParams.get('new') !== '1' || !canPost) return;
+    openNew();
+    const next = new URLSearchParams(searchParams);
+    next.delete('new');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, canPost]);
+
+  // The device's location, into the two boxes, when the seller asks for it.
+  const { state: geoState, clear: clearGeo } = geo;
+  useEffect(() => {
+    if (geoState.status !== 'ready') return;
+    setDraft((prev) => ({
+      ...prev,
+      latitude: geoState.latitude.toFixed(6),
+      longitude: geoState.longitude.toFixed(6),
+    }));
+    setErrors((prev) => ({ ...prev, latitude: undefined, longitude: undefined }));
+    clearGeo();
+  }, [geoState, clearGeo]);
 
   function openNew() {
-    setDraft(EMPTY_DRAFT);
+    setDraft(EMPTY_SHOP);
+    setErrors({});
+    setLoadedId(null);
     setLogo(null);
     setUploadState(IDLE);
     setEditing('new');
   }
 
   function openEdit(shop: OwnShop) {
-    // Only the fields the list carries; the rest are filled on the server and
-    // left untouched by a PATCH that does not mention them.
-    setDraft({
-      ...EMPTY_DRAFT,
-      name: shop.name,
-      summary: shop.summary,
-      industry: shop.industry ?? '',
-      province: shop.province ?? '',
-      city: shop.city ?? '',
-    });
+    setDraft(EMPTY_SHOP);
+    setErrors({});
+    setLoadedId(null);
     setLogo(null);
     setUploadState(IDLE);
     setEditing(shop);
   }
 
-  /**
-   * A coordinate is only sent when both halves are present.
-   *
-   * Half a coordinate puts a pin at (0, 0), in the Gulf of Guinea, which is
-   * where every half-filled location ends up. The server refuses it too; this
-   * just means the seller finds out before the upload rather than after.
-   */
-  function coordinates() {
-    const lat = draft.latitude.trim();
-    const lng = draft.longitude.trim();
-    if (!lat || !lng) return {};
-    return { latitude: Number(lat), longitude: Number(lng) };
+  function closeForm() {
+    setEditing(null);
+    setErrors({});
   }
 
   async function handleSave(event?: FormEvent) {
     event?.preventDefault();
 
-    const lat = draft.latitude.trim();
-    const lng = draft.longitude.trim();
-    if (Boolean(lat) !== Boolean(lng)) {
-      showToast(t.trademaster.locationHint, 'error');
+    const found = validateShop(draft);
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      showToast(hub.fixErrors, 'error');
       return;
     }
 
-    const payload = {
-      name: draft.name.trim(),
-      summary: draft.summary.trim(),
-      description: draft.description.trim() || undefined,
-      industry: draft.industry.trim() || undefined,
-      province: draft.province.trim() || undefined,
-      city: draft.city.trim() || undefined,
-      address: draft.address.trim() || undefined,
-      phone: draft.phone.trim() || undefined,
-      email: draft.email.trim() || undefined,
-      website: draft.website.trim() || undefined,
-      ...coordinates(),
-    };
+    const isEdit = editing !== 'new';
+    const payload = shopPayload(draft, isEdit);
 
     const sent = logo ?? null;
     const onProgress = (percent: number) =>
@@ -199,7 +239,7 @@ export default function MyShopsPage() {
         showToast(t.trademaster.shopSaved, 'success');
       }
       setUploadState(IDLE);
-      setEditing(null);
+      closeForm();
     } catch (error) {
       // Two audiences, one failure: the sentence goes in the toast, and the
       // status block keeps the code and the server's own words within reach of
@@ -227,32 +267,18 @@ export default function MyShopsPage() {
     }
   }
 
-  async function handleClose(shop: OwnShop) {
+  async function run(action: Promise<unknown>, message: string) {
     try {
-      await close.mutateAsync(shop.id);
-      showToast(t.trademaster.shopClosed, 'success');
+      await action;
+      showToast(message, 'success');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
     }
   }
 
-  async function handleWithdraw(shop: OwnShop) {
-    try {
-      await withdraw.mutateAsync(shop.id);
-      showToast(t.trademaster.withdrawn, 'success');
-    } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
-    }
-  }
-
-  async function handleReopen(shop: OwnShop) {
-    try {
-      await reopen.mutateAsync(shop.id);
-      showToast(t.trademaster.shopReopened, 'success');
-    } catch (error) {
-      showToast(apiMessage(error, t.common.error), 'error');
-    }
-  }
+  const formLoading = editingId !== undefined && loadedId !== editingId;
+  const lat = parseCoordinate(draft.latitude, 90);
+  const lng = parseCoordinate(draft.longitude, 180);
 
   return (
     <div className="flex flex-col gap-4">
@@ -333,17 +359,16 @@ export default function MyShopsPage() {
             <Card className="flex flex-col gap-3 sm:flex-row sm:items-start">
               {/* The owner's own route, fetched with the session. The public
                   one serves approved shops only, so a seller's own logo was
-                  a broken image for as long as the shop sat in review — which
-                  reads as "it did not save", and invites uploading it again. */}
+                  a broken image for as long as the shop sat in review. */}
               <StaffImage
                 path={shop.logoUrl ? `/trademaster/me/shops/${shop.id}/logo` : null}
                 alt={shop.name}
                 className="size-16 shrink-0 rounded-lg object-cover"
                 fallback={
-                <div
-                  className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-app-surface-2 text-app-text-3"
-                  aria-hidden="true"
-                >
+                  <div
+                    className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-app-surface-2 text-app-text-3"
+                    aria-hidden="true"
+                  >
                     <Store className="size-7" />
                   </div>
                 }
@@ -378,30 +403,31 @@ export default function MyShopsPage() {
                   </p>
                 )}
 
+                {/* What happens next, said where the seller is looking. */}
+                {shop.moderationStatus === 'APPROVED' && (
+                  <p className="mt-2 text-caption text-app-text-3">{hub.approvedShopHint}</p>
+                )}
+                {shop.moderationStatus === 'PENDING_REVIEW' && (
+                  <p className="mt-2 text-caption text-app-text-3">{hub.pendingShopHint}</p>
+                )}
                 {/* Said here rather than in a confirmation, because it stays
                     true for as long as the shop is shut and the seller may
                     well be looking at this screen days later wondering why
-                    their products vanished. */}
+                    their listings vanished. */}
                 {shop.state === 'CLOSED' && (
                   <p className="mt-2 text-caption text-app-text-3">{t.trademaster.closedHint}</p>
                 )}
               </div>
 
               <div className="flex shrink-0 flex-wrap gap-2">
-                {/* Products need an approved shop to hang off, so the link is
+                {/* Listings need an approved shop to hang off, so the link is
                     only useful once there is one. */}
                 {shop.moderationStatus === 'APPROVED' && (
                   <Link to={`/dashboard/shops/${shop.id}/products`}>
-                    <Button variant="outline" size="sm">
-                      {t.trademaster.products}
-                    </Button>
+                    <Button size="sm">{hub.manageListings}</Button>
                   </Link>
                 )}
 
-                {/* Closing a gap: the shop-orders screen and its route existed
-                    with nothing linking to them, reachable only by typing the
-                    URL. Behind the orders flag, so it appears when buying
-                    does. */}
                 {features.tradeMasterOrders && shop.moderationStatus === 'APPROVED' && (
                   <Link to={`/dashboard/shops/${shop.id}/orders`}>
                     <Button variant="outline" size="sm">
@@ -422,24 +448,34 @@ export default function MyShopsPage() {
                   </>
                 )}
 
-                {/* The way back to editing. Offered for anything the desk has
-                    seen — waiting or approved — because both are states an
-                    owner may want to correct, and neither can be edited in
-                    place without changing what a reviewer looked at. */}
+                {/* The way back to editing the shop itself. Its listings are
+                    managed directly and do not need this. */}
                 {(shop.moderationStatus === 'APPROVED' ||
                   shop.moderationStatus === 'PENDING_REVIEW') && (
                   <Button
                     variant="outline"
                     size="sm"
                     title={t.trademaster.withdrawHint}
-                    onClick={() => void handleWithdraw(shop)}
+                    onClick={() => {
+                      if (
+                        shop.moderationStatus === 'APPROVED' &&
+                        !window.confirm(hub.withdrawShopConfirm)
+                      ) {
+                        return;
+                      }
+                      void run(withdraw.mutateAsync(shop.id), t.trademaster.withdrawn);
+                    }}
                   >
                     {t.trademaster.withdraw}
                   </Button>
                 )}
 
                 {shop.state === 'OPEN' && shop.moderationStatus === 'APPROVED' && (
-                  <Button variant="ghost" size="sm" onClick={() => void handleClose(shop)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void run(close.mutateAsync(shop.id), t.trademaster.shopClosed)}
+                  >
                     {t.trademaster.closeShop}
                   </Button>
                 )}
@@ -447,7 +483,10 @@ export default function MyShopsPage() {
                 {/* Only from CLOSED. An EXPIRED shop is not the seller's to
                     revive, and the server says so. */}
                 {shop.state === 'CLOSED' && (
-                  <Button size="sm" onClick={() => void handleReopen(shop)}>
+                  <Button
+                    size="sm"
+                    onClick={() => void run(reopen.mutateAsync(shop.id), t.trademaster.shopReopened)}
+                  >
                     {t.trademaster.reopenShop}
                   </Button>
                 )}
@@ -459,142 +498,250 @@ export default function MyShopsPage() {
 
       <Modal
         isOpen={editing !== null}
-        onClose={() => setEditing(null)}
+        onClose={closeForm}
         title={editing === 'new' ? t.trademaster.newShop : t.trademaster.editShop}
       >
-        <form onSubmit={(event) => void handleSave(event)} className="flex flex-col gap-4">
-          <FormField htmlFor="my-shops-shop-name" label={t.trademaster.shopName}>
-            <Input id="my-shops-shop-name" value={draft.name} onChange={(e) => set('name')(e.target.value)} required />
-          </FormField>
-
-          <FormField htmlFor="my-shops-shop-summary" label={t.trademaster.shopSummary}>
-            <TextArea
-              id="my-shops-shop-summary"
-              value={draft.summary}
-              onChange={(e) => set('summary')(e.target.value)}
-              rows={2}
-              required
-            />
-          </FormField>
-
-          <FormField htmlFor="my-shops-shop-description" label={t.trademaster.shopDescription}>
-            <TextArea
-              id="my-shops-shop-description"
-              value={draft.description}
-              onChange={(e) => set('description')(e.target.value)}
-              rows={4}
-            />
-          </FormField>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-label text-app-text-2">{t.trademaster.logo}</span>
-            <CoverField
-              value={logo}
-              previewUrl={editing !== null && editing !== 'new' ? editing.logoUrl : null}
-              onChange={(file) => {
-                setLogo(file);
-                setUploadState(IDLE);
-              }}
-              uploadState={uploadState}
-              onRetryUpload={() => void handleSave()}
-            />
-            <span className="text-caption text-app-text-3">{t.trademaster.logoHint}</span>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField htmlFor="my-shops-industry" label={t.trademaster.industry}>
-              <Input id="my-shops-industry" value={draft.industry} onChange={(e) => set('industry')(e.target.value)} />
-            </FormField>
-            <FormField htmlFor="my-shops-province" label={t.trademaster.province}>
-              <Input id="my-shops-province" value={draft.province} onChange={(e) => set('province')(e.target.value)} />
-            </FormField>
-            <FormField htmlFor="my-shops-city" label={t.trademaster.city}>
-              <Input id="my-shops-city" value={draft.city} onChange={(e) => set('city')(e.target.value)} />
-            </FormField>
-            <FormField htmlFor="my-shops-phone" label={t.trademaster.phone}>
-              <Input id="my-shops-phone" value={draft.phone} onChange={(e) => set('phone')(e.target.value)} dir="ltr" />
-            </FormField>
-            <FormField htmlFor="my-shops-email" label={t.trademaster.email}>
-              <Input
-                id="my-shops-email"
-                type="email"
-                value={draft.email}
-                onChange={(e) => set('email')(e.target.value)}
-                dir="ltr"
-              />
-            </FormField>
-            <FormField htmlFor="my-shops-website" label={t.trademaster.website}>
-              <Input
-                id="my-shops-website"
-                type="url"
-                value={draft.website}
-                onChange={(e) => set('website')(e.target.value)}
-                dir="ltr"
-                placeholder="https://"
-              />
-            </FormField>
-          </div>
-
-          <FormField htmlFor="my-shops-address" label={t.trademaster.address}>
-            <Input id="my-shops-address" value={draft.address} onChange={(e) => set('address')(e.target.value)} />
-          </FormField>
-
-          <fieldset className="grid gap-4 sm:grid-cols-2">
-            <legend className="mb-1 text-label text-app-text-2">{t.trademaster.location}</legend>
-            <p className="col-span-full text-caption text-app-text-3">
-              {t.trademaster.locationHint}
+        {formLoading ? (
+          existing.isError ? (
+            <p className="text-body text-app-text-3" role="alert">
+              {apiMessage(existing.error, t.common.error)}
             </p>
-            <FormField htmlFor="my-shops-latitude" label={t.trademaster.latitude}>
-              <Input
-                id="my-shops-latitude"
-                value={draft.latitude}
-                onChange={(e) => set('latitude')(e.target.value)}
-                inputMode="decimal"
-                dir="ltr"
-              />
-            </FormField>
-            <FormField htmlFor="my-shops-longitude" label={t.trademaster.longitude}>
-              <Input
-                id="my-shops-longitude"
-                value={draft.longitude}
-                onChange={(e) => set('longitude')(e.target.value)}
-                inputMode="decimal"
-                dir="ltr"
-              />
-            </FormField>
-
-            {/* The map fills the fields above; it does not replace them. A map
-                cannot be used with a keyboard alone, and somebody who already
-                has their coordinates should not hunt for the right pixel. */}
-            <div className="col-span-full">
-              <Suspense
-                fallback={<div className="h-64 animate-pulse rounded-xl bg-app-surface-2" />}
-              >
-                <LocationPicker
-                  latitude={draft.latitude ? Number(draft.latitude) : undefined}
-                  longitude={draft.longitude ? Number(draft.longitude) : undefined}
-                  onPick={(lat, lng) => {
-                    // Six decimals is about 10 cm, which is far past what a
-                    // shop front needs and keeps the field readable.
-                    set('latitude')(lat.toFixed(6));
-                    set('longitude')(lng.toFixed(6));
-                  }}
-                />
-              </Suspense>
+          ) : (
+            <div className="flex justify-center py-12">
+              <Spinner label={t.common.loading} />
             </div>
-          </fieldset>
+          )
+        ) : (
+          <form onSubmit={(event) => void handleSave(event)} className="flex flex-col gap-4" noValidate>
+            <p className="text-caption text-app-text-3">{hub.requiredHint}</p>
 
-          <p className="text-caption text-app-text-3">{t.trademaster.submitWarning}</p>
+            <FormField
+              htmlFor="my-shops-shop-name"
+              label={`${t.trademaster.shopName} *`}
+              error={errorOf('name')}
+            >
+              <Input
+                id="my-shops-shop-name"
+                value={draft.name}
+                onChange={(e) => set('name')(e.target.value)}
+                invalid={Boolean(errors.name)}
+                maxLength={120}
+                required
+              />
+            </FormField>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
-              {t.common.cancel}
-            </Button>
-            <Button type="submit" disabled={create.isPending || update.isPending}>
-              {t.trademaster.saveDraft}
-            </Button>
-          </div>
-        </form>
+            <FormField
+              htmlFor="my-shops-shop-summary"
+              label={`${t.trademaster.shopSummary} *`}
+              error={errorOf('summary')}
+              hint={hub.summaryHint}
+            >
+              <TextArea
+                id="my-shops-shop-summary"
+                value={draft.summary}
+                onChange={(e) => set('summary')(e.target.value)}
+                invalid={Boolean(errors.summary)}
+                rows={2}
+                maxLength={300}
+                required
+              />
+            </FormField>
+
+            <FormField
+              htmlFor="my-shops-shop-description"
+              label={t.trademaster.shopDescription}
+              error={errorOf('description')}
+            >
+              <TextArea
+                id="my-shops-shop-description"
+                value={draft.description}
+                onChange={(e) => set('description')(e.target.value)}
+                invalid={Boolean(errors.description)}
+                rows={4}
+                maxLength={5000}
+              />
+            </FormField>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-label text-app-text-2">{t.trademaster.logo}</span>
+              <CoverField
+                value={logo}
+                previewUrl={editing !== null && editing !== 'new' ? editing.logoUrl : null}
+                onChange={(file) => {
+                  setLogo(file);
+                  setUploadState(IDLE);
+                }}
+                uploadState={uploadState}
+                onRetryUpload={() => void handleSave()}
+              />
+              <span className="text-caption text-app-text-3">{t.trademaster.logoHint}</span>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField htmlFor="my-shops-industry" label={t.trademaster.industry} error={errorOf('industry')}>
+                <Input
+                  id="my-shops-industry"
+                  value={draft.industry}
+                  onChange={(e) => set('industry')(e.target.value)}
+                  invalid={Boolean(errors.industry)}
+                  maxLength={80}
+                />
+              </FormField>
+              <FormField htmlFor="my-shops-province" label={t.trademaster.province} error={errorOf('province')}>
+                <Input
+                  id="my-shops-province"
+                  value={draft.province}
+                  onChange={(e) => set('province')(e.target.value)}
+                  invalid={Boolean(errors.province)}
+                  maxLength={60}
+                />
+              </FormField>
+              <FormField htmlFor="my-shops-city" label={t.trademaster.city} error={errorOf('city')}>
+                <Input
+                  id="my-shops-city"
+                  value={draft.city}
+                  onChange={(e) => set('city')(e.target.value)}
+                  invalid={Boolean(errors.city)}
+                  maxLength={60}
+                />
+              </FormField>
+              <FormField htmlFor="my-shops-phone" label={t.trademaster.phone} error={errorOf('phone')}>
+                <Input
+                  id="my-shops-phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={draft.phone}
+                  onChange={(e) => set('phone')(e.target.value)}
+                  invalid={Boolean(errors.phone)}
+                  maxLength={30}
+                  dir="ltr"
+                />
+              </FormField>
+              <FormField htmlFor="my-shops-email" label={t.trademaster.email} error={errorOf('email')}>
+                <Input
+                  id="my-shops-email"
+                  type="email"
+                  value={draft.email}
+                  onChange={(e) => set('email')(e.target.value)}
+                  invalid={Boolean(errors.email)}
+                  maxLength={160}
+                  dir="ltr"
+                />
+              </FormField>
+              <FormField htmlFor="my-shops-website" label={t.trademaster.website} error={errorOf('website')}>
+                <Input
+                  id="my-shops-website"
+                  type="url"
+                  value={draft.website}
+                  onChange={(e) => set('website')(e.target.value)}
+                  invalid={Boolean(errors.website)}
+                  maxLength={200}
+                  dir="ltr"
+                  placeholder="https://"
+                />
+              </FormField>
+            </div>
+
+            <FormField htmlFor="my-shops-address" label={t.trademaster.address} error={errorOf('address')}>
+              <Input
+                id="my-shops-address"
+                value={draft.address}
+                onChange={(e) => set('address')(e.target.value)}
+                invalid={Boolean(errors.address)}
+                maxLength={300}
+              />
+            </FormField>
+
+            <fieldset className="grid gap-4 sm:grid-cols-2">
+              <legend className="mb-1 text-label text-app-text-2">{t.trademaster.location}</legend>
+              <p className="col-span-full text-caption text-app-text-3">{hub.shopLocationHint}</p>
+
+              <div className="col-span-full flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={geo.locate}
+                  disabled={geo.state.status === 'locating'}
+                >
+                  <LocateFixed className="size-4" aria-hidden="true" />
+                  {geo.state.status === 'locating' ? t.trademaster.locating : hub.useMyLocationForShop}
+                </Button>
+                {(draft.latitude || draft.longitude) && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      set('latitude')('');
+                      set('longitude')('');
+                    }}
+                  >
+                    <X className="size-4" aria-hidden="true" />
+                    {hub.removeLocation}
+                  </Button>
+                )}
+              </div>
+              {(geo.state.status === 'denied' || geo.state.status === 'unavailable') && (
+                <p className="col-span-full text-caption text-app-text-3" role="status">
+                  {geo.state.status === 'denied' ? hub.locationDenied : hub.locationUnavailable}
+                </p>
+              )}
+
+              <FormField htmlFor="my-shops-latitude" label={t.trademaster.latitude} error={errorOf('latitude')}>
+                <Input
+                  id="my-shops-latitude"
+                  value={draft.latitude}
+                  onChange={(e) => set('latitude')(e.target.value)}
+                  invalid={Boolean(errors.latitude)}
+                  inputMode="decimal"
+                  maxLength={20}
+                  dir="ltr"
+                />
+              </FormField>
+              <FormField htmlFor="my-shops-longitude" label={t.trademaster.longitude} error={errorOf('longitude')}>
+                <Input
+                  id="my-shops-longitude"
+                  value={draft.longitude}
+                  onChange={(e) => set('longitude')(e.target.value)}
+                  invalid={Boolean(errors.longitude)}
+                  inputMode="decimal"
+                  maxLength={20}
+                  dir="ltr"
+                />
+              </FormField>
+
+              {/* The map fills the boxes above; it does not replace them. A map
+                  cannot be used with a keyboard alone, and somebody who already
+                  has their coordinates should not hunt for the right pixel. */}
+              <div className="col-span-full">
+                <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-app-surface-2" />}>
+                  <LocationPicker
+                    latitude={lat ?? undefined}
+                    longitude={lat !== null ? (lng ?? undefined) : undefined}
+                    onPick={(pickedLat, pickedLng) => {
+                      // Six decimals is about 10 cm, which is far past what a
+                      // shop front needs and keeps the field readable.
+                      set('latitude')(pickedLat.toFixed(6));
+                      set('longitude')(pickedLng.toFixed(6));
+                    }}
+                  />
+                </Suspense>
+              </div>
+            </fieldset>
+
+            <p className="text-caption text-app-text-3">{t.trademaster.submitWarning}</p>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={closeForm}>
+                {t.common.cancel}
+              </Button>
+              <Button type="submit" disabled={create.isPending || update.isPending}>
+                {t.trademaster.saveDraft}
+              </Button>
+            </div>
+          </form>
+        )}
       </Modal>
     </div>
   );

@@ -23,13 +23,20 @@ const mocks = vi.hoisted(() => ({
   removeVariant: vi.fn(async (_id: string) => undefined),
   setCaption: vi.fn(async (_input: { imageId: string; caption?: string }) => undefined),
   noop: vi.fn(async (_input?: unknown) => undefined),
+  updateProduct: vi.fn(async (_input: { id: string; payload: Record<string, unknown> }) => undefined),
+  deleteProduct: vi.fn(async (_id: string) => undefined),
+  submitProduct: vi.fn(async (_id: string) => ({ moderationStatus: 'APPROVED' })),
 }));
 
 const mutation = (fn: (...args: never[]) => Promise<unknown>) => ({ mutateAsync: fn, isPending: false });
 
 vi.mock('@/api/trademaster', () => ({
   useShopProducts: () => ({ data: mocks.products, isLoading: false }),
-  useOwnShops: () => ({ data: [{ id: 's1', name: 'A shop' } as OwnShop] }),
+  // Approved and open: the shop a seller can actually list things in.
+  useOwnShops: () => ({
+    data: [{ id: 's1', name: 'A shop', moderationStatus: 'APPROVED', state: 'OPEN' } as OwnShop],
+    isLoading: false,
+  }),
   useProductCategories: () => ({ data: [] }),
   useAddVariant: () => mutation(mocks.addVariant),
   useUpdateVariant: () => mutation(mocks.updateVariant),
@@ -38,11 +45,12 @@ vi.mock('@/api/trademaster', () => ({
   useAddProductImages: () => mutation(mocks.noop),
   useRemoveProductImage: () => mutation(mocks.noop),
   useCreateProduct: () => mutation(mocks.noop),
-  useUpdateProduct: () => mutation(mocks.noop),
-  useSubmitProduct: () => mutation(mocks.noop),
+  useUpdateProduct: () => mutation(mocks.updateProduct),
+  useSubmitProduct: () => mutation(mocks.submitProduct),
   useCloseProduct: () => mutation(mocks.noop),
   useReopenProduct: () => mutation(mocks.noop),
   useWithdrawProduct: () => mutation(mocks.noop),
+  useDeleteProduct: () => mutation(mocks.deleteProduct),
 }));
 
 const { default: ShopProductsPage } = await import('./ShopProductsPage');
@@ -52,8 +60,13 @@ function product(over: Partial<OwnProduct> = {}): OwnProduct {
     id: 'p1',
     code: 'PR1',
     slug: 'mug',
+    kind: 'PRODUCT',
     title: 'A mug',
     summary: 'A mug for tea',
+    description: null,
+    categoryId: null,
+    negotiable: false,
+    available: true,
     price: '120000',
     currency: 'IRT',
     stock: 3,
@@ -91,7 +104,7 @@ function renderPage() {
 
 /** Opens the pictures-and-options dialog for the first product. */
 async function openManage() {
-  await userEvent.click(screen.getByRole('button', { name: /^تصویرها$|^images$/i }));
+  await userEvent.click(screen.getByRole('button', { name: /^تصاویر و گزینه‌ها$|^pictures & options$/i }));
 }
 
 beforeEach(() => {
@@ -206,5 +219,88 @@ describe('picture captions', () => {
 
     // Focus alone is not an edit; a request per glance is a request per glance.
     expect(mocks.setCaption).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('the listing form', () => {
+  it('opens with what was saved, and keeps "negotiable" on when it was on', async () => {
+    // The old form never loaded negotiable, description or category, so every
+    // edit switched negotiable off and showed the other two as empty.
+    mocks.products = [
+      product({
+        moderationStatus: 'APPROVED',
+        negotiable: true,
+        description: 'Glazed by hand',
+        imageCount: 1,
+        images: [{ id: 'i1', caption: null, position: 0, url: '/x.png' }],
+      }),
+    ];
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: /^ویرایش$|^edit$/i }));
+    expect(document.getElementById('listing-description')).toHaveValue('Glazed by hand');
+
+    await userEvent.click(screen.getByRole('button', { name: /^ذخیره$|^save$/i }));
+
+    await waitFor(() => expect(mocks.updateProduct).toHaveBeenCalledOnce());
+    expect(mocks.updateProduct.mock.calls[0][0].payload).toMatchObject({
+      negotiable: true,
+      description: 'Glazed by hand',
+      kind: 'PRODUCT',
+    });
+  });
+
+  it('names the bad field and sends nothing when the price is zero', async () => {
+    mocks.products = [product()];
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: /^ویرایش$|^edit$/i }));
+    const price = document.getElementById('listing-price') as HTMLInputElement;
+    await userEvent.clear(price);
+    await userEvent.type(price, '0');
+    await userEvent.click(screen.getByRole('button', { name: /^ذخیره$|^save$/i }));
+
+    expect(await screen.findAllByRole('alert')).not.toHaveLength(0);
+    expect(mocks.updateProduct).not.toHaveBeenCalled();
+  });
+
+  it('reads a price typed in Persian digits', async () => {
+    mocks.products = [product()];
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: /^ویرایش$|^edit$/i }));
+    const price = document.getElementById('listing-price') as HTMLInputElement;
+    await userEvent.clear(price);
+    await userEvent.type(price, '۱٬۲۰۰٬۰۰۰');
+    await userEvent.click(screen.getByRole('button', { name: /^ذخیره$|^save$/i }));
+
+    await waitFor(() => expect(mocks.updateProduct).toHaveBeenCalledOnce());
+    expect(mocks.updateProduct.mock.calls[0][0].payload).toMatchObject({ price: '1200000' });
+  });
+});
+
+describe('deleting a listing', () => {
+  it('asks first, and does nothing when the answer is no', async () => {
+    mocks.products = [product()];
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: /^حذف$|^delete$/i }));
+
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(mocks.deleteProduct).not.toHaveBeenCalled();
+    confirm.mockRestore();
+  });
+
+  it('deletes on yes', async () => {
+    mocks.products = [product()];
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: /^حذف$|^delete$/i }));
+
+    await waitFor(() => expect(mocks.deleteProduct).toHaveBeenCalledWith('p1'));
+    confirm.mockRestore();
   });
 });

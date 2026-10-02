@@ -20,6 +20,9 @@ export type ModerationStatus =
 
 export type ListingState = 'OPEN' | 'AWARDED' | 'CLOSED' | 'EXPIRED';
 
+/** A thing for sale, or a piece of work offered. Services have no stock. */
+export type ListingKind = 'PRODUCT' | 'SERVICE';
+
 export interface OwnerProfile {
   id: string;
   displayName: string | null;
@@ -32,19 +35,25 @@ export interface OwnerProfile {
 // Shops
 // ---------------------------------------------------------------------------
 
+/**
+ * A shop as the form sends it.
+ *
+ * On an edit, null removes a value and an absent key leaves it alone; the form
+ * sends every field so an emptied one is actually removed.
+ */
 export interface ShopPayload {
   name: string;
   summary: string;
-  description?: string;
-  industry?: string;
-  province?: string;
-  city?: string;
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  phone?: string;
-  email?: string;
-  website?: string;
+  description?: string | null;
+  industry?: string | null;
+  province?: string | null;
+  city?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
 }
 
 export interface PublicShopSummary {
@@ -60,6 +69,8 @@ export interface PublicShopSummary {
   publishedAt: string | null;
   logoUrl: string | null;
   productCount: number;
+  /** What it offers publicly: products, services, or both. */
+  kinds: ListingKind[];
   ownerProfile: OwnerProfile | null;
   /// Present on every shop that has one; a shop that only ships has none.
   latitude?: number | null;
@@ -68,7 +79,7 @@ export interface PublicShopSummary {
   distanceKm?: number;
 }
 
-export interface PublicShopDetail extends Omit<PublicShopSummary, 'productCount'> {
+export interface PublicShopDetail extends PublicShopSummary {
   description: string | null;
   address: string | null;
   latitude: number | null;
@@ -96,6 +107,45 @@ export interface OwnShop {
   createdAt: string;
   logoUrl: string | null;
   productCount: number;
+}
+
+/** One of the owner's own shops, whole, for the edit form. */
+export interface OwnShopDetail {
+  id: string;
+  code: string;
+  slug: string;
+  name: string;
+  summary: string;
+  description: string | null;
+  industry: string | null;
+  province: string | null;
+  city: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  moderationStatus: ModerationStatus;
+  state: ListingState;
+  reviewNote: string | null;
+  logoUrl: string | null;
+}
+
+/** A page of shops near a point: how wide the circle was, and how far the nearest is when it held none. */
+export interface NearbyPage<T> extends Paged<T> {
+  radiusKm?: number;
+  nearestKm?: number | null;
+}
+
+/** Every matching shop with a location, for the map. */
+export interface ShopMapResult {
+  items: PublicShopSummary[];
+  total: number;
+  /** True when more matched than the map draws. */
+  truncated: boolean;
+  radiusKm: number | null;
+  nearestKm: number | null;
 }
 
 export interface ShopQueueRow {
@@ -135,10 +185,13 @@ export interface ShopReviewDetail extends Omit<ShopQueueRow, 'owner'> {
 // ---------------------------------------------------------------------------
 
 export interface ProductPayload {
+  kind: ListingKind;
   title: string;
   summary: string;
-  description?: string;
-  categoryId?: string;
+  /** null removes it on an edit. */
+  description?: string | null;
+  /** null files it under no category. */
+  categoryId?: string | null;
   /** Digit string. See the note at the top of this file. */
   price: string;
   stock?: number;
@@ -157,7 +210,7 @@ export interface ProductVariant {
 
 export interface VariantPayload {
   label: string;
-  sku?: string;
+  sku?: string | null;
   /**
    * Absent leaves an existing override alone; null removes it, so the option
    * costs whatever the product costs. The edit form sends null rather than
@@ -179,6 +232,7 @@ export interface PublicProductSummary {
   id: string;
   code: string;
   slug: string;
+  kind: ListingKind;
   title: string;
   summary: string;
   price: string;
@@ -189,6 +243,11 @@ export interface PublicProductSummary {
   publishedAt: string | null;
   coverUrl: string | null;
   variantCount: number;
+  /** Whether a buyer can have it today — always, for a service. Decided by the server. */
+  available: boolean;
+  category: { id: string; name: string } | null;
+  /** Kilometres to the shop, on a search near a point. */
+  distanceKm?: number;
   business: { slug: string; name: string; province: string | null; city: string | null };
 }
 
@@ -196,6 +255,8 @@ export interface PublicProductDetail {
   id: string;
   code: string;
   slug: string;
+  kind: ListingKind;
+  available: boolean;
   title: string;
   summary: string;
   description: string | null;
@@ -225,8 +286,13 @@ export interface OwnProduct {
   id: string;
   code: string;
   slug: string;
+  kind: ListingKind;
   title: string;
   summary: string;
+  description: string | null;
+  categoryId: string | null;
+  negotiable: boolean;
+  available: boolean;
   price: string;
   currency: string;
   stock: number;
@@ -248,6 +314,7 @@ export interface OwnProduct {
 export interface ProductQueueRow {
   id: string;
   code: string;
+  kind?: ListingKind;
   title: string;
   summary: string;
   price: string;
@@ -300,7 +367,9 @@ export interface ProductCategoryNode {
   id: string;
   slug: string;
   name: string;
+  kind: ListingKind;
   parentId: string | null;
+  /** Including its children, for a parent. */
   productCount: number;
 }
 
@@ -315,6 +384,7 @@ export interface AdminProductCategory {
   id: string;
   slug: string;
   name: string;
+  kind: ListingKind;
   parentId: string | null;
   position: number;
   active: boolean;
@@ -325,6 +395,8 @@ export interface AdminProductCategory {
 
 export interface CategoryPayload {
   name: string;
+  /** Top-level only; a child takes its parent's. */
+  kind?: ListingKind;
   slug?: string;
   parentId?: string | null;
   position?: number;
@@ -336,22 +408,29 @@ export interface CategoryPayload {
 // ---------------------------------------------------------------------------
 
 export type ShopSort = 'newest' | 'name' | 'nearest';
-export type ProductSort = 'newest' | 'priceAsc' | 'priceDesc';
+export type ProductSort = 'newest' | 'priceAsc' | 'priceDesc' | 'nearest';
 
 export interface ShopBoardQuery extends Record<string, string | number | boolean | null | undefined> {
   search?: string;
   province?: string;
   industry?: string;
+  kind?: ListingKind;
+  categoryId?: string;
   sort?: ShopSort;
   latitude?: number;
   longitude?: number;
+  /** Kilometres. */
   radiusKm?: number;
   page: number;
   pageSize: number;
 }
 
+/** The map takes the board's filters, without paging or a sort. */
+export type ShopMapQuery = Omit<ShopBoardQuery, 'page' | 'pageSize' | 'sort'>;
+
 export interface ProductBoardQuery extends Record<string, string | number | boolean | null | undefined> {
   search?: string;
+  kind?: ListingKind;
   categoryId?: string;
   shopSlug?: string;
   province?: string;
@@ -359,6 +438,9 @@ export interface ProductBoardQuery extends Record<string, string | number | bool
   priceMax?: string;
   inStock?: boolean;
   sort?: ProductSort;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   page: number;
   pageSize: number;
 }

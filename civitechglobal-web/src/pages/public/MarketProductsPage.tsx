@@ -1,11 +1,14 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { ImageOff, MapPin } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
 import { useShopFacets, usePublicProducts, useProductCategories } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { toLatinDigits } from '@/i18n/utils';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatMoney } from '@/lib/marketplace';
 import { useListControls } from '@/lib/useListControls';
+import { useMarketLocation } from '@/lib/useMarketLocation';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
@@ -13,95 +16,147 @@ import { Pagination } from '@/components/ui/Pagination';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import {
+  CategorySelect,
+  KindBadge,
+  KindToggle,
+  LocationBar,
+  MarketplaceNav,
+  NothingNearby,
+} from '@/components/trademaster/MarketplaceUi';
+import { categoryForKind, formatKm, type KindFilter } from '@/lib/marketFormat';
 import type { ProductSort, PublicProductSummary } from '@/types/trademaster';
 
 const PAGE_SIZE = 24;
 
 /**
- * The public product catalogue.
+ * Products and services, in one catalogue with a switch between them.
  *
- * Cards only. A product is bought on the strength of its photograph, and a
- * table of prices without pictures is a spreadsheet — for narrowing down, the
- * filters do that job better than a different layout would.
+ * Cards only. A listing is chosen on the strength of its picture, and a table
+ * of prices without pictures is a spreadsheet — for narrowing down, the filters
+ * do that job better than a different layout would.
  *
- * A product appears only while both it and its shop are published, which the
- * server enforces; nothing here needs to know that, which is the point of
- * putting it in one predicate back there.
+ * The product/service switch comes first because it is the first question:
+ * somebody after a coat and somebody after a haircut want different lists, and
+ * the categories offered follow the switch so neither sees the other's.
+ *
+ * A listing appears only while both it and its shop are published, which the
+ * server enforces; nothing here needs to know that.
  */
-/** Only the digits, so a typed separator or space does not become a 400. */
-function digitsOnly(value: string): string {
-  return value.replace(/[^0-9]/g, '');
+
+/**
+ * A price box's contents as the digits the server takes.
+ *
+ * Persian digits are read as digits and separators are dropped. The old
+ * version dropped every non-ASCII character, so a price typed on a Persian
+ * keyboard filtered by nothing at all.
+ */
+function priceDigits(value: string): string {
+  return toLatinDigits(value).replace(/[^0-9]/g, '');
 }
 
 export default function MarketProductsPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.trademaster.products, { description: t.trademaster.metaDescription });
+  const hub = t.trademaster.hub;
+  useDocumentTitle(hub.listingsTitle, { description: t.trademaster.metaDescription });
 
   const controls = useListControls({
     defaultView: 'cards',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
-    filters: { categoryId: '', inStock: '', province: '', priceMin: '', priceMax: '' },
+    filters: { kind: '', categoryId: '', inStock: '', province: '', priceMin: '', priceMax: '' },
+    // Typed boxes: written to the address bar after a pause, not per keystroke.
+    typedFilters: ['priceMin', 'priceMax'],
   });
 
+  const location = useMarketLocation();
   const { data: categories } = useProductCategories();
   const { data: facets } = useShopFacets();
+
+  const kind = controls.filters.kind as KindFilter;
+  const categoryId = categoryForKind(categories, controls.filters.categoryId, kind);
+
+  const { setFilter, setPage } = controls;
+  useEffect(() => {
+    if (controls.filters.categoryId && !categoryId && categories) setFilter('categoryId', '');
+  }, [controls.filters.categoryId, categoryId, categories, setFilter]);
+
+  const near = Boolean(location.location);
+  const searchPoint = [location.location?.latitude, location.location?.longitude, location.radiusKm].join(',');
+  const lastSearchPoint = useRef(searchPoint);
+  useEffect(() => {
+    if (lastSearchPoint.current === searchPoint) return;
+    lastSearchPoint.current = searchPoint;
+    setPage(1);
+  }, [searchPoint, setPage]);
+
+  // "In stock" means nothing for services, which never run out; the filter is
+  // neither shown nor sent while browsing them.
+  const stockApplies = kind !== 'SERVICE';
+  const sort = controls.sort as ProductSort;
 
   const { data, isLoading } = usePublicProducts({
     page: controls.page,
     pageSize: PAGE_SIZE,
     search: controls.search || undefined,
-    categoryId: controls.filters.categoryId || undefined,
-    inStock: controls.filters.inStock === 'true' ? true : undefined,
+    kind: kind || undefined,
+    categoryId: categoryId || undefined,
+    inStock: stockApplies && controls.filters.inStock === 'true' ? true : undefined,
     province: controls.filters.province || undefined,
-    // Digit strings on the wire, because a toman amount outgrows what a JSON
-    // number carries. Anything the reader types that is not a digit is
-    // dropped rather than refused: a price box is not the place to argue
-    // about a stray space or a thousands separator.
-    priceMin: digitsOnly(controls.filters.priceMin) || undefined,
-    priceMax: digitsOnly(controls.filters.priceMax) || undefined,
-    sort: controls.sort as ProductSort,
+    priceMin: priceDigits(controls.filters.priceMin) || undefined,
+    priceMax: priceDigits(controls.filters.priceMax) || undefined,
+    ...location.query,
+    // "Nearest" only exists with a search point; without one it would be
+    // refused, so it falls back to the newest first.
+    sort: sort === 'nearest' && !near ? 'newest' : sort,
   });
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary">{t.trademaster.products}</h1>
-        <p className="mt-2 text-text-secondary">{t.trademaster.subtitle}</p>
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold text-text-primary">{hub.listingsTitle}</h1>
+        <p className="mt-2 text-text-secondary">{hub.listingsSubtitle}</p>
       </header>
+
+      <MarketplaceNav className="mb-6" />
+
+      <KindToggle
+        className="mb-4"
+        value={kind}
+        onChange={(next) => controls.setFilter('kind', next)}
+      />
+
+      <LocationBar location={location} className="mb-4" />
 
       <ListToolbar
         className="mb-6"
         controls={controls}
-        searchPlaceholder={t.trademaster.searchProducts}
-        searchLabel={t.trademaster.searchProducts}
+        searchPlaceholder={hub.searchListings}
+        searchLabel={hub.searchListings}
         total={data?.total}
         isLoading={isLoading}
         filters={
           <>
-            <Select
-              className="w-48"
-              value={controls.filters.categoryId}
-              aria-label={t.trademaster.category}
-              onChange={(e) => controls.setFilter('categoryId', e.target.value)}
-            >
-              <option value="">{t.trademaster.allCategories}</option>
-              {categories?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
+            <CategorySelect
+              className="w-52"
+              categories={categories}
+              kind={kind}
+              value={categoryId}
+              onChange={(value) => controls.setFilter('categoryId', value)}
+              emptyLabel={t.trademaster.allCategories}
+            />
 
-            <Select
-              className="w-40"
-              value={controls.filters.inStock}
-              aria-label={t.trademaster.inStockOnly}
-              onChange={(e) => controls.setFilter('inStock', e.target.value)}
-            >
-              <option value="">{t.list.allOption}</option>
-              <option value="true">{t.trademaster.inStockOnly}</option>
-            </Select>
+            {stockApplies && (
+              <Select
+                className="w-40"
+                value={controls.filters.inStock}
+                aria-label={t.trademaster.inStockOnly}
+                onChange={(e) => controls.setFilter('inStock', e.target.value)}
+              >
+                <option value="">{t.list.allOption}</option>
+                <option value="true">{t.trademaster.inStockOnly}</option>
+              </Select>
+            )}
 
             {/* From the provinces shops have really written, so no option
                 here can come back empty. A single province is not a choice,
@@ -128,8 +183,9 @@ export default function MarketProductsPage() {
               dir="ltr"
               placeholder={t.trademaster.priceFrom}
               aria-label={t.trademaster.priceFrom}
-              value={controls.filters.priceMin}
+              value={controls.filterInput('priceMin')}
               onChange={(e) => controls.setFilter('priceMin', e.target.value)}
+              maxLength={20}
             />
 
             <Input
@@ -138,16 +194,18 @@ export default function MarketProductsPage() {
               dir="ltr"
               placeholder={t.trademaster.priceTo}
               aria-label={t.trademaster.priceTo}
-              value={controls.filters.priceMax}
+              value={controls.filterInput('priceMax')}
               onChange={(e) => controls.setFilter('priceMax', e.target.value)}
+              maxLength={20}
             />
 
             <Select
               className="w-44"
-              value={controls.sort}
+              value={sort === 'nearest' && !near ? 'newest' : sort}
               aria-label={t.list.sortLabel}
               onChange={(e) => controls.setSort(e.target.value)}
             >
+              {near && <option value="nearest">{hub.sortNearest}</option>}
               <option value="newest">{t.trademaster.sortNewest}</option>
               <option value="priceAsc">{t.trademaster.sortPriceAsc}</option>
               <option value="priceDesc">{t.trademaster.sortPriceDesc}</option>
@@ -162,7 +220,15 @@ export default function MarketProductsPage() {
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && (
+      {!isLoading && near && data?.total === 0 && (
+        <NothingNearby
+          radiusKm={location.radiusKm}
+          nearestKm={data.nearestKm}
+          onWiden={location.setRadius}
+        />
+      )}
+
+      {!isLoading && !near && data?.items.length === 0 && (
         <EmptyState
           title={controls.activeCount > 0 ? t.list.noResults : t.trademaster.noProducts}
           description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
@@ -205,8 +271,9 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
           {product.coverUrl ? (
             <img
               src={apiAssetSrc(product.coverUrl)}
-              // The product name, not "product image": a screen reader reading
-              // "product image" down a grid of twenty-four has said nothing.
+              // The listing's name, not "product image": a screen reader
+              // reading "product image" down a grid of twenty-four has said
+              // nothing.
               alt={product.title}
               className="h-full w-full object-cover"
               loading="lazy"
@@ -220,7 +287,10 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
             </div>
           )}
 
-          {product.stock === 0 && product.variantCount === 0 && (
+          {/* Decided by the server, which counts options too: a coat with
+              every size sold out used to show as in stock because its own
+              count was not zero. A service is never out of stock. */}
+          {!product.available && (
             <span className="absolute inset-x-0 bottom-0 bg-surface-inverse/80 py-1 text-center text-xs text-text-inverse">
               {t.trademaster.outOfStock}
             </span>
@@ -228,6 +298,12 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-3">
+          <div className="flex flex-wrap items-center gap-1">
+            <KindBadge kind={product.kind} />
+            {product.category && (
+              <span className="truncate text-xs text-text-tertiary">{product.category.name}</span>
+            )}
+          </div>
           <h2 className="line-clamp-2 text-sm font-medium text-text-primary">{product.title}</h2>
 
           <div className="mt-auto flex flex-wrap items-center gap-2">
@@ -240,10 +316,12 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
           </div>
 
           <p className="truncate text-xs text-text-tertiary">{product.business.name}</p>
-          {where && (
+          {(where || product.distanceKm !== undefined) && (
             <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
               <MapPin className="h-3 w-3" aria-hidden="true" />
-              {where}
+              {product.distanceKm !== undefined
+                ? t.trademaster.distanceAway.replace('{km}', formatKm(product.distanceKm, locale))
+                : where}
             </span>
           )}
         </div>

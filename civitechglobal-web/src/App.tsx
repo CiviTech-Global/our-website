@@ -61,6 +61,8 @@ const ExpertsPage = lazy(() => import('@/pages/public/ExpertsPage'));
 const ExpertProfilePage = lazy(() => import('@/pages/public/ExpertProfilePage'));
 const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
 const ShopsPage = lazy(() => import('@/pages/public/ShopsPage'));
+const MarketplaceHomePage = lazy(() => import('@/pages/public/MarketplaceHomePage'));
+const MarketplaceJoinPage = lazy(() => import('@/pages/public/MarketplaceJoinPage'));
 const CartPage = lazy(() => import('@/pages/public/CartPage'));
 const ShopDetailPage = lazy(() => import('@/pages/public/ShopDetailPage'));
 const MarketProductsPage = lazy(() => import('@/pages/public/MarketProductsPage'));
@@ -233,6 +235,24 @@ export default function App() {
         />
         {features.tradeMaster && (
           <>
+            {/* The module's front door: the map, with search and filters. */}
+            <Route
+              path="/marketplace"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MarketplaceHomePage />
+                </Suspense>
+              }
+            />
+            {/* How a shop gets listed, and the button for the next step. */}
+            <Route
+              path="/marketplace/join"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MarketplaceJoinPage />
+                </Suspense>
+              }
+            />
             <Route
               path="/marketplace/shops"
               element={

@@ -63,6 +63,19 @@
   --color-text-muted: #94a3b8;
   --color-text-inverse: #f8fafc;
 
+  /*
+   * Semantic names for the public pages, as aliases of the scale above so the
+   * dark theme follows. Pages used these for months before they existed —
+   * Tailwind emits nothing for an unknown colour, so every one of them rendered
+   * with no background at all, the "out of stock" strip on product cards
+   * included.
+   */
+  --color-surface-default: var(--color-surface-50);
+  --color-surface-raised: var(--color-surface-50);
+  --color-surface-muted: var(--color-surface-200);
+  --color-surface-inverse: var(--color-surface-950);
+  --color-text-tertiary: var(--color-text-muted);
+
   --color-border-default: #e2e8f0;
   --color-border-strong: #cbd5e1;
   --color-border-subtle: #f1f5f9;
@@ -208,6 +221,13 @@
   --color-text-secondary: #a8adb9;
   --color-text-muted: #6e7787;
   --color-text-inverse: #0f172a;
+
+  /* The same aliases, resolved against the dark scale. */
+  --color-surface-default: var(--color-surface-50);
+  --color-surface-raised: var(--color-surface-50);
+  --color-surface-muted: var(--color-surface-200);
+  --color-surface-inverse: var(--color-surface-950);
+  --color-text-tertiary: var(--color-text-muted);
 
   --color-border-default: #1e2535;
   --color-border-strong: #2d3444;

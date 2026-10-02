@@ -1,5 +1,15 @@
 import { useEffect, useMemo } from 'react';
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import {
+  Circle,
+  CircleMarker,
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from 'react-leaflet';
+import { Link } from 'react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -88,11 +98,32 @@ export interface MapPin {
   href?: string;
 }
 
-/** Keeps the view in step when the pins change beneath it. */
-function FitToPins({ pins }: { pins: MapPin[] }) {
+/** A point and the radius around it, in kilometres. */
+export interface MapCircle {
+  latitude: number;
+  longitude: number;
+  radiusKm: number;
+}
+
+/**
+ * Keeps the view in step when what it shows changes beneath it.
+ *
+ * With a search circle, the circle is the frame: the reader asked about that
+ * area, and zooming to the pins instead would hide how far it reaches — or, with
+ * no pins, show nothing of where they were looking.
+ */
+function FitToView({ pins, circle }: { pins: MapPin[]; circle?: MapCircle | null }) {
   const map = useMap();
 
   useEffect(() => {
+    if (circle) {
+      map.fitBounds(
+        L.latLng(circle.latitude, circle.longitude).toBounds(circle.radiusKm * 2000),
+        { padding: [16, 16], maxZoom: 16 }
+      );
+      return;
+    }
+
     if (pins.length === 0) return;
 
     if (pins.length === 1) {
@@ -105,31 +136,41 @@ function FitToPins({ pins }: { pins: MapPin[] }) {
       L.latLngBounds(pins.map((pin) => [pin.latitude, pin.longitude] as [number, number])),
       { padding: [32, 32], maxZoom: MAX_ZOOM }
     );
-  }, [map, pins]);
+  }, [map, pins, circle]);
 
   return null;
 }
 
 /**
- * Shops on a map.
+ * Shops on a map, and optionally the circle being searched.
  *
- * Read-only. Picking a location is a different job with different controls, and
- * it lives in LocationPicker below.
+ * `onPick`, when given, makes a click on the map choose the search point —
+ * the way to say where "near me" is when the browser cannot. Without it the map
+ * is read-only.
  */
 export default function ShopMap({
   pins,
+  circle,
+  onPick,
   className,
   height = 320,
 }: {
   pins: MapPin[];
+  circle?: MapCircle | null;
+  onPick?: (latitude: number, longitude: number) => void;
   className?: string;
   height?: number;
 }) {
   const { t } = useLocale();
 
   const centre = useMemo<[number, number]>(
-    () => (pins[0] ? [pins[0].latitude, pins[0].longitude] : FALLBACK_CENTRE),
-    [pins]
+    () =>
+      circle
+        ? [circle.latitude, circle.longitude]
+        : pins[0]
+          ? [pins[0].latitude, pins[0].longitude]
+          : FALLBACK_CENTRE,
+    [pins, circle]
   );
 
   return (
@@ -152,7 +193,26 @@ export default function ShopMap({
         aria-label={t.trademaster.shops}
       >
         <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} maxZoom={MAX_ZOOM} />
-        <FitToPins pins={pins} />
+        <FitToView pins={pins} circle={circle} />
+        {onPick && <ClickToPlace onPick={onPick} />}
+
+        {circle && (
+          <>
+            {/* Metres: Leaflet's circle radius is in metres, the search in km. */}
+            <Circle
+              center={[circle.latitude, circle.longitude]}
+              radius={circle.radiusKm * 1000}
+              pathOptions={{ color: '#2563eb', weight: 1, fillOpacity: 0.06 }}
+            />
+            <CircleMarker
+              center={[circle.latitude, circle.longitude]}
+              radius={7}
+              pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1 }}
+            >
+              <Popup>{t.trademaster.hub.searchPoint}</Popup>
+            </CircleMarker>
+          </>
+        )}
 
         {pins.map((pin) => (
           <Marker key={pin.id} position={[pin.latitude, pin.longitude]} icon={markerIcon}>
@@ -160,9 +220,11 @@ export default function ShopMap({
               <strong>{pin.label}</strong>
               {pin.detail && <p className="mt-1">{pin.detail}</p>}
               {pin.href && (
-                <a href={pin.href} className="mt-1 block underline">
+                // A router link, not a plain anchor: a full page load to open
+                // a shop threw away the map, the filters and the search point.
+                <Link to={pin.href} className="mt-1 block underline">
                   {t.trademaster.viewShop}
-                </a>
+                </Link>
               )}
             </Popup>
           </Marker>

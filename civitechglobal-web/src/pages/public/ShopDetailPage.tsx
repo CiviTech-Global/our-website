@@ -9,6 +9,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { Pagination } from '@/components/ui/Pagination';
 import { useListControls } from '@/lib/useListControls';
+import { KindToggle, MarketplaceNav, OfferBadges } from '@/components/trademaster/MarketplaceUi';
+import type { KindFilter } from '@/lib/marketFormat';
 import { ProductCard } from './MarketProductsPage';
 
 // Lazy, always: Leaflet is around 45 KB gzipped and most visitors to a shop
@@ -18,7 +20,7 @@ const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 const PAGE_SIZE = 24;
 
 /**
- * One shop, and what it sells.
+ * One shop, and what it offers: products, services, or both.
  *
  * The products are fetched through the ordinary board endpoint filtered by
  * shop rather than embedded in the shop response: it gives paging for free and
@@ -31,11 +33,15 @@ export default function ShopDetailPage() {
 
   const { data: shop, isLoading, isError } = usePublicShop(slug);
 
-  const controls = useListControls({ defaultSort: 'newest', pageSize: PAGE_SIZE });
+  // `kind` arrives in the address when the reader came from browsing
+  // services (or products), so the shop opens on what they were looking for.
+  const controls = useListControls({ defaultSort: 'newest', pageSize: PAGE_SIZE, filters: { kind: '' } });
+  const kind = controls.filters.kind as KindFilter;
   const { data: products, isLoading: loadingProducts } = usePublicProducts({
     page: controls.page,
     pageSize: PAGE_SIZE,
     shopSlug: slug,
+    kind: kind || undefined,
   });
 
   useDocumentTitle(shop?.name ?? t.trademaster.shops, {
@@ -59,9 +65,19 @@ export default function ShopDetailPage() {
   }
 
   const where = [shop.address, shop.city, shop.province].filter(Boolean).join('، ');
+  // The switch only when there is something to switch between.
+  const offersBoth = shop.kinds.length > 1;
+  const heading =
+    shop.kinds.length === 1 && shop.kinds[0] === 'SERVICE'
+      ? t.trademaster.hub.kindServices
+      : offersBoth
+        ? t.trademaster.hub.navListings
+        : t.trademaster.products;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <MarketplaceNav className="mb-8" />
+
       <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start">
         {shop.logoUrl ? (
           <img
@@ -81,6 +97,9 @@ export default function ShopDetailPage() {
         <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold text-text-primary">{shop.name}</h1>
           {shop.industry && <p className="mt-1 text-text-tertiary">{shop.industry}</p>}
+          <div className="mt-2">
+            <OfferBadges kinds={shop.kinds} />
+          </div>
           <p className="mt-3 text-text-secondary">{shop.summary}</p>
 
           <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -162,7 +181,12 @@ export default function ShopDetailPage() {
       )}
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-text-primary">{t.trademaster.products}</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold text-text-primary">{heading}</h2>
+          {offersBoth && (
+            <KindToggle value={kind} onChange={(next) => controls.setFilter('kind', next)} />
+          )}
+        </div>
 
         {loadingProducts && (
           <div className="flex justify-center py-12">

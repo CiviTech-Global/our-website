@@ -1,19 +1,27 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import { LocateFixed, MapPin, Package, Store } from 'lucide-react';
+import { MapPin, Package, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
-import { useShopFacets, usePublicShops } from '@/api/trademaster';
+import { useProductCategories, useShopFacets, usePublicShops } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
-import { toPersianDigits } from '@/i18n/utils';
+import { useMarketLocation } from '@/lib/useMarketLocation';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
-import { useGeolocation } from '@/lib/useGeolocation';
+import {
+  CategorySelect,
+  KindToggle,
+  LocationBar,
+  MarketplaceNav,
+  NothingNearby,
+  OfferBadges,
+} from '@/components/trademaster/MarketplaceUi';
+import { categoryForKind, formatCount, formatKm, type KindFilter } from '@/lib/marketFormat';
 import type { PublicShopSummary, ShopSort } from '@/types/trademaster';
 
 // Lazy: around 45 KB gzipped, and it is only drawn once somebody asks where
@@ -29,26 +37,55 @@ const PAGE_SIZE = 24;
  * before its name is read. The row view is for the other way of looking —
  * scanning a column of places by town, which a grid makes awkward.
  *
- * Everything here has been through moderation, and a shop only appears while
- * both it and its listing state say so.
+ * With a search point set, the list is every shop within the chosen radius,
+ * nearest first, and the map shows the circle being searched. An empty circle
+ * says how far the nearest shop is and offers to widen it — "near me" used to
+ * answer a reader 140 km from the nearest shop with an empty page and no map,
+ * which read as a broken button.
  */
 export default function ShopsPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   useDocumentTitle(t.trademaster.shops, { description: t.trademaster.metaDescription });
 
   const controls = useListControls({
     defaultView: 'cards',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
-    filters: { province: '', industry: '' },
+    filters: { province: '', industry: '', kind: '', categoryId: '' },
   });
 
-  const geo = useGeolocation();
-  const [radiusKm, setRadiusKm] = useState(25);
-
+  const location = useMarketLocation();
   const { data: facets } = useShopFacets();
+  const { data: categories } = useProductCategories();
 
-  const near = geo.state.status === 'ready' ? geo.state : null;
+  const kind = controls.filters.kind as KindFilter;
+  const categoryId = categoryForKind(categories, controls.filters.categoryId, kind);
+
+  // See MarketplaceHomePage: a category of the other kind is ignored at once
+  // and dropped from the address bar a tick later.
+  const { setFilter, setPage } = controls;
+  useEffect(() => {
+    if (controls.filters.categoryId && !categoryId && categories) setFilter('categoryId', '');
+  }, [controls.filters.categoryId, categoryId, categories, setFilter]);
+
+  // A new search point or radius is a new list: page 4 of the old one means
+  // nothing in the new one.
+  const { latitude, longitude, radiusKm } = location.query as {
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
+  };
+  const searchPoint = [latitude, longitude, radiusKm].join(',');
+  const lastSearchPoint = useRef(searchPoint);
+  useEffect(() => {
+    // Only on a change: on first load the page number in the address bar is
+    // what the reader asked for, from a link or the back button.
+    if (lastSearchPoint.current === searchPoint) return;
+    lastSearchPoint.current = searchPoint;
+    setPage(1);
+  }, [searchPoint, setPage]);
+
+  const near = Boolean(location.location);
 
   const { data, isLoading } = usePublicShops({
     page: controls.page,
@@ -56,11 +93,10 @@ export default function ShopsPage() {
     search: controls.search || undefined,
     province: controls.filters.province || undefined,
     industry: controls.filters.industry || undefined,
-    // Sent together or not at all; the server refuses half a pair rather than
-    // quietly answering a different question.
-    latitude: near?.latitude,
-    longitude: near?.longitude,
-    radiusKm: near ? radiusKm : undefined,
+    kind: kind || undefined,
+    categoryId: categoryId || undefined,
+    ...location.query,
+    // Distance is the order of a radius search, whatever the menu said.
     sort: near ? 'nearest' : (controls.sort as ShopSort),
   });
 
@@ -77,63 +113,22 @@ export default function ShopsPage() {
       href: `/marketplace/shops/${shop.slug}`,
     }));
 
+  const circle = location.location ? { ...location.location, radiusKm: location.radiusKm } : null;
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <header className="mb-6">
         <h1 className="text-3xl font-bold text-text-primary">{t.trademaster.shops}</h1>
         <p className="mt-2 text-text-secondary">{t.trademaster.subtitle}</p>
       </header>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        {near ? (
-          <>
-            <label className="flex items-center gap-2 text-sm text-text-secondary">
-              {t.trademaster.radiusKm}
-              <input
-                type="number"
-                min={1}
-                max={200}
-                value={radiusKm}
-                onChange={(e) => setRadiusKm(Math.max(1, Number(e.target.value) || 1))}
-                dir="ltr"
-                className="w-20 rounded-lg border border-border-default bg-surface-default px-2 py-1"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={geo.clear}
-              className="text-sm text-text-secondary underline hover:text-text-primary"
-            >
-              {t.trademaster.clearNearMe}
-            </button>
-          </>
-        ) : (
-          // Only offered while it could still work. After a refusal, asking
-          // again achieves nothing but a second refusal.
-          geo.state.status !== 'denied' && (
-            <button
-              type="button"
-              onClick={geo.locate}
-              disabled={geo.state.status === 'locating'}
-              className="inline-flex items-center gap-2 rounded-lg border border-border-default px-3 py-1.5 text-sm text-text-secondary transition hover:border-border-strong disabled:opacity-50"
-            >
-              <LocateFixed className="h-4 w-4" aria-hidden="true" />
-              {geo.state.status === 'locating' ? t.trademaster.locating : t.trademaster.nearMe}
-            </button>
-          )
-        )}
+      <MarketplaceNav className="mb-6" />
 
-        {geo.state.status === 'denied' && (
-          <p className="text-sm text-text-tertiary">{t.trademaster.locationDenied}</p>
-        )}
-        {geo.state.status === 'unavailable' && (
-          <p className="text-sm text-text-tertiary">{t.trademaster.locationUnavailable}</p>
-        )}
-      </div>
+      <LocationBar location={location} className="mb-4" />
 
-      {near && pins.length > 0 && (
+      {circle && (
         <Suspense fallback={<div className="mb-6 h-72 animate-pulse rounded-xl bg-surface-muted" />}>
-          <ShopMap pins={pins} className="mb-6" height={288} />
+          <ShopMap pins={pins} circle={circle} onPick={location.pick} className="mb-6" height={288} />
         </Suspense>
       )}
 
@@ -147,6 +142,17 @@ export default function ShopsPage() {
         views={['cards', 'table']}
         filters={
           <>
+            <KindToggle value={kind} onChange={(next) => controls.setFilter('kind', next)} />
+
+            <CategorySelect
+              className="w-52"
+              categories={categories}
+              kind={kind}
+              value={categoryId}
+              onChange={(value) => controls.setFilter('categoryId', value)}
+              emptyLabel={t.trademaster.allCategories}
+            />
+
             {/* Built from the provinces and trades shops have actually
                 written, so no option here can come back empty. Hidden
                 entirely when there is only one of a kind to choose. */}
@@ -182,15 +188,19 @@ export default function ShopsPage() {
               </Select>
             )}
 
-            <Select
-              className="w-48"
-              value={controls.sort}
-              aria-label={t.list.sortLabel}
-              onChange={(e) => controls.setSort(e.target.value)}
-            >
-              <option value="newest">{t.trademaster.sortNewest}</option>
-              <option value="name">{t.trademaster.sortName}</option>
-            </Select>
+            {/* Not offered during a radius search, which is ordered by
+                distance; a menu that changes nothing is worse than none. */}
+            {!near && (
+              <Select
+                className="w-48"
+                value={controls.sort}
+                aria-label={t.list.sortLabel}
+                onChange={(e) => controls.setSort(e.target.value)}
+              >
+                <option value="newest">{t.trademaster.sortNewest}</option>
+                <option value="name">{t.trademaster.sortName}</option>
+              </Select>
+            )}
           </>
         }
       />
@@ -201,7 +211,15 @@ export default function ShopsPage() {
         </div>
       )}
 
-      {!isLoading && data?.items.length === 0 && (
+      {!isLoading && near && data?.total === 0 && (
+        <NothingNearby
+          radiusKm={location.radiusKm}
+          nearestKm={data.nearestKm}
+          onWiden={location.setRadius}
+        />
+      )}
+
+      {!isLoading && !near && data?.items.length === 0 && (
         <EmptyState
           title={controls.activeCount > 0 ? t.list.noResults : t.trademaster.noShops}
           description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
@@ -233,6 +251,19 @@ export default function ShopsPage() {
           />
         </div>
       )}
+
+      {/* The way in for a shop that is not here yet. */}
+      <p className="mt-10 text-center text-sm text-text-secondary">
+        {t.trademaster.hub.joinPrompt}{' '}
+        <Link to="/marketplace/join" className="font-medium text-text-primary underline">
+          {t.trademaster.hub.navJoin}
+        </Link>
+      </p>
+
+      {/* Kept out of the list's own markup so the count reads naturally once. */}
+      <span className="sr-only" role="status">
+        {data ? t.trademaster.hub.shopCount.replace('{count}', formatCount(data.total, locale)) : ''}
+      </span>
     </div>
   );
 }
@@ -272,10 +303,7 @@ function Where({ shop }: { shop: PublicShopSummary }) {
   const distance =
     shop.distanceKm === undefined
       ? null
-      : t.trademaster.distanceAway.replace(
-          '{km}',
-          locale === 'fa' ? toPersianDigits(shop.distanceKm) : String(shop.distanceKm)
-        );
+      : t.trademaster.distanceAway.replace('{km}', formatKm(shop.distanceKm, locale));
 
   if (!where && !distance) return null;
 
@@ -288,7 +316,7 @@ function Where({ shop }: { shop: PublicShopSummary }) {
 }
 
 function ShopCard({ shop }: { shop: PublicShopSummary }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <li className="rounded-xl border border-border-default bg-surface-default transition hover:border-border-strong">
@@ -298,6 +326,9 @@ function ShopCard({ shop }: { shop: PublicShopSummary }) {
           <div className="min-w-0 flex-1">
             <h2 className="truncate font-semibold text-text-primary">{shop.name}</h2>
             {shop.industry && <p className="truncate text-sm text-text-tertiary">{shop.industry}</p>}
+            <div className="mt-1">
+              <OfferBadges kinds={shop.kinds} />
+            </div>
           </div>
           {shop.featured && <Badge variant="info">{t.showcase.featured}</Badge>}
         </div>
@@ -308,7 +339,7 @@ function ShopCard({ shop }: { shop: PublicShopSummary }) {
           <Where shop={shop} />
           <span className="inline-flex items-center gap-1 text-sm text-text-tertiary">
             <Package className="h-3.5 w-3.5" aria-hidden="true" />
-            {t.trademaster.productCount.replace('{count}', String(shop.productCount))}
+            {t.trademaster.productCount.replace('{count}', formatCount(shop.productCount, locale))}
           </span>
         </div>
       </Link>
@@ -317,7 +348,7 @@ function ShopCard({ shop }: { shop: PublicShopSummary }) {
 }
 
 function ShopRow({ shop }: { shop: PublicShopSummary }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <li className="bg-surface-default transition hover:bg-surface-muted">
@@ -329,8 +360,9 @@ function ShopRow({ shop }: { shop: PublicShopSummary }) {
         </div>
         <div className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
           <Where shop={shop} />
+          <OfferBadges kinds={shop.kinds} />
           <span className="text-sm text-text-tertiary">
-            {t.trademaster.productCount.replace('{count}', String(shop.productCount))}
+            {t.trademaster.productCount.replace('{count}', formatCount(shop.productCount, locale))}
           </span>
         </div>
       </Link>

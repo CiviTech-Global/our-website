@@ -1,8 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type {
+  NearbyPage,
   OwnProduct,
   OwnShop,
+  OwnShopDetail,
+  ModerationStatus,
+  ShopMapQuery,
+  ShopMapResult,
   Paged,
   ProductBoardQuery,
   ProductCategoryNode,
@@ -48,6 +53,7 @@ import type {
 
 const keys = {
   shops: ['trademaster', 'shops'] as const,
+  map: ['trademaster', 'map'] as const,
   products: ['trademaster', 'products'] as const,
   categories: ['trademaster', 'categories'] as const,
   facets: ['trademaster', 'facets'] as const,
@@ -92,9 +98,26 @@ export function usePublicShops(query: ShopBoardQuery) {
   return useQuery({
     queryKey: [...keys.shops, query],
     queryFn: async () => {
-      const res = await api.get<Paged<PublicShopSummary>>('/trademaster/shops', { params: query });
+      const res = await api.get<NearbyPage<PublicShopSummary>>('/trademaster/shops', {
+        params: query,
+      });
       return res.data;
     },
+    // The previous page stays on screen while the next loads, so changing a
+    // filter does not flash an empty list and a spinner between two answers.
+    placeholderData: (previous) => previous,
+  });
+}
+
+/** Every matching shop with a location, for the map. */
+export function useShopMap(query: ShopMapQuery) {
+  return useQuery({
+    queryKey: [...keys.map, query],
+    queryFn: async () => {
+      const res = await api.get<ShopMapResult>('/trademaster/map', { params: query });
+      return res.data;
+    },
+    placeholderData: (previous) => previous,
   });
 }
 
@@ -113,11 +136,12 @@ export function usePublicProducts(query: ProductBoardQuery) {
   return useQuery({
     queryKey: [...keys.products, query],
     queryFn: async () => {
-      const res = await api.get<Paged<PublicProductSummary>>('/trademaster/products', {
+      const res = await api.get<NearbyPage<PublicProductSummary>>('/trademaster/products', {
         params: query,
       });
       return res.data;
     },
+    placeholderData: (previous) => previous,
   });
 }
 
@@ -260,6 +284,44 @@ export function useShopProducts(shopId: string | undefined) {
   });
 }
 
+/** One of the caller's own shops, whole, for the edit form. */
+export function useOwnShop(id: string | undefined) {
+  return useQuery({
+    queryKey: [...keys.ownShops, 'detail', id],
+    queryFn: async () => {
+      const res = await api.get<OwnShopDetail>(`/trademaster/me/shops/${id!}`);
+      return res.data;
+    },
+    enabled: Boolean(id),
+    // Always fresh: this fills a form somebody is about to save, and an old
+    // copy would quietly write back values they changed elsewhere.
+    staleTime: 0,
+  });
+}
+
+/**
+ * After a seller changes a listing, the public pages showing it are stale too:
+ * edits to a live listing are live, so the catalogue has to be refetched as
+ * well as the seller's own list.
+ */
+function invalidateCatalogue(qc: ReturnType<typeof useQueryClient>) {
+  void qc.invalidateQueries({ queryKey: keys.ownProducts });
+  void qc.invalidateQueries({ queryKey: keys.products });
+  void qc.invalidateQueries({ queryKey: keys.shops });
+  void qc.invalidateQueries({ queryKey: keys.map });
+  void qc.invalidateQueries({ queryKey: keys.categories });
+}
+
+export function useDeleteProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/trademaster/me/products/${id}`);
+    },
+    onSuccess: () => invalidateCatalogue(qc),
+  });
+}
+
 export function useCreateProduct() {
   const qc = useQueryClient();
   return useMutation({
@@ -270,7 +332,7 @@ export function useCreateProduct() {
       );
       return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -281,17 +343,27 @@ export function useUpdateProduct() {
       const res = await api.patch<OwnProduct>(`/trademaster/me/products/${input.id}`, input.payload);
       return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
+/**
+ * Publish a listing.
+ *
+ * Returns where it went: APPROVED when it went straight onto the site, or
+ * PENDING_REVIEW when the desk had asked for changes and wants to see them —
+ * so the screen can say which, rather than one message for two outcomes.
+ */
 export function useSubmitProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      await api.post(`/trademaster/me/products/${id}/submit`);
+      const res = await api.post<{ moderationStatus: ModerationStatus }>(
+        `/trademaster/me/products/${id}/submit`
+      );
+      return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -314,7 +386,7 @@ export function useWithdrawProduct() {
     mutationFn: async (id: string) => {
       await api.post(`/trademaster/me/products/${id}/withdraw`);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -324,7 +396,7 @@ export function useCloseProduct() {
     mutationFn: async (id: string) => {
       await api.post(`/trademaster/me/products/${id}/close`);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -334,7 +406,7 @@ export function useReopenProduct() {
     mutationFn: async (id: string) => {
       await api.post(`/trademaster/me/products/${id}/reopen`);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -365,7 +437,7 @@ export function useAddProductImages() {
       );
       return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -378,7 +450,7 @@ export function useUpdateImageCaption() {
       });
       return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -388,7 +460,7 @@ export function useRemoveProductImage() {
     mutationFn: async (imageId: string) => {
       await api.delete(`/trademaster/me/products/images/${imageId}`);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -402,7 +474,7 @@ export function useAddVariant() {
       );
       return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -416,7 +488,7 @@ export function useUpdateVariant() {
       );
       return res.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 
@@ -426,7 +498,7 @@ export function useRemoveVariant() {
     mutationFn: async (id: string) => {
       await api.delete(`/trademaster/me/products/variants/${id}`);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownProducts }),
+    onSuccess: () => invalidateCatalogue(qc),
   });
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { resolveI18nKey } from '@/i18n/utils';
@@ -19,7 +19,18 @@ export default function RegisterPage() {
   const { register: registerUser } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [serverError, setServerError] = useState<string | null>(null);
+
+  // Where the visitor was heading — "Add your shop", say — so a new account
+  // continues that journey instead of dropping them on the dashboard to find
+  // their way back. Router state only, and an in-app path only: one leading
+  // slash, never two, which would be another site.
+  const fromLocation = (location.state as { from?: { pathname?: string; search?: string } })?.from;
+  const from =
+    fromLocation?.pathname && /^\/(?!\/)/.test(fromLocation.pathname)
+      ? `${fromLocation.pathname}${fromLocation.search ?? ''}`
+      : undefined;
 
   const {
     register,
@@ -32,7 +43,7 @@ export default function RegisterPage() {
     try {
       const user = await registerUser(values);
       const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
-      navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
+      navigate(from ?? (isAdmin ? '/admin' : '/dashboard'), { replace: true });
     } catch {
       setServerError(t.auth.registerError);
       showToast(t.auth.registerError, 'error');

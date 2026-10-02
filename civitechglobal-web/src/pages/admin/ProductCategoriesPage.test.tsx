@@ -35,6 +35,7 @@ function category(over: Partial<AdminProductCategory> = {}): AdminProductCategor
     id: 'c1',
     slug: 'home',
     name: 'Home',
+    kind: 'PRODUCT',
     parentId: null,
     position: 0,
     active: true,
@@ -116,7 +117,7 @@ describe('the category desk', () => {
     // Open the edit form on the first one.
     await userEvent.click(screen.getAllByRole('button', { name: /ویرایش|edit/i })[0]);
 
-    const select = await screen.findByRole('combobox');
+    const select = await screen.findByLabelText(/دستهٔ والد|parent/i);
     const options = within(select).getAllByRole('option').map((o) => o.textContent);
 
     // The server refuses this; leaving it out of the menu means nobody has to
@@ -134,7 +135,7 @@ describe('the category desk', () => {
 
     await userEvent.click(screen.getAllByRole('button', { name: /دستهٔ جدید|new categor/i })[0]);
 
-    const select = await screen.findByRole('combobox');
+    const select = await screen.findByLabelText(/دستهٔ والد|parent/i);
     const options = within(select).getAllByRole('option').map((o) => o.textContent);
 
     expect(options).toContain('Home');

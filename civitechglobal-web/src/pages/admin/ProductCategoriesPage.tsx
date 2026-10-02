@@ -90,6 +90,12 @@ export default function ProductCategoriesPage() {
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-2 font-medium text-app-text">
                 {row.name}
+                {/* Shown on the top of each branch; children always share it. */}
+                {!child && (
+                  <Badge variant={row.kind === 'SERVICE' ? 'info' : 'default'}>
+                    {row.kind === 'SERVICE' ? t.trademaster.hub.kindServices : t.trademaster.hub.kindProducts}
+                  </Badge>
+                )}
                 {!row.active && <Badge variant="default">{t.categoryDesk.hidden}</Badge>}
               </p>
               <p className="ltr font-mono text-caption text-app-text-4">{row.slug}</p>
@@ -230,6 +236,7 @@ function CategoryForm({
 
   const [values, setValues] = useState<CategoryPayload>({
     name: category?.name ?? '',
+    kind: category?.kind ?? 'PRODUCT',
     slug: category?.slug ?? '',
     parentId: category?.parentId ?? null,
     position: category?.position,
@@ -241,6 +248,10 @@ function CategoryForm({
   // of things it could strand. The server refuses both; leaving them out of
   // the menu means nobody has to be told.
   const available = parents.filter((row) => row.id !== category?.id);
+  // One that already has children cannot become a child itself: that would be
+  // a third level, which no screen shows. The server refuses it too.
+  const hasChildren = (category?.childCount ?? 0) > 0;
+  const parent = parents.find((row) => row.id === values.parentId);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -249,6 +260,8 @@ function CategoryForm({
     // one from the name instead of storing nothing.
     const payload: CategoryPayload = {
       ...values,
+      // A child takes its parent's kind; sending one would only be ignored.
+      kind: values.parentId ? undefined : values.kind,
       slug: values.slug?.trim() ? values.slug.trim() : undefined,
     };
 
@@ -291,6 +304,7 @@ function CategoryForm({
           <Select
             id="category-parent"
             value={values.parentId ?? ''}
+            disabled={hasChildren}
             onChange={(event) => setValues({ ...values, parentId: event.target.value || null })}
           >
             <option value="">{t.categoryDesk.topLevel}</option>
@@ -301,6 +315,29 @@ function CategoryForm({
             ))}
           </Select>
         </FormField>
+
+        {/* Products or services: chosen at the top of a branch, inherited below it. */}
+        {parent ? (
+          <p className="text-caption text-app-text-3">
+            {t.trademaster.hub.kindInherited.replace(
+              '{kind}',
+              parent.kind === 'SERVICE' ? t.trademaster.hub.kindServices : t.trademaster.hub.kindProducts
+            )}
+          </p>
+        ) : (
+          <FormField label={t.trademaster.hub.kindField} htmlFor="category-kind" hint={t.trademaster.hub.kindCategoryHint}>
+            <Select
+              id="category-kind"
+              value={values.kind ?? 'PRODUCT'}
+              onChange={(event) =>
+                setValues({ ...values, kind: event.target.value === 'SERVICE' ? 'SERVICE' : 'PRODUCT' })
+              }
+            >
+              <option value="PRODUCT">{t.trademaster.hub.kindProducts}</option>
+              <option value="SERVICE">{t.trademaster.hub.kindServices}</option>
+            </Select>
+          </FormField>
+        )}
 
         <FormField label={t.categoryDesk.position} htmlFor="category-position">
           <Input

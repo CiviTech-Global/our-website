@@ -13,6 +13,8 @@ import { formatMoney } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
+import { KindBadge, MarketplaceNav } from '@/components/trademaster/MarketplaceUi';
+import { formatCount } from '@/lib/marketFormat';
 import { ProductCard } from './MarketProductsPage';
 import type { ProductVariant } from '@/types/trademaster';
 
@@ -68,18 +70,19 @@ export default function MarketProductDetailPage() {
 
   // A variant's null price means "same as the product" rather than free.
   const shownPrice = formatMoney(variant?.price ?? product.price, locale);
+  const isService = product.kind === 'SERVICE';
   const shownStock = variant ? variant.stock : product.stock;
 
-  // With variants, the product's own stock is ignored — the server does the
-  // same when deciding whether anything is available.
-  const anyStock = product.variants.length
-    ? product.variants.some((candidate) => candidate.stock > 0)
-    : product.stock > 0;
+  // The server's own answer — options counted, services always available — so
+  // the page and the board can never disagree about whether it can be had.
+  const anyStock = product.available;
 
   const images = product.images;
   const cover = images[Math.min(activeImage, images.length - 1)];
 
   const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
+  // An option of a service is never sold out; of a product, when it has none.
+  const optionSold = (option: ProductVariant) => !isService && option.stock === 0;
 
   /** How many of this exact product-and-variant are already in the basket. */
   const inBasket = cart.lines
@@ -107,7 +110,9 @@ export default function MarketProductDetailPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <MarketplaceNav className="mb-8" />
+
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Pictures */}
         <div>
@@ -165,9 +170,12 @@ export default function MarketProductDetailPage() {
         {/* The offer */}
         <div className="flex flex-col gap-5">
           <div>
-            {product.category && (
-              <p className="text-sm text-text-tertiary">{product.category.name}</p>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <KindBadge kind={product.kind} />
+              {product.category && (
+                <p className="text-sm text-text-tertiary">{product.category.name}</p>
+              )}
+            </div>
             <h1 className="mt-1 text-3xl font-bold text-text-primary">{product.title}</h1>
             <p className="mt-3 text-text-secondary">{product.summary}</p>
           </div>
@@ -182,14 +190,17 @@ export default function MarketProductDetailPage() {
               </span>
             )}
             {product.negotiable && <Badge variant="info">{t.trademaster.negotiable}</Badge>}
-            <Badge variant={anyStock ? 'success' : 'default'}>
-              {anyStock ? t.trademaster.inStock : t.trademaster.outOfStock}
-            </Badge>
+            {/* A service has no stock to report. */}
+            {!isService && (
+              <Badge variant={anyStock ? 'success' : 'default'}>
+                {anyStock ? t.trademaster.inStock : t.trademaster.outOfStock}
+              </Badge>
+            )}
           </div>
 
-          {anyStock && shownStock > 0 && shownStock <= LOW_STOCK_THRESHOLD && (
+          {!isService && anyStock && shownStock > 0 && shownStock <= LOW_STOCK_THRESHOLD && (
             <p className="text-sm text-text-secondary">
-              {t.trademaster.lowStock.replace('{count}', String(shownStock))}
+              {t.trademaster.lowStock.replace('{count}', formatCount(shownStock, locale))}
             </p>
           )}
 
@@ -201,7 +212,7 @@ export default function MarketProductDetailPage() {
               <div className="flex flex-wrap gap-2">
                 {product.variants.map((option) => {
                   const selected = option.id === variantId;
-                  const sold = option.stock === 0;
+                  const sold = optionSold(option);
                   return (
                     <button
                       key={option.id}
@@ -227,7 +238,7 @@ export default function MarketProductDetailPage() {
           {/* Add to the basket, while buying exists at all. The seller block
               below carries their phone and email, which is how a buyer reaches
               them while the module is a catalogue. */}
-          {features.tradeMasterOrders && (
+          {features.tradeMasterOrders && !isService && (
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-1">
               <span className="text-sm text-text-secondary">{t.trademaster.quantity}</span>
@@ -273,7 +284,7 @@ export default function MarketProductDetailPage() {
               the seller fulfils and is paid for off-platform for now. */}
           <div className="flex items-start gap-2 rounded-lg border border-border-default bg-surface-muted p-3 text-sm text-text-secondary">
             <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p>{t.trademaster.noPaymentYet}</p>
+            <p>{isService ? t.trademaster.hub.bookService : t.trademaster.noPaymentYet}</p>
           </div>
 
           {/* The seller */}
@@ -348,7 +359,7 @@ export default function MarketProductDetailPage() {
 
           <p className="inline-flex items-center gap-1 text-sm text-text-tertiary">
             <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-            {t.trademaster.views.replace('{count}', String(product.views))}
+            {t.trademaster.views.replace('{count}', formatCount(product.views, locale))}
           </p>
         </div>
       </div>
@@ -378,7 +389,7 @@ export default function MarketProductDetailPage() {
 function MoreFromShop({ shopSlug, exceptId }: { shopSlug: string; exceptId: string }) {
   const { t } = useLocale();
 
-  // Five asked for, four shown: the product being read is in this shop too,
+  // Five asked for, four shown: the listing being read is in this shop too,
   // so asking for exactly four would leave three whenever it comes back.
   const { data } = usePublicProducts({ shopSlug, page: 1, pageSize: 5, sort: 'newest' });
 
@@ -390,11 +401,11 @@ function MoreFromShop({ shopSlug, exceptId }: { shopSlug: string; exceptId: stri
       <h2 className="mb-4 text-xl font-semibold text-text-primary">
         {t.trademaster.moreFromShop}
       </h2>
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ProductCard is its own <li>; wrapping it in another made a list
+          item inside a list item, which is not a list any more. */}
+      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {others.map((item) => (
-          <li key={item.id}>
-            <ProductCard product={item} />
-          </li>
+          <ProductCard key={item.id} product={item} />
         ))}
       </ul>
     </section>

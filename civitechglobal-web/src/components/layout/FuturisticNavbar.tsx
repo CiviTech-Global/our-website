@@ -21,8 +21,10 @@ import { features } from '@/lib/features';
 
 type NavKey =
   | 'cart'
+  | 'marketExplore'
   | 'shops'
   | 'marketProducts'
+  | 'marketJoin'
   | 'services'
   | 'startProject'
   | 'joinUs'
@@ -88,8 +90,10 @@ const NAV_ENTRIES: NavEntry[] = [
       // leads to a route that does not resolve is worse than no item.
       ...(features.tradeMaster
         ? ([
+            { to: '/marketplace', key: 'marketExplore' },
             { to: '/marketplace/shops', key: 'shops' },
             { to: '/marketplace/products', key: 'marketProducts' },
+            { to: '/marketplace/join', key: 'marketJoin' },
             ...(features.tradeMasterOrders
               ? ([{ to: '/marketplace/cart', key: 'cart' }] as const)
               : []),
