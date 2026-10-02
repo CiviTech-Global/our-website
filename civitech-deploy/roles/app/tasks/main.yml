@@ -261,11 +261,17 @@
   changed_when: false
 
 - name: Prune build cache that is no longer worth keeping
-  # Not a blanket prune. The cache holds the npm layers, and this host reaches
-  # the npm registry unreliably — a build that has to re-download everything
-  # is a build that can fail on the network. Recent cache is therefore an
-  # asset; cache older than a week is just disk.
-  ansible.builtin.command: docker builder prune -f --filter until={{ build_cache_ttl_hours }}h
+  # -a is what makes this prune anything. Without it, `docker builder prune`
+  # removes only cache no build references any more, and ordinary build layers
+  # were never removed at all, whatever the age limit said — the cache had
+  # grown to 8 GB under a one-week limit.
+  #
+  # With build_cache_ttl_hours at 0, all of it goes after every deploy. A
+  # non-zero value keeps recent layers, which makes the next build faster and
+  # less dependent on reaching the npm registry from this host.
+  ansible.builtin.command: >-
+    docker builder prune -af
+    {{ '' if (build_cache_ttl_hours | int) == 0 else '--filter until=' ~ build_cache_ttl_hours ~ 'h' }}
   changed_when: false
 
 - name: Report
