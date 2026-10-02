@@ -77,10 +77,17 @@ describe('product input', () => {
     expect(parsed.price).toBe(450000n);
   });
 
-  it('refuses a price that is not a plain digit string', () => {
-    for (const price of ['45.5', '-450000', '4e5', '450,000', '']) {
+  it('refuses a price that is not a whole number', () => {
+    for (const price of ['45.5', '-450000', '4e5', '', '0', 'abc']) {
       expect(() => productSchema.parse({ ...validProduct, price })).toThrow();
     }
+  });
+
+  it('reads a price the way people type it', () => {
+    // Thousands separators, Latin or Persian, and Persian digits are what a
+    // price box actually receives; refusing them refused ordinary input.
+    expect(productSchema.parse({ ...validProduct, price: '450,000' }).price).toBe(450000n);
+    expect(productSchema.parse({ ...validProduct, price: '۴۵۰٬۰۰۰' }).price).toBe(450000n);
   });
 
   it('refuses negative stock', () => {

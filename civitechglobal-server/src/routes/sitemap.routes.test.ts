@@ -8,6 +8,8 @@ import { describe, expect, it, vi } from 'vitest';
  */
 
 const findMany = vi.fn();
+const shopFindMany = vi.fn(async () => [] as unknown[]);
+const listingFindMany = vi.fn(async () => [] as unknown[]);
 
 vi.mock('../config/database.js', () => ({
   prisma: {
@@ -15,6 +17,10 @@ vi.mock('../config/database.js', () => ({
     jobPost: { findMany: (...args: unknown[]) => findMany(...args) },
     freelanceProject: { findMany: (...args: unknown[]) => findMany(...args) },
     bookListing: { findMany: (...args: unknown[]) => findMany(...args) },
+    // The catalogue's own two queries, on mocks of their own so the order the
+    // four listing queries above are answered in is unchanged.
+    business: { findMany: (...args: unknown[]) => shopFindMany(...args) },
+    product: { findMany: (...args: unknown[]) => listingFindMany(...args) },
   },
 }));
 
@@ -53,7 +59,31 @@ describe('GET /api/sitemap/extras.xml', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('<urlset');
-    expect(response.text.match(/<url>/g) ?? []).toHaveLength(0);
+    // Only the marketplace's own pages, which exist whether or not any shop
+    // does — and only while the module is on, as it is outside production.
+    const locs = response.text.match(/<loc>[^<]+<\/loc>/g) ?? [];
+    expect(locs.every((loc) => /\/marketplace(\/shops|\/products|\/join)?<\/loc>$/.test(loc))).toBe(true);
+  });
+});
+
+describe('the marketplace', () => {
+  it('lists public shops and listings, with Persian slugs encoded', async () => {
+    findMany.mockResolvedValue([]);
+    shopFindMany.mockResolvedValueOnce([{ slug: 'آرایشگاه-نگین', updatedAt: new Date('2026-09-30') }]);
+    listingFindMany.mockResolvedValueOnce([
+      { slug: 'اصلاح-مو', updatedAt: new Date('2026-09-30'), business: { slug: 'آرایشگاه-نگین' } },
+    ]);
+
+    const response = await request(app).get('/api/sitemap/extras.xml');
+
+    const shop = encodeURIComponent('آرایشگاه-نگین');
+    expect(response.text).toContain(`/marketplace/shops/${shop}</loc>`);
+    expect(response.text).toContain(
+      `/marketplace/products/${shop}/${encodeURIComponent('اصلاح-مو')}</loc>`
+    );
+    expect(response.text).toContain('/marketplace/join</loc>');
+    // Asked with the public predicates, and nothing else.
+    expect(shopFindMany.mock.calls[0][0]).toMatchObject({ where: { moderationStatus: 'APPROVED', state: 'OPEN' } });
   });
 });
 

@@ -84,6 +84,23 @@ export function assertTransition(from: OrderStatus, to: OrderStatus, actor: 'buy
   }
 }
 
+/**
+ * The status, in words, for a notification.
+ *
+ * The raw enum used to go into the notification body, so a Persian sentence
+ * ended in "SHIPPED".
+ */
+const STATUS_LABEL: Record<OrderStatus, string> = {
+  PENDING: 'ثبت‌شده',
+  AWAITING_PAYMENT: 'در انتظار پرداخت',
+  PAID: 'پرداخت‌شده',
+  CONFIRMED: 'تأییدشده',
+  SHIPPED: 'ارسال‌شده',
+  DELIVERED: 'تحویل‌شده',
+  CANCELLED: 'لغوشده',
+  REFUNDED: 'بازپرداخت‌شده',
+};
+
 /** Statuses whose stock is still held, and must be returned when they end. */
 const HOLDS_STOCK: OrderStatus[] = ['PENDING', 'AWAITING_PAYMENT', 'PAID', 'CONFIRMED', 'SHIPPED'];
 
@@ -137,6 +154,7 @@ export async function checkout(userId: string, lines: BasketLine[], delivery: De
       select: {
         id: true,
         title: true,
+        kind: true,
         price: true,
         currency: true,
         stock: true,
@@ -158,6 +176,20 @@ export async function checkout(userId: string, lines: BasketLine[], delivery: De
       // the query above filters all three, so a missing row means "not for
       // sale" rather than "does not exist", and the message says so.
       if (!product) throw new AppError('یکی از کالاهای سبد خرید دیگر در دسترس نیست.', 409);
+
+      // Nobody buys from their own shop. Beyond being meaningless, an order
+      // whose buyer is also its seller has no second party: moveOrder reads the
+      // caller as the buyer, so the seller's half of the lifecycle — confirm,
+      // ship — could never be performed on it.
+      if (product.business.ownerId === userId) {
+        throw new AppError('امکان سفارش از فروشگاه خودتان وجود ندارد.', 409);
+      }
+
+      // A service has no stock to hold, and is not something this checkout
+      // knows how to deliver; it is booked with the shop directly.
+      if (product.kind === 'SERVICE') {
+        throw new AppError('خدمات از طریق سبد خرید سفارش داده نمی‌شوند؛ با فروشگاه تماس بگیرید.', 409);
+      }
 
       if (line.variantId && !product.variants.some((v) => v.id === line.variantId)) {
         throw new AppError('گزینهٔ انتخاب‌شده برای یکی از کالاها معتبر نیست.', 409);
@@ -239,7 +271,8 @@ export async function checkout(userId: string, lines: BasketLine[], delivery: De
         type: 'order.placed',
         title: 'سفارش تازه',
         body: order.code,
-        link: `/dashboard/shops/orders/${order.id}`,
+        // The shop's orders screen; there is no single-order page.
+        link: `/dashboard/shops/${businessId}/orders`,
       });
     }
 
@@ -386,18 +419,33 @@ export async function confirmPayment(reference: string, buyerId?: string) {
     },
   });
 
-  if (result.status === 'SUCCEEDED' && intent.order.status === 'AWAITING_PAYMENT') {
-    await prisma.order.update({
-      where: { id: intent.order.id },
+  if (result.status === 'SUCCEEDED') {
+    // Conditional on the status at the moment of writing, not the one read
+    // before the gateway call. The buyer can cancel in another tab while the
+    // gateway is answering; an unconditional write would then mark a cancelled
+    // order paid — with its stock already released — or drag one the seller
+    // has since moved back to PAID.
+    const { count } = await prisma.order.updateMany({
+      where: { id: intent.order.id, status: 'AWAITING_PAYMENT' },
       data: { status: 'PAID', paidAt: new Date() },
     });
 
-    notifySafely(intent.order.buyerId, {
-      type: 'order.paid',
-      title: 'پرداخت انجام شد',
-      body: intent.order.code,
-      link: `/dashboard/orders/${intent.order.id}`,
-    });
+    if (count === 1) {
+      notifySafely(intent.order.buyerId, {
+        type: 'order.paid',
+        title: 'پرداخت انجام شد',
+        body: intent.order.code,
+        link: '/dashboard/orders',
+      });
+    } else {
+      // Money arrived for an order that is no longer waiting for it. Nothing
+      // here can send it back, so it is written where staff will see it rather
+      // than lost: the order keeps its status and gains a note.
+      await prisma.order.update({
+        where: { id: intent.order.id },
+        data: { internalNote: `پرداخت ${reference} پس از لغو سفارش تأیید شد؛ نیاز به بازپرداخت.` },
+      });
+    }
   }
 
   return { status: result.status, orderId: intent.orderId };
@@ -441,6 +489,7 @@ export async function moveOrder(
         code: true,
         status: true,
         buyerId: true,
+        businessId: true,
         subtotal: true,
         business: { select: { ownerId: true } },
       },
@@ -489,8 +538,9 @@ export async function moveOrder(
     notifySafely(actor === 'buyer' ? order.business.ownerId : order.buyerId, {
       type: 'order.moved',
       title: 'وضعیت سفارش تغییر کرد',
-      body: `${order.code} — ${to}`,
-      link: `/dashboard/orders/${order.id}`,
+      body: `${order.code} — ${STATUS_LABEL[to]}`,
+      // Each side to its own list: the buyer's orders, or the shop's.
+      link: actor === 'buyer' ? `/dashboard/shops/${order.businessId}/orders` : '/dashboard/orders',
     });
 
     return updated;

@@ -3,7 +3,7 @@ import { hashPassword } from '../../utils/password.js';
 import { emailLookupHash } from '../auth.service.js';
 import { generateTrackingCode } from '../insurance-request.service.js';
 import { IMAGE_EXTENSIONS, storeFiles } from '../attachment.service.js';
-import { slugify } from '../trademaster-shop.service.js';
+import { slugify } from '../trademaster-common.js';
 import { placeholderPng } from './placeholder-image.js';
 import type { DemoManifest } from './manifest.js';
 
@@ -73,20 +73,58 @@ const SHOPS = [
     address: null,
     phone: '02833554433',
   },
+  // Three that sell work rather than things, or clothes — so the products and
+  // services split, and a category with children, have something to show.
+  {
+    name: 'آرایشگاه مردانه نگین',
+    summary: 'اصلاح مو و صورت آقایان، با نوبت‌دهی تلفنی.',
+    industry: 'آرایش و پیرایش',
+    offset: { lat: -0.001, lng: 0.004 },
+    address: 'قزوین، خیابان نادری، کوچه ۸',
+    phone: '02833667788',
+  },
+  {
+    name: 'تعمیرگاه خودرو مینودر',
+    summary: 'مکانیکی، تعویض روغن و عیب‌یابی رایانه‌ای خودروهای سواری.',
+    industry: 'خدمات خودرو',
+    offset: { lat: 0.009, lng: 0.01 },
+    address: 'قزوین، بلوار مینودر، روبه‌روی پمپ بنزین',
+    phone: '02833990011',
+  },
+  {
+    name: 'پوشاک پاییزه',
+    summary: 'لباس زمستانی و پاییزی زنانه و مردانه، دوخت داخل.',
+    industry: 'پوشاک',
+    offset: { lat: -0.004, lng: 0.007 },
+    address: 'قزوین، خیابان پیغمبریه، پاساژ ستاره',
+    phone: '02833221144',
+  },
 ] as const;
 
-const CATEGORIES = [
-  { slug: 'handicraft', name: 'صنایع دستی' },
-  { slug: 'books', name: 'کتاب' },
-  { slug: 'food', name: 'مواد غذایی' },
-  { slug: 'tools', name: 'ابزار' },
-  { slug: 'plants', name: 'گل و گیاه' },
-  { slug: 'home', name: 'خانه و آشپزخانه' },
-] as const;
+/**
+ * Products and services, as two branches. Clothing has children, so choosing
+ * the parent on the board — and finding what is filed under the children —
+ * can be seen working.
+ */
+const CATEGORIES: Array<{ slug: string; name: string; kind: 'PRODUCT' | 'SERVICE'; parent?: string }> = [
+  { slug: 'handicraft', name: 'صنایع دستی', kind: 'PRODUCT' },
+  { slug: 'books', name: 'کتاب', kind: 'PRODUCT' },
+  { slug: 'food', name: 'مواد غذایی', kind: 'PRODUCT' },
+  { slug: 'tools', name: 'ابزار', kind: 'PRODUCT' },
+  { slug: 'plants', name: 'گل و گیاه', kind: 'PRODUCT' },
+  { slug: 'home', name: 'خانه و آشپزخانه', kind: 'PRODUCT' },
+  { slug: 'clothing', name: 'پوشاک', kind: 'PRODUCT' },
+  { slug: 'clothing-coats', name: 'کت و پالتو', kind: 'PRODUCT', parent: 'clothing' },
+  { slug: 'clothing-knitwear', name: 'بافتنی', kind: 'PRODUCT', parent: 'clothing' },
+  { slug: 'barbershop', name: 'آرایشگاه', kind: 'SERVICE' },
+  { slug: 'auto-repair', name: 'تعمیر خودرو', kind: 'SERVICE' },
+  { slug: 'tailoring', name: 'خیاطی و تعمیر لباس', kind: 'SERVICE' },
+];
 
 /** Products, keyed by the index of the shop that sells them. */
 const PRODUCTS: Array<{
   shop: number;
+  kind?: 'PRODUCT' | 'SERVICE';
   category: string;
   title: string;
   summary: string;
@@ -167,6 +205,76 @@ const PRODUCTS: Array<{
     price: 1_600_000n,
     stock: 6,
   },
+  {
+    shop: 5,
+    kind: 'SERVICE',
+    category: 'barbershop',
+    title: 'اصلاح مو',
+    summary: 'کوتاهی مو با قیچی یا ماشین، همراه شست‌وشو.',
+    price: 350_000n,
+    stock: 0,
+    variants: [
+      { label: 'فقط مو', stock: 0 },
+      { label: 'مو و صورت', price: 500_000n, stock: 0 },
+    ],
+  },
+  {
+    shop: 5,
+    kind: 'SERVICE',
+    category: 'barbershop',
+    title: 'اصلاح صورت با تیغ',
+    summary: 'اصلاح سنتی با حولهٔ داغ و تیغ یک‌بارمصرف.',
+    price: 200_000n,
+    stock: 0,
+  },
+  {
+    shop: 6,
+    kind: 'SERVICE',
+    category: 'auto-repair',
+    title: 'تعویض روغن موتور',
+    summary: 'با روغن انتخابی شما یا موجود تعمیرگاه، کمتر از نیم ساعت.',
+    price: 250_000n,
+    stock: 0,
+  },
+  {
+    shop: 6,
+    kind: 'SERVICE',
+    category: 'auto-repair',
+    title: 'عیب‌یابی رایانه‌ای',
+    summary: 'اتصال دستگاه دیاگ و گزارش مکتوب ایرادهای ثبت‌شده.',
+    price: 600_000n,
+    stock: 0,
+  },
+  {
+    shop: 7,
+    category: 'clothing-coats',
+    title: 'پالتو پشمی مردانه',
+    summary: 'پشم ۷۰ درصد، آستر ساتن، دوخت داخل.',
+    price: 7_900_000n,
+    stock: 0,
+    variants: [
+      { label: 'سایز ۴۸', stock: 2 },
+      { label: 'سایز ۵۰', stock: 3 },
+      { label: 'سایز ۵۲', stock: 0 },
+    ],
+  },
+  {
+    shop: 7,
+    category: 'clothing-knitwear',
+    title: 'ژاکت بافت زنانه',
+    summary: 'بافت دست، نخ اکریلیک نرم، در سه رنگ.',
+    price: 1_850_000n,
+    stock: 8,
+  },
+  {
+    shop: 7,
+    kind: 'SERVICE',
+    category: 'tailoring',
+    title: 'کوتاه کردن شلوار',
+    summary: 'کوتاه کردن و دوخت لبهٔ شلوار، تحویل روز بعد.',
+    price: 150_000n,
+    stock: 0,
+  },
 ];
 
 /** A demo account. The domain is reserved by RFC 2606 and can never be real. */
@@ -239,9 +347,17 @@ export async function seedTradeMaster(manifest: DemoManifest) {
   // ---- categories ---------------------------------------------------------
   const categoryIds = new Map<string, string>();
 
+  // In order: a parent is always listed before its children above, so its id
+  // is known by the time a child needs it.
   for (const [index, category] of CATEGORIES.entries()) {
     const row = await prisma.productCategory.create({
-      data: { slug: category.slug, name: category.name, position: index },
+      data: {
+        slug: category.slug,
+        name: category.name,
+        kind: category.kind,
+        parentId: category.parent ? categoryIds.get(category.parent) : null,
+        position: index,
+      },
       select: { id: true },
     });
     await manifest.record('productCategory', row.id);
@@ -307,6 +423,7 @@ export async function seedTradeMaster(manifest: DemoManifest) {
         slug: slugify(product.title) || generateTrackingCode().toLowerCase(),
         businessId: shopIds[product.shop],
         categoryId: categoryIds.get(product.category),
+        kind: product.kind ?? 'PRODUCT',
         title: product.title,
         summary: product.summary,
         price: product.price,

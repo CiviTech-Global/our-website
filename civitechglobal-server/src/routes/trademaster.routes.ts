@@ -19,6 +19,7 @@ import {
   reviewDecisionSchema,
   reviewQueueSchema,
   shopBoardSchema,
+  shopMapSchema,
   shopSchema,
   shopUpdateSchema,
   productSchema,
@@ -167,6 +168,22 @@ router.get(
   })
 );
 
+/**
+ * Every matching shop with a location, for the map.
+ *
+ * Its own route rather than a large page of /shops: a map is drawn whole, and
+ * the list's page size cap is the right cap for a list and the wrong one for
+ * a map. Same filters as the board, so the two always agree on what matches.
+ */
+router.get(
+  '/map',
+  publicCache({ maxAgeSeconds: 60, staleWhileRevalidateSeconds: 300 }),
+  wrap(async (req, res) => {
+    const query = shopMapSchema.parse(req.query);
+    successResponse(res, serialize(await shops.listMapShops(query)));
+  })
+);
+
 router.get(
   '/shops/:slug',
   publicCache({ maxAgeSeconds: 60, staleWhileRevalidateSeconds: 300 }),
@@ -214,6 +231,15 @@ router.patch(
     const input = shopUpdateSchema.parse(payloadOf(req));
     const result = await shops.updateShop(req.user!.userId, param(req, 'id'), input, fileOf(req));
     successResponse(res, serialize(result), 'ذخیره شد.');
+  })
+);
+
+/** One of the caller's own shops, whole, for the edit form. */
+router.get(
+  '/me/shops/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await shops.getOwnShop(req.user!.userId, param(req, 'id'))));
   })
 );
 
@@ -443,12 +469,33 @@ router.patch(
   })
 );
 
+/**
+ * Delete a listing of one's own, for good.
+ *
+ * One path segment after /me/products, so it cannot catch
+ * /me/products/images/:id or /me/products/variants/:id, which have two.
+ */
+router.delete(
+  '/me/products/:id',
+  authenticate,
+  wrap(async (req, res) => {
+    const result = await products.deleteProduct(req.user!.userId, param(req, 'id'));
+    successResponse(res, serialize(result), 'حذف شد.');
+  })
+);
+
 router.post(
   '/me/products/:id/submit',
   authenticate,
   wrap(async (req, res) => {
     const result = await products.submitProduct(req.user!.userId, param(req, 'id'));
-    successResponse(res, serialize(result), 'کالا برای بررسی ارسال شد.');
+    // Published straight away, unless the desk had asked for changes — then
+    // it goes back to the desk. The message says which.
+    successResponse(
+      res,
+      serialize(result),
+      result.moderationStatus === 'APPROVED' ? 'منتشر شد.' : 'برای بررسی ارسال شد.'
+    );
   })
 );
 

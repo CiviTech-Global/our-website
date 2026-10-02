@@ -2196,6 +2196,19 @@ model Business {
   @@map("businesses")
 }
 
+/// Whether a catalogue entry is a thing or a piece of work.
+///
+/// The split a buyer filters on first: somebody after a coat and somebody after
+/// a haircut are looking for different shops, and a single list mixing the two
+/// makes both searches worse. It also changes what the entry carries — a
+/// service has no stock to run out of.
+enum ListingKind {
+  /// Goods: clothing, food, tools. Has stock.
+  PRODUCT
+  /// Work done for the buyer: a barber, a mechanic. Never out of stock.
+  SERVICE
+}
+
 /// The catalogue tree products hang from.
 ///
 /// A real table rather than free text, because buyers browse by it and a
@@ -2206,6 +2219,10 @@ model ProductCategory {
 
   slug String @unique
   name String
+
+  /// Products or services. Set on a top-level category and inherited by its
+  /// children, so one branch never mixes the two — see the category service.
+  kind ListingKind @default(PRODUCT)
 
   parentId String?           @map("parent_id")
   parent   ProductCategory?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
@@ -2221,6 +2238,7 @@ model ProductCategory {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([parentId, position])
+  @@index([kind, active])
   @@map("product_categories")
 }
 
@@ -2237,6 +2255,9 @@ model Product {
   categoryId String?          @map("category_id")
   category   ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
+  /// A product or a service. Must match the category's kind when there is one.
+  kind ListingKind @default(PRODUCT)
+
   title       String
   summary     String
   description String?
@@ -2247,7 +2268,8 @@ model Product {
   currency String @default("IRT")
 
   /// Stock for a product with no variants. When variants exist they carry
-  /// their own and this is ignored — see ProductVariant.
+  /// their own and this is ignored — see ProductVariant. Always 0 and ignored
+  /// for a SERVICE, which is never out of stock.
   stock Int @default(0)
 
   /// Whether the seller will consider offers. Display only; nothing here
@@ -2283,6 +2305,7 @@ model Product {
   @@index([moderationStatus])
   @@index([state, publishedAt])
   @@index([categoryId, moderationStatus])
+  @@index([kind, moderationStatus])
   /// Trigram index for ILIKE search. Declared here rather than only in the
   /// migration so that prisma migrate diff stops proposing to drop it — which
   /// it did, silently, the first time a later migration was generated.

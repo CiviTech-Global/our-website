@@ -27,6 +27,8 @@ const mocks = vi.hoisted(() => ({
       findFirst: vi.fn(),
       update: vi.fn(async () => ({ id: 'v1', label: 'L', sku: null, price: null, stock: 0 })),
     },
+    // Every seller-side write checks the account is not paused.
+    user: { findUnique: vi.fn(async () => ({ marketplacePaused: false })) },
     $transaction: vi.fn(),
   },
 }));
@@ -209,14 +211,41 @@ describe('correcting one option of a product', () => {
     expect(mocks.prisma.productVariant.update.mock.calls[0][0].data).toEqual({ price: null });
   });
 
-  it('is refused once the product has gone to the desk', async () => {
+  it('is refused while a reviewer is looking at the product', async () => {
     mocks.prisma.productVariant.findFirst.mockResolvedValue({
       id: 'v1',
-      product: { moderationStatus: 'APPROVED' },
+      product: { moderationStatus: 'PENDING_REVIEW', kind: 'PRODUCT' },
     });
 
     await expect(updateVariant('u1', 'v1', { label: 'Large' })).rejects.toMatchObject({
       statusCode: 409,
+    });
+  });
+
+  it('is allowed on a live product, which stays live', async () => {
+    // The owner of an approved shop keeps their own catalogue current. A
+    // restock that had to go back through review would leave the site showing
+    // "sold out" until somebody got round to it.
+    mocks.prisma.productVariant.findFirst.mockResolvedValue({
+      id: 'v1',
+      product: { moderationStatus: 'APPROVED', kind: 'PRODUCT' },
+    });
+
+    await updateVariant('u1', 'v1', { stock: 9 });
+
+    expect(mocks.prisma.productVariant.update.mock.calls[0][0].data).toEqual({ stock: 9 });
+  });
+
+  it('ignores stock on an option of a service', async () => {
+    mocks.prisma.productVariant.findFirst.mockResolvedValue({
+      id: 'v1',
+      product: { moderationStatus: 'APPROVED', kind: 'SERVICE' },
+    });
+
+    await updateVariant('u1', 'v1', { label: 'With beard trim', stock: 9 });
+
+    expect(mocks.prisma.productVariant.update.mock.calls[0][0].data).toEqual({
+      label: 'With beard trim',
     });
   });
 });

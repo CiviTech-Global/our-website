@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { ListingKind, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { toPage } from '../utils/page.js';
@@ -16,15 +16,30 @@ import { assertMarketplaceAllowed, assertVerified } from './verification.service
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
-import { boundingBox, distanceKm, isValidPoint, type Point } from '../utils/geo.js';
+import { isValidPoint, type Point } from '../utils/geo.js';
+import {
+  MAX_RADIUS_KM,
+  PUBLIC_PRODUCT_WHERE,
+  catalogueWhere,
+  isUniqueViolation,
+  nearestShopKm,
+  roundKm,
+  shopKinds,
+  shopsWithinRadius,
+  slugify,
+} from './trademaster-common.js';
+
+// Kept importable from here: tests and the category service reached slugify
+// through this module before it moved to the shared one.
+export { slugify, MAX_RADIUS_KM };
 
 /**
  * Shops, in the TradeMaster module.
  *
  * A shop is a seller's storefront: a name, a description, somewhere to find
- * them, and a logo. Products hang off it; nothing here sells anything, because
- * there is no payment yet and a shop that pretends to take money it cannot
- * take is worse than one that is plainly a catalogue.
+ * them, and a logo. Products and services hang off it. Nothing here sells
+ * anything — the module is a catalogue, and a buyer reaches the seller through
+ * the phone number and address on the shop's page.
  *
  * It reuses the machinery the rest of the site already has rather than the one
  * TradeMaster shipped with. The owner is a `User` from this schema, the review
@@ -43,25 +58,47 @@ import { boundingBox, distanceKm, isValidPoint, type Point } from '../utils/geo.
 /** How many shops one account may run. */
 const MAX_SHOPS_PER_OWNER = 5;
 
+/**
+ * The most shops one map request returns.
+ *
+ * A map is drawn whole rather than paged, so it needs a ceiling of its own. The
+ * response says when it was reached, and the page tells the reader to narrow
+ * the search instead of pretending the pins it drew were all of them.
+ */
+const MAP_LIMIT = 1000;
+
+/**
+ * A shop as the form sends it.
+ *
+ * On an update every field is optional, and the optional ones accept `null`:
+ * absent means "leave it as it is", null means "remove it". Collapsing the two
+ * is how a seller ends up unable to delete a phone number they no longer use —
+ * which is exactly what happened before, because an emptied field was dropped
+ * on the way out and the old value stayed.
+ */
 export interface ShopInput {
   name: string;
   summary: string;
-  description?: string;
-  industry?: string;
-  province?: string;
-  city?: string;
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  phone?: string;
-  email?: string;
-  website?: string;
+  description?: string | null;
+  industry?: string | null;
+  province?: string | null;
+  city?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
 }
 
 export interface ShopQuery {
   search?: string;
   province?: string;
   industry?: string;
+  /** Shops offering this kind of thing — products, or services. */
+  kind?: ListingKind;
+  /** Shops with something public in this category or one of its children. */
+  categoryId?: string;
   sort?: 'newest' | 'name' | 'nearest';
   /** Both or neither; half a coordinate is refused rather than guessed at. */
   latitude?: number;
@@ -71,44 +108,23 @@ export interface ShopQuery {
   pageSize: number;
 }
 
-/**
- * How many shops the bounding box may return before the search stops being
- * exhaustive.
- *
- * Beyond this the answer is "the nearest of the first 500 in the box" rather
- * than "the nearest 500", which is a real difference and worth naming. A shop
- * directory does not reach it; if this ever serves products it will need a
- * PostGIS index and a different query.
- */
-const MAX_NEARBY_CANDIDATES = 500;
-
-/** The widest radius a caller may ask for, in kilometres. */
-export const MAX_RADIUS_KM = 200;
-
-function trimmed(value: string | undefined): string | undefined {
-  const next = value?.trim();
-  return next ? next : undefined;
-}
+/** The radius used when a location arrives without one. */
+const DEFAULT_RADIUS_KM = 10;
 
 /**
- * The part of the address bar a seller hands out.
+ * Optional text, normalised for storage.
  *
- * Latin-ised only as far as stripping what a URL cannot carry: Persian shop
- * names are the common case here, and transliterating them would produce a
- * slug the owner does not recognise as their own. A name with nothing
- * URL-safe left in it falls back to the code, which is ugly but never empty.
+ * Blank and whitespace-only become null rather than an empty string. An empty
+ * string in an optional column is a value that is not a value: `shop.phone`
+ * comes out truthy-looking to some checks and falsy to others, and the page
+ * renders an empty "Phone:" line or a `tel:` link to nowhere depending on which
+ * one it used.
  */
-export function slugify(name: string): string {
-  const base = name
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_]+/g, '-')
-    // Keep letters and digits in any script, drop punctuation.
-    .replace(/[^\p{L}\p{N}-]+/gu, '')
-    .replace(/-{2,}/g, '-')
-    .replace(/^-|-$/g, '');
-
-  return base.slice(0, 60);
+function text(value: string | null | undefined): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const next = value.trim();
+  return next ? next : null;
 }
 
 /**
@@ -135,33 +151,44 @@ async function uniqueSlug(name: string, fallback: string): Promise<string> {
   return `${base}-${fallback.toLowerCase()}`;
 }
 
-/** Rejects a coordinate that is not on Earth, before it reaches the column. */
-function assertSaneCoordinates(latitude?: number, longitude?: number): void {
-  if (latitude === undefined && longitude === undefined) return;
-  if (latitude === undefined || longitude === undefined) {
-    // Half a coordinate puts a pin in the Gulf of Guinea, which is where
-    // (0, 0) is and where every half-filled location ends up.
+/**
+ * The location, checked as a pair.
+ *
+ * Both present, both null (clear it), or both absent (leave it). One without
+ * the other is refused: half a coordinate puts a pin in the Gulf of Guinea,
+ * which is where (0, 0) is and where every half-filled location ends up.
+ */
+function locationPatch(
+  latitude: number | null | undefined,
+  longitude: number | null | undefined
+): { latitude?: number | null; longitude?: number | null } {
+  if (latitude === undefined && longitude === undefined) return {};
+  if (latitude === null && longitude === null) return { latitude: null, longitude: null };
+
+  if (typeof latitude !== 'number' || typeof longitude !== 'number') {
     throw new AppError('برای ثبت موقعیت، هر دو مقدار طول و عرض جغرافیایی لازم است.', 400);
   }
-  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+  if (!isValidPoint({ latitude, longitude })) {
     throw new AppError('موقعیت واردشده معتبر نیست.', 400);
   }
+  return { latitude, longitude };
 }
 
-function normalize(input: Partial<ShopInput>): Partial<ShopInput> {
+/** The writable columns from a ShopInput, with blanks turned into nulls. */
+function normalize(input: Partial<ShopInput>) {
+  const email = text(input.email);
   return {
     ...(input.name !== undefined ? { name: input.name.trim() } : {}),
     ...(input.summary !== undefined ? { summary: input.summary.trim() } : {}),
-    ...(input.description !== undefined ? { description: trimmed(input.description) } : {}),
-    ...(input.industry !== undefined ? { industry: trimmed(input.industry) } : {}),
-    ...(input.province !== undefined ? { province: trimmed(input.province) } : {}),
-    ...(input.city !== undefined ? { city: trimmed(input.city) } : {}),
-    ...(input.address !== undefined ? { address: trimmed(input.address) } : {}),
-    ...(input.phone !== undefined ? { phone: trimmed(input.phone) } : {}),
-    ...(input.email !== undefined ? { email: trimmed(input.email)?.toLowerCase() } : {}),
-    ...(input.website !== undefined ? { website: trimmed(input.website) } : {}),
-    ...(input.latitude !== undefined ? { latitude: input.latitude } : {}),
-    ...(input.longitude !== undefined ? { longitude: input.longitude } : {}),
+    ...(input.description !== undefined ? { description: text(input.description) } : {}),
+    ...(input.industry !== undefined ? { industry: text(input.industry) } : {}),
+    ...(input.province !== undefined ? { province: text(input.province) } : {}),
+    ...(input.city !== undefined ? { city: text(input.city) } : {}),
+    ...(input.address !== undefined ? { address: text(input.address) } : {}),
+    ...(input.phone !== undefined ? { phone: text(input.phone) } : {}),
+    ...(input.email !== undefined ? { email: email ? email.toLowerCase() : email } : {}),
+    ...(input.website !== undefined ? { website: text(input.website) } : {}),
+    ...locationPatch(input.latitude, input.longitude),
   };
 }
 
@@ -185,34 +212,45 @@ export function logoUrl(id: string, storedName: string | null): string | null {
 export async function createShop(userId: string, input: ShopInput, logo: IncomingFile | null) {
   await assertVerified(userId);
   await assertMarketplaceAllowed(userId);
-  assertSaneCoordinates(input.latitude, input.longitude);
+  const data = normalize(input);
 
   const existing = await prisma.business.count({ where: { ownerId: userId } });
   if (existing >= MAX_SHOPS_PER_OWNER) {
     throw new AppError(`هر حساب حداکثر می‌تواند ${MAX_SHOPS_PER_OWNER} فروشگاه داشته باشد.`, 409);
   }
 
-  const code = generateTrackingCode();
-  const slug = await uniqueSlug(input.name, code);
   const stored = await storeLogo(logo);
 
   try {
-    return await prisma.business.create({
-      data: {
-        // Caller fields first, service-decided fields after. Spread last, a
-        // request body carrying `featured` or `moderationStatus` would grant
-        // itself both.
-        ...(normalize(input) as ShopInput),
-        code,
-        slug,
-        ownerId: userId,
-        logoStoredName: stored?.storedName,
-        logoOriginalName: stored?.originalName,
-        logoMimeType: stored?.mimeType,
-        moderationStatus: 'DRAFT',
-      },
-      select: { id: true, code: true, slug: true, moderationStatus: true },
-    });
+    // A second try on a slug collision. uniqueSlug checks before it inserts,
+    // so two shops with the same name created in the same instant can both
+    // pick the same free slug; the loser gets the next one rather than a 500.
+    for (let attempt = 0; ; attempt += 1) {
+      const code = generateTrackingCode();
+      try {
+        return await prisma.business.create({
+          data: {
+            // Caller fields first, service-decided fields after. Spread last, a
+            // request body carrying `featured` or `moderationStatus` would grant
+            // itself both.
+            ...data,
+            name: input.name.trim(),
+            summary: input.summary.trim(),
+            code,
+            slug: await uniqueSlug(input.name, code),
+            ownerId: userId,
+            logoStoredName: stored?.storedName,
+            logoOriginalName: stored?.originalName,
+            logoMimeType: stored?.mimeType,
+            moderationStatus: 'DRAFT',
+          },
+          select: { id: true, code: true, slug: true, moderationStatus: true },
+        });
+      } catch (error) {
+        if (attempt < 2 && isUniqueViolation(error)) continue;
+        throw error;
+      }
+    }
   } catch (error) {
     // Nothing references the file yet, so a failed insert must not leave it
     // behind — an orphan in storage is invisible and never collected.
@@ -240,6 +278,45 @@ async function ownedShop(userId: string, shopId: string) {
   return shop;
 }
 
+/**
+ * Everything the edit form needs, for the owner only.
+ *
+ * The list carries a summary of each shop, and the form used to be filled from
+ * it — so the description, address, phone, email, website and location all
+ * opened blank on an existing shop. The seller saw empty boxes for details they
+ * had already given, and could neither check nor correct them.
+ */
+export async function getOwnShop(userId: string, shopId: string) {
+  const shop = await prisma.business.findFirst({
+    where: { id: shopId, ownerId: userId },
+    select: {
+      id: true,
+      code: true,
+      slug: true,
+      name: true,
+      summary: true,
+      description: true,
+      industry: true,
+      province: true,
+      city: true,
+      address: true,
+      latitude: true,
+      longitude: true,
+      phone: true,
+      email: true,
+      website: true,
+      moderationStatus: true,
+      state: true,
+      reviewNote: true,
+      logoStoredName: true,
+    },
+  });
+  if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
+
+  const { logoStoredName, ...rest } = shop;
+  return { ...rest, logoUrl: logoUrl(shop.id, logoStoredName) };
+}
+
 export async function updateShop(
   userId: string,
   shopId: string,
@@ -248,14 +325,14 @@ export async function updateShop(
 ) {
   const shop = await ownedShop(userId, shopId);
   assertAuthorEditable(shop.moderationStatus);
-  assertSaneCoordinates(input.latitude, input.longitude);
+  const data = normalize(input);
 
   const stored = await storeLogo(logo);
   try {
     const updated = await prisma.business.update({
       where: { id: shop.id },
       data: {
-        ...normalize(input),
+        ...data,
         ...(stored
           ? {
               logoStoredName: stored.storedName,
@@ -299,15 +376,13 @@ export async function submitShop(userId: string, shopId: string) {
 /**
  * Back to a draft, so the owner can change it.
  *
- * Editing is refused once a listing is in the queue or published — an edit
- * there would change what a reviewer approved without anybody seeing the
- * change — so this is the way back: unpublish it, edit it, submit it again.
+ * Editing is refused once a shop is in the queue or published — an edit there
+ * would change what a reviewer approved without anybody seeing the change — so
+ * this is the way back: unpublish it, edit it, submit it again.
  *
- * The products are left as they are. They become unreachable while the shop
- * is not approved, because every public query filters on the shop too, and
- * they come back exactly as they were when it is approved again. Sending them
- * all to PENDING_REVIEW instead would put a fresh pile on the review desk
- * every time a seller fixed a spelling mistake in their own address.
+ * The products are left as they are. They become unreachable while the shop is
+ * not approved, because every public query filters on the shop too, and they
+ * come back exactly as they were when it is approved again.
  */
 export async function withdrawShop(userId: string, shopId: string) {
   const shop = await ownedShop(userId, shopId);
@@ -326,19 +401,15 @@ export async function withdrawShop(userId: string, shopId: string) {
 /**
  * The owner takes their own shop down.
  *
- * Not a delete: the products, and later the orders against them, are a record
- * of what happened. Closing hides the shop and everything under it from the
- * public queries without removing anything.
+ * Not a delete: the products are a record of what the shop offered. Closing
+ * hides the shop and everything under it from the public queries without
+ * removing anything.
  *
  * The products themselves are deliberately left alone. Every public query
- * filters on the shop as well as on the product — see PUBLIC_PRODUCT_WHERE — so a closed
- * shop's catalogue is already unreachable, and closing each product too would
- * only destroy the one fact reopening needs: which of them the seller had
- * taken down by hand. It did that until now, and reopening the shop then left
- * the whole catalogue dark with nothing to say why.
- *
- * State, not moderation. Closing is the owner's own decision and reopenShop
- * undoes it; whether the shop may be seen at all stays with the review desk.
+ * filters on the shop as well as on the product — see PUBLIC_PRODUCT_WHERE — so
+ * a closed shop's catalogue is already unreachable, and closing each product
+ * too would only destroy the one fact reopening needs: which of them the seller
+ * had taken down by hand.
  */
 export async function closeShop(userId: string, shopId: string) {
   const shop = await ownedShop(userId, shopId);
@@ -354,10 +425,8 @@ export async function closeShop(userId: string, shopId: string) {
  * And puts it back.
  *
  * Only from CLOSED, and only the owner's own closing: EXPIRED is not something
- * a seller may undo by calling this, and a shop the desk has not approved goes
- * back to being open-but-unpublished, exactly as it was before it was closed.
- * Reopening therefore cannot publish anything the desk has not already agreed
- * to, because visibility needs both facts and this one only touches the state.
+ * a seller may undo by calling this. Reopening touches the state and never the
+ * moderation status, so it cannot publish anything the desk has not agreed to.
  */
 export async function reopenShop(userId: string, shopId: string) {
   const shop = await ownedShop(userId, shopId);
@@ -380,10 +449,6 @@ export async function reopenShop(userId: string, shopId: string) {
  * list of either, and inventing one would mean refusing a shop in a town the
  * list forgot. So the filters are built from what approved shops have really
  * written, which has the useful property that no option can return nothing.
- *
- * Only shops the public can see, for the same reason: a trade that exists
- * solely in an unapproved draft would otherwise appear in a dropdown and then
- * find nothing.
  */
 export async function listFacets() {
   const rows = await prisma.business.findMany({
@@ -448,144 +513,137 @@ function publicShopFields() {
     industry: true,
     province: true,
     city: true,
+    latitude: true,
+    longitude: true,
     featured: true,
     publishedAt: true,
     logoStoredName: true,
+    ownerId: true,
+    _count: { select: { products: { where: PUBLIC_LISTING_WHERE } } },
   } satisfies Prisma.BusinessSelect;
 }
 
-function shopSort(query: ShopQuery): Prisma.BusinessOrderByWithRelationInput[] {
-  // Featured first regardless of the chosen sort: it is an editorial decision
-  // about what belongs at the top, not a tie-breaker.
-  const featuredFirst = { featured: 'desc' } as const;
-  if (query.sort === 'name') return [featuredFirst, { name: 'asc' }];
-  return [featuredFirst, { publishedAt: 'desc' }];
-}
+type PublicShopRow = Prisma.BusinessGetPayload<{ select: ReturnType<typeof publicShopFields> }>;
 
 /**
- * Shops within a radius, nearest first.
+ * The filters every public shop query applies, as one where clause.
  *
- * Separate from listPublicShops rather than a branch inside it: the paging is
- * different in kind — this sorts by a value the database does not hold, so the
- * page is taken after the distances are known, and mixing that into the ordinary
- * query would mean two paging strategies behind one signature.
+ * The list, the radius search and the map all answer the same question with a
+ * different shape, so they must agree on what matches. Search looks at the
+ * shop's name and trade, and at the titles of what it offers: somebody typing
+ * "اصلاح مو" wants the barber whose shop is called "آرایشگاه نگین", and a
+ * search on shop names alone would never find it.
  */
-async function listNearbyShops(query: ShopQuery, centre: Point) {
-  const radiusKm = Math.min(query.radiusKm ?? 25, MAX_RADIUS_KM);
-  const box = boundingBox(centre, radiusKm);
-
-  const longitudeFilter: Prisma.BusinessWhereInput = box.crossesAntimeridian
-    ? // Two ranges, because the box wraps: everything east of the minimum OR
-      // everything west of the maximum.
-      {
-        OR: [
-          { longitude: { gte: box.minLongitude } },
-          { longitude: { lte: box.maxLongitude } },
-        ],
-      }
-    : { longitude: { gte: box.minLongitude, lte: box.maxLongitude } };
+async function publicShopWhere(query: Omit<ShopQuery, 'page' | 'pageSize'>) {
+  const search = query.search?.trim();
+  const filtersCatalogue = Boolean(query.kind || query.categoryId);
+  const catalogue = filtersCatalogue
+    ? await catalogueWhere({ kind: query.kind, categoryId: query.categoryId })
+    : null;
 
   const where: Prisma.BusinessWhereInput = {
     AND: [
       PUBLIC_LISTING_WHERE,
-      { latitude: { gte: box.minLatitude, lte: box.maxLatitude } },
-      longitudeFilter,
-      {
-        ...(query.province ? { province: query.province } : {}),
-        ...(query.industry ? { industry: query.industry } : {}),
-        ...(query.search?.trim()
-          ? { name: { contains: query.search.trim(), mode: 'insensitive' } }
-          : {}),
-      },
+      query.province ? { province: query.province } : {},
+      query.industry ? { industry: query.industry } : {},
+      catalogue ? { products: { some: catalogue } } : {},
+      search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { industry: { contains: search, mode: 'insensitive' } },
+              {
+                products: {
+                  some: { ...PUBLIC_PRODUCT_WHERE, title: { contains: search, mode: 'insensitive' } },
+                },
+              },
+            ],
+          }
+        : {},
     ],
   };
-
-  const candidates = await prisma.business.findMany({
-    where,
-    take: MAX_NEARBY_CANDIDATES,
-    select: {
-      ...publicShopFields(),
-      latitude: true,
-      longitude: true,
-      ownerId: true,
-      _count: { select: { products: { where: PUBLIC_LISTING_WHERE } } },
-    },
-  });
-
-  // The box is a rectangle and the radius is a circle, so its corners have to
-  // go. Featured first within the radius, then by distance — the same
-  // precedence the other boards use, because featuring is editorial rather than
-  // a tie-break.
-  const withDistance = candidates
-    .filter((shop) => shop.latitude !== null && shop.longitude !== null)
-    .map((shop) => ({
-      shop,
-      distanceKm: distanceKm(centre, {
-        latitude: shop.latitude as number,
-        longitude: shop.longitude as number,
-      }),
-    }))
-    .filter((row) => row.distanceKm <= radiusKm)
-    .sort((a, b) => {
-      if (a.shop.featured !== b.shop.featured) return a.shop.featured ? -1 : 1;
-      return a.distanceKm - b.distanceKm;
-    });
-
-  const total = withDistance.length;
-  const start = (query.page - 1) * query.pageSize;
-  const page = withDistance.slice(start, start + query.pageSize);
-
-  const profiles = await authorProfileSummaries(page.map((row) => row.shop.ownerId));
-
-  const items = page.map(({ shop, distanceKm: km }) => {
-    const { ownerId, logoStoredName, _count, latitude, longitude, ...rest } = shop;
-    return {
-      ...rest,
-      latitude,
-      longitude,
-      logoUrl: logoUrl(shop.id, logoStoredName),
-      productCount: _count.products,
-      ownerProfile: profiles.get(ownerId) ?? null,
-      /** Rounded to 100 m: a precise figure implies precision this does not have. */
-      distanceKm: Math.round(km * 10) / 10,
-    };
-  });
-
-  return toPage(items, total, query.page, query.pageSize);
+  return where;
 }
 
-export async function listPublicShops(query: ShopQuery) {
-  // A coordinate pair turns this into a proximity search. Half a pair is
-  // refused rather than silently ignored, because ignoring it would answer a
-  // different question than the one asked.
+/** A shop row as the public sees it, with what it offers. */
+async function presentShops(rows: PublicShopRow[], distances?: Map<string, number>) {
+  const [profiles, kinds] = await Promise.all([
+    authorProfileSummaries(rows.map((row) => row.ownerId)),
+    shopKinds(rows.map((row) => row.id)),
+  ]);
+
+  return rows.map(({ ownerId, logoStoredName, _count, ...row }) => ({
+    ...row,
+    logoUrl: logoUrl(row.id, logoStoredName),
+    productCount: _count.products,
+    kinds: kinds.get(row.id) ?? [],
+    ownerProfile: profiles.get(ownerId) ?? null,
+    ...(distances ? { distanceKm: roundKm(distances.get(row.id) ?? 0) } : {}),
+  }));
+}
+
+/**
+ * A location from a query, checked.
+ *
+ * A coordinate pair turns a query into a proximity search. Half a pair is
+ * refused rather than ignored, because ignoring it would answer a different
+ * question than the one asked and look like the feature is broken.
+ */
+function centreOf(query: { latitude?: number; longitude?: number }): Point | null {
   const hasLatitude = query.latitude !== undefined;
   const hasLongitude = query.longitude !== undefined;
 
   if (hasLatitude !== hasLongitude) {
     throw new AppError('برای جست‌وجوی نزدیکی، هر دو مقدار طول و عرض جغرافیایی لازم است.', 400);
   }
+  if (!hasLatitude) return null;
 
-  if (hasLatitude && hasLongitude) {
-    const centre = { latitude: query.latitude as number, longitude: query.longitude as number };
-    if (!isValidPoint(centre)) throw new AppError('موقعیت واردشده معتبر نیست.', 400);
-    return listNearbyShops(query, centre);
+  const centre = { latitude: query.latitude as number, longitude: query.longitude as number };
+  if (!isValidPoint(centre)) throw new AppError('موقعیت واردشده معتبر نیست.', 400);
+  return centre;
+}
+
+function shopSort(query: ShopQuery): Prisma.BusinessOrderByWithRelationInput[] {
+  // Featured first regardless of the chosen sort: it is an editorial decision
+  // about what belongs at the top, not a tie-breaker. Not so for a radius
+  // search, which sorts by distance alone — see shopsWithinRadius.
+  const featuredFirst = { featured: 'desc' } as const;
+  if (query.sort === 'name') return [featuredFirst, { name: 'asc' }];
+  return [featuredFirst, { publishedAt: 'desc' }];
+}
+
+export async function listPublicShops(query: ShopQuery) {
+  const centre = centreOf(query);
+  const where = await publicShopWhere(query);
+
+  if (centre) {
+    const radiusKm = Math.min(query.radiusKm ?? DEFAULT_RADIUS_KM, MAX_RADIUS_KM);
+    const ranked = await shopsWithinRadius(where, centre, radiusKm);
+    const start = (query.page - 1) * query.pageSize;
+    const pageIds = ranked.slice(start, start + query.pageSize);
+
+    const rows = await prisma.business.findMany({
+      where: { id: { in: pageIds.map((row) => row.id) } },
+      select: publicShopFields(),
+    });
+    // findMany does not keep the order of an `in` list, so the distance order
+    // is put back by hand.
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const ordered = pageIds
+      .map((row) => byId.get(row.id))
+      .filter((row): row is PublicShopRow => Boolean(row));
+
+    const items = await presentShops(
+      ordered,
+      new Map(ranked.map((row) => [row.id, row.distanceKm]))
+    );
+
+    return {
+      ...toPage(items, ranked.length, query.page, query.pageSize),
+      radiusKm,
+      nearestKm: ranked.length === 0 ? await nearestShopKm(where, centre) : null,
+    };
   }
-
-  const search = query.search?.trim();
-
-  const where: Prisma.BusinessWhereInput = {
-    AND: [
-      PUBLIC_LISTING_WHERE,
-      {
-        ...(query.province ? { province: query.province } : {}),
-        ...(query.industry ? { industry: query.industry } : {}),
-        // By name only. A word buried in a description is a worse match than
-        // one in the name, and mixing them makes the good matches impossible
-        // to find — the same reasoning as the book market.
-        ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
-      },
-    ],
-  };
 
   const [rows, total] = await Promise.all([
     prisma.business.findMany({
@@ -593,24 +651,68 @@ export async function listPublicShops(query: ShopQuery) {
       orderBy: shopSort(query),
       skip: (query.page - 1) * query.pageSize,
       take: query.pageSize,
-      select: {
-        ...publicShopFields(),
-        ownerId: true,
-        _count: { select: { products: { where: PUBLIC_LISTING_WHERE } } },
-      },
+      select: publicShopFields(),
     }),
     prisma.business.count({ where }),
   ]);
 
-  const profiles = await authorProfileSummaries(rows.map((row) => row.ownerId));
-  const items = rows.map(({ ownerId, logoStoredName, _count, ...row }) => ({
-    ...row,
-    logoUrl: logoUrl(row.id, logoStoredName),
-    productCount: _count.products,
-    ownerProfile: profiles.get(ownerId) ?? null,
-  }));
+  return toPage(await presentShops(rows), total, query.page, query.pageSize);
+}
 
-  return toPage(items, total, query.page, query.pageSize);
+/**
+ * Every matching shop that has a location, for the map.
+ *
+ * Not paged: a map with page two is not a map. Capped at MAP_LIMIT instead, and
+ * `truncated` says when the cap was reached so the page can ask the reader to
+ * narrow things down rather than present a partial map as the whole.
+ */
+export async function listMapShops(query: Omit<ShopQuery, 'page' | 'pageSize' | 'sort'>) {
+  const centre = centreOf(query);
+  const where = await publicShopWhere(query);
+
+  if (centre) {
+    const radiusKm = Math.min(query.radiusKm ?? DEFAULT_RADIUS_KM, MAX_RADIUS_KM);
+    const ranked = await shopsWithinRadius(where, centre, radiusKm);
+    const kept = ranked.slice(0, MAP_LIMIT);
+
+    const rows = await prisma.business.findMany({
+      where: { id: { in: kept.map((row) => row.id) } },
+      select: publicShopFields(),
+    });
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const ordered = kept
+      .map((row) => byId.get(row.id))
+      .filter((row): row is PublicShopRow => Boolean(row));
+
+    return {
+      items: await presentShops(ordered, new Map(kept.map((row) => [row.id, row.distanceKm]))),
+      total: ranked.length,
+      truncated: ranked.length > MAP_LIMIT,
+      radiusKm,
+      nearestKm: ranked.length === 0 ? await nearestShopKm(where, centre) : null,
+    };
+  }
+
+  const located: Prisma.BusinessWhereInput = {
+    AND: [where, { latitude: { not: null } }, { longitude: { not: null } }],
+  };
+  const [rows, total] = await Promise.all([
+    prisma.business.findMany({
+      where: located,
+      orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }],
+      take: MAP_LIMIT,
+      select: publicShopFields(),
+    }),
+    prisma.business.count({ where: located }),
+  ]);
+
+  return {
+    items: await presentShops(rows),
+    total,
+    truncated: total > MAP_LIMIT,
+    radiusKm: null,
+    nearestKm: null,
+  };
 }
 
 export async function getPublicShop(slug: string) {
@@ -620,32 +722,25 @@ export async function getPublicShop(slug: string) {
       ...publicShopFields(),
       description: true,
       address: true,
-      latitude: true,
-      longitude: true,
       phone: true,
       email: true,
       website: true,
       createdAt: true,
-      ownerId: true,
     },
   });
   if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
 
-  const { ownerId, logoStoredName, ...rest } = shop;
+  const { ownerId, logoStoredName, _count, ...rest } = shop;
+  const kinds = await shopKinds([shop.id]);
   return {
     ...rest,
     logoUrl: logoUrl(shop.id, logoStoredName),
+    productCount: _count.products,
+    kinds: kinds.get(shop.id) ?? [],
     ownerProfile: await authorProfileSummary(ownerId),
   };
 }
 
-/**
- * The logo bytes.
- *
- * `includeUnpublished` is for the owner's own draft and the review queue,
- * where the picture has to be visible before anybody has approved it. An
- * unpublished shop's logo is as private as the rest of the row.
- */
 /**
  * The owner's own logo, whatever the review desk has decided.
  *
@@ -670,6 +765,13 @@ export async function getOwnLogo(userId: string, shopId: string) {
   };
 }
 
+/**
+ * The logo bytes.
+ *
+ * `includeUnpublished` is for the review queue, where the picture has to be
+ * visible before anybody has approved it. An unpublished shop's logo is as
+ * private as the rest of the row.
+ */
 export async function getLogo(id: string, includeUnpublished = false) {
   const shop = await prisma.business.findFirst({
     where: { id, ...(includeUnpublished ? {} : PUBLIC_LISTING_WHERE) },
@@ -778,6 +880,16 @@ export async function getShopForReview(id: string) {
   return { ...rest, logoUrl: logoUrl(shop.id, logoStoredName), productCount: _count.products };
 }
 
+/**
+ * A reviewer's decision on a shop.
+ *
+ * The shop's products are not touched. Every public product query requires the
+ * shop to be approved and open as well, so refusing the shop already takes its
+ * whole catalogue off the site; it used to also send every approved product
+ * back to the review queue, which put a pile of unchanged listings on the desk
+ * each time a shop was asked to fix its address, and left them dark after the
+ * shop was approved again.
+ */
 export async function reviewShop(
   reviewerId: string,
   shopId: string,
@@ -798,16 +910,6 @@ export async function reviewShop(
     select: { id: true, code: true, moderationStatus: true, publishedAt: true },
   });
 
-  // Refusing a shop takes its products down with it: a product is only ever
-  // reachable through a shop, so leaving them approved would be publishing
-  // the catalogue of a storefront nobody may see.
-  if (decision !== 'APPROVED') {
-    await prisma.product.updateMany({
-      where: { businessId: shop.id, moderationStatus: 'APPROVED' },
-      data: { moderationStatus: 'PENDING_REVIEW' },
-    });
-  }
-
   notifySafely(shop.ownerId, {
     type: 'listing.reviewed',
     title:
@@ -817,7 +919,9 @@ export async function reviewShop(
           ? 'فروشگاه شما نیاز به اصلاح دارد'
           : 'فروشگاه شما تأیید نشد',
     body: notes.reviewNote?.trim() || shop.name,
-    link: `/trademaster/shops/${shop.id}`,
+    // The owner's own shops screen. The link used to be /trademaster/shops/:id,
+    // a route the site never had, so every one of these opened a 404.
+    link: '/dashboard/shops',
   });
 
   return updated;

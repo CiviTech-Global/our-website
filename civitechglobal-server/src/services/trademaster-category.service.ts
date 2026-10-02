@@ -1,6 +1,7 @@
+import type { ListingKind } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { slugify } from './trademaster-shop.service.js';
+import { slugify } from './trademaster-common.js';
 
 /**
  * The catalogue's categories.
@@ -14,12 +15,18 @@ import { slugify } from './trademaster-shop.service.js';
  * board shows parents with their children under them — but the schema is a
  * self-relation, so the depth rule lives here rather than in the database. See
  * resolveParent below for what it refuses and why.
+ *
+ * KIND. Every category is either for products or for services, and a branch is
+ * one or the other: the kind is chosen on a top-level category and its children
+ * inherit it. A services branch with a "Coats" leaf in it would show coats
+ * under the services tab, which is the confusion the split exists to remove.
  */
 
 const ADMIN_SELECT = {
   id: true,
   slug: true,
   name: true,
+  kind: true,
   parentId: true,
   position: true,
   active: true,
@@ -28,6 +35,8 @@ const ADMIN_SELECT = {
 
 export interface CategoryInput {
   name: string;
+  /** Top-level only; a child takes its parent's. */
+  kind?: ListingKind;
   slug?: string;
   parentId?: string | null;
   position?: number;
@@ -60,14 +69,17 @@ export async function listCategoriesForAdmin() {
 
 export async function createCategory(input: CategoryInput) {
   const name = input.name.trim();
-  const parentId = await resolveParent(input.parentId ?? null, null);
+  const parent = await resolveParent(input.parentId ?? null, null);
 
   return prisma.productCategory.create({
     data: {
       name,
+      // A child is whatever its parent is; the kind the caller sent is only
+      // honoured at the top of a branch.
+      kind: parent?.kind ?? input.kind ?? 'PRODUCT',
       slug: await uniqueSlug(input.slug?.trim() || name),
-      parentId,
-      position: input.position ?? (await nextPosition(parentId)),
+      parentId: parent?.id ?? null,
+      position: input.position ?? (await nextPosition(parent?.id ?? null)),
       active: input.active ?? true,
     },
     select: ADMIN_SELECT,
@@ -81,12 +93,24 @@ export async function updateCategory(id: string, input: Partial<CategoryInput>) 
   // it", and `parentId: null` means "move it to the top level". Collapsing
   // those two into one check is how an edit of the name quietly unparents a
   // whole branch.
-  const parentId =
-    input.parentId === undefined ? current.parentId : await resolveParent(input.parentId, current.id);
+  const parent =
+    input.parentId === undefined ? undefined : await resolveParent(input.parentId, current.id);
+  const parentId = parent === undefined ? current.parentId : (parent?.id ?? null);
 
-  return prisma.productCategory.update({
+  // The kind it will have afterwards. A child follows its parent whatever was
+  // sent; a top-level category takes the one sent, or keeps its own.
+  const kind: ListingKind = parent
+    ? parent.kind
+    : parent === null || !current.parentId
+      ? (input.kind ?? current.kind)
+      : current.kind;
+
+  if (kind !== current.kind) await assertKindChangeable(current.id, kind);
+
+  const updated = await prisma.productCategory.update({
     where: { id: current.id },
     data: {
+      kind,
       ...(input.name !== undefined ? { name: input.name.trim() } : {}),
       ...(input.slug !== undefined
         ? { slug: await uniqueSlug(input.slug.trim() || current.name, current.id) }
@@ -97,6 +121,41 @@ export async function updateCategory(id: string, input: Partial<CategoryInput>) 
     },
     select: ADMIN_SELECT,
   });
+
+  // The branch moves together. assertKindChangeable has already checked that
+  // nothing filed under the children would end up on the wrong side.
+  if (kind !== current.kind) {
+    await prisma.productCategory.updateMany({ where: { parentId: current.id }, data: { kind } });
+  }
+
+  return updated;
+}
+
+/**
+ * Whether a category, and its children, may become the other kind.
+ *
+ * Refused while listings of the old kind are filed there. Converting them as
+ * well would turn a seller's coats into services behind their back; leaving
+ * them would put coats under a services category. Naming the count lets staff
+ * move them first.
+ */
+async function assertKindChangeable(categoryId: string, kind: ListingKind): Promise<void> {
+  const children = await prisma.productCategory.findMany({
+    where: { parentId: categoryId },
+    select: { id: true },
+  });
+  const mismatched = await prisma.product.count({
+    where: {
+      categoryId: { in: [categoryId, ...children.map((child) => child.id)] },
+      kind: { not: kind },
+    },
+  });
+  if (mismatched > 0) {
+    throw new AppError(
+      `${mismatched} مورد از نوع دیگر در این شاخه ثبت شده است. ابتدا دستهٔ آن‌ها را تغییر دهید.`,
+      409
+    );
+  }
 }
 
 /**
@@ -140,7 +199,7 @@ export async function deleteCategory(id: string) {
 async function byId(id: string) {
   const row = await prisma.productCategory.findUnique({
     where: { id },
-    select: { id: true, name: true, parentId: true },
+    select: { id: true, name: true, parentId: true, kind: true },
   });
   if (!row) throw new AppError('دسته‌بندی یافت نشد.', 404);
   return row;
@@ -160,7 +219,10 @@ async function byId(id: string) {
  * not. So there is no walk up the ancestors here. If the cap is ever lifted,
  * that walk becomes necessary, and this comment is where to start.
  */
-async function resolveParent(parentId: string | null, selfId: string | null): Promise<string | null> {
+async function resolveParent(
+  parentId: string | null,
+  selfId: string | null
+): Promise<{ id: string; kind: ListingKind } | null> {
   if (parentId === null) return null;
 
   if (selfId !== null && parentId === selfId) {
@@ -169,7 +231,7 @@ async function resolveParent(parentId: string | null, selfId: string | null): Pr
 
   const parent = await prisma.productCategory.findUnique({
     where: { id: parentId },
-    select: { id: true, parentId: true },
+    select: { id: true, parentId: true, kind: true },
   });
   if (!parent) throw new AppError('دستهٔ والد یافت نشد.', 400);
 
@@ -177,7 +239,16 @@ async function resolveParent(parentId: string | null, selfId: string | null): Pr
     throw new AppError('دسته‌بندی حداکثر در دو سطح تعریف می‌شود.', 400);
   }
 
-  return parent.id;
+  // A category that has children cannot become a child itself: that would be
+  // the third level the depth rule forbids, reached from the other end.
+  if (selfId !== null) {
+    const children = await prisma.productCategory.count({ where: { parentId: selfId } });
+    if (children > 0) {
+      throw new AppError('دسته‌ای که زیرشاخه دارد نمی‌تواند زیرمجموعهٔ دستهٔ دیگری شود.', 400);
+    }
+  }
+
+  return { id: parent.id, kind: parent.kind };
 }
 
 /** At the end of its siblings, so a new category does not jump the order. */

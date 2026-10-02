@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../config/database.js';
 import { CATALOG } from '../insurance/catalog/index.js';
+import { features } from '../config/features.js';
+import { PUBLIC_LISTING_WHERE } from '../services/moderation.js';
+import { PUBLIC_PRODUCT_WHERE } from '../services/trademaster-common.js';
 
 /**
  * The dynamic half of the sitemap.
@@ -105,6 +108,57 @@ async function collectUrls(): Promise<SitemapUrl[]> {
     urls.push({ path: `/projects/${project.code}`, modified: project.updatedAt, priority: '0.6' });
   for (const book of books)
     urls.push({ path: `/books/${book.code}`, modified: book.updatedAt, priority: '0.5' });
+
+  return [...urls, ...(await collectMarketplaceUrls())];
+}
+
+/**
+ * The catalogue's pages: the module's own pages, every public shop, and every
+ * public listing.
+ *
+ * Only while the module is switched on. In production it is off, and a sitemap
+ * that advertised its pages would send crawlers to a run of 404s.
+ *
+ * Slugs are percent-encoded: they are usually Persian, and a sitemap URL must
+ * be ASCII. The visibility predicates are the public pages' own, so nothing is
+ * listed here that its page would refuse.
+ */
+async function collectMarketplaceUrls(): Promise<SitemapUrl[]> {
+  if (!features.tradeMaster) return [];
+
+  const [shops, listings] = await Promise.all([
+    prisma.business.findMany({
+      where: PUBLIC_LISTING_WHERE,
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.product.findMany({
+      where: PUBLIC_PRODUCT_WHERE,
+      select: { slug: true, updatedAt: true, business: { select: { slug: true } } },
+    }),
+  ]);
+
+  const now = new Date();
+  const urls: SitemapUrl[] = [
+    { path: '/marketplace', modified: now, priority: '0.6' },
+    { path: '/marketplace/shops', modified: now, priority: '0.6' },
+    { path: '/marketplace/products', modified: now, priority: '0.6' },
+    { path: '/marketplace/join', modified: now, priority: '0.4' },
+  ];
+
+  for (const shop of shops) {
+    urls.push({
+      path: `/marketplace/shops/${encodeURIComponent(shop.slug)}`,
+      modified: shop.updatedAt,
+      priority: '0.5',
+    });
+  }
+  for (const listing of listings) {
+    urls.push({
+      path: `/marketplace/products/${encodeURIComponent(listing.business.slug)}/${encodeURIComponent(listing.slug)}`,
+      modified: listing.updatedAt,
+      priority: '0.4',
+    });
+  }
 
   return urls;
 }
