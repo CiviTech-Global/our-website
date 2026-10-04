@@ -30,7 +30,12 @@ const mocks = vi.hoisted(() => {
   }
 
   const userRepository = {
-    findFirst: vi.fn(async ({ where }: any) => usersByEmailHash.get(where.emailHash) ?? null),
+    findFirst: vi.fn(async ({ where }: any) => {
+      // By email hash (sign-in) or by id (the signed-in paths).
+      const user = where.id ? usersById.get(where.id) : usersByEmailHash.get(where.emailHash);
+      if (!user) return null;
+      return where.deletedAt === null && user.deletedAt ? null : user;
+    }),
     findUnique: vi.fn(async ({ where, select }: any) => {
       const user = usersById.get(where.id);
       return user ? project(user, select) : null;
@@ -121,7 +126,7 @@ vi.mock('../config/logger.js', () => ({
   logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }));
 
-const { register, login, refreshTokens: rotateRefreshToken } = await import('./auth.service.js');
+const { register, login, refreshTokens: rotateRefreshToken, changePassword } = await import('./auth.service.js');
 
 const STRONG_PASSWORD = 'Correct-Horse9!';
 
@@ -229,5 +234,46 @@ describe('auth.service', () => {
       });
       expect(after.tokenVersion).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('changePassword', () => {
+  beforeEach(() => {
+    mocks.reset();
+  });
+
+  async function member() {
+    const created = await register({
+      email: 'change.me@example.com',
+      password: STRONG_PASSWORD,
+      firstName: 'Ch',
+      lastName: 'Ange',
+    });
+    return created.user.id as string;
+  }
+
+  it('refuses a wrong current password', async () => {
+    const id = await member();
+    await expect(changePassword(id, 'not-it', 'An0ther!Passw0rd')).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it('refuses the same password again', async () => {
+    const id = await member();
+    await expect(changePassword(id, STRONG_PASSWORD, STRONG_PASSWORD)).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it('ends every other session and starts a fresh one', async () => {
+    const id = await member();
+    const before = mocks.refreshTokenRepository.all().filter((row: any) => row.userId === id).length;
+    expect(before).toBeGreaterThan(0);
+
+    const result = await changePassword(id, STRONG_PASSWORD, 'An0ther!Passw0rd');
+
+    const rows = mocks.refreshTokenRepository.all().filter((row: any) => row.userId === id);
+    // The old ones are revoked; only the session just issued is live.
+    expect(rows.filter((row: any) => !row.revokedAt)).toHaveLength(1);
+    expect(result.refreshToken).toBeTruthy();
+    // And the new password is the one that signs in.
+    await expect(login({ email: 'change.me@example.com', password: 'An0ther!Passw0rd' })).resolves.toBeTruthy();
   });
 });

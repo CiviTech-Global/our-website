@@ -1,10 +1,7 @@
 import { Router } from 'express';
 import { AppError } from '../middleware/errorHandler.js';
 import { successResponse } from '../utils/apiResponse.js';
-import * as insuranceRequestService from '../services/insurance-request.service.js';
-import * as projectRequestService from '../services/project-request.service.js';
-import * as resumeService from '../services/resume-submission.service.js';
-import * as consultationService from '../services/consultation.service.js';
+import { lookupTrackingCode, normalizeCode } from '../services/tracking.service.js';
 
 /**
  * One tracking code box, whatever the code belongs to.
@@ -32,39 +29,14 @@ function serialize<T>(value: T): unknown {
 
 router.get('/:code', async (req, res, next) => {
   try {
-    const code = typeof req.params.code === 'string' ? req.params.code.trim().toUpperCase() : '';
+    const code = typeof req.params.code === 'string' ? normalizeCode(req.params.code) : '';
     if (code.length < 6 || code.length > 20) {
       throw new AppError('کد رهگیری معتبر نیست.', 400);
     }
 
-    // `allSettled`, not `all`: a miss in two of the three is the NORMAL case,
-    // and one rejection must not discard the answer the third one found.
-    const [insurance, project, resume, consultation] = await Promise.allSettled([
-      insuranceRequestService.trackRequest(code),
-      projectRequestService.trackRequest(code),
-      resumeService.trackResume(code),
-      consultationService.trackRequest(code),
-    ]);
-
-    if (insurance.status === 'fulfilled') {
-      successResponse(res, serialize({ kind: 'insurance', ...insurance.value }));
-      return;
-    }
-    if (project.status === 'fulfilled') {
-      successResponse(res, serialize({ kind: 'project', ...project.value }));
-      return;
-    }
-    if (resume.status === 'fulfilled') {
-      successResponse(res, serialize({ kind: 'resume', ...resume.value }));
-      return;
-    }
-    if (consultation.status === 'fulfilled') {
-      // The service already names its own kind.
-      successResponse(res, serialize(consultation.value));
-      return;
-    }
-
-    throw new AppError('درخواستی با این کد رهگیری پیدا نشد.', 404);
+    const state = await lookupTrackingCode(code);
+    if (!state) throw new AppError('درخواستی با این کد رهگیری پیدا نشد.', 404);
+    successResponse(res, serialize(state));
   } catch (error) {
     next(error);
   }

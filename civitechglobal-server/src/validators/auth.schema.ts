@@ -15,6 +15,11 @@ export const passwordSchema = z
   .regex(PASSWORD_REQUIREMENTS.digit, PASSWORD_COMPLEXITY_MESSAGE)
   .regex(PASSWORD_REQUIREMENTS.special, PASSWORD_COMPLEXITY_MESSAGE);
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required').max(200),
+  newPassword: passwordSchema,
+});
+
 export const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email('Invalid email address'),
   password: passwordSchema,

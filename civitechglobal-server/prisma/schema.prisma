@@ -125,6 +125,7 @@ model User {
   company              Company?         @relation("CompanyOwner")
   savedJobs            SavedJob[]
   jobAlerts            JobAlert[]
+  trackedRequests      TrackedRequest[]
   applicationsReviewed JobApplication[] @relation("ApplicationReviewer")
 
   freelanceProjects FreelanceProject[] @relation("ProjectAuthor")
@@ -2866,4 +2867,24 @@ model JobAlert {
   @@index([active])
   @@index([userId])
   @@map("job_alerts")
+}
+
+/// A tracking code a member keeps on their account, so the requests they made
+/// through the account-less intakes show on their dashboard. Holds the code
+/// only — the state is looked up afresh each time; see tracking.service.
+model TrackedRequest {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  code  String
+  /// The member's own name for it: "car insurance", "the website".
+  label String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, code])
+  @@index([userId, createdAt])
+  @@map("tracked_requests")
 }

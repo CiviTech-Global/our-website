@@ -113,11 +113,22 @@ export async function getOwnStats(userId: string) {
       select: { id: true },
     }),
     prisma.notification.count({ where: { userId, readAt: null } }),
+    // Both sides of each conversation. Counting only the applicant's and the
+    // bidder's side left an employer's or client's unread messages out of
+    // this figure, though the inbox itself showed them.
     prisma.marketplaceMessage.count({
-      where: { application: { applicantId: userId }, senderId: { not: userId }, readAt: null },
+      where: {
+        senderId: { not: userId },
+        readAt: null,
+        OR: [{ application: { applicantId: userId } }, { application: { job: { authorId: userId } } }],
+      },
     }),
     prisma.marketplaceMessage.count({
-      where: { bid: { bidderId: userId }, senderId: { not: userId }, readAt: null },
+      where: {
+        senderId: { not: userId },
+        readAt: null,
+        OR: [{ bid: { bidderId: userId } }, { bid: { project: { authorId: userId } } }],
+      },
     }),
   ]);
 

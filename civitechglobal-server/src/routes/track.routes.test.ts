@@ -20,7 +20,7 @@ const KINDS_THE_BROWSER_HANDLES = ['insurance', 'project', 'resume', 'consultati
 
 describe('the tracking route', () => {
   it('emits only kinds the browser knows how to render', () => {
-    const route = readFileSync(new URL('./track.routes.ts', import.meta.url), 'utf8');
+    const route = readFileSync(new URL('../services/tracking.service.ts', import.meta.url), 'utf8');
 
     // Both spellings the file uses: the three that name their kind inline, and
     // the consultation service which names its own.

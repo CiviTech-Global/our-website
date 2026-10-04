@@ -52,6 +52,14 @@ import * as notifications from '../services/notifications.service.js';
 import * as analytics from '../services/marketplace-analytics.service.js';
 import * as ops from '../services/marketplace-ops.service.js';
 import { authorize } from '../middleware/authorize.js';
+import { getWorkspace } from '../services/workspace.service.js';
+import * as tracking from '../services/tracking.service.js';
+import { z } from 'zod';
+
+const trackSchema = z.object({
+  code: z.string().trim().min(6).max(20),
+  label: z.string().trim().max(80).optional(),
+});
 
 /**
  * The marketplace: a job board and a freelance board over a shared
@@ -412,6 +420,40 @@ router.get(
 
 // The applicant's own side of the board: what they applied to, where it got
 // to, and any note a reviewer wrote back to them.
+// ---- The member's home --------------------------------------------------
+
+router.get(
+  '/me/workspace',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await getWorkspace(req.user!.userId)));
+  }),
+);
+
+// Tracking codes the member keeps on their account. State only — see
+// tracking.service for why a code list is safe to hold.
+router.get(
+  '/me/tracked-requests',
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await tracking.listTrackedForUser(req.user!.userId)));
+  }),
+);
+
+router.post(
+  '/me/tracked-requests',
+  validate({ body: trackSchema }),
+  wrap(async (req, res) => {
+    const saved = await tracking.trackForUser(req.user!.userId, req.body.code, req.body.label);
+    successResponse(res, saved, 'کد رهگیری به حساب شما افزوده شد.', 201);
+  }),
+);
+
+router.delete(
+  '/me/tracked-requests/:code',
+  wrap(async (req, res) => {
+    successResponse(res, await tracking.untrackForUser(req.user!.userId, param(req, 'code')));
+  }),
+);
+
 router.get(
   '/me/applications',
   wrap(async (req, res) => {

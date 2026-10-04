@@ -8,6 +8,7 @@ import {
 } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
@@ -25,6 +26,13 @@ router.post('/login', credentialRateLimiter, validate(loginSchema), authControll
 router.post('/refresh', refreshRateLimiter, authController.refresh);
 router.post('/logout', authController.logout);
 router.post('/logout-all', authenticate, authController.logoutAll);
+router.post(
+  '/change-password',
+  authenticate,
+  credentialRateLimiter,
+  validate(changePasswordSchema),
+  authController.changePassword,
+);
 router.post(
   '/forgot-password',
   accountEmailRateLimiter,

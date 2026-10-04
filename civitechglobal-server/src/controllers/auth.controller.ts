@@ -155,6 +155,21 @@ export async function logoutAll(req: Request, res: Response, next: NextFunction)
   }
 }
 
+/** A new password, from inside the account. Other sessions end; this one is renewed. */
+export async function changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const result = await authService.changePassword(
+      req.user!.userId,
+      req.body.currentPassword as string,
+      req.body.newPassword as string,
+    );
+    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
+    successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Password changed');
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = await authService.getMe(req.user!.userId);

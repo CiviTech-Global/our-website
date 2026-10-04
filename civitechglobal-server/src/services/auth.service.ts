@@ -314,6 +314,41 @@ export async function revokeRefreshToken(refreshToken: string): Promise<void> {
   }
 }
 
+/**
+ * Changing the password from inside the account.
+ *
+ * Until this existed the only way to a new password was "forgot password",
+ * which needs a mail service this deployment may not have — so a member who
+ * wanted to change theirs, or feared it was known, had no way to.
+ *
+ * The current password is asked for, so a session left open on somebody
+ * else's screen cannot be used to lock its owner out. Every other session ends
+ * (the token version moves and every refresh token is revoked), and the caller
+ * gets a fresh one, so changing the password on one device signs out the rest
+ * without signing out the person doing it.
+ */
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await userRepository.findFirst({ where: { id: userId, deletedAt: null } });
+  if (!user) throw new AppError('Invalid credentials', 401);
+
+  const valid = await comparePassword(currentPassword, user.password);
+  if (!valid) {
+    // Counted like a failed sign-in: this is a password guess all the same.
+    await recordFailedAttempt(user.email);
+    throw new AppError('رمز عبور فعلی درست نیست.', 400);
+  }
+  if (await comparePassword(newPassword, user.password)) {
+    throw new AppError('رمز عبور تازه باید با رمز فعلی فرق داشته باشد.', 400);
+  }
+
+  await userRepository.update({
+    where: { id: userId },
+    data: { password: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
+  });
+  await revokeAllUserRefreshTokens(userId);
+  return issueSessionFor(userId);
+}
+
 export async function revokeAllUserRefreshTokens(userId: string): Promise<void> {
   await refreshTokenRepository.updateMany({ where: { userId }, data: { revokedAt: new Date() } });
   await userRepository.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
