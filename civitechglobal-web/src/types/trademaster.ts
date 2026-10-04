@@ -44,6 +44,8 @@ export interface OwnerProfile {
 export interface ShopPayload {
   name: string;
   summary: string;
+  /** From the guild list; required before the shop can be submitted. */
+  businessCategoryId?: string | null;
   description?: string | null;
   industry?: string | null;
   province?: string | null;
@@ -68,6 +70,17 @@ export interface PublicShopSummary {
   featured: boolean;
   publishedAt: string | null;
   logoUrl: string | null;
+  /**
+   * The card's one picture: the shop's own cover, else its newest listing's
+   * picture, else its logo. Chosen by the server so every view agrees.
+   */
+  coverUrl: string | null;
+  /** True when coverUrl is the shop's own cover rather than a stand-in. */
+  hasCover: boolean;
+  businessCategory: { id: string; name: string } | null;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
   productCount: number;
   /** What it offers publicly: products, services, or both. */
   kinds: ListingKind[];
@@ -106,6 +119,9 @@ export interface OwnShop {
   publishedAt: string | null;
   createdAt: string;
   logoUrl: string | null;
+  coverUrl: string | null;
+  businessCategoryId: string | null;
+  businessCategory: { id: string; name: string } | null;
   productCount: number;
 }
 
@@ -116,6 +132,8 @@ export interface OwnShopDetail {
   slug: string;
   name: string;
   summary: string;
+  businessCategoryId: string | null;
+  coverUrl: string | null;
   description: string | null;
   industry: string | null;
   province: string | null;
@@ -146,6 +164,29 @@ export interface ShopMapResult {
   truncated: boolean;
   radiusKm: number | null;
   nearestKm: number | null;
+}
+
+/** A business category (guild), as the board and the shop form read it. */
+export interface BusinessCategoryNode {
+  id: string;
+  slug: string;
+  name: string;
+  parentId: string | null;
+  /** Public shops in it, including its trades for a sector. */
+  shopCount: number;
+}
+
+/** A business category as the desk sees it. */
+export interface AdminBusinessCategory {
+  id: string;
+  slug: string;
+  name: string;
+  parentId: string | null;
+  position: number;
+  active: boolean;
+  createdAt: string;
+  shopCount: number;
+  childCount: number;
 }
 
 export interface ShopQueueRow {
@@ -414,6 +455,7 @@ export interface ShopBoardQuery extends Record<string, string | number | boolean
   search?: string;
   province?: string;
   industry?: string;
+  businessCategoryId?: string;
   kind?: ListingKind;
   categoryId?: string;
   sort?: ShopSort;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import {
   Circle,
   CircleMarker,
@@ -96,6 +96,11 @@ export interface MapPin {
   /** Rendered in the popup under the label. A shop's summary, usually. */
   detail?: string;
   href?: string;
+  /**
+   * A whole card for the popup, replacing the plain label/detail/link. The
+   * explore page passes the shop's place card here.
+   */
+  card?: ReactNode;
 }
 
 /** A point and the radius around it, in kilometres. */
@@ -215,7 +220,14 @@ export default function ShopMap({
         )}
 
         {pins.map((pin) => (
-          <Marker key={pin.id} position={[pin.latitude, pin.longitude]} icon={markerIcon}>
+          <Marker key={pin.id} position={[pin.latitude, pin.longitude]} icon={markerIcon} title={pin.label}>
+            {pin.card ? (
+              // Edge to edge: the card brings its own padding and picture, and
+              // Leaflet's default inset would frame it in a white border.
+              <Popup className="shop-popup" minWidth={280} maxWidth={300} autoPanPadding={[24, 24]}>
+                {pin.card}
+              </Popup>
+            ) : (
             <Popup>
               <strong>{pin.label}</strong>
               {pin.detail && <p className="mt-1">{pin.detail}</p>}
@@ -227,6 +239,7 @@ export default function ShopMap({
                 </Link>
               )}
             </Popup>
+            )}
           </Marker>
         ))}
       </MapContainer>

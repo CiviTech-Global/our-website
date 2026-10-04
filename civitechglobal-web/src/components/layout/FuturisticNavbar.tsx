@@ -21,10 +21,7 @@ import { features } from '@/lib/features';
 
 type NavKey =
   | 'cart'
-  | 'marketExplore'
-  | 'shops'
-  | 'marketProducts'
-  | 'marketJoin'
+  | 'localMarket'
   | 'services'
   | 'startProject'
   | 'joinUs'
@@ -88,12 +85,12 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/books', key: 'books' },
       // Absent rather than disabled while the module is off: a menu item that
       // leads to a route that does not resolve is worse than no item.
+      // One entry for the whole local market. Its shops, its listings and
+      // the way to register a shop are tabs inside it, rather than four items
+      // here competing with the jobs board for the reader's attention.
       ...(features.tradeMaster
         ? ([
-            { to: '/marketplace', key: 'marketExplore' },
-            { to: '/marketplace/shops', key: 'shops' },
-            { to: '/marketplace/products', key: 'marketProducts' },
-            { to: '/marketplace/join', key: 'marketJoin' },
+            { to: '/marketplace', key: 'localMarket' },
             ...(features.tradeMasterOrders
               ? ([{ to: '/marketplace/cart', key: 'cart' }] as const)
               : []),

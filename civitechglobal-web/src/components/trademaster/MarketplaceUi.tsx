@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
-import type { ListingKind, ProductCategoryNode } from '@/types/trademaster';
+import type { BusinessCategoryNode, ListingKind, ProductCategoryNode } from '@/types/trademaster';
 
 const LocationPicker = lazy(() =>
   import('@/components/trademaster/ShopMap').then((m) => ({ default: m.LocationPicker }))
@@ -175,6 +175,65 @@ export function OfferBadges({ kinds }: { kinds: ListingKind[] }) {
  * kind's branches are offered — "Barbershop" under Products would be a choice
  * that can only ever come back empty.
  */
+/**
+ * The guild list as a two-level select: sectors, with their trades indented.
+ *
+ * A sector stays choosable and finds every trade under it. Counts are shown
+ * where there is something to count, so a reader can see before choosing
+ * which trades have any shops yet.
+ */
+export function BusinessCategorySelect({
+  categories,
+  value,
+  onChange,
+  emptyLabel,
+  id,
+  className,
+  showCounts = true,
+  invalid,
+}: {
+  categories: BusinessCategoryNode[] | undefined;
+  value: string;
+  onChange: (value: string) => void;
+  emptyLabel: string;
+  id?: string;
+  className?: string;
+  showCounts?: boolean;
+  invalid?: boolean;
+}) {
+  const { t, locale } = useLocale();
+  const all = categories ?? [];
+  const sectors = all.filter((category) => !category.parentId);
+  const tradesOf = (sectorId: string) => all.filter((category) => category.parentId === sectorId);
+  const label = (category: BusinessCategoryNode) =>
+    showCounts && category.shopCount > 0
+      ? `${category.name} (${formatCount(category.shopCount, locale)})`
+      : category.name;
+
+  return (
+    <Select
+      id={id}
+      className={className}
+      value={value}
+      invalid={invalid}
+      aria-label={id ? undefined : t.trademaster.hub.businessCategory}
+      onChange={(event) => onChange(event.target.value)}
+    >
+      <option value="">{emptyLabel}</option>
+      {sectors.map((sector) => [
+        <option key={sector.id} value={sector.id}>
+          {label(sector)}
+        </option>,
+        ...tradesOf(sector.id).map((trade) => (
+          <option key={trade.id} value={trade.id}>
+            {`\u00a0\u00a0— ${label(trade)}`}
+          </option>
+        )),
+      ])}
+    </Select>
+  );
+}
+
 export function CategorySelect({
   categories,
   kind,

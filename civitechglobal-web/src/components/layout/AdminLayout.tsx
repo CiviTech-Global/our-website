@@ -121,6 +121,13 @@ export function AdminLayout() {
     icon: <FolderTree />,
   };
 
+  /** The guild list — what kind of business each shop is. Same desk, same permission. */
+  const tradeMasterGuilds: NavItem = {
+    to: '/admin/trademaster/business-categories',
+    label: t.trademaster.hub.guildDeskTitle,
+    icon: <Store />,
+  };
+
   const when = (condition: boolean, ...items: NavItem[]) => (condition ? items : []);
 
   // Everything with work waiting, busiest first — the overview module's
@@ -178,7 +185,8 @@ export function AdminLayout() {
               features.tradeMaster && can('trademaster'),
               queue.tradeMasterShops,
               queue.tradeMasterProducts,
-              tradeMasterCategories
+              tradeMasterCategories,
+              tradeMasterGuilds
             ),
           ],
         },

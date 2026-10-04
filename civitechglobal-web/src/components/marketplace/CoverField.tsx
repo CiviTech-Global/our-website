@@ -4,6 +4,8 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { formatBytes } from '@/lib/formatBytes';
 import { ImageTooLargeError, MAX_IMAGE_BYTES, prepareImage } from '@/lib/prepareImage';
 import { Button } from '@/components/ui/Button';
+import { StaffImage } from '@/components/ui/StaffImage';
+import { apiAssetSrc } from '@/lib/apiAsset';
 import { UploadStatus, type UploadState } from '@/components/ui/UploadStatus';
 
 /**
@@ -22,14 +24,22 @@ import { UploadStatus, type UploadState } from '@/components/ui/UploadStatus';
 export function CoverField({
   value,
   previewUrl,
+  previewPath,
   onChange,
   uploadState,
   onRetryUpload,
   onCancelUpload,
 }: {
   value: File | null;
-  /** An already-stored cover, shown until a new one is picked. */
+  /** A saved picture's public path, relative to the API root. */
   previewUrl?: string | null;
+  /**
+   * A saved picture only its owner may see — a draft's — fetched with the
+   * session. Preferred over previewUrl when given: an unpublished picture's
+   * public route answers 404, so the form showed an empty box for a picture
+   * that was saved, and invited uploading it again.
+   */
+  previewPath?: string | null;
   onChange: (file: File | null) => void;
   /** The parent's submit progress, once there is one. */
   uploadState?: UploadState;
@@ -89,7 +99,14 @@ export function CoverField({
     }
   }
 
-  const shown = localPreview ?? previewUrl ?? null;
+  // The saved path was used as the image source as it came, without the API
+  // prefix, so the preview never loaded. apiAssetSrc puts the base back on.
+  const shown = localPreview ?? (previewUrl ? apiAssetSrc(previewUrl) : null);
+  const placeholder = (
+    <div className="flex size-full items-center justify-center text-app-text-4">
+      <ImagePlus className="size-6" aria-hidden="true" />
+    </div>
+  );
   // The submit's progress wins over the local "ready" line once it starts.
   const status = uploadState && uploadState.phase !== 'idle' ? uploadState : localState;
 
@@ -97,12 +114,14 @@ export function CoverField({
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-4">
         <div className="size-28 shrink-0 overflow-hidden rounded border border-app-border bg-app-subtle">
-          {shown ? (
+          {localPreview ? (
+            <img src={localPreview} alt="" className="size-full object-contain" />
+          ) : previewPath ? (
+            <StaffImage path={previewPath} alt="" className="size-full object-contain" fallback={placeholder} />
+          ) : shown ? (
             <img src={shown} alt="" className="size-full object-contain" />
           ) : (
-            <div className="flex size-full items-center justify-center text-app-text-4">
-              <ImagePlus className="size-6" aria-hidden="true" />
-            </div>
+            placeholder
           )}
         </div>
 

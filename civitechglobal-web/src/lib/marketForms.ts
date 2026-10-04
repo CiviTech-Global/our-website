@@ -86,6 +86,7 @@ export function parseCoordinate(value: string, limit: 90 | 180): number | null {
 export const EMPTY_SHOP = {
   name: '',
   summary: '',
+  businessCategoryId: '',
   description: '',
   industry: '',
   province: '',
@@ -110,6 +111,10 @@ export function validateShop(draft: ShopDraft): FieldErrors<keyof ShopDraft> {
 
   if (!summary) errors.summary = 'errRequired';
   else if (summary.length < 10 || summary.length > 300) errors.summary = 'errSummaryLength';
+
+  // Every shop is filed under a business category; the filters find shops by
+  // it, and one without would be invisible to anyone who uses them.
+  if (!draft.businessCategoryId) errors.businessCategoryId = 'errRequired';
 
   if (draft.description.trim().length > 5000) errors.description = 'errTooLong';
   if (draft.industry.trim().length > 80) errors.industry = 'errTooLong';
@@ -160,6 +165,7 @@ export function shopPayload(draft: ShopDraft, editing: boolean) {
   return {
     name: draft.name.trim(),
     summary: draft.summary.trim(),
+    businessCategoryId: draft.businessCategoryId ? draft.businessCategoryId : editing ? null : undefined,
     description: optional(draft.description),
     industry: optional(draft.industry),
     province: optional(draft.province),

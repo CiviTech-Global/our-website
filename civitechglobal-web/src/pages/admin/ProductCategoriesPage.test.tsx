@@ -26,6 +26,11 @@ vi.mock('@/api/trademaster', () => ({
   useCreateCategory: () => ({ mutateAsync: mocks.create, isPending: false }),
   useUpdateCategory: () => ({ mutateAsync: mocks.update, isPending: false }),
   useDeleteCategory: () => ({ mutateAsync: mocks.remove, isPending: false }),
+  // The same desk serves the guild list; in listing mode these sit idle.
+  useBusinessCategoryDesk: () => ({ data: undefined, isLoading: false }),
+  useCreateBusinessCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateBusinessCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteBusinessCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 const { default: ProductCategoriesPage } = await import('./ProductCategoriesPage');

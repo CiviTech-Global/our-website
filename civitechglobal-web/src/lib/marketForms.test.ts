@@ -13,7 +13,12 @@ import {
   validateShop,
 } from './marketForms';
 
-const shop = { ...EMPTY_SHOP, name: 'آرایشگاه نگین', summary: 'اصلاح موی آقایان، با نوبت' };
+const shop = {
+  ...EMPTY_SHOP,
+  name: 'آرایشگاه نگین',
+  summary: 'اصلاح موی آقایان، با نوبت',
+  businessCategoryId: 'barber',
+};
 const listing = { ...EMPTY_LISTING, title: 'پالتو پشمی', summary: 'پشم ۷۰ درصد، آستر ساتن', price: '7900000' };
 
 describe('prices', () => {
@@ -60,6 +65,10 @@ describe('the shop form', () => {
       website: 'errUrl',
       phone: 'errPhone',
     });
+  });
+
+  it('requires a business category', () => {
+    expect(validateShop({ ...shop, businessCategoryId: '' })).toEqual({ businessCategoryId: 'errRequired' });
   });
 
   it('refuses half a location, on the missing half', () => {

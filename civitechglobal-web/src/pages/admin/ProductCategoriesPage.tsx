@@ -1,17 +1,21 @@
 import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff, FolderTree, Pencil, Plus, Trash2 } from 'lucide-react';
 import {
+  useBusinessCategoryDesk,
   useCategoryDesk,
+  useCreateBusinessCategory,
   useCreateCategory,
+  useDeleteBusinessCategory,
   useDeleteCategory,
+  useUpdateBusinessCategory,
   useUpdateCategory,
 } from '@/api/trademaster';
-import type { AdminProductCategory, CategoryPayload } from '@/types/trademaster';
+import type { CategoryPayload, ListingKind } from '@/types/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
-import { toPersianDigits } from '@/i18n/utils';
+import { toLatinDigits, toPersianDigits } from '@/i18n/utils';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -24,33 +28,87 @@ import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 
 /**
- * How the product catalogue is filed.
+ * How the marketplace is filed — both of its lists, on one desk.
+ *
+ * LISTING categories file what is offered (a coat, a haircut) and carry a
+ * kind; BUSINESS categories file what a shop is (a barber, a bookshop). The
+ * same staff do both, with the same two-level shape and the same rules, so it
+ * is one screen in two modes rather than two screens that drift apart.
  *
  * Staff work, not seller work. A seller who can invent categories invents
- * twelve spellings of the same one inside a month, and the filter on the
- * product board stops meaning anything — the same reason team members pick a
- * section here rather than typing one.
+ * twelve spellings of the same one inside a month, and the filters stop
+ * meaning anything.
  *
  * Laid out as the two levels it actually has, parents with their children
- * indented under them, rather than as a flat table with a "parent" column.
- * The shape of the tree is the thing being edited, so it should be the thing
- * on the screen.
+ * indented under them. The shape of the tree is the thing being edited, so it
+ * should be the thing on the screen.
  */
+
+export type DeskMode = 'listing' | 'business';
+
+/** One row, whichever list it came from. */
+interface DeskRow {
+  id: string;
+  slug: string;
+  name: string;
+  kind?: ListingKind;
+  parentId: string | null;
+  position: number;
+  active: boolean;
+  /** Products filed here (listing) or shops (business). */
+  count: number;
+  childCount: number;
+}
+
+/**
+ * Both lists' hooks, called every time in the same order — the rules of hooks
+ * — with only the chosen one actually fetching.
+ */
+function useDesk(mode: DeskMode) {
+  const listing = useCategoryDesk(mode === 'listing');
+  const business = useBusinessCategoryDesk(mode === 'business');
+  const createListing = useCreateCategory();
+  const updateListing = useUpdateCategory();
+  const deleteListing = useDeleteCategory();
+  const createBusiness = useCreateBusinessCategory();
+  const updateBusiness = useUpdateBusinessCategory();
+  const deleteBusiness = useDeleteBusinessCategory();
+
+  const rows: DeskRow[] =
+    mode === 'listing'
+      ? (listing.data ?? []).map((row) => ({ ...row, count: row.productCount }))
+      : (business.data ?? []).map((row) => ({ ...row, count: row.shopCount }));
+
+  return {
+    rows,
+    isLoading: mode === 'listing' ? listing.isLoading : business.isLoading,
+    create: mode === 'listing' ? createListing : createBusiness,
+    update: mode === 'listing' ? updateListing : updateBusiness,
+    remove: mode === 'listing' ? deleteListing : deleteBusiness,
+  };
+}
+
 export default function ProductCategoriesPage() {
+  return <CategoryDesk mode="listing" />;
+}
+
+export function CategoryDesk({ mode }: { mode: DeskMode }) {
   const { t, locale } = useLocale();
-  useDocumentTitle(t.categoryDesk.title);
+  const hub = t.trademaster.hub;
+  const title = mode === 'listing' ? t.categoryDesk.title : hub.guildDeskTitle;
+  const subtitle = mode === 'listing' ? t.categoryDesk.subtitle : hub.guildDeskSubtitle;
+  const countLabel = mode === 'listing' ? t.categoryDesk.productsCount : hub.shopsInCategory;
+  useDocumentTitle(title);
   const { showToast } = useToast();
 
-  const { data, isLoading } = useCategoryDesk();
-  const update = useUpdateCategory();
-  const remove = useDeleteCategory();
+  const desk = useDesk(mode);
+  const { rows: all, isLoading, update, remove } = desk;
 
-  const [editing, setEditing] = useState<AdminProductCategory | 'new' | null>(null);
+  const [editing, setEditing] = useState<DeskRow | 'new' | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
 
   const onError = (error: unknown) => showToast(apiMessage(error, t.common.error), 'error');
 
-  const all = data ?? [];
   const parents = all.filter((row) => row.parentId === null);
   const childrenOf = (id: string) => all.filter((row) => row.parentId === id);
 
@@ -61,7 +119,7 @@ export default function ProductCategoriesPage() {
   const placed = new Set(parents.flatMap((p) => [p.id, ...childrenOf(p.id).map((c) => c.id)]));
   const orphans = all.filter((row) => !placed.has(row.id));
 
-  async function toggleActive(row: AdminProductCategory) {
+  async function toggleActive(row: DeskRow) {
     try {
       await update.mutateAsync({ id: row.id, payload: { active: !row.active } });
       showToast(t.categoryDesk.updated, 'success');
@@ -76,13 +134,13 @@ export default function ProductCategoriesPage() {
       setConfirming(null);
       showToast(t.categoryDesk.deleted, 'success');
     } catch (error) {
-      // The server refuses while products or children point at it, and says
+      // The server refuses while anything or any child points at it, and says
       // how many. That message is more useful than anything written here.
       onError(error);
     }
   }
 
-  function renderRow(row: AdminProductCategory, child: boolean) {
+  function renderRow(row: DeskRow, child: boolean) {
     return (
       <li key={row.id} className={child ? 'ms-6' : undefined}>
         <Card className="py-3">
@@ -91,9 +149,9 @@ export default function ProductCategoriesPage() {
               <p className="flex items-center gap-2 font-medium text-app-text">
                 {row.name}
                 {/* Shown on the top of each branch; children always share it. */}
-                {!child && (
+                {mode === 'listing' && !child && (
                   <Badge variant={row.kind === 'SERVICE' ? 'info' : 'default'}>
-                    {row.kind === 'SERVICE' ? t.trademaster.hub.kindServices : t.trademaster.hub.kindProducts}
+                    {row.kind === 'SERVICE' ? hub.kindServices : hub.kindProducts}
                   </Badge>
                 )}
                 {!row.active && <Badge variant="default">{t.categoryDesk.hidden}</Badge>}
@@ -101,7 +159,7 @@ export default function ProductCategoriesPage() {
               <p className="ltr font-mono text-caption text-app-text-4">{row.slug}</p>
             </div>
 
-            <Badge>{count(t.categoryDesk.productsCount, row.productCount, locale)}</Badge>
+            <Badge>{count(countLabel, row.count, locale)}</Badge>
             {row.childCount > 0 && (
               <Badge variant="default">{count(t.categoryDesk.childrenCount, row.childCount, locale)}</Badge>
             )}
@@ -159,8 +217,8 @@ export default function ProductCategoriesPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={t.categoryDesk.title}
-        description={t.categoryDesk.subtitle}
+        title={title}
+        description={subtitle}
         actions={
           <Button onClick={() => setEditing('new')}>
             <Plus className="size-4" aria-hidden="true" />
@@ -206,6 +264,9 @@ export default function ProductCategoriesPage() {
 
       {editing && (
         <CategoryForm
+          mode={mode}
+          desk={desk}
+          countLabel={countLabel}
           category={editing === 'new' ? null : editing}
           parents={parents}
           onClose={() => setEditing(null)}
@@ -221,18 +282,24 @@ function count(template: string, value: number, locale: string): string {
 }
 
 function CategoryForm({
+  mode,
+  desk,
+  countLabel,
   category,
   parents,
   onClose,
 }: {
-  category: AdminProductCategory | null;
-  parents: AdminProductCategory[];
+  mode: DeskMode;
+  desk: ReturnType<typeof useDesk>;
+  countLabel: string;
+  category: DeskRow | null;
+  parents: DeskRow[];
   onClose: () => void;
 }) {
   const { t, locale } = useLocale();
+  const hub = t.trademaster.hub;
   const { showToast } = useToast();
-  const create = useCreateCategory();
-  const update = useUpdateCategory();
+  const { create, update } = desk;
 
   const [values, setValues] = useState<CategoryPayload>({
     name: category?.name ?? '',
@@ -260,8 +327,9 @@ function CategoryForm({
     // one from the name instead of storing nothing.
     const payload: CategoryPayload = {
       ...values,
-      // A child takes its parent's kind; sending one would only be ignored.
-      kind: values.parentId ? undefined : values.kind,
+      // Only listing categories have a kind, and a child takes its parent's;
+      // sending one would only be ignored — or, for a guild, refused.
+      kind: mode === 'listing' && !values.parentId ? values.kind : undefined,
       slug: values.slug?.trim() ? values.slug.trim() : undefined,
     };
 
@@ -285,6 +353,7 @@ function CategoryForm({
             id="category-name"
             value={values.name}
             required
+            minLength={2}
             maxLength={80}
             onChange={(event) => setValues({ ...values, name: event.target.value })}
           />
@@ -317,27 +386,28 @@ function CategoryForm({
         </FormField>
 
         {/* Products or services: chosen at the top of a branch, inherited below it. */}
-        {parent ? (
-          <p className="text-caption text-app-text-3">
-            {t.trademaster.hub.kindInherited.replace(
-              '{kind}',
-              parent.kind === 'SERVICE' ? t.trademaster.hub.kindServices : t.trademaster.hub.kindProducts
-            )}
-          </p>
-        ) : (
-          <FormField label={t.trademaster.hub.kindField} htmlFor="category-kind" hint={t.trademaster.hub.kindCategoryHint}>
-            <Select
-              id="category-kind"
-              value={values.kind ?? 'PRODUCT'}
-              onChange={(event) =>
-                setValues({ ...values, kind: event.target.value === 'SERVICE' ? 'SERVICE' : 'PRODUCT' })
-              }
-            >
-              <option value="PRODUCT">{t.trademaster.hub.kindProducts}</option>
-              <option value="SERVICE">{t.trademaster.hub.kindServices}</option>
-            </Select>
-          </FormField>
-        )}
+        {mode === 'listing' &&
+          (parent ? (
+            <p className="text-caption text-app-text-3">
+              {hub.kindInherited.replace(
+                '{kind}',
+                parent.kind === 'SERVICE' ? hub.kindServices : hub.kindProducts
+              )}
+            </p>
+          ) : (
+            <FormField label={hub.kindField} htmlFor="category-kind" hint={hub.kindCategoryHint}>
+              <Select
+                id="category-kind"
+                value={values.kind ?? 'PRODUCT'}
+                onChange={(event) =>
+                  setValues({ ...values, kind: event.target.value === 'SERVICE' ? 'SERVICE' : 'PRODUCT' })
+                }
+              >
+                <option value="PRODUCT">{hub.kindProducts}</option>
+                <option value="SERVICE">{hub.kindServices}</option>
+              </Select>
+            </FormField>
+          ))}
 
         <FormField label={t.categoryDesk.position} htmlFor="category-position">
           <Input
@@ -345,8 +415,10 @@ function CategoryForm({
             className="ltr"
             inputMode="numeric"
             value={values.position ?? ''}
+            maxLength={4}
             onChange={(event) => {
-              const digits = event.target.value.replace(/[^0-9]/g, '');
+              // Persian digits are digits too; they used to be dropped here.
+              const digits = toLatinDigits(event.target.value).replace(/[^0-9]/g, '');
               // Cleared means "leave it where it is", which on a new category
               // is the end of its siblings — not position zero, which would
               // silently put every new category first.
@@ -365,9 +437,7 @@ function CategoryForm({
         </label>
 
         {category && (
-          <p className="text-caption text-app-text-4">
-            {count(t.categoryDesk.productsCount, category.productCount, locale)}
-          </p>
+          <p className="text-caption text-app-text-4">{count(countLabel, category.count, locale)}</p>
         )}
 
         <div className="flex justify-end gap-2">
@@ -382,4 +452,3 @@ function CategoryForm({
     </Modal>
   );
 }
-

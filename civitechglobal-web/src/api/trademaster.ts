@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/config/api';
 import type {
+  AdminBusinessCategory,
+  BusinessCategoryNode,
   NearbyPage,
   OwnProduct,
   OwnShop,
@@ -62,6 +64,8 @@ const keys = {
   shopQueue: ['trademaster', 'admin', 'shops'] as const,
   productQueue: ['trademaster', 'admin', 'products'] as const,
   categoryDesk: ['trademaster', 'admin', 'categories'] as const,
+  businessCategories: ['trademaster', 'business-categories'] as const,
+  businessDesk: ['trademaster', 'admin', 'business-categories'] as const,
 };
 
 /** The structured half as one JSON field, as everywhere else that carries a file. */
@@ -186,6 +190,27 @@ export function useOwnShops(enabled = true) {
   });
 }
 
+/** The guild list, for the board's filter and the shop form. */
+export function useBusinessCategories() {
+  return useQuery({
+    queryKey: keys.businessCategories,
+    queryFn: async () => {
+      const res = await api.get<BusinessCategoryNode[]>('/trademaster/business-categories');
+      return res.data;
+    },
+    // It changes when staff edit the list, not while somebody is browsing.
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** A shop form's pictures, as multipart fields. */
+function shopFiles(input: { logo?: File; cover?: File }): Array<[string, File]> {
+  const files: Array<[string, File]> = [];
+  if (input.logo) files.push(['logo', input.logo]);
+  if (input.cover) files.push(['cover', input.cover]);
+  return files;
+}
+
 export function useCreateShop() {
   const qc = useQueryClient();
   return useMutation({
@@ -194,12 +219,13 @@ export function useCreateShop() {
     mutationFn: async (input: {
       payload: ShopPayload;
       logo?: File;
+      cover?: File;
       onProgress?: (percent: number) => void;
     }) => {
       const res = await api.upload<OwnShop>(
         'POST',
         '/trademaster/me/shops',
-        multipart(input.payload, input.logo ? [['logo', input.logo]] : []),
+        multipart(input.payload, shopFiles(input)),
         { onProgress: input.onProgress }
       );
       return res.data;
@@ -215,12 +241,13 @@ export function useUpdateShop() {
       id: string;
       payload: Partial<ShopPayload>;
       logo?: File;
+      cover?: File;
       onProgress?: (percent: number) => void;
     }) => {
       const res = await api.upload<OwnShop>(
         'PATCH',
         `/trademaster/me/shops/${input.id}`,
-        multipart(input.payload, input.logo ? [['logo', input.logo]] : []),
+        multipart(input.payload, shopFiles(input)),
         { onProgress: input.onProgress }
       );
       return res.data;
@@ -584,13 +611,55 @@ export function useReviewProduct() {
 // save did not work".
 // ---------------------------------------------------------------------------
 
-export function useCategoryDesk() {
+export function useCategoryDesk(enabled = true) {
   return useQuery({
     queryKey: keys.categoryDesk,
     queryFn: async () => {
       const res = await api.get<AdminProductCategory[]>('/trademaster/admin/categories');
       return res.data;
     },
+    enabled,
+  });
+}
+
+export function useBusinessCategoryDesk(enabled = true) {
+  return useQuery({
+    queryKey: keys.businessDesk,
+    queryFn: async () => {
+      const res = await api.get<AdminBusinessCategory[]>('/trademaster/admin/business-categories');
+      return res.data;
+    },
+    enabled,
+  });
+}
+
+/** Writes to the guild list refresh both the desk and the public list. */
+function useBusinessDeskWrite<TArgs>(write: (args: TArgs) => Promise<void>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: write,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.businessDesk });
+      void qc.invalidateQueries({ queryKey: keys.businessCategories });
+    },
+  });
+}
+
+export function useCreateBusinessCategory() {
+  return useBusinessDeskWrite(async (payload: CategoryPayload) => {
+    await api.post('/trademaster/admin/business-categories', payload);
+  });
+}
+
+export function useUpdateBusinessCategory() {
+  return useBusinessDeskWrite(async (input: { id: string; payload: Partial<CategoryPayload> }) => {
+    await api.patch(`/trademaster/admin/business-categories/${input.id}`, input.payload);
+  });
+}
+
+export function useDeleteBusinessCategory() {
+  return useBusinessDeskWrite(async (id: string) => {
+    await api.delete(`/trademaster/admin/business-categories/${id}`);
   });
 }
 

@@ -78,6 +78,17 @@ export default function ShopDetailPage() {
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <MarketplaceNav className="mb-8" />
 
+      {/* The shop's own photograph across the top, when it has uploaded one.
+          A stand-in (a product picture or the logo) would only repeat what
+          the page already shows below. */}
+      {shop.hasCover && shop.coverUrl && (
+        <img
+          src={apiAssetSrc(shop.coverUrl)}
+          alt=""
+          className="mb-8 h-56 w-full rounded-2xl object-cover sm:h-72"
+        />
+      )}
+
       <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start">
         {shop.logoUrl ? (
           <img
@@ -96,7 +107,9 @@ export default function ShopDetailPage() {
 
         <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold text-text-primary">{shop.name}</h1>
-          {shop.industry && <p className="mt-1 text-text-tertiary">{shop.industry}</p>}
+          {(shop.businessCategory?.name ?? shop.industry) && (
+            <p className="mt-1 text-text-tertiary">{shop.businessCategory?.name ?? shop.industry}</p>
+          )}
           <div className="mt-2">
             <OfferBadges kinds={shop.kinds} />
           </div>

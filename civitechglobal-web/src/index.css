@@ -318,6 +318,39 @@ body {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
+/*
+ * The shop card a map pin opens. Leaflet insets popup content and pads its
+ * wrapper; the card has its own picture and spacing, so both go, and the
+ * corners are rounded to match the cards in the list beneath the map.
+ */
+.shop-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--color-surface-default);
+  color: var(--color-text-primary);
+}
+.shop-popup .leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+  font: inherit;
+  line-height: inherit;
+}
+.shop-popup .leaflet-popup-tip {
+  background: var(--color-surface-default);
+}
+.shop-popup a.leaflet-popup-close-button {
+  z-index: 1;
+  margin: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.45);
+  color: #fff;
+  font-size: 18px;
+  line-height: 24px;
+}
+
 .dark .glass {
   background: rgba(10, 15, 26, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.07);

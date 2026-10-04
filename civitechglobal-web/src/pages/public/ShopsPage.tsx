@@ -1,19 +1,25 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import { MapPin, Package, Store } from 'lucide-react';
+import { MapPin, Store } from 'lucide-react';
 import { apiAssetSrc } from '@/lib/apiAsset';
-import { useProductCategories, useShopFacets, usePublicShops } from '@/api/trademaster';
+import {
+  useBusinessCategories,
+  useProductCategories,
+  useShopFacets,
+  usePublicShops,
+} from '@/api/trademaster';
+import { ShopResultCard } from '@/components/trademaster/ShopCards';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
 import { useMarketLocation } from '@/lib/useMarketLocation';
-import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import {
+  BusinessCategorySelect,
   CategorySelect,
   KindToggle,
   LocationBar,
@@ -51,12 +57,13 @@ export default function ShopsPage() {
     defaultView: 'cards',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
-    filters: { province: '', industry: '', kind: '', categoryId: '' },
+    filters: { province: '', businessCategoryId: '', kind: '', categoryId: '' },
   });
 
   const location = useMarketLocation();
   const { data: facets } = useShopFacets();
   const { data: categories } = useProductCategories();
+  const { data: businessCategories } = useBusinessCategories();
 
   const kind = controls.filters.kind as KindFilter;
   const categoryId = categoryForKind(categories, controls.filters.categoryId, kind);
@@ -92,7 +99,7 @@ export default function ShopsPage() {
     pageSize: PAGE_SIZE,
     search: controls.search || undefined,
     province: controls.filters.province || undefined,
-    industry: controls.filters.industry || undefined,
+    businessCategoryId: controls.filters.businessCategoryId || undefined,
     kind: kind || undefined,
     categoryId: categoryId || undefined,
     ...location.query,
@@ -172,21 +179,16 @@ export default function ShopsPage() {
               </Select>
             )}
 
-            {(facets?.industries.length ?? 0) > 1 && (
-              <Select
-                className="w-44"
-                value={controls.filters.industry}
-                aria-label={t.trademaster.filterIndustry}
-                onChange={(e) => controls.setFilter('industry', e.target.value)}
-              >
-                <option value="">{t.trademaster.filterAllIndustries}</option>
-                {facets?.industries.map((industry) => (
-                  <option key={industry} value={industry}>
-                    {industry}
-                  </option>
-                ))}
-              </Select>
-            )}
+            {/* The guild list, rather than the free-text trades shops used
+                to type: twelve spellings of one trade made that filter miss
+                most of the shops it was meant to find. */}
+            <BusinessCategorySelect
+              className="w-56"
+              categories={businessCategories}
+              value={controls.filters.businessCategoryId}
+              onChange={(value) => controls.setFilter('businessCategoryId', value)}
+              emptyLabel={t.trademaster.hub.allBusinessCategories}
+            />
 
             {/* Not offered during a radius search, which is ordered by
                 distance; a menu that changes nothing is worse than none. */}
@@ -227,9 +229,9 @@ export default function ShopsPage() {
       )}
 
       {!isLoading && controls.view === 'cards' && (data?.items.length ?? 0) > 0 && (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data?.items.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} />
+            <ShopResultCard key={shop.id} shop={shop} kindParam={kind || undefined} />
           ))}
         </ul>
       )}
@@ -315,38 +317,6 @@ function Where({ shop }: { shop: PublicShopSummary }) {
   );
 }
 
-function ShopCard({ shop }: { shop: PublicShopSummary }) {
-  const { t, locale } = useLocale();
-
-  return (
-    <li className="rounded-xl border border-border-default bg-surface-default transition hover:border-border-strong">
-      <Link to={`/marketplace/shops/${shop.slug}`} className="flex h-full flex-col gap-3 p-4">
-        <div className="flex items-start gap-3">
-          <ShopLogo shop={shop} size="lg" />
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate font-semibold text-text-primary">{shop.name}</h2>
-            {shop.industry && <p className="truncate text-sm text-text-tertiary">{shop.industry}</p>}
-            <div className="mt-1">
-              <OfferBadges kinds={shop.kinds} />
-            </div>
-          </div>
-          {shop.featured && <Badge variant="info">{t.showcase.featured}</Badge>}
-        </div>
-
-        <p className="line-clamp-2 flex-1 text-sm text-text-secondary">{shop.summary}</p>
-
-        <div className="flex items-center justify-between gap-2">
-          <Where shop={shop} />
-          <span className="inline-flex items-center gap-1 text-sm text-text-tertiary">
-            <Package className="h-3.5 w-3.5" aria-hidden="true" />
-            {t.trademaster.productCount.replace('{count}', formatCount(shop.productCount, locale))}
-          </span>
-        </div>
-      </Link>
-    </li>
-  );
-}
-
 function ShopRow({ shop }: { shop: PublicShopSummary }) {
   const { t, locale } = useLocale();
 
@@ -356,7 +326,9 @@ function ShopRow({ shop }: { shop: PublicShopSummary }) {
         <ShopLogo shop={shop} size="sm" />
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-medium text-text-primary">{shop.name}</h2>
-          <p className="truncate text-sm text-text-secondary">{shop.summary}</p>
+          <p className="truncate text-sm text-text-secondary">
+            {shop.businessCategory?.name ?? shop.industry ?? shop.summary}
+          </p>
         </div>
         <div className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
           <Where shop={shop} />

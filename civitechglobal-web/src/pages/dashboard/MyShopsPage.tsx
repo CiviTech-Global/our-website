@@ -7,6 +7,7 @@ import {
   useCloseShop,
   useReopenShop,
   useWithdrawShop,
+  useBusinessCategories,
   useCreateShop,
   useOwnShop,
   useOwnShops,
@@ -32,6 +33,7 @@ import {
   type ShopDraft,
 } from '@/lib/marketForms';
 import { features } from '@/lib/features';
+import { BusinessCategorySelect } from '@/components/trademaster/MarketplaceUi';
 import { PageHeader } from '@/components/app/PageHeader';
 import { CoverField } from '@/components/marketplace/CoverField';
 import { Badge } from '@/components/ui/Badge';
@@ -69,6 +71,7 @@ function draftFrom(shop: OwnShopDetail): ShopDraft {
   return {
     name: shop.name,
     summary: shop.summary,
+    businessCategoryId: shop.businessCategoryId ?? '',
     description: shop.description ?? '',
     industry: shop.industry ?? '',
     province: shop.province ?? '',
@@ -110,6 +113,7 @@ export default function MyShopsPage() {
 
   const { data: verification } = useOwnVerification();
   const { data: shops, isLoading } = useOwnShops();
+  const { data: businessCategories } = useBusinessCategories();
 
   const controls = useListControls({ pageSize: PAGE_SIZE, filters: { status: '' } });
   const list = useClientList(shops, controls, {
@@ -130,7 +134,9 @@ export default function MyShopsPage() {
   const [errors, setErrors] = useState<FieldErrors<keyof ShopDraft>>({});
   const [loadedId, setLoadedId] = useState<string | null>(null);
   const [logo, setLogo] = useState<File | null>(null);
+  const [cover, setCover] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>(IDLE);
+  const [coverUploadState, setCoverUploadState] = useState<UploadState>(IDLE);
 
   const editingId = editing && editing !== 'new' ? editing.id : undefined;
   const existing = useOwnShop(editingId);
@@ -178,12 +184,18 @@ export default function MyShopsPage() {
     clearGeo();
   }, [geoState, clearGeo]);
 
+  function resetPictures() {
+    setLogo(null);
+    setCover(null);
+    setUploadState(IDLE);
+    setCoverUploadState(IDLE);
+  }
+
   function openNew() {
     setDraft(EMPTY_SHOP);
     setErrors({});
     setLoadedId(null);
-    setLogo(null);
-    setUploadState(IDLE);
+    resetPictures();
     setEditing('new');
   }
 
@@ -191,8 +203,7 @@ export default function MyShopsPage() {
     setDraft(EMPTY_SHOP);
     setErrors({});
     setLoadedId(null);
-    setLogo(null);
-    setUploadState(IDLE);
+    resetPictures();
     setEditing(shop);
   }
 
@@ -214,39 +225,49 @@ export default function MyShopsPage() {
     const isEdit = editing !== 'new';
     const payload = shopPayload(draft, isEdit);
 
+    // Progress is one number for the whole request; it is shown against
+    // whichever picture is being sent, both when both are.
     const sent = logo ?? null;
-    const onProgress = (percent: number) =>
-      setUploadState((prev) => ({
-        ...prev,
-        phase: percent >= 100 ? 'finishing' : 'uploading',
-        percent,
-        file: sent,
-      }));
+    const sentCover = cover ?? null;
+    const onProgress = (percent: number) => {
+      const phase = percent >= 100 ? 'finishing' : 'uploading';
+      if (sent) setUploadState((prev) => ({ ...prev, phase, percent, file: sent }));
+      if (sentCover) setCoverUploadState((prev) => ({ ...prev, phase, percent, file: sentCover }));
+    };
 
     if (sent) setUploadState({ phase: 'uploading', percent: 0, file: sent });
+    if (sentCover) setCoverUploadState({ phase: 'uploading', percent: 0, file: sentCover });
 
     try {
       if (editing === 'new') {
-        await create.mutateAsync({ payload, logo: logo ?? undefined, onProgress });
+        await create.mutateAsync({
+          payload,
+          logo: logo ?? undefined,
+          cover: cover ?? undefined,
+          onProgress,
+        });
         showToast(t.trademaster.shopCreated, 'success');
       } else if (editing) {
         await update.mutateAsync({
           id: editing.id,
           payload,
           logo: logo ?? undefined,
+          cover: cover ?? undefined,
           onProgress,
         });
         showToast(t.trademaster.shopSaved, 'success');
       }
       setUploadState(IDLE);
+      setCoverUploadState(IDLE);
       closeForm();
     } catch (error) {
       // Two audiences, one failure: the sentence goes in the toast, and the
       // status block keeps the code and the server's own words within reach of
       // whoever has to explain it.
-      const diagnosis = diagnoseUpload(error, t, sent);
-      logUploadFailure('shop-logo', diagnosis, error);
+      const diagnosis = diagnoseUpload(error, t, sent ?? sentCover);
+      logUploadFailure('shop-pictures', diagnosis, error);
       if (sent) setUploadState({ phase: 'error', percent: 0, file: sent, error: diagnosis });
+      if (sentCover) setCoverUploadState({ phase: 'error', percent: 0, file: sentCover, error: diagnosis });
       showToast(diagnosis.message, 'error');
     }
   }
@@ -256,6 +277,11 @@ export default function MyShopsPage() {
     // a request goes out, rather than after.
     if (!shop.logoUrl) {
       showToast(t.trademaster.logoRequired, 'error');
+      return;
+    }
+    if (!shop.businessCategoryId) {
+      showToast(hub.categoryRequiredToSubmit, 'error');
+      openEdit(shop);
       return;
     }
 
@@ -548,6 +574,23 @@ export default function MyShopsPage() {
             </FormField>
 
             <FormField
+              htmlFor="my-shops-business-category"
+              label={`${hub.businessCategory} *`}
+              hint={hub.businessCategoryHint}
+              error={errorOf('businessCategoryId')}
+            >
+              <BusinessCategorySelect
+                id="my-shops-business-category"
+                categories={businessCategories}
+                value={draft.businessCategoryId}
+                onChange={(value) => set('businessCategoryId')(value)}
+                emptyLabel={hub.chooseBusinessCategory}
+                showCounts={false}
+                invalid={Boolean(errors.businessCategoryId)}
+              />
+            </FormField>
+
+            <FormField
               htmlFor="my-shops-shop-description"
               label={t.trademaster.shopDescription}
               error={errorOf('description')}
@@ -566,7 +609,11 @@ export default function MyShopsPage() {
               <span className="text-label text-app-text-2">{t.trademaster.logo}</span>
               <CoverField
                 value={logo}
-                previewUrl={editing !== null && editing !== 'new' ? editing.logoUrl : null}
+                previewPath={
+                  editing !== null && editing !== 'new' && editing.logoUrl
+                    ? `/trademaster/me/shops/${editing.id}/logo`
+                    : null
+                }
                 onChange={(file) => {
                   setLogo(file);
                   setUploadState(IDLE);
@@ -575,6 +622,25 @@ export default function MyShopsPage() {
                 onRetryUpload={() => void handleSave()}
               />
               <span className="text-caption text-app-text-3">{t.trademaster.logoHint}</span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-label text-app-text-2">{hub.coverField}</span>
+              <CoverField
+                value={cover}
+                previewPath={
+                  editing !== null && editing !== 'new' && editing.coverUrl
+                    ? `/trademaster/me/shops/${editing.id}/cover`
+                    : null
+                }
+                onChange={(file) => {
+                  setCover(file);
+                  setCoverUploadState(IDLE);
+                }}
+                uploadState={coverUploadState}
+                onRetryUpload={() => void handleSave()}
+              />
+              <span className="text-caption text-app-text-3">{hub.coverHint}</span>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
