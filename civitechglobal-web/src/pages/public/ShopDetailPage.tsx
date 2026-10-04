@@ -10,14 +10,15 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Pagination } from '@/components/ui/Pagination';
 import { useListControls } from '@/lib/useListControls';
 import { KindToggle, MarketplaceNav, OfferBadges } from '@/components/trademaster/MarketplaceUi';
-import type { KindFilter } from '@/lib/marketFormat';
+import { PRODUCT_GRID, type KindFilter } from '@/lib/marketFormat';
 import { ProductCard } from './MarketProductsPage';
 
 // Lazy, always: Leaflet is around 45 KB gzipped and most visitors to a shop
 // page never scroll to the map.
 const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
-const PAGE_SIZE = 24;
+/** Divisible by the grid's 2, 3 and 5 columns. */
+const PAGE_SIZE = 30;
 
 /**
  * One shop, and what it offers: products, services, or both.
@@ -212,7 +213,7 @@ export default function ShopDetailPage() {
         )}
 
         {!loadingProducts && (products?.items.length ?? 0) > 0 && (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className={PRODUCT_GRID}>
             {products?.items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

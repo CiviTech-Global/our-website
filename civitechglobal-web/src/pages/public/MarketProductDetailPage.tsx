@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { KindBadge, MarketplaceNav } from '@/components/trademaster/MarketplaceUi';
-import { formatCount } from '@/lib/marketFormat';
+import { PRODUCT_GRID, formatCount } from '@/lib/marketFormat';
 import { ProductCard } from './MarketProductsPage';
 import type { ProductVariant } from '@/types/trademaster';
 
@@ -391,9 +391,9 @@ function MoreFromShop({ shopSlug, exceptId }: { shopSlug: string; exceptId: stri
 
   // Five asked for, four shown: the listing being read is in this shop too,
   // so asking for exactly four would leave three whenever it comes back.
-  const { data } = usePublicProducts({ shopSlug, page: 1, pageSize: 5, sort: 'newest' });
+  const { data } = usePublicProducts({ shopSlug, page: 1, pageSize: 6, sort: 'newest' });
 
-  const others = (data?.items ?? []).filter((item) => item.id !== exceptId).slice(0, 4);
+  const others = (data?.items ?? []).filter((item) => item.id !== exceptId).slice(0, 5);
   if (others.length === 0) return null;
 
   return (
@@ -403,7 +403,7 @@ function MoreFromShop({ shopSlug, exceptId }: { shopSlug: string; exceptId: stri
       </h2>
       {/* ProductCard is its own <li>; wrapping it in another made a list
           item inside a list item, which is not a list any more. */}
-      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <ul className={PRODUCT_GRID}>
         {others.map((item) => (
           <ProductCard key={item.id} product={item} />
         ))}

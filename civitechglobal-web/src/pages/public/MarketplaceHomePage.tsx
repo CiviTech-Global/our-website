@@ -24,14 +24,14 @@ import {
   NothingNearby,
 } from '@/components/trademaster/MarketplaceUi';
 import { ShopPopupCard, ShopResultCard } from '@/components/trademaster/ShopCards';
-import { categoryForKind, formatCount, type KindFilter } from '@/lib/marketFormat';
+import { SHOP_GRID, categoryForKind, formatCount, type KindFilter } from '@/lib/marketFormat';
 import type { ShopSort } from '@/types/trademaster';
 
 // Lazy: Leaflet is around 45 KB gzipped, and nobody else on the site needs it.
 const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
-/** Results under the map, per page. Divisible by the grid's 1, 2 and 3 columns. */
-const PAGE_SIZE = 12;
+/** Results under the map, per page. Divisible by the row grid's 1, 2 and 3 columns. */
+const PAGE_SIZE = 18;
 
 /**
  * The local market's front door: search and filters, the map, and the
@@ -256,7 +256,7 @@ export default function MarketplaceHomePage() {
         )}
 
         {total > 0 && (
-          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className={SHOP_GRID}>
             {results.data?.items.map((shop) => (
               <ShopResultCard key={shop.id} shop={shop} kindParam={kind || undefined} />
             ))}

@@ -27,7 +27,7 @@ import {
   NothingNearby,
   OfferBadges,
 } from '@/components/trademaster/MarketplaceUi';
-import { categoryForKind, formatCount, formatKm, type KindFilter } from '@/lib/marketFormat';
+import { SHOP_GRID, categoryForKind, formatCount, formatKm, type KindFilter } from '@/lib/marketFormat';
 import type { PublicShopSummary, ShopSort } from '@/types/trademaster';
 
 // Lazy: around 45 KB gzipped, and it is only drawn once somebody asks where
@@ -229,7 +229,7 @@ export default function ShopsPage() {
       )}
 
       {!isLoading && controls.view === 'cards' && (data?.items.length ?? 0) > 0 && (
-        <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className={SHOP_GRID}>
           {data?.items.map((shop) => (
             <ShopResultCard key={shop.id} shop={shop} kindParam={kind || undefined} />
           ))}

@@ -9,7 +9,6 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatMoney } from '@/lib/marketplace';
 import { useListControls } from '@/lib/useListControls';
 import { useMarketLocation } from '@/lib/useMarketLocation';
-import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
@@ -18,16 +17,16 @@ import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import {
   CategorySelect,
-  KindBadge,
   KindToggle,
   LocationBar,
   MarketplaceNav,
   NothingNearby,
 } from '@/components/trademaster/MarketplaceUi';
-import { categoryForKind, formatKm, type KindFilter } from '@/lib/marketFormat';
+import { PRODUCT_GRID, categoryForKind, formatKm, type KindFilter } from '@/lib/marketFormat';
 import type { ProductSort, PublicProductSummary } from '@/types/trademaster';
 
-const PAGE_SIZE = 24;
+/** Divisible by the grid's 2, 3 and 5 columns. */
+const PAGE_SIZE = 30;
 
 /**
  * Products and services, in one catalogue with a switch between them.
@@ -236,7 +235,7 @@ export default function MarketProductsPage() {
       )}
 
       {!isLoading && (data?.items.length ?? 0) > 0 && (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className={PRODUCT_GRID}>
           {data?.items.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -262,12 +261,12 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
   const where = [product.business.city, product.business.province].filter(Boolean).join('، ');
 
   return (
-    <li className="overflow-hidden rounded-xl border border-border-default bg-surface-default transition hover:border-border-strong">
+    <li className="overflow-hidden rounded-lg border border-border-default bg-surface-default transition hover:border-border-strong hover:shadow-sm">
       <Link
         to={`/marketplace/products/${product.business.slug}/${product.slug}`}
         className="flex h-full flex-col"
       >
-        <div className="relative aspect-square bg-surface-muted">
+        <div className="relative aspect-square overflow-hidden bg-surface-muted">
           {product.coverUrl ? (
             <img
               src={apiAssetSrc(product.coverUrl)}
@@ -283,8 +282,17 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
               className="flex h-full w-full items-center justify-center text-text-tertiary"
               aria-hidden="true"
             >
-              <ImageOff className="h-8 w-8" />
+              <ImageOff className="h-7 w-7" />
             </div>
+          )}
+
+          {/* Only a service is labelled. Most listings are products, and a
+              "product" tag on every card is noise the eye learns to skip —
+              which is how it would come to skip the one that matters. */}
+          {product.kind === 'SERVICE' && (
+            <span className="absolute start-1.5 top-1.5 rounded-md bg-surface-default/90 px-1.5 py-0.5 text-[11px] font-medium text-text-primary shadow-sm">
+              {t.trademaster.hub.kindService}
+            </span>
           )}
 
           {/* Decided by the server, which counts options too: a coat with
@@ -297,33 +305,37 @@ export function ProductCard({ product }: { product: PublicProductSummary }) {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-1 p-3">
-          <div className="flex flex-wrap items-center gap-1">
-            <KindBadge kind={product.kind} />
-            {product.category && (
-              <span className="truncate text-xs text-text-tertiary">{product.category.name}</span>
-            )}
-          </div>
-          <h2 className="line-clamp-2 text-sm font-medium text-text-primary">{product.title}</h2>
+        {/* Three lines, each a different weight so they read as different
+            things at a glance: what it is, what it costs, who sells it where. */}
+        <div className="flex flex-1 flex-col gap-1 p-2.5">
+          <h2 className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-5 text-text-primary">
+            {product.title}
+          </h2>
 
-          <div className="mt-auto flex flex-wrap items-center gap-2">
-            {price && (
-              <span className="text-sm font-semibold text-text-primary">
-                {price} <span className="text-xs font-normal text-text-tertiary">{t.market.currency}</span>
-              </span>
-            )}
-            {product.negotiable && <Badge variant="info">{t.trademaster.negotiable}</Badge>}
-          </div>
-
-          <p className="truncate text-xs text-text-tertiary">{product.business.name}</p>
-          {(where || product.distanceKm !== undefined) && (
-            <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
-              <MapPin className="h-3 w-3" aria-hidden="true" />
-              {product.distanceKm !== undefined
-                ? t.trademaster.distanceAway.replace('{km}', formatKm(product.distanceKm, locale))
-                : where}
-            </span>
+          {price && (
+            <p className="text-sm font-bold text-text-primary">
+              {price} <span className="text-[11px] font-normal text-text-tertiary">{t.market.currency}</span>
+              {product.negotiable && (
+                <span className="ms-1.5 text-[11px] font-normal text-text-secondary">
+                  · {t.trademaster.negotiable}
+                </span>
+              )}
+            </p>
           )}
+
+          <p className="mt-auto flex items-center gap-1 truncate text-[11px] text-text-tertiary">
+            <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">
+              {[
+                product.business.name,
+                product.distanceKm !== undefined
+                  ? t.trademaster.distanceAway.replace('{km}', formatKm(product.distanceKm, locale))
+                  : where,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          </p>
         </div>
       </Link>
     </li>

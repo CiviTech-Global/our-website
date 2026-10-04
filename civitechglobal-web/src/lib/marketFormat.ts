@@ -9,6 +9,20 @@ import type { ListingKind, ProductCategoryNode } from '@/types/trademaster';
  * every edit to a marketplace page reloaded the whole app.
  */
 
+/**
+ * How the marketplace lays out its cards, said once so every page agrees.
+ *
+ * Products are browsed by picture, so they sit in a grid — two across on a
+ * phone, five on a desktop. Baymard's product-list research puts the useful
+ * ceiling at five to eight columns; past that the reader loses the row.
+ *
+ * Shops are compared — distance, trade, address — which NN/g finds a list does
+ * better than a grid of big cards, so they are compact rows, one to three to a
+ * line.
+ */
+export const PRODUCT_GRID = 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+export const SHOP_GRID = 'grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3';
+
 /** No kind chosen ('' = all), or products, or services. */
 export type KindFilter = '' | ListingKind;
 

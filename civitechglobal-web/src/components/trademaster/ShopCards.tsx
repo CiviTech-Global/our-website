@@ -66,27 +66,66 @@ function Subtitle({ shop }: { shop: PublicShopSummary }) {
       ? t.trademaster.distanceAway.replace('{km}', formatKm(shop.distanceKm, locale))
       : [shop.city, shop.province].filter(Boolean).join('، ');
   const parts = [category, where].filter(Boolean);
-  return parts.length ? <p className="truncate text-sm text-text-secondary">{parts.join(' · ')}</p> : null;
+  return parts.length ? <p className="truncate text-xs text-text-secondary">{parts.join(' · ')}</p> : null;
 }
 
-/** A result in the list under the map, or on the shops page. */
+/**
+ * A result in the list under the map, or on the shops page.
+ *
+ * A compact row, the way a maps app lists places: a small square picture, then
+ * the name, what kind of business and how far, and one line of where. Readers
+ * here are comparing places, and a row puts three times as many in view as the
+ * tall picture card it replaces, with each fact in the same spot on every row
+ * so the eye can run down a column of distances.
+ */
 export function ShopResultCard({ shop, kindParam }: { shop: PublicShopSummary; kindParam?: string }) {
   const { t, locale } = useLocale();
   const to = kindParam ? `/marketplace/shops/${shop.slug}?kind=${kindParam}` : `/marketplace/shops/${shop.slug}`;
+  const where = shop.address ?? [shop.city, shop.province].filter(Boolean).join('، ');
 
   return (
-    <li className="overflow-hidden rounded-xl border border-border-default bg-surface-default transition hover:border-border-strong hover:shadow-sm">
-      <Link to={to} className="flex h-full flex-col">
-        <CoverPicture shop={shop} className="aspect-[16/9]" />
-        <div className={cn('flex flex-1 flex-col gap-1.5 p-4', shop.logoUrl && shop.hasCover && 'pt-7')}>
-          <h3 className="truncate font-semibold text-text-primary">{shop.name}</h3>
+    <li>
+      <Link
+        to={to}
+        className="flex h-full gap-3 rounded-xl border border-border-default bg-surface-default p-2.5 transition hover:border-border-strong hover:shadow-sm"
+      >
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-muted">
+          {shop.coverUrl ? (
+            <img
+              src={apiAssetSrc(shop.coverUrl)}
+              alt=""
+              className={cn('h-full w-full', shop.hasCover ? 'object-cover' : 'object-contain p-2')}
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-text-tertiary" aria-hidden="true">
+              <Store className="h-7 w-7" />
+            </div>
+          )}
+          {shop.featured && (
+            <span
+              className="absolute start-1 top-1 rounded bg-surface-inverse/80 px-1 text-[10px] leading-4 text-text-inverse"
+              aria-label={t.showcase.featured}
+            >
+              ★
+            </span>
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+          <h3 className="truncate text-sm font-semibold text-text-primary">{shop.name}</h3>
           <Subtitle shop={shop} />
-          <p className="line-clamp-2 text-sm text-text-tertiary">{shop.summary}</p>
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
+          {where && (
+            <p className="flex items-center gap-1 truncate text-xs text-text-tertiary">
+              <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{where}</span>
+            </p>
+          )}
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-text-tertiary">
             <OfferBadges kinds={shop.kinds} />
-            <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
-              <Package className="h-3.5 w-3.5" aria-hidden="true" />
-              {t.trademaster.productCount.replace('{count}', formatCount(shop.productCount, locale))}
+            <span className="inline-flex items-center gap-1">
+              <Package className="h-3 w-3" aria-hidden="true" />
+              {formatCount(shop.productCount, locale)}
             </span>
           </div>
         </div>
