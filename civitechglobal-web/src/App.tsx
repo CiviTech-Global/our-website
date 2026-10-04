@@ -89,6 +89,7 @@ const CompaniesPage = lazy(() => import('@/pages/public/CompaniesPage'));
 const CompanyPage = lazy(() => import('@/pages/public/CompanyPage'));
 const MyCompanyPage = lazy(() => import('@/pages/dashboard/MyCompanyPage'));
 const SavedJobsPage = lazy(() => import('@/pages/dashboard/SavedJobsPage'));
+const MyRequestsPage = lazy(() => import('@/pages/dashboard/MyRequestsPage'));
 const JobAlertsPage = lazy(() => import('@/pages/dashboard/JobAlertsPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
@@ -491,6 +492,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <VerificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="requests"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyRequestsPage />
             </Suspense>
           }
         />

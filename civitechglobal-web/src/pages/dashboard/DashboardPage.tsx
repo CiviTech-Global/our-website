@@ -1,14 +1,12 @@
 import { Link } from 'react-router';
 import {
-  Briefcase,
   CheckCircle2,
   ChevronRight,
   Circle,
+  ClipboardList,
   Clock,
   Code2,
-  Eye,
   FileText,
-  Gavel,
   Handshake,
   MailWarning,
   MessagesSquare,
@@ -16,10 +14,22 @@ import {
   PackageSearch,
   Store,
   UserPlus,
+  Users,
 } from 'lucide-react';
 import { useSendVerificationEmail } from '@/api/accountRecovery';
 import { useCapabilities } from '@/api/capabilities';
-import { useOwnMarketplaceStats, useOwnVerification } from '@/api/marketplace';
+import { useOwnVerification } from '@/api/marketplace';
+import { useWorkspace } from '@/api/workspace';
+import {
+  ActivityPanel,
+  AttentionPanel,
+  ClientPanel,
+  FreelancePanel,
+  GetStartedPanel,
+  HiringPanel,
+  JobSearchPanel,
+  SellingPanel,
+} from '@/components/app/WorkspacePanels';
 import { useOwnShops } from '@/api/trademaster';
 import type { OwnShop } from '@/types/trademaster';
 import { moderationVariant } from '@/lib/marketplace';
@@ -68,7 +78,9 @@ export default function DashboardPage() {
   const { email: canEmail } = useCapabilities();
   useDocumentTitle(t.nav.dashboard);
   const { user } = useAuth();
-  const { data: stats, isLoading: statsLoading } = useOwnMarketplaceStats(Boolean(user));
+  // One request for the whole home: which parts this member plays, and what
+  // is waiting in each. See workspace.service on the server.
+  const { data: workspace, isLoading: statsLoading } = useWorkspace(Boolean(user));
   const { data: verification } = useOwnVerification(Boolean(user));
   // Only when the module exists. Asking every member for a shop list on a
   // deployment that has no marketplace is a request that can only ever answer
@@ -120,49 +132,52 @@ export default function DashboardPage() {
         summary={
           <StatGrid columns={5}>
             <StatCard
-              label={t.meStats.listings}
-              value={stats?.listings.total}
+              label={t.meStats.unreadMessages}
+              value={workspace ? workspace.unread.messages + workspace.unread.notifications : undefined}
               loading={statsLoading}
-              icon={Briefcase}
+              icon={MessagesSquare}
+              to="/dashboard/messages"
+              tone={workspace && workspace.unread.messages + workspace.unread.notifications > 0 ? 'attention' : 'neutral'}
+            />
+            <StatCard
+              label={t.workspace.applicants}
+              value={workspace?.hiring.applicants}
+              loading={statsLoading}
+              icon={Users}
               to="/dashboard/jobs"
+              tone={workspace && workspace.hiring.unseen > 0 ? 'attention' : 'neutral'}
               hint={
-                stats && (
-                  <span className="inline-flex items-center gap-1">
-                    <Eye className="size-3" aria-hidden="true" />
-                    {number(stats.listings.views)}
-                  </span>
-                )
+                workspace && workspace.hiring.unseen > 0
+                  ? `${number(workspace.hiring.unseen)} ${t.workspace.newApplicants}`
+                  : undefined
               }
             />
             <StatCard
               label={t.meStats.applications}
-              value={stats?.applications.total}
+              value={workspace?.jobSearch.applications}
               loading={statsLoading}
               icon={FileText}
               to="/dashboard/applications"
             />
             <StatCard
-              label={t.meStats.bids}
-              value={stats?.bids.total}
-              loading={statsLoading}
-              icon={Gavel}
-              to="/dashboard/bids"
-            />
-            <StatCard
-              label={t.meStats.wonAwards}
-              value={stats?.awards.won}
+              label={t.workspace.collaborationsTitle}
+              value={workspace?.collaborations.active}
               loading={statsLoading}
               icon={Handshake}
               to="/dashboard/awards"
               tone="positive"
+              hint={
+                workspace && workspace.collaborations.completed > 0
+                  ? `${number(workspace.collaborations.completed)} ${t.workspace.completedLabel}`
+                  : undefined
+              }
             />
             <StatCard
-              label={t.meStats.unreadMessages}
-              value={stats ? stats.unread.messages + stats.unread.notifications : undefined}
+              label={t.workspace.requestsTitle}
+              value={workspace?.trackedRequests}
               loading={statsLoading}
-              icon={MessagesSquare}
-              to="/dashboard/messages"
-              tone={stats && stats.unread.messages + stats.unread.notifications > 0 ? 'attention' : 'neutral'}
+              icon={ClipboardList}
+              to="/dashboard/requests"
             />
           </StatGrid>
         }
@@ -199,6 +214,8 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
+          {workspace && <AttentionPanel data={workspace} />}
+
           {doneCount < steps.length && (
             <Panel
               title={t.app.setupTitle}
@@ -265,13 +282,17 @@ export default function DashboardPage() {
             </Panel>
           )}
 
-          <Panel title={t.dashboard.quickActions} flush>
-            <ul className="grid grid-cols-1 divide-y divide-app-border-light sm:grid-cols-3 sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse">
-              <QuickAction to="/start-project" icon={<Code2 />} label={t.nav.startProject} />
-              <QuickAction to="/join" icon={<UserPlus />} label={t.join.title} />
-              <QuickAction to="/track" icon={<PackageSearch />} label={t.nav.track} />
-            </ul>
-          </Panel>
+          {/* One panel per part this member plays; the parts they do not
+              play yet are offered together at the foot. */}
+          {workspace && workspace.hiring.postings > 0 && <HiringPanel data={workspace} />}
+          {workspace &&
+            (workspace.jobSearch.applications > 0 ||
+              workspace.jobSearch.savedJobs > 0 ||
+              workspace.jobSearch.activeAlerts > 0) && <JobSearchPanel data={workspace} />}
+          {workspace && workspace.client.projects > 0 && <ClientPanel data={workspace} />}
+          {workspace && workspace.freelance.bids > 0 && <FreelancePanel data={workspace} />}
+          {workspace && workspace.selling.books > 0 && <SellingPanel data={workspace} />}
+          {workspace && <GetStartedPanel data={workspace} />}
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
@@ -296,6 +317,16 @@ export default function DashboardPage() {
                 },
               ]}
             />
+          </Panel>
+
+          {workspace && <ActivityPanel data={workspace} />}
+
+          <Panel title={t.dashboard.quickActions} flush>
+            <ul className="divide-y divide-app-border-light">
+              <QuickAction to="/start-project" icon={<Code2 />} label={t.nav.startProject} />
+              <QuickAction to="/join" icon={<UserPlus />} label={t.join.title} />
+              <QuickAction to="/track" icon={<PackageSearch />} label={t.nav.track} />
+            </ul>
           </Panel>
         </div>
       </div>

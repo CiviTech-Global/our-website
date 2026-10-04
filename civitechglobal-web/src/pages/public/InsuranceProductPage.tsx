@@ -1,3 +1,4 @@
+import { SavedToAccount } from '@/components/account/SavedToAccount';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import {
@@ -47,6 +48,7 @@ function SubmittedPanel({ result }: { result: SubmitResult }) {
         <p className="ltr mt-1 font-mono text-lg font-semibold tracking-widest text-text-primary">
           {result.trackingCode}
         </p>
+        <SavedToAccount code={result.trackingCode} />
         <Button
           type="button"
           variant="ghost"

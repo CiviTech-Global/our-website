@@ -1,3 +1,4 @@
+import { SavedToAccount } from '@/components/account/SavedToAccount';
 import { useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { CalendarClock, CheckCircle2, Copy, Plus, Sparkles, X } from 'lucide-react';
@@ -123,6 +124,7 @@ export default function ConsultPage() {
               <p className="ltr mt-1 font-mono text-2xl font-bold tracking-widest text-text-primary">
                 {receipt.trackingCode}
               </p>
+              <SavedToAccount code={receipt.trackingCode} />
               <Button
                 type="button"
                 variant="outline"

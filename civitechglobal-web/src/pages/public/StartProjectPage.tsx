@@ -1,3 +1,4 @@
+import { SavedToAccount } from '@/components/account/SavedToAccount';
 import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import { IDLE, UploadStatus, type UploadState } from '@/components/ui/UploadStatus';
 import { useState } from 'react';
@@ -249,6 +250,7 @@ export default function StartProjectPage() {
               <p className="ltr mt-1 text-2xl font-semibold tracking-[0.3em] text-text-primary">
                 {result.trackingCode}
               </p>
+              <SavedToAccount code={result.trackingCode} />
               <Button
                 type="button"
                 variant="secondary"

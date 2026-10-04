@@ -15,6 +15,7 @@ import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { MfaSettings } from '@/components/account/MfaSettings';
+import { SecuritySettings } from '@/components/account/SecuritySettings';
 import { PublicProfileForm } from '@/components/account/PublicProfileForm';
 
 /** NOTE: relies on an assumed `PUT /api/auth/me` endpoint (see AuthProvider.updateProfile). */
@@ -88,6 +89,10 @@ export default function ProfilePage() {
       </AnimatedSection>
 
       <AnimatedSection delay={0.05}>
+        <SecuritySettings />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.06}>
         <MfaSettings />
       </AnimatedSection>
 
