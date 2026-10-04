@@ -85,6 +85,11 @@ const ShopOrdersPage = lazy(() => import('@/pages/dashboard/ShopOrdersPage'));
 const ShopProductsPage = lazy(() => import('@/pages/dashboard/ShopProductsPage'));
 const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
 const JobBoardPage = lazy(() => import('@/pages/public/JobBoardPage'));
+const CompaniesPage = lazy(() => import('@/pages/public/CompaniesPage'));
+const CompanyPage = lazy(() => import('@/pages/public/CompanyPage'));
+const MyCompanyPage = lazy(() => import('@/pages/dashboard/MyCompanyPage'));
+const SavedJobsPage = lazy(() => import('@/pages/dashboard/SavedJobsPage'));
+const JobAlertsPage = lazy(() => import('@/pages/dashboard/JobAlertsPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
 const MyBidsPage = lazy(() => import('@/pages/dashboard/MyBidsPage'));
@@ -109,6 +114,7 @@ const ShopQueuePage = lazy(() => import('@/pages/admin/ShopQueuePage'));
 const ProductQueuePage = lazy(() => import('@/pages/admin/ProductQueuePage'));
 const ProductCategoriesPage = lazy(() => import('@/pages/admin/ProductCategoriesPage'));
 const BusinessCategoriesPage = lazy(() => import('@/pages/admin/BusinessCategoriesPage'));
+const CompaniesAdminPage = lazy(() => import('@/pages/admin/CompaniesAdminPage'));
 const JobQueuePage = lazy(() => import('@/pages/admin/JobQueuePage'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalyticsPage'));
 const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
@@ -343,6 +349,22 @@ export default function App() {
                 </Suspense>
               }
             />
+            <Route
+              path="/companies"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <CompaniesPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/companies/:slug"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <CompanyPage />
+                </Suspense>
+              }
+            />
           </>
         )}
         {/* The code, not the id: it is what somebody can quote, and it does not
@@ -536,6 +558,34 @@ export default function App() {
             </Suspense>
           }
         />
+        {features.jobsV2 && (
+          <>
+            <Route
+              path="company"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MyCompanyPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="saved-jobs"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <SavedJobsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="job-alerts"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <JobAlertsPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         <Route
           path="projects"
           element={
@@ -811,6 +861,18 @@ export default function App() {
               }
             />
           </>
+        )}
+        {features.jobsV2 && (
+          <Route
+            path="companies"
+            element={
+              <RequirePermission permission="jobs">
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <CompaniesAdminPage />
+                </Suspense>
+              </RequirePermission>
+            }
+          />
         )}
         <Route
           path="books"

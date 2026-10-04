@@ -90,6 +90,14 @@ export default function ProfilePage() {
         {profile.bio && (
           <p className="mt-4 whitespace-pre-line leading-7 text-text-primary">{profile.bio}</p>
         )}
+
+        {(profile.skills?.length ?? 0) > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {profile.skills!.map((skill) => (
+              <Badge key={skill}>{skill}</Badge>
+            ))}
+          </div>
+        )}
       </Card>
 
       {(profile.jobs.length > 0 || profile.projects.length > 0) && (

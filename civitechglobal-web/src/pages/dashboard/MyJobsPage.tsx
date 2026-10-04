@@ -23,6 +23,10 @@ import { formatDate, toLatinDigits, toPersianDigits } from '@/i18n/utils';
 import { IRAN_PROVINCES, provinceLabel } from '@/lib/iranProvinces';
 import { DateField } from '@/components/ui/DateField';
 import { FilePreview } from '@/components/ui/FilePreview';
+import { features } from '@/lib/features';
+import { EMPTY_EXTRAS, extrasFromJob, extrasPayload, type JobExtrasDraft } from '@/lib/jobForm';
+import { JobFormExtras } from '@/components/jobs/JobFormExtras';
+import { useEmployerNote, usePipelineCounts } from '@/api/jobs';
 import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
 import { RatingStars } from '@/components/marketplace/RatingStars';
 import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
@@ -123,6 +127,8 @@ export default function MyJobsPage() {
   const num = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
   const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [extras, setExtras] = useState<JobExtrasDraft>(EMPTY_EXTRAS);
+  const { data: pipeline } = usePipelineCounts(features.jobsV2);
 
   const set = (name: keyof typeof draft) => (value: string | boolean) =>
     setDraft((prev) => ({ ...prev, [name]: value }));
@@ -130,6 +136,7 @@ export default function MyJobsPage() {
   /** Opens the form on a fresh posting, or on one that already exists. */
   function openForm(target: OwnJob | 'new') {
     setEditing(target);
+    setExtras(target === 'new' ? EMPTY_EXTRAS : extrasFromJob(target));
     setDraft(
       target === 'new'
         ? EMPTY_DRAFT
@@ -190,9 +197,14 @@ export default function MyJobsPage() {
       };
 
       if (editing && editing !== 'new') {
-        await updateJob.mutateAsync({ id: editing.id, payload });
+        await updateJob.mutateAsync({
+          id: editing.id,
+          payload: { ...payload, ...(features.jobsV2 ? extrasPayload(extras, null) : {}) },
+        });
       } else {
+        const more = features.jobsV2 ? extrasPayload(extras, undefined) : {};
         await create.mutateAsync({
+          ...(more as Record<string, unknown>),
           ...payload,
           province: payload.province ?? undefined,
           city: payload.city ?? undefined,
@@ -339,7 +351,12 @@ export default function MyJobsPage() {
                       onClick={() => setOpenApplicants(job.id)}
                     >
                       <Users className="size-4" aria-hidden="true" />
-                      {t.market.applicants} ({num(job._count.applications)})
+                      {t.market.applicants} ({num(pipeline?.[job.id]?.total ?? job._count.applications)})
+                      {(pipeline?.[job.id]?.unseen ?? 0) > 0 && (
+                        <Badge variant="info">
+                          {t.jobs.newApplicants.replace('{count}', num(pipeline![job.id].unseen))}
+                        </Badge>
+                      )}
                     </Button>
                     {job.state === 'OPEN' && (
                       <Button
@@ -436,9 +453,12 @@ export default function MyJobsPage() {
               <Input id="city" value={draft.city} onChange={(e) => set('city')(e.target.value)} />
             </FormField>
 
-            <FormField label={t.market.category} htmlFor="category">
-              <Input id="category" value={draft.category} onChange={(e) => set('category')(e.target.value)} />
-            </FormField>
+            {/* The free-text tag gives way to the fixed list on the new board. */}
+            {!features.jobsV2 && (
+              <FormField label={t.market.category} htmlFor="category">
+                <Input id="category" value={draft.category} onChange={(e) => set('category')(e.target.value)} />
+              </FormField>
+            )}
 
             <FormField label={t.jobs.openings} htmlFor="openings" hint={t.jobs.openingsHint}>
               <Input
@@ -503,6 +523,8 @@ export default function MyJobsPage() {
             />
           </FormField>
 
+          {features.jobsV2 && <JobFormExtras draft={extras} onChange={setExtras} />}
+
           <p className="text-label text-app-text-4">{t.market.submitWarning}</p>
 
           <div className="flex gap-2">
@@ -530,10 +552,12 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
   const { data, isLoading } = useJobApplications(jobId);
   const setOutcome = useSetApplicationOutcome();
   const [previewing, setPreviewing] = useState<{ id: string; filename: string } | null>(null);
+  const v2 = features.jobsV2;
 
-  async function decide(id: string, outcome: 'SHORTLISTED' | 'ACCEPTED' | 'DECLINED') {
+  async function decide(id: string, outcome: 'SHORTLISTED' | 'INTERVIEW' | 'ACCEPTED' | 'DECLINED') {
     try {
       await setOutcome.mutateAsync({ id, outcome });
+      if (v2) showToast(t.jobs.stageUpdated, 'success');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
     }
@@ -575,9 +599,23 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
                     </div>
                   )}
                 </div>
-                <Badge variant={outcomeVariant(application.outcome)}>
-                  {t.market[application.outcome]}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {/* New to this employer: the inbox marks them seen as it opens,
+                      so this is read from what the server said before that. */}
+                  {v2 && !application.employerSeenAt && application.outcome !== 'WITHDRAWN' && (
+                    <Badge variant="warning">{t.jobs.newBadge}</Badge>
+                  )}
+                  {v2 && application.skillMatch && application.skillMatch.total > 0 && (
+                    <Badge variant={application.skillMatch.matched > 0 ? 'success' : 'default'}>
+                      {t.jobs.skillFit
+                        .replace('{matched}', String(application.skillMatch.matched))
+                        .replace('{total}', String(application.skillMatch.total))}
+                    </Badge>
+                  )}
+                  <Badge variant={outcomeVariant(application.outcome)}>
+                    {t.market[application.outcome]}
+                  </Badge>
+                </div>
               </div>
 
               {application.expectedSalary && (
@@ -608,6 +646,9 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
                 </div>
               )}
 
+              {v2 && <EmployerNote applicationId={application.id} initial={application.employerNote ?? ''} />}
+
+              {application.outcome !== 'WITHDRAWN' && (
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link to={`/dashboard/messages/a/${application.id}`}>
                   <Button size="sm" variant="outline">
@@ -617,6 +658,11 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
                 <Button size="sm" variant="outline" onClick={() => void decide(application.id, 'SHORTLISTED')}>
                   {t.market.shortlist}
                 </Button>
+                {v2 && (
+                  <Button size="sm" variant="outline" onClick={() => void decide(application.id, 'INTERVIEW')}>
+                    {t.jobs.inviteInterview}
+                  </Button>
+                )}
                 <Button size="sm" onClick={() => void decide(application.id, 'ACCEPTED')}>
                   {t.market.accept}
                 </Button>
@@ -624,6 +670,7 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
                   {t.market.decline}
                 </Button>
               </div>
+              )}
             </Card>
           </li>
         ))}
@@ -637,5 +684,42 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
         />
       )}
     </Modal>
+  );
+}
+
+/** The employer's private note on one candidate. Saved on demand, never shown to them. */
+function EmployerNote({ applicationId, initial }: { applicationId: string; initial: string }) {
+  const { t } = useLocale();
+  const { showToast } = useToast();
+  const save = useEmployerNote();
+  const [note, setNote] = useState(initial);
+  const dirty = note.trim() !== initial.trim();
+
+  async function submit() {
+    try {
+      await save.mutateAsync({ id: applicationId, note });
+      showToast(t.jobs.noteSaved, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <FormField label={t.jobs.employerNote} htmlFor={`note-${applicationId}`} hint={t.jobs.employerNoteHint}>
+        <TextArea
+          id={`note-${applicationId}`}
+          rows={2}
+          maxLength={2000}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </FormField>
+      {dirty && (
+        <Button size="sm" variant="outline" className="mt-2" isLoading={save.isPending} onClick={() => void submit()}>
+          {t.jobs.saveNote}
+        </Button>
+      )}
+    </div>
   );
 }

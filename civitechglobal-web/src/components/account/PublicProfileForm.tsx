@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { TextArea } from '@/components/ui/TextArea';
 import { Button } from '@/components/ui/Button';
+import { features } from '@/lib/features';
 
 const publicProfileSchema = z.object({
   headline: z.string().trim().max(120).optional(),
@@ -18,7 +19,16 @@ const publicProfileSchema = z.object({
   website: z
     .union([z.literal(''), z.string().trim().url()])
     .optional(),
+  skills: z.string().max(1500).optional(),
 });
+
+/** Both commas: a Persian keyboard types «،», and a list split on "," alone arrives as one skill. */
+const splitSkills = (value: string | undefined) =>
+  (value ?? '')
+    .split(/[,،]/)
+    .map((skill) => skill.trim())
+    .filter(Boolean)
+    .slice(0, 30);
 
 type PublicProfileValues = z.infer<typeof publicProfileSchema>;
 
@@ -41,7 +51,7 @@ export function PublicProfileForm() {
     formState: { errors, isSubmitting },
   } = useForm<PublicProfileValues>({
     resolver: zodResolver(publicProfileSchema),
-    defaultValues: { headline: '', bio: '', website: '' },
+    defaultValues: { headline: '', bio: '', website: '', skills: '' },
   });
 
   // The query resolves after mount; adopt its values as the form defaults.
@@ -51,6 +61,7 @@ export function PublicProfileForm() {
         headline: profile.headline ?? '',
         bio: profile.bio ?? '',
         website: profile.website ?? '',
+        skills: (profile.skills ?? []).join('، '),
       });
     }
   }, [profile, reset]);
@@ -63,6 +74,9 @@ export function PublicProfileForm() {
         headline: values.headline?.trim() ?? '',
         bio: values.bio?.trim() ?? '',
         website: values.website?.trim() ?? '',
+        // Only where the field is shown: sending [] from a form without it
+        // would wipe the skills somebody set elsewhere.
+        ...(features.jobsV2 ? { skills: splitSkills(values.skills) } : {}),
       });
       showToast(t.market.publicProfileSaved, 'success');
     } catch (error) {
@@ -102,6 +116,11 @@ export function PublicProfileForm() {
             {...register('website')}
           />
         </FormField>
+        {features.jobsV2 && (
+          <FormField label={t.jobs.skillsLabel} htmlFor="skills" hint={t.jobs.skillsHint} error={errors.skills?.message}>
+            <Input id="skills" placeholder="React, Node.js, SQL" invalid={!!errors.skills} {...register('skills')} />
+          </FormField>
+        )}
         <Button type="submit" isLoading={isSubmitting} className="w-fit">
           {t.common.save}
         </Button>

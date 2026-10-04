@@ -23,6 +23,14 @@ import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
 import type { ModerationStatus, OwnApplication } from '@/types/marketplace';
+import { Eye, Undo2 } from 'lucide-react';
+import { Link } from 'react-router';
+import { features } from '@/lib/features';
+import { apiMessage } from '@/lib/apiMessage';
+import { useWithdrawApplication } from '@/api/jobs';
+
+/** Stages from which an applicant may still take an application back. */
+const WITHDRAWABLE = new Set(['PENDING', 'SHORTLISTED', 'INTERVIEW']);
 
 const PAGE_SIZE = 10;
 const MODERATION_STATUSES: ModerationStatus[] = [
@@ -54,6 +62,7 @@ export default function MyApplicationsPage() {
     pageSize: PAGE_SIZE,
   });
   const [revising, setRevising] = useState<OwnApplication | null>(null);
+  const [withdrawing, setWithdrawing] = useState<OwnApplication | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -102,7 +111,9 @@ export default function MyApplicationsPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-app-text">{application.job.title}</p>
+                  <Link to={`/jobs/${application.job.code}`} className="font-medium text-app-text hover:underline">
+                    {application.job.title}
+                  </Link>
                   <p className="mt-0.5 text-label text-app-text-4">
                     {application.job.companyName && `${application.job.companyName} · `}
                     <span className="ltr font-mono">{application.job.code}</span>
@@ -117,6 +128,12 @@ export default function MyApplicationsPage() {
                   {application.moderationStatus === 'APPROVED' && (
                     <Badge variant={outcomeVariant(application.outcome)}>
                       {t.market[application.outcome]}
+                    </Badge>
+                  )}
+                  {features.jobsV2 && application.employerSeenAt && application.outcome !== 'WITHDRAWN' && (
+                    <Badge variant="info">
+                      <Eye className="size-3" aria-hidden="true" />
+                      {t.jobs.seenByEmployer}
                     </Badge>
                   )}
                 </div>
@@ -143,6 +160,17 @@ export default function MyApplicationsPage() {
                   </Button>
                 </div>
               )}
+
+              {features.jobsV2 &&
+                application.moderationStatus !== 'REJECTED' &&
+                WITHDRAWABLE.has(application.outcome) && (
+                  <div className="mt-3">
+                    <Button size="sm" variant="ghost" onClick={() => setWithdrawing(application)}>
+                      <Undo2 className="size-4" aria-hidden="true" />
+                      {t.jobs.withdraw}
+                    </Button>
+                  </div>
+                )}
             </Card>
           </li>
         ))}
@@ -153,7 +181,40 @@ export default function MyApplicationsPage() {
       )}
 
       {revising && <ReviseModal application={revising} onClose={() => setRevising(null)} />}
+      {withdrawing && <WithdrawModal application={withdrawing} onClose={() => setWithdrawing(null)} />}
     </div>
+  );
+}
+
+/** Taking an application back, asked once, since the employer sees it go. */
+function WithdrawModal({ application, onClose }: { application: OwnApplication; onClose: () => void }) {
+  const { t } = useLocale();
+  const { showToast } = useToast();
+  const withdraw = useWithdrawApplication();
+
+  async function confirm() {
+    try {
+      await withdraw.mutateAsync(application.id);
+      showToast(t.jobs.withdrawn, 'success');
+      onClose();
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  return (
+    <Modal isOpen onClose={onClose} title={t.jobs.withdraw}>
+      <p className="text-body text-app-text">{application.job.title}</p>
+      <p className="mt-2 text-body text-app-text-3">{t.jobs.withdrawConfirm}</p>
+      <div className="mt-4 flex gap-2">
+        <Button variant="danger" isLoading={withdraw.isPending} onClick={() => void confirm()}>
+          {t.jobs.withdraw}
+        </Button>
+        <Button variant="ghost" onClick={onClose}>
+          {t.common.cancel}
+        </Button>
+      </div>
+    </Modal>
   );
 }
 

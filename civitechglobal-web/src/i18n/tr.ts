@@ -1586,6 +1586,9 @@ const tr: PartialTranslations = {
     navSavedJobs: 'Kaydedilen ilanlar',
     navAlerts: 'İş bildirimleri',
     navCompany: 'Şirket sayfası',
+    hidePage: 'Sayfayı gizle',
+    showPage: 'Sayfayı göster',
+    hiddenBadge: 'Gizli',
     skillsLabel: 'Becerileriniz',
     skillsHint: 'Virgülle ayırın. Herkese açık profilinizde görünür ve ilanlarla eşleştirilir.',
     seniorityLevels: {

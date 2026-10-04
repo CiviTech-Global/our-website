@@ -128,6 +128,13 @@ export function AdminLayout() {
     icon: <Store />,
   };
 
+  /** Company pages — not a queue; the jobs desk takes one down when it must. */
+  const companies: NavItem = {
+    to: '/admin/companies',
+    label: t.jobs.companiesTitle,
+    icon: <Building2 />,
+  };
+
   const when = (condition: boolean, ...items: NavItem[]) => (condition ? items : []);
 
   // Everything with work waiting, busiest first — the overview module's
@@ -176,6 +183,7 @@ export function AdminLayout() {
             // Postings and the applications answering them are one desk: whoever
             // decides a role belongs on the board judges the replies to it.
             ...when(can('jobs'), queue.jobPosts, queue.applications),
+            ...when(can('jobs') && features.jobsV2, companies),
             ...when(can('freelance'), queue.freelanceProjects, queue.bids),
             ...when(can('books'), queue.books),
             // Both behind one permission: a shop and its catalogue are

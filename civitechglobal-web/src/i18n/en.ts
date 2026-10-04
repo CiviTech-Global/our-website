@@ -1349,6 +1349,9 @@ const en: typeof fa = {
     navSavedJobs: 'Saved jobs',
     navAlerts: 'Job alerts',
     navCompany: 'Company page',
+    hidePage: 'Hide page',
+    showPage: 'Show page',
+    hiddenBadge: 'Hidden',
     skillsLabel: 'Your skills',
     skillsHint: 'Separate with commas. They appear on your public profile, and we match them to roles.',
     seniorityLevels: {

@@ -1580,6 +1580,9 @@ const es: PartialTranslations = {
     navSavedJobs: 'Ofertas guardadas',
     navAlerts: 'Alertas de empleo',
     navCompany: 'Página de empresa',
+    hidePage: 'Ocultar página',
+    showPage: 'Mostrar página',
+    hiddenBadge: 'Oculta',
     skillsLabel: 'Tus habilidades',
     skillsHint: 'Sepáralas con comas. Aparecen en tu perfil público y las comparamos con las ofertas.',
     seniorityLevels: {

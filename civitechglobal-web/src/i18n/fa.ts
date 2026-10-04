@@ -1348,6 +1348,9 @@ const fa = {
     navSavedJobs: 'آگهی‌های نشان‌شده',
     navAlerts: 'هشدارهای شغلی',
     navCompany: 'صفحهٔ شرکت',
+    hidePage: 'پنهان کردن صفحه',
+    showPage: 'نمایش صفحه',
+    hiddenBadge: 'پنهان',
     skillsLabel: 'مهارت‌های شما',
     skillsHint: 'با ویرگول جدا کنید. روی پروفایل عمومی‌تان دیده می‌شوند و با آگهی‌ها مقایسه می‌شوند.',
     seniorityLevels: {

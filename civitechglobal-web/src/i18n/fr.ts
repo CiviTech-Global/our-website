@@ -1576,6 +1576,9 @@ const fr: PartialTranslations = {
     navSavedJobs: 'Offres enregistrées',
     navAlerts: 'Alertes emploi',
     navCompany: 'Page entreprise',
+    hidePage: 'Masquer la page',
+    showPage: 'Afficher la page',
+    hiddenBadge: 'Masquée',
     skillsLabel: 'Vos compétences',
     skillsHint: 'Séparez-les par des virgules. Elles figurent sur votre profil public et sont comparées aux offres.',
     seniorityLevels: {

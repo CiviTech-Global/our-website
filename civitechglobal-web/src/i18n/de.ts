@@ -1576,6 +1576,9 @@ const de: PartialTranslations = {
     navSavedJobs: 'Gemerkte Stellen',
     navAlerts: 'Job-Benachrichtigungen',
     navCompany: 'Unternehmensseite',
+    hidePage: 'Seite ausblenden',
+    showPage: 'Seite anzeigen',
+    hiddenBadge: 'Ausgeblendet',
     skillsLabel: 'Ihre Fähigkeiten',
     skillsHint: 'Durch Kommas trennen. Sie erscheinen in Ihrem öffentlichen Profil und werden mit Stellen abgeglichen.',
     seniorityLevels: {

@@ -1,7 +1,10 @@
 import { Outlet } from 'react-router';
 import {
   Bell,
+  BellRing,
+  Bookmark,
   BookOpen,
+  Building2,
   Briefcase,
   FileText,
   FolderKanban,
@@ -68,7 +71,14 @@ export function UserLayout() {
                 ]
               : []),
             { to: '/dashboard/jobs', label: t.market.myJobs, icon: <Briefcase /> },
+            ...(features.jobsV2 ? [{ to: '/dashboard/company', label: t.jobs.navCompany, icon: <Building2 /> }] : []),
             { to: '/dashboard/applications', label: t.market.myApplications, icon: <FileText /> },
+            ...(features.jobsV2
+              ? [
+                  { to: '/dashboard/saved-jobs', label: t.jobs.navSavedJobs, icon: <Bookmark /> },
+                  { to: '/dashboard/job-alerts', label: t.jobs.navAlerts, icon: <BellRing /> },
+                ]
+              : []),
             { to: '/dashboard/projects', label: t.market.myProjects, icon: <FolderKanban /> },
             { to: '/dashboard/bids', label: t.market.myBids, icon: <Gavel /> },
             { to: '/dashboard/awards', label: t.market.myAwards, icon: <Handshake /> },
