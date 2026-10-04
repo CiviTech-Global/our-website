@@ -509,31 +509,25 @@ export default function App() {
         <Route
           path="applications"
           element={
-            <RequirePermission permission="jobs">
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <MyApplicationsPage />
-              </Suspense>
-            </RequirePermission>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyApplicationsPage />
+            </Suspense>
           }
         />
         <Route
           path="projects"
           element={
-            <RequirePermission permission="projects">
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <MyProjectsPage />
-              </Suspense>
-            </RequirePermission>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyProjectsPage />
+            </Suspense>
           }
         />
         <Route
           path="bids"
           element={
-            <RequirePermission permission="freelance">
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <MyBidsPage />
-              </Suspense>
-            </RequirePermission>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <MyBidsPage />
+            </Suspense>
           }
         />
         <Route
@@ -547,11 +541,9 @@ export default function App() {
         <Route
           path="messages"
           element={
-            <RequirePermission permission="messages">
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <ConversationsPage />
-              </Suspense>
-            </RequirePermission>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ConversationsPage />
+            </Suspense>
           }
         />
         <Route

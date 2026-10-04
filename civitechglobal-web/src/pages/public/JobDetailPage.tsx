@@ -288,7 +288,7 @@ export default function JobDetailPage() {
               <Input
                 id="cv"
                 type="file"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.docx,.tex"
                 onChange={(e) => setCv(e.target.files?.[0] ?? null)}
               />
             </FormField>

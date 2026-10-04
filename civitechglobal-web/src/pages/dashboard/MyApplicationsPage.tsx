@@ -236,7 +236,7 @@ function ReviseModal({
           <Input
             id="reviseCv"
             type="file"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf,.docx,.tex"
             onChange={(e) => setCv(e.target.files?.[0] ?? null)}
           />
         </FormField>
