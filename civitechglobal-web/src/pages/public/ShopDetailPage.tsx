@@ -7,7 +7,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
-import { Pagination } from '@/components/ui/Pagination';
+import { ListPager } from '@/components/ui/ListPager';
 import { useListControls } from '@/lib/useListControls';
 import { KindToggle, MarketplaceNav, OfferBadges } from '@/components/trademaster/MarketplaceUi';
 import { PRODUCT_GRID, type KindFilter } from '@/lib/marketFormat';
@@ -19,6 +19,8 @@ const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
 /** Divisible by the grid's 2, 3 and 5 columns. */
 const PAGE_SIZE = 30;
+/** What the reader may switch to; the server stops at 60. */
+const PAGE_SIZES = [15, 30, 45, 60];
 
 /**
  * One shop, and what it offers: products, services, or both.
@@ -36,11 +38,16 @@ export default function ShopDetailPage() {
 
   // `kind` arrives in the address when the reader came from browsing
   // services (or products), so the shop opens on what they were looking for.
-  const controls = useListControls({ defaultSort: 'newest', pageSize: PAGE_SIZE, filters: { kind: '' } });
+  const controls = useListControls({
+    defaultSort: 'newest',
+    pageSize: PAGE_SIZE,
+    pageSizeOptions: PAGE_SIZES,
+    filters: { kind: '' },
+  });
   const kind = controls.filters.kind as KindFilter;
   const { data: products, isLoading: loadingProducts } = usePublicProducts({
     page: controls.page,
-    pageSize: PAGE_SIZE,
+    pageSize: controls.pageSize,
     shopSlug: slug,
     kind: kind || undefined,
   });
@@ -220,14 +227,17 @@ export default function ShopDetailPage() {
           </ul>
         )}
 
-        {products && products.totalPages > 1 && (
-          <div className="mt-8">
-            <Pagination
-              page={controls.page}
-              totalPages={products.totalPages}
-              onPageChange={controls.setPage}
-            />
-          </div>
+        {products && (
+          <ListPager
+            className="mt-8"
+            page={controls.page}
+            pageSize={controls.pageSize}
+            total={products.total}
+            totalPages={products.totalPages}
+            onPageChange={controls.setPage}
+            pageSizeOptions={controls.pageSizeOptions}
+            onPageSizeChange={controls.setPageSize}
+          />
         )}
       </section>
     </div>

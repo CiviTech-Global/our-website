@@ -499,6 +499,10 @@ const tr: PartialTranslations = {
     filterLabel: 'Filtre',
     allOption: 'Tümü',
     searchPlaceholder: 'Ara...',
+    showingRange: '{from}–{to} / {total}',
+    perPage: 'Sayfa başına',
+    pagination: 'Sayfalama',
+    goToPage: '{page}. sayfaya git',
   },
   blog: {
     otherLanguageTitle: 'Bu yazı sizin dilinizde yayımlanmadı',

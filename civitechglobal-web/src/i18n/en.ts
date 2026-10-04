@@ -55,6 +55,10 @@ const en: typeof fa = {
     filterLabel: 'Filter',
     allOption: 'All',
     searchPlaceholder: 'Search...',
+    showingRange: '{from}–{to} of {total}',
+    perPage: 'Per page',
+    pagination: 'Pagination',
+    goToPage: 'Go to page {page}',
   },
   nav: {
     insurance: 'Insurance',

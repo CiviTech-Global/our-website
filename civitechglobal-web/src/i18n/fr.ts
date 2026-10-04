@@ -489,6 +489,10 @@ const fr: PartialTranslations = {
     filterLabel: 'Filtrer',
     allOption: 'Tous',
     searchPlaceholder: 'Rechercher...',
+    showingRange: '{from}–{to} sur {total}',
+    perPage: 'Par page',
+    pagination: 'Pagination',
+    goToPage: 'Aller à la page {page}',
   },
   blog: {
     otherLanguageTitle: 'Cet article n\'a pas été publié dans votre langue',

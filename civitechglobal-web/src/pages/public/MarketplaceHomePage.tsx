@@ -12,7 +12,7 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
 import { useMarketLocation } from '@/lib/useMarketLocation';
 import { Input } from '@/components/ui/Input';
-import { Pagination } from '@/components/ui/Pagination';
+import { ListPager } from '@/components/ui/ListPager';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import {
@@ -32,6 +32,8 @@ const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
 /** Results under the map, per page. Divisible by the row grid's 1, 2 and 3 columns. */
 const PAGE_SIZE = 18;
+/** What the reader may switch to; the server stops at 60. */
+const PAGE_SIZES = [9, 18, 36, 60];
 
 /**
  * The local market's front door: search and filters, the map, and the
@@ -53,6 +55,7 @@ export default function MarketplaceHomePage() {
 
   const controls = useListControls({
     pageSize: PAGE_SIZE,
+    pageSizeOptions: PAGE_SIZES,
     defaultSort: 'newest',
     filters: { kind: '', categoryId: '', businessCategoryId: '', province: '' },
   });
@@ -99,7 +102,7 @@ export default function MarketplaceHomePage() {
   const results = usePublicShops({
     ...filters,
     page: controls.page,
-    pageSize: PAGE_SIZE,
+    pageSize: controls.pageSize,
     sort: near ? 'nearest' : (controls.sort as ShopSort),
   });
 
@@ -263,19 +266,22 @@ export default function MarketplaceHomePage() {
           </ul>
         )}
 
-        {results.data && results.data.totalPages > 1 && (
-          <div className="mt-8">
-            <Pagination
-              page={controls.page}
-              totalPages={results.data.totalPages}
-              onPageChange={(next) => {
-                controls.setPage(next);
-                // Back to the top of the results, not the top of the page:
-                // the map is above them and the reader is reading the list.
-                document.getElementById('market-results')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            />
-          </div>
+        {results.data && (
+          <ListPager
+            className="mt-8"
+            page={controls.page}
+            pageSize={controls.pageSize}
+            total={results.data.total}
+            totalPages={results.data.totalPages}
+            onPageChange={(next) => {
+              controls.setPage(next);
+              // Back to the top of the results, not the top of the page:
+              // the map is above them and the reader is reading the list.
+              document.getElementById('market-results')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            pageSizeOptions={controls.pageSizeOptions}
+            onPageSizeChange={controls.setPageSize}
+          />
         )}
       </section>
     </div>

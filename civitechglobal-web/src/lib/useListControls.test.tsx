@@ -190,4 +190,54 @@ describe('useListControls', () => {
     const { result } = setup('/books?view=carousel', { defaultView: 'table' });
     expect(result.current.controls.view).toBe('table');
   });
+
+  describe('page size', () => {
+    const sizes = { pageSize: 18, pageSizeOptions: [9, 18, 36, 60] };
+
+    it('uses the default and offers no choice unless asked to', () => {
+      const { result } = setup('/shops?perPage=36', { pageSize: 18 });
+      expect(result.current.controls.pageSize).toBe(18);
+      expect(result.current.controls.pageSizeOptions).toEqual([]);
+    });
+
+    it('reads an offered size from the URL', () => {
+      const { result } = setup('/shops?perPage=36', sizes);
+      expect(result.current.controls.pageSize).toBe(36);
+    });
+
+    // Somebody's hand-edited link must not become a ten-thousand-row request.
+    it('ignores a size the list does not offer', () => {
+      for (const value of ['10000', '0', '-9', 'abc', '']) {
+        const { result } = setup(`/shops?perPage=${value}`, sizes);
+        expect(result.current.controls.pageSize).toBe(18);
+      }
+    });
+
+    it('keeps the first item on screen in view when the size changes', () => {
+      // Page 3 at 18 starts at item 37; at 36 a page, item 37 is on page 2.
+      const { result } = setup('/shops?page=3', sizes);
+      act(() => result.current.controls.setPageSize(36));
+      expect(result.current.controls.pageSize).toBe(36);
+      expect(result.current.controls.page).toBe(2);
+      expect(new URLSearchParams(result.current.location.search).get('perPage')).toBe('36');
+
+      // And back down: item 37 is on page 5 at 9 a page.
+      act(() => result.current.controls.setPageSize(9));
+      expect(result.current.controls.page).toBe(5);
+    });
+
+    it('leaves the default out of the URL', () => {
+      const { result } = setup('/shops?perPage=36', sizes);
+      act(() => result.current.controls.setPageSize(18));
+      expect(result.current.location.search).toBe('');
+    });
+
+    it('keeps the size through paging and filtering', () => {
+      const { result } = setup('/shops?perPage=60', { ...sizes, filters: { kind: '' } });
+      act(() => result.current.controls.setPage(2));
+      act(() => result.current.controls.setFilter('kind', 'SERVICE'));
+      expect(result.current.controls.pageSize).toBe(60);
+      expect(result.current.controls.page).toBe(1);
+    });
+  });
 });

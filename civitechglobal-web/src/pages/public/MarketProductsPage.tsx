@@ -11,7 +11,7 @@ import { useListControls } from '@/lib/useListControls';
 import { useMarketLocation } from '@/lib/useMarketLocation';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
-import { Pagination } from '@/components/ui/Pagination';
+import { ListPager } from '@/components/ui/ListPager';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
@@ -27,6 +27,8 @@ import type { ProductSort, PublicProductSummary } from '@/types/trademaster';
 
 /** Divisible by the grid's 2, 3 and 5 columns. */
 const PAGE_SIZE = 30;
+/** What the reader may switch to; the server stops at 60. */
+const PAGE_SIZES = [15, 30, 45, 60];
 
 /**
  * Products and services, in one catalogue with a switch between them.
@@ -63,6 +65,7 @@ export default function MarketProductsPage() {
     defaultView: 'cards',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
+    pageSizeOptions: PAGE_SIZES,
     filters: { kind: '', categoryId: '', inStock: '', province: '', priceMin: '', priceMax: '' },
     // Typed boxes: written to the address bar after a pause, not per keystroke.
     typedFilters: ['priceMin', 'priceMax'],
@@ -96,7 +99,7 @@ export default function MarketProductsPage() {
 
   const { data, isLoading } = usePublicProducts({
     page: controls.page,
-    pageSize: PAGE_SIZE,
+    pageSize: controls.pageSize,
     search: controls.search || undefined,
     kind: kind || undefined,
     categoryId: categoryId || undefined,
@@ -242,14 +245,17 @@ export default function MarketProductsPage() {
         </ul>
       )}
 
-      {data && data.totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination
-            page={controls.page}
-            totalPages={data.totalPages}
-            onPageChange={controls.setPage}
-          />
-        </div>
+      {data && (
+        <ListPager
+          className="mt-8"
+          page={controls.page}
+          pageSize={controls.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          onPageChange={controls.setPage}
+          pageSizeOptions={controls.pageSizeOptions}
+          onPageSizeChange={controls.setPageSize}
+        />
       )}
     </div>
   );

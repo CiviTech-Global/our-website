@@ -493,6 +493,10 @@ const es: PartialTranslations = {
     filterLabel: 'Filtrar',
     allOption: 'Todos',
     searchPlaceholder: 'Buscar...',
+    showingRange: '{from}–{to} de {total}',
+    perPage: 'Por página',
+    pagination: 'Paginación',
+    goToPage: 'Ir a la página {page}',
   },
   blog: {
     otherLanguageTitle: 'Este artículo no se ha publicado en su idioma',

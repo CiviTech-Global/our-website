@@ -53,6 +53,10 @@ const fa = {
     filterLabel: 'فیلتر',
     allOption: 'همه',
     searchPlaceholder: 'جستجو...',
+    showingRange: '{from} تا {to} از {total}',
+    perPage: 'تعداد در صفحه',
+    pagination: 'صفحه‌بندی',
+    goToPage: 'رفتن به صفحهٔ {page}',
   },
   nav: {
     insurance: 'بیمه‌ها',

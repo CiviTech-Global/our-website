@@ -15,7 +15,7 @@ import { useListControls } from '@/lib/useListControls';
 import { useMarketLocation } from '@/lib/useMarketLocation';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
-import { Pagination } from '@/components/ui/Pagination';
+import { ListPager } from '@/components/ui/ListPager';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import {
@@ -35,6 +35,8 @@ import type { PublicShopSummary, ShopSort } from '@/types/trademaster';
 const ShopMap = lazy(() => import('@/components/trademaster/ShopMap'));
 
 const PAGE_SIZE = 24;
+/** What the reader may switch to; the server stops at 60. */
+const PAGE_SIZES = [12, 24, 48, 60];
 
 /**
  * The public shop directory.
@@ -57,6 +59,7 @@ export default function ShopsPage() {
     defaultView: 'cards',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
+    pageSizeOptions: PAGE_SIZES,
     filters: { province: '', businessCategoryId: '', kind: '', categoryId: '' },
   });
 
@@ -96,7 +99,7 @@ export default function ShopsPage() {
 
   const { data, isLoading } = usePublicShops({
     page: controls.page,
-    pageSize: PAGE_SIZE,
+    pageSize: controls.pageSize,
     search: controls.search || undefined,
     province: controls.filters.province || undefined,
     businessCategoryId: controls.filters.businessCategoryId || undefined,
@@ -244,14 +247,17 @@ export default function ShopsPage() {
         </ul>
       )}
 
-      {data && data.totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination
-            page={controls.page}
-            totalPages={data.totalPages}
-            onPageChange={controls.setPage}
-          />
-        </div>
+      {data && (
+        <ListPager
+          className="mt-8"
+          page={controls.page}
+          pageSize={controls.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          onPageChange={controls.setPage}
+          pageSizeOptions={controls.pageSizeOptions}
+          onPageSizeChange={controls.setPageSize}
+        />
       )}
 
       {/* The way in for a shop that is not here yet. */}

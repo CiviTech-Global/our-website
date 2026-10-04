@@ -22,6 +22,15 @@ export interface ListControlsOptions {
   /** Rows per page. Sent to the server, so it belongs with the rest. */
   pageSize?: number;
   /**
+   * The page sizes the reader may choose from, if they may choose at all.
+   *
+   * Opt-in, so every list that does not offer the choice behaves exactly as
+   * before. The choice is kept in the address bar as `perPage`, like every
+   * other part of a list's state, and only a value from this list is accepted
+   * from it — a hand-edited URL asking for ten thousand rows gets the default.
+   */
+  pageSizeOptions?: number[];
+  /**
    * How long typing settles before it becomes a request. 300ms is the usual
    * compromise: long enough that a word is one query rather than six, short
    * enough that the list feels like it is answering the keystroke.
@@ -44,7 +53,12 @@ export interface ListControls {
   setSort: (value: string) => void;
   page: number;
   setPage: (value: number) => void;
+  /** The page size in force: the reader's choice, or the default. */
   pageSize: number;
+  /** What the reader may choose from; empty when the list offers no choice. */
+  pageSizeOptions: number[];
+  /** Change the page size, keeping the first item on screen in view. */
+  setPageSize: (value: number) => void;
   view: ListView;
   setView: (value: ListView) => void;
   /** How many filters (search included) are narrowing the list right now. */
@@ -74,7 +88,8 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
     filters: filterDefaults = {},
     typedFilters = [],
     defaultSort = '',
-    pageSize = 20,
+    pageSize: defaultPageSize = 20,
+    pageSizeOptions = [],
     debounceMs = 300,
   } = options;
 
@@ -192,6 +207,24 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
   const page = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 1;
   const setPage = useCallback((value: number) => write({ page: value <= 1 ? null : String(value) }), [write]);
 
+  // The reader's page size, if it is one this list offers.
+  const requestedSize = Number(params.get('perPage'));
+  const pageSize = pageSizeOptions.includes(requestedSize) ? requestedSize : defaultPageSize;
+  const setPageSize = useCallback(
+    (value: number) => {
+      // Stay with what the reader was looking at: the first item on the
+      // current page lands on whichever page holds it at the new size, rather
+      // than everything snapping back to page 1.
+      const firstIndex = (page - 1) * pageSize;
+      const nextPage = Math.floor(firstIndex / value) + 1;
+      write({
+        perPage: value === defaultPageSize ? null : String(value),
+        page: nextPage <= 1 ? null : String(nextPage),
+      });
+    },
+    [write, page, pageSize, defaultPageSize]
+  );
+
   const viewParam = params.get('view');
   const view: ListView = viewParam === 'cards' || viewParam === 'table' ? viewParam : defaultView;
   const setView = useCallback(
@@ -228,6 +261,8 @@ export function useListControls(options: ListControlsOptions = {}): ListControls
     page,
     setPage,
     pageSize,
+    pageSizeOptions,
+    setPageSize,
     view,
     setView,
     activeCount,
