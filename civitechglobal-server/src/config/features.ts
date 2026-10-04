@@ -59,6 +59,16 @@ export const features = {
    * it cannot rot quietly while it waits.
    */
   tradeMasterOrders: flag('FEATURE_TRADEMASTER_ORDERS', false),
+
+  /**
+   * The job board's second generation: fixed categories, richer postings,
+   * company pages, saved jobs, alerts, matching and the hiring pipeline, with
+   * applications going straight to the employer.
+   *
+   * The board itself is live; this gates only what is new on it, so the
+   * production board keeps working exactly as it does until this is set.
+   */
+  jobsV2: flag('FEATURE_JOBS_V2', true),
 } as const;
 
 export type FeatureName = keyof typeof features;

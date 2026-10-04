@@ -121,6 +121,10 @@ model User {
   jobPosts             JobPost[]        @relation("JobAuthor")
   jobsReviewed         JobPost[]        @relation("JobReviewer")
   jobApplications      JobApplication[] @relation("JobApplicant")
+  /// The employer's public company page. One per account.
+  company              Company?         @relation("CompanyOwner")
+  savedJobs            SavedJob[]
+  jobAlerts            JobAlert[]
   applicationsReviewed JobApplication[] @relation("ApplicationReviewer")
 
   freelanceProjects FreelanceProject[] @relation("ProjectAuthor")
@@ -153,6 +157,9 @@ model User {
 
   /// One-liner shown on the public profile and next to the author's name.
   headline String?
+  /// What the person can do, as tags. Public, and what a job's skills are
+  /// matched against for "you have 4 of 6".
+  skills   String[] @default([])
   /// Free text, ~1000 chars max (validated in the service layer).
   bio      String?
   website  String?
@@ -1229,6 +1236,9 @@ enum JobWorkArrangement {
 enum OfferOutcome {
   PENDING
   SHORTLISTED
+  /// Invited to interview. Jobs only; a freelance bid goes straight from
+  /// shortlisted to a decision.
+  INTERVIEW
   ACCEPTED
   DECLINED
   /// Pulled by the person who sent it.
@@ -1378,6 +1388,37 @@ model JobPost {
   /// accepted, not on the first.
   openings Int @default(1)
 
+  // ---- What the role is and asks for -------------------------------------
+  jobCategoryId String?      @map("job_category_id")
+  jobCategory   JobCategory? @relation(fields: [jobCategoryId], references: [id], onDelete: SetNull)
+
+  seniority          JobSeniority?
+  minExperienceYears Int?            @map("min_experience_years")
+  educationLevel     EducationLevel? @map("education_level")
+  fieldOfStudy       String?         @map("field_of_study")
+
+  /// Keys from catalog/job-taxonomy JOB_BENEFITS.
+  benefits     String[] @default([])
+  /// Free text: «شنبه تا چهارشنبه ۸:۳۰ تا ۱۷:۳۰».
+  workingHours String?  @map("working_hours")
+  /// The employer wants to fill it soon. Shown and filterable, never a sort.
+  urgent       Boolean  @default(false)
+
+  // Requirements Iranian postings state, and Iranian law permits stating.
+  genderRequirement  GenderRequirement          @default(ANY) @map("gender_requirement")
+  ageMin             Int?                       @map("age_min")
+  ageMax             Int?                       @map("age_max")
+  militaryService    MilitaryServiceRequirement @default(ANY) @map("military_service")
+  /// Accepts conscripts placed through the military-service scheme (امریه).
+  amriehEligible     Boolean                    @default(false) @map("amrieh_eligible")
+  disabilityFriendly Boolean                    @default(false) @map("disability_friendly")
+
+  /// The employer's company page, when they have one. Set at write time.
+  companyId String?  @map("company_id")
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  savedBy SavedJob[]
+
   // ---- Moderation ---------------------------------------------------------
   moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
   submittedAt      DateTime?        @map("submitted_at")
@@ -1417,6 +1458,8 @@ model JobPost {
   @@index([state, publishedAt])
   @@index([authorId])
   @@index([featured, state])
+  @@index([jobCategoryId])
+  @@index([companyId])
   @@map("job_posts")
 }
 
@@ -1449,7 +1492,14 @@ model JobApplication {
   internalNote     String?          @map("internal_note")
 
   /// What the employer decided, once staff passed it on.
-  outcome OfferOutcome @default(PENDING)
+  outcome          OfferOutcome @default(PENDING)
+  /// When the employer first opened it — "seen" for the applicant, and half of
+  /// how responsive an employer is.
+  employerSeenAt   DateTime?    @map("employer_seen_at")
+  /// When the outcome last moved, so a stage can say how long ago.
+  outcomeChangedAt DateTime?    @map("outcome_changed_at")
+  /// The employer's own note on a candidate. Never shown to the applicant.
+  employerNote     String?      @map("employer_note")
 
   /// Contact opens only after staff approved the application — the thread
   /// anchors here. See the note on MarketplaceMessage.
@@ -2661,4 +2711,159 @@ model DemoRecord {
   @@unique([model, recordId])
   @@index([batch, sequence])
   @@map("demo_records")
+}
+
+// ---------------------------------------------------------------------------
+// Job board, second generation
+// ---------------------------------------------------------------------------
+
+/// How senior a role is — IranTalent's «رده سازمانی», widened at both ends.
+enum JobSeniority {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  MANAGER
+  EXECUTIVE
+}
+
+/// The least a role asks for. Absent means it asks for none.
+enum EducationLevel {
+  DIPLOMA
+  ASSOCIATE
+  BACHELOR
+  MASTER
+  DOCTORATE
+}
+
+enum GenderRequirement {
+  ANY
+  MALE
+  FEMALE
+}
+
+/// Iranian men need a completed or exempt military service card to be hired
+/// for most roles; many postings say so, and readers filter on it.
+enum MilitaryServiceRequirement {
+  ANY
+  COMPLETED_OR_EXEMPT
+}
+
+enum CompanySize {
+  SIZE_1_10
+  SIZE_11_50
+  SIZE_51_200
+  SIZE_201_500
+  SIZE_501_1000
+  SIZE_1000_PLUS
+}
+
+/// What kind of work a role is. Two levels; see catalog/job-taxonomy.
+model JobCategory {
+  id String @id @default(cuid())
+
+  slug   String @unique
+  name   String
+  nameEn String @default("") @map("name_en")
+
+  parentId String?       @map("parent_id")
+  parent   JobCategory?  @relation("JobCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children JobCategory[] @relation("JobCategoryTree")
+
+  position Int     @default(0)
+  active   Boolean @default(true)
+
+  jobs JobPost[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, position])
+  @@map("job_categories")
+}
+
+/// An employer's public page: who they are, and every role they have open.
+///
+/// Shown only while the owner is verified and not paused, and staff can hide
+/// one outright. The verification is what makes the page worth reading, the
+/// same as for the postings on it.
+model Company {
+  id String @id @default(cuid())
+
+  ownerId String @unique @map("owner_id")
+  owner   User   @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  slug    String  @unique
+  name    String
+  tagline String?
+  about   String?
+
+  /// Key from catalog/job-taxonomy COMPANY_INDUSTRIES.
+  industry    String?
+  size        CompanySize?
+  foundedYear Int?         @map("founded_year")
+  website     String?
+  province    String?
+  city        String?
+
+  logoStoredName   String? @unique @map("logo_stored_name")
+  logoOriginalName String? @map("logo_original_name")
+  logoMimeType     String? @map("logo_mime_type")
+
+  coverStoredName   String? @unique @map("cover_stored_name")
+  coverOriginalName String? @map("cover_original_name")
+  coverMimeType     String? @map("cover_mime_type")
+
+  /// Staff took it down. The owner still sees and edits it.
+  hidden Boolean @default(false)
+
+  jobs JobPost[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("companies")
+}
+
+/// A role somebody bookmarked to come back to.
+model SavedJob {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId String  @map("job_id")
+  job   JobPost @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, jobId])
+  @@index([userId, createdAt])
+  @@map("saved_jobs")
+}
+
+/// A saved search that says so when a new role matches it.
+///
+/// The query is the board's own filter set, stored as given; matching happens
+/// when a posting is published, so there is no job to schedule and nothing to
+/// fall behind.
+model JobAlert {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name   String
+  query  Json
+  active Boolean @default(true)
+
+  lastNotifiedAt DateTime? @map("last_notified_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([active])
+  @@index([userId])
+  @@map("job_alerts")
 }

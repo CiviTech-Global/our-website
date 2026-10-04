@@ -68,6 +68,7 @@ export interface ProfileInput {
   headline?: string;
   bio?: string;
   website?: string;
+  skills?: string[];
 }
 
 /** The numbers behind the user dashboard's welcome row. */
@@ -151,7 +152,7 @@ export async function getOwnStats(userId: string) {
 export async function getOwnProfile(userId: string) {
   return prisma.user.findUnique({
     where: { id: userId },
-    select: { username: true, headline: true, bio: true, website: true },
+    select: { username: true, headline: true, bio: true, website: true, skills: true },
   });
 }
 
@@ -164,8 +165,9 @@ export async function updateOwnProfile(userId: string, input: ProfileInput) {
       headline: input.headline === undefined ? undefined : clear(input.headline),
       bio: input.bio === undefined ? undefined : clear(input.bio),
       website: input.website === undefined ? undefined : clear(input.website),
+      skills: input.skills,
     },
-    select: { username: true, headline: true, bio: true, website: true },
+    select: { username: true, headline: true, bio: true, website: true, skills: true },
   });
 }
 
@@ -188,6 +190,7 @@ export interface PublicProfile {
   username: string;
   headline: string | null;
   bio: string | null;
+  skills: string[];
   website: string | null;
   companyName: string | null;
   verified: boolean;
@@ -237,6 +240,7 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
       username: true,
       headline: true,
       bio: true,
+      skills: true,
       website: true,
       createdAt: true,
       verification: { select: { status: true, companyName: true } },
@@ -349,6 +353,7 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
     username: user.username as string,
     headline: user.headline,
     bio: user.bio,
+    skills: user.skills,
     website: user.website,
     companyName:
       user.verification?.status === 'APPROVED' ? (user.verification.companyName ?? null) : null,

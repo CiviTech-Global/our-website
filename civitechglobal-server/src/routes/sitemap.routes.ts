@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { prisma } from '../config/database.js';
 import { CATALOG } from '../insurance/catalog/index.js';
 import { features } from '../config/features.js';
+import { IRAN_PROVINCES } from '../catalog/iran-provinces.js';
+import { PUBLIC_COMPANY_WHERE } from '../services/company.service.js';
 import { PUBLIC_LISTING_WHERE } from '../services/moderation.js';
 import { PUBLIC_PRODUCT_WHERE } from '../services/trademaster-common.js';
 
@@ -109,7 +111,56 @@ async function collectUrls(): Promise<SitemapUrl[]> {
   for (const book of books)
     urls.push({ path: `/books/${book.code}`, modified: book.updatedAt, priority: '0.5' });
 
-  return [...urls, ...(await collectMarketplaceUrls())];
+  return [...urls, ...(await collectMarketplaceUrls()), ...(await collectJobBoardUrls())];
+}
+
+/**
+ * The job board's own landing pages: one per province and per category that
+ * has open roles right now, and every public company page.
+ *
+ * Only what has something on it — a landing page that says "no roles here" is
+ * the thin page search engines penalise a whole site for. Only while the new
+ * board is on, since the pages exist only then.
+ */
+async function collectJobBoardUrls(): Promise<SitemapUrl[]> {
+  if (!features.jobsV2) return [];
+
+  const open = {
+    moderationStatus: 'APPROVED' as const,
+    state: 'OPEN' as const,
+    OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
+  };
+  const [byProvince, byCategory, companies] = await Promise.all([
+    prisma.jobPost.groupBy({ by: ['province'], where: open, _max: { updatedAt: true } }),
+    prisma.jobPost.groupBy({ by: ['jobCategoryId'], where: open, _max: { updatedAt: true } }),
+    prisma.company.findMany({ where: PUBLIC_COMPANY_WHERE, select: { slug: true, updatedAt: true } }),
+  ]);
+
+  const urls: SitemapUrl[] = [{ path: '/companies', modified: new Date(), priority: '0.5' }];
+  for (const row of byProvince) {
+    const province = IRAN_PROVINCES.find((entry) => entry.fa === row.province);
+    if (province) {
+      urls.push({ path: `/jobs/in/${province.slug}`, modified: row._max.updatedAt ?? new Date(), priority: '0.6' });
+    }
+  }
+
+  // A role filed under a child counts for its parent's page too.
+  const ids = byCategory.map((row) => row.jobCategoryId).filter((id): id is string => Boolean(id));
+  const categories = await prisma.jobCategory.findMany({
+    where: { id: { in: ids }, active: true },
+    select: { slug: true, parent: { select: { slug: true, active: true } } },
+  });
+  const slugs = new Set<string>();
+  for (const category of categories) {
+    slugs.add(category.slug);
+    if (category.parent?.active) slugs.add(category.parent.slug);
+  }
+  for (const slug of slugs) urls.push({ path: `/jobs/category/${slug}`, modified: new Date(), priority: '0.6' });
+
+  for (const company of companies) {
+    urls.push({ path: `/companies/${encodeURIComponent(company.slug)}`, modified: company.updatedAt, priority: '0.5' });
+  }
+  return urls;
 }
 
 /**

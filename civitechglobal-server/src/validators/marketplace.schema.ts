@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isValidNationalId, normalizePersianDigits } from '../utils/persian.js';
+import { JOB_BENEFITS } from '../catalog/job-taxonomy.js';
 
 /** Matches the upload cap in attachment.service, which is what actually binds. */
 const MAX_DOCUMENTS = 8;
@@ -42,6 +43,12 @@ const isoDate = z
   .refine((date) => !Number.isNaN(date.getTime()), 'تاریخ نامعتبر است');
 
 const skills = z.array(z.string().trim().min(1).max(40)).max(20).default([]);
+
+/** A query-string switch: only the literal "true" turns it on. */
+const flagParam = z
+  .enum(['true', 'false', ''])
+  .optional()
+  .transform((value) => (value === 'true' ? true : undefined));
 
 // ---------------------------------------------------------------------------
 // Verification
@@ -106,6 +113,12 @@ export const profileSchema = z.object({
   headline: trimmed(120).optional(),
   bio: trimmed(1000).optional(),
   website: z.union([z.literal(''), z.string().trim().url('نشانی معتبر نیست')]).optional(),
+  /** What the person can do, as tags — matched against a job's skills. Each once. */
+  skills: z
+    .array(z.string().trim().min(1).max(40))
+    .max(30)
+    .transform((list) => [...new Map(list.map((skill) => [skill.toLowerCase(), skill])).values()])
+    .optional(),
 });
 
 export const documentKindsSchema = z
@@ -136,6 +149,16 @@ const clearable = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(blankToNul
 /** How many people the role hires. Accepting that many closes it. */
 const openings = z.number().int().min(1, 'تعداد نفرات باید دست‌کم یک باشد').max(100);
 
+const seniority = z.enum(['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'MANAGER', 'EXECUTIVE']);
+const educationLevel = z.enum(['DIPLOMA', 'ASSOCIATE', 'BACHELOR', 'MASTER', 'DOCTORATE']);
+const years = z.number().int().min(0).max(40);
+const age = z.number().int().min(15, 'سن نامعتبر است').max(80, 'سن نامعتبر است');
+/** Each benefit once, and only ones the board knows how to show. */
+const benefits = z
+  .array(z.enum(JOB_BENEFITS))
+  .max(JOB_BENEFITS.length)
+  .transform((list) => [...new Set(list)]);
+
 const jobFields = {
   title: required(5, 160, 'عنوان آگهی الزامی است'),
   description: required(50, 10_000, 'شرح آگهی باید کامل‌تر باشد'),
@@ -151,7 +174,31 @@ const jobFields = {
   skills,
   closesAt: isoDate.optional(),
   openings: openings.default(1),
+
+  // The second-generation fields. Accepted whatever the flag says: a column
+  // nobody sends is harmless, and the old form simply never sends them.
+  jobCategoryId: z.string().trim().min(1).max(40).optional(),
+  seniority: seniority.optional(),
+  minExperienceYears: years.optional(),
+  educationLevel: educationLevel.optional(),
+  fieldOfStudy: trimmed(120).optional(),
+  benefits: benefits.default([]),
+  workingHours: trimmed(160).optional(),
+  urgent: z.boolean().default(false),
+  genderRequirement: z.enum(['ANY', 'MALE', 'FEMALE']).default('ANY'),
+  ageMin: age.optional(),
+  ageMax: age.optional(),
+  militaryService: z.enum(['ANY', 'COMPLETED_OR_EXEMPT']).default('ANY'),
+  amriehEligible: z.boolean().default(false),
+  disabilityFriendly: z.boolean().default(false),
 };
+
+/** An age range that runs backwards, like a salary one, is a typo. */
+function ageInOrder(value: { ageMin?: number | null; ageMax?: number | null }, ctx: z.RefinementCtx): void {
+  if (value.ageMin != null && value.ageMax != null && value.ageMin > value.ageMax) {
+    ctx.addIssue({ code: 'custom', path: ['ageMax'], message: 'حداکثر سن نباید کمتر از حداقل آن باشد' });
+  }
+}
 
 /** A range that runs backwards is a typo, and the board would show it as written. */
 function salaryInOrder(
@@ -165,6 +212,7 @@ function salaryInOrder(
 
 export const jobSchema = z.object(jobFields).superRefine((value, ctx) => {
   salaryInOrder(value, ctx);
+  ageInOrder(value, ctx);
   // A new posting that has already closed would never be seen by anybody.
   if (value.closesAt && value.closesAt.getTime() <= Date.now()) {
     ctx.addIssue({ code: 'custom', path: ['closesAt'], message: 'مهلت آگهی باید در آینده باشد' });
@@ -183,9 +231,26 @@ export const jobUpdateSchema = z
     salaryUndisclosed: z.boolean(),
     skills: z.array(z.string().trim().min(1).max(40)).max(20),
     openings,
+    jobCategoryId: clearable(z.string().trim().min(1).max(40)),
+    seniority: clearable(seniority),
+    minExperienceYears: z.preprocess(blankToNull, years.nullable()).optional(),
+    educationLevel: clearable(educationLevel),
+    fieldOfStudy: clearable(trimmed(120)),
+    benefits,
+    workingHours: clearable(trimmed(160)),
+    urgent: z.boolean(),
+    genderRequirement: z.enum(['ANY', 'MALE', 'FEMALE']),
+    ageMin: z.preprocess(blankToNull, age.nullable()).optional(),
+    ageMax: z.preprocess(blankToNull, age.nullable()).optional(),
+    militaryService: z.enum(['ANY', 'COMPLETED_OR_EXEMPT']),
+    amriehEligible: z.boolean(),
+    disabilityFriendly: z.boolean(),
   })
   .partial()
-  .superRefine(salaryInOrder);
+  .superRefine((value, ctx) => {
+    salaryInOrder(value, ctx);
+    ageInOrder(value, ctx);
+  });
 
 export const applicationSchema = z.object({
   coverLetter: trimmed(5000).optional(),
@@ -193,7 +258,9 @@ export const applicationSchema = z.object({
 });
 
 export const applicationOutcomeSchema = z.object({
-  outcome: z.enum(['SHORTLISTED', 'ACCEPTED', 'DECLINED']),
+  // INTERVIEW only means something on the new board; the service refuses it
+  // while that is off.
+  outcome: z.enum(['SHORTLISTED', 'INTERVIEW', 'ACCEPTED', 'DECLINED']),
 });
 
 // ---------------------------------------------------------------------------
@@ -321,6 +388,22 @@ export const jobBoardSchema = listQuerySchema.extend({
   salaryMin: optionalMoney,
   salaryMax: optionalMoney,
   sort: z.enum(['newest', 'salaryAsc', 'salaryDesc', 'closingSoon']).default('newest'),
+  jobCategoryId: trimmed(40).optional(),
+  seniority: seniority.optional(),
+  /** "Up to N years asked for" — the reader's own experience. */
+  maxExperience: z.coerce.number().int().min(0).max(40).optional(),
+  /** Comma-separated benefit keys; a posting must offer every one. */
+  benefits: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value.split(',').map((item) => item.trim()).filter(Boolean) : undefined))
+    .pipe(z.array(z.enum(JOB_BENEFITS)).max(JOB_BENEFITS.length).optional()),
+  urgent: flagParam,
+  amriehEligible: flagParam,
+  disabilityFriendly: flagParam,
+  postedWithinDays: z.coerce.number().int().refine((n) => [1, 3, 7, 14, 30].includes(n)).optional(),
+  companySlug: trimmed(80).optional(),
 });
 
 export const projectBoardSchema = listQuerySchema.extend({

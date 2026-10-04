@@ -186,11 +186,22 @@ async function seedMarketplaceTaxonomy(): Promise<void> {
   );
 }
 
+/** The job categories — only while the new job board is on. Same reasoning as above. */
+async function seedJobTaxonomy(): Promise<void> {
+  if (!features.jobsV2) {
+    console.log('Job board v2 is off; job categories not seeded.');
+    return;
+  }
+  const { syncJobTaxonomy } = await import('./services/job-taxonomy.service.js');
+  console.log(`Job categories: ${await syncJobTaxonomy()} added.`);
+}
+
 async function main(): Promise<void> {
   console.log('Seeding database...');
   await seedSuperAdmin();
   await seedCatalog();
   await seedMarketplaceTaxonomy();
+  await seedJobTaxonomy();
   console.log('Seeding complete.');
 }
 

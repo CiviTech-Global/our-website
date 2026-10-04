@@ -10,11 +10,20 @@ import { describe, expect, it, vi } from 'vitest';
 const findMany = vi.fn();
 const shopFindMany = vi.fn(async () => [] as unknown[]);
 const listingFindMany = vi.fn(async () => [] as unknown[]);
+// The job board's landing pages, each on a mock of its own for the same reason.
+const jobGroupBy = vi.fn(async () => [] as unknown[]);
+const companyFindMany = vi.fn(async () => [] as unknown[]);
+const categoryFindMany = vi.fn(async () => [] as unknown[]);
 
 vi.mock('../config/database.js', () => ({
   prisma: {
     insuranceProduct: { findMany: (...args: unknown[]) => findMany(...args) },
-    jobPost: { findMany: (...args: unknown[]) => findMany(...args) },
+    jobPost: {
+      findMany: (...args: unknown[]) => findMany(...args),
+      groupBy: (...args: unknown[]) => jobGroupBy(...args),
+    },
+    company: { findMany: (...args: unknown[]) => companyFindMany(...args) },
+    jobCategory: { findMany: (...args: unknown[]) => categoryFindMany(...args) },
     freelanceProject: { findMany: (...args: unknown[]) => findMany(...args) },
     bookListing: { findMany: (...args: unknown[]) => findMany(...args) },
     // The catalogue's own two queries, on mocks of their own so the order the
@@ -59,10 +68,13 @@ describe('GET /api/sitemap/extras.xml', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('<urlset');
-    // Only the marketplace's own pages, which exist whether or not any shop
-    // does — and only while the module is on, as it is outside production.
+    // Only the pages that exist whether or not anything is listed — the
+    // marketplace's own and the company directory — and only while those
+    // modules are on, as they are outside production.
     const locs = response.text.match(/<loc>[^<]+<\/loc>/g) ?? [];
-    expect(locs.every((loc) => /\/marketplace(\/shops|\/products|\/join)?<\/loc>$/.test(loc))).toBe(true);
+    expect(
+      locs.every((loc) => /\/(marketplace(\/shops|\/products|\/join)?|companies)<\/loc>$/.test(loc)),
+    ).toBe(true);
   });
 });
 
@@ -84,6 +96,33 @@ describe('the marketplace', () => {
     expect(response.text).toContain('/marketplace/join</loc>');
     // Asked with the public predicates, and nothing else.
     expect(shopFindMany.mock.calls[0][0]).toMatchObject({ where: { moderationStatus: 'APPROVED', state: 'OPEN' } });
+  });
+});
+
+describe('the job board', () => {
+  it('lists provinces and categories with open roles, and public companies', async () => {
+    findMany.mockResolvedValue([]);
+    jobGroupBy
+      // By province: one known, one stored before the fixed list existed.
+      .mockResolvedValueOnce([
+        { province: 'قزوین', _max: { updatedAt: new Date('2026-10-01') } },
+        { province: 'Somewhere', _max: { updatedAt: new Date('2026-10-01') } },
+      ])
+      // By category.
+      .mockResolvedValueOnce([{ jobCategoryId: 'c1', _max: { updatedAt: new Date('2026-10-01') } }]);
+    categoryFindMany.mockResolvedValueOnce([
+      { slug: 'web-development', parent: { slug: 'it-software', active: true } },
+    ]);
+    companyFindMany.mockResolvedValueOnce([{ slug: 'رایان-تمدن', updatedAt: new Date('2026-10-02') }]);
+
+    const response = await request(app).get('/api/sitemap/extras.xml');
+
+    expect(response.text).toContain('/jobs/in/qazvin</loc>');
+    expect(response.text).not.toContain('Somewhere');
+    // The child's page, and its parent's, since the parent's page lists it too.
+    expect(response.text).toContain('/jobs/category/web-development</loc>');
+    expect(response.text).toContain('/jobs/category/it-software</loc>');
+    expect(response.text).toContain(`/companies/${encodeURIComponent('رایان-تمدن')}</loc>`);
   });
 });
 

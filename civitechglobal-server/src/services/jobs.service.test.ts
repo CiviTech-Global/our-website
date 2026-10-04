@@ -38,7 +38,9 @@ const mocks = vi.hoisted(() => {
 vi.mock('../config/database.js', () => ({ prisma: mocks.prisma }));
 vi.mock('./notifications.service.js', () => ({ notifySafely: vi.fn() }));
 
-const { getApplicationCvForEmployer, setApplicationOutcome, updateJob } = await import('./jobs.service.js');
+const { getApplicationCvForEmployer, setApplicationOutcome, updateJob, withdrawApplication } = await import(
+  './jobs.service.js'
+);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -138,5 +140,31 @@ describe('the employer’s copy of a CV', () => {
   it('is not found while the application has not reached the employer', async () => {
     mocks.prisma.jobApplication.findUnique.mockResolvedValue({ ...row, moderationStatus: 'PENDING_REVIEW' });
     await expect(getApplicationCvForEmployer('emp', 'a1')).rejects.toMatchObject({ statusCode: 404 });
+  });
+});
+
+describe('withdrawing an application', () => {
+  it('is refused once the employer has decided', async () => {
+    mocks.prisma.jobApplication.findUnique.mockResolvedValue({ id: 'a1', applicantId: 'cand', outcome: 'ACCEPTED' });
+    await expect(withdrawApplication('cand', 'a1')).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it('is not found for anybody but the applicant', async () => {
+    mocks.prisma.jobApplication.findUnique.mockResolvedValue({ id: 'a1', applicantId: 'cand', outcome: 'PENDING' });
+    await expect(withdrawApplication('other', 'a1')).rejects.toMatchObject({ statusCode: 404 });
+  });
+});
+
+describe('moving a withdrawn application', () => {
+  it('is refused: the applicant took it back', async () => {
+    mocks.prisma.jobApplication.findUnique.mockResolvedValue({
+      id: 'a1',
+      applicantId: 'cand',
+      expectedSalary: null,
+      outcome: 'WITHDRAWN',
+      moderationStatus: 'APPROVED',
+      job: { id: 'j1', authorId: 'emp', title: 'Developer', openings: 1 },
+    });
+    await expect(setApplicationOutcome('emp', 'a1', 'SHORTLISTED')).rejects.toMatchObject({ statusCode: 409 });
   });
 });

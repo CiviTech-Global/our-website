@@ -14,6 +14,7 @@ import i18nRoutes from './i18n.routes.js';
 import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
 import tradeMasterRoutes from './trademaster.routes.js';
+import jobsRoutes from './jobs.routes.js';
 import demoRoutes from './demo.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
@@ -71,6 +72,10 @@ router.use('/market', marketplaceRoutes);
 // TradeMaster: shops and their catalogues. Every route inside answers 404
 // unless FEATURE_TRADEMASTER is on, so mounting it here does not expose it.
 router.use('/trademaster', tradeMasterRoutes);
+
+// The job board's second generation: company pages, saved jobs, alerts and
+// matching. Every route answers 404 unless FEATURE_JOBS_V2 is on.
+router.use('/jobs', jobsRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper
