@@ -93,17 +93,35 @@ export interface JobBoardQuery {
   salaryMin?: string;
   salaryMax?: string;
   sort?: JobBoardSort;
+  jobCategoryId?: string;
+  seniority?: string;
+  maxExperience?: string;
+  benefits?: string[];
+  urgent?: boolean;
+  amriehEligible?: boolean;
+  disabilityFriendly?: boolean;
+  postedWithinDays?: string;
+  companySlug?: string;
 }
 
-export function usePublicJobs(query: JobBoardQuery) {
+export function usePublicJobs(query: JobBoardQuery, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: [...keys.jobs, query],
     queryFn: async () => {
       const res = await api.get<Paged<PublicJobSummary>>('/market/jobs', {
         // The server reads skills as one comma-separated param, not repeated
         // keys — a plain object spread would serialize the array in a shape
         // the zod schema refuses.
-        params: { ...query, skills: query.skills?.length ? query.skills.join(',') : undefined },
+        params: {
+          ...query,
+          skills: query.skills?.length ? query.skills.join(',') : undefined,
+          benefits: query.benefits?.length ? query.benefits.join(',') : undefined,
+          // Switches cross only when on; "false" is the same as not asking.
+          urgent: query.urgent ? 'true' : undefined,
+          amriehEligible: query.amriehEligible ? 'true' : undefined,
+          disabilityFriendly: query.disabilityFriendly ? 'true' : undefined,
+        },
       });
       return res.data;
     },
@@ -293,7 +311,7 @@ export function useJobApplications(jobId: string | undefined) {
 export function useSetApplicationOutcome() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; outcome: 'SHORTLISTED' | 'ACCEPTED' | 'DECLINED' }) => {
+    mutationFn: async (input: { id: string; outcome: 'SHORTLISTED' | 'INTERVIEW' | 'ACCEPTED' | 'DECLINED' }) => {
       await api.patch(`/market/me/applications/${input.id}/outcome`, { outcome: input.outcome });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownJobs }),
@@ -799,7 +817,13 @@ export function useOwnProfile(enabled = true) {
   return useQuery({
     queryKey: ['market', 'me', 'profile'],
     queryFn: async () => {
-      const res = await api.get<{ username: string | null; headline: string | null; bio: string | null; website: string | null }>(
+      const res = await api.get<{
+        username: string | null;
+        headline: string | null;
+        bio: string | null;
+        website: string | null;
+        skills?: string[];
+      }>(
         '/market/me/profile',
       );
       return res.data;

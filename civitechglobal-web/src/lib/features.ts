@@ -47,6 +47,15 @@ export const features = {
   tradeMasterOrders: flag(import.meta.env.VITE_FEATURE_TRADEMASTER_ORDERS, false),
 
   /**
+   * The job board's second generation: fixed categories, richer postings,
+   * company pages, saved jobs, alerts, matching and the hiring pipeline.
+   *
+   * The board itself is live; this hides only what is new on it, matching
+   * FEATURE_JOBS_V2 on the server, which is what actually refuses.
+   */
+  jobsV2: flag(import.meta.env.VITE_FEATURE_JOBS_V2, true),
+
+  /**
    * The demo-data panel: fill the site with example records, and empty it again.
    *
    * No environment override, unlike the two above: there is no production where

@@ -1,3 +1,12 @@
+import type {
+  CompanySummary,
+  EducationLevel,
+  GenderRequirement,
+  JobSeniority,
+  MilitaryServiceRequirement,
+  Responsiveness,
+} from './jobs';
+
 /**
  * The job board and the freelance board.
  *
@@ -23,7 +32,7 @@ export type JobEmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN
 
 export type JobWorkArrangement = 'ONSITE' | 'HYBRID' | 'REMOTE';
 
-export type OfferOutcome = 'PENDING' | 'SHORTLISTED' | 'ACCEPTED' | 'DECLINED';
+export type OfferOutcome = 'PENDING' | 'SHORTLISTED' | 'INTERVIEW' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN';
 
 export type VerificationDocumentKind =
   | 'NATIONAL_ID_CARD'
@@ -196,6 +205,8 @@ export interface PublicProfile {
   username: string;
   headline: string | null;
   bio: string | null;
+  /** Skill tags. Absent from servers older than the skills field. */
+  skills?: string[];
   website: string | null;
   companyName: string | null;
   verified: boolean;
@@ -230,6 +241,7 @@ export interface ProfilePayload {
   headline?: string;
   bio?: string;
   website?: string;
+  skills?: string[];
 }
 
 // --- Verification ----------------------------------------------------------
@@ -284,6 +296,18 @@ export interface PublicJobSummary {
   currency: string;
   publishedAt: string | null;
   authorProfile: AuthorProfile | null;
+  // The second generation. Present on every row; empty on postings written
+  // before it, and only shown while the new board is on.
+  jobCategoryId?: string | null;
+  jobCategory?: { id: string; slug: string; name: string; nameEn: string } | null;
+  seniority?: JobSeniority | null;
+  minExperienceYears?: number | null;
+  urgent?: boolean;
+  benefits?: string[];
+  amriehEligible?: boolean;
+  disabilityFriendly?: boolean;
+  openings?: number;
+  company?: CompanySummary | null;
 }
 
 export interface PublicJobDetail extends PublicJobSummary {
@@ -293,6 +317,14 @@ export interface PublicJobDetail extends PublicJobSummary {
   viewCount: number;
   _count: { applications: number };
   similar: Array<{ code: string; title: string; category: string | null; employmentType: JobEmploymentType }>;
+  educationLevel?: EducationLevel | null;
+  fieldOfStudy?: string | null;
+  workingHours?: string | null;
+  genderRequirement?: GenderRequirement;
+  ageMin?: number | null;
+  ageMax?: number | null;
+  militaryService?: MilitaryServiceRequirement;
+  responsiveness?: Responsiveness | null;
 }
 
 export interface JobPayload {
@@ -309,6 +341,20 @@ export interface JobPayload {
   skills?: string[];
   closesAt?: string;
   openings?: number;
+  jobCategoryId?: string;
+  seniority?: JobSeniority;
+  minExperienceYears?: number;
+  educationLevel?: EducationLevel;
+  fieldOfStudy?: string;
+  benefits?: string[];
+  workingHours?: string;
+  urgent?: boolean;
+  genderRequirement?: GenderRequirement;
+  ageMin?: number;
+  ageMax?: number;
+  militaryService?: MilitaryServiceRequirement;
+  amriehEligible?: boolean;
+  disabilityFriendly?: boolean;
 }
 
 /** An edit: an absent key leaves the field alone, null clears it. */
@@ -339,6 +385,21 @@ export interface OwnJob {
   category: string | null;
   closesAt: string | null;
   openings: number;
+  jobCategoryId?: string | null;
+  seniority?: JobSeniority | null;
+  minExperienceYears?: number | null;
+  educationLevel?: EducationLevel | null;
+  fieldOfStudy?: string | null;
+  benefits?: string[];
+  workingHours?: string | null;
+  urgent?: boolean;
+  genderRequirement?: GenderRequirement;
+  ageMin?: number | null;
+  ageMax?: number | null;
+  militaryService?: MilitaryServiceRequirement;
+  amriehEligible?: boolean;
+  disabilityFriendly?: boolean;
+  viewCount?: number;
   moderationStatus: ModerationStatus;
   state: ListingState;
   reviewNote: string | null;
@@ -362,6 +423,8 @@ export interface OwnApplication {
   reviewNote: string | null;
   outcome: OfferOutcome;
   createdAt: string;
+  employerSeenAt?: string | null;
+  outcomeChangedAt?: string | null;
   job: { code: string; title: string; companyName: string | null; state: ListingState };
 }
 
@@ -373,7 +436,11 @@ export interface EmployerApplication {
   cvOriginalName: string | null;
   outcome: OfferOutcome;
   createdAt: string;
-  applicant: { id: string; firstName: string; lastName: string; email: string };
+  employerSeenAt?: string | null;
+  outcomeChangedAt?: string | null;
+  employerNote?: string | null;
+  skillMatch?: { matched: number; total: number };
+  applicant: { id: string; firstName: string; lastName: string; email: string; skills?: string[] };
   applicantProfile: AuthorProfile | null;
 }
 

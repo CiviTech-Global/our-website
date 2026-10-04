@@ -23,6 +23,16 @@ import { TextArea } from '@/components/ui/TextArea';
 import { AuthorCard } from '@/components/marketplace/AuthorCard';
 import { ListingStats } from '@/components/marketplace/ListingStats';
 import { SimilarListings } from '@/components/marketplace/SimilarListings';
+import { features } from '@/lib/features';
+import { useJobMatch } from '@/api/jobs';
+import {
+  JobBenefits,
+  JobFacts,
+  JobHeader,
+  JobMeta,
+  JobRequirements,
+  JobSkills,
+} from '@/components/jobs/JobDetailSections';
 
 /**
  * One posting, and the form to answer it.
@@ -47,6 +57,10 @@ export default function JobDetailPage() {
   const { data: ownJobs } = useOwnJobs(Boolean(user));
   const apply = useApply();
   const upload = useUploadFeedback('job-application-cv');
+  // The second-generation page: richer facts, the reader's own fit, and an
+  // application that goes straight to the employer.
+  const v2 = features.jobsV2;
+  const { data: match } = useJobMatch(job?.id, v2 && Boolean(user));
 
   const [coverLetter, setCoverLetter] = useState('');
   const [expectedSalary, setExpectedSalary] = useState('');
@@ -106,7 +120,10 @@ export default function JobDetailPage() {
     : formatRange(job.salaryMin, job.salaryMax, locale, t);
   const where = [job.city, job.province].filter(Boolean).join('، ');
   const isVerified = verification?.status === 'APPROVED';
-  const myApplication = ownApplications?.find((application) => application.job.code === job.code);
+  // A withdrawn application does not count: its owner may apply again.
+  const myApplication = ownApplications?.find(
+    (application) => application.job.code === job.code && application.outcome !== 'WITHDRAWN',
+  );
   const isOwn = Boolean(ownJobs?.some((own) => own.code === job.code));
   // Back to this posting after signing in, not to the dashboard.
   const returnHere = { from: { pathname: location.pathname, search: location.search } };
@@ -132,14 +149,14 @@ export default function JobDetailPage() {
       });
       upload.done();
       setDone(true);
-      showToast(t.market.applied, 'success');
+      showToast(v2 ? t.jobs.appliedDirect : t.market.applied, 'success');
     } catch (error) {
       showToast(upload.fail(error).message, 'error');
     }
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className={v2 ? 'mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8' : 'mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8'}>
       <Link
         to="/jobs"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary"
@@ -148,6 +165,30 @@ export default function JobDetailPage() {
         {t.market.backToJobs}
       </Link>
 
+      {v2 ? (
+        <Card className="flex flex-col gap-8">
+          <JobHeader job={job} />
+          <JobFacts job={job} />
+          <section aria-labelledby="description-heading">
+            <h2 id="description-heading" className="mb-3 text-lg font-semibold text-text-primary">
+              {t.jobs.description}
+            </h2>
+            <p className="whitespace-pre-line leading-7 text-text-primary">{job.description}</p>
+          </section>
+          <JobSkills job={job} match={match} signedIn={Boolean(user)} />
+          <JobRequirements job={job} />
+          <JobBenefits job={job} />
+          <div className="flex flex-col gap-2 border-t border-border-default pt-4">
+            <ListingStats
+              views={job.viewCount}
+              responses={job._count.applications}
+              variant="applications"
+              responsesLabel={t.market.applicationsLabel}
+            />
+            <JobMeta job={job} />
+          </div>
+        </Card>
+      ) : (
       <Card>
         <h1 className="text-2xl font-bold text-text-primary">{job.title}</h1>
 
@@ -202,6 +243,7 @@ export default function JobDetailPage() {
           </p>
         )}
       </Card>
+      )}
 
       {job.authorProfile && (
         <div className="mt-6">
@@ -217,7 +259,8 @@ export default function JobDetailPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t.market.apply}</CardTitle>
+          <CardTitle>{v2 ? t.jobs.applyCta : t.market.apply}</CardTitle>
+          {v2 && <p className="mt-1 text-sm text-text-secondary">{t.jobs.applyDirectHint}</p>}
         </CardHeader>
 
         {!user && (
@@ -260,7 +303,7 @@ export default function JobDetailPage() {
         )}
 
         {user && !isOwn && isVerified && done && (
-          <p className="text-sm text-brand-green-600">{t.market.applied}</p>
+          <p className="text-sm text-brand-green-600">{v2 ? t.jobs.appliedDirect : t.market.applied}</p>
         )}
 
         {user && !isOwn && !myApplication && isVerified && !done && (

@@ -102,6 +102,7 @@ export function outcomeVariant(outcome: OfferOutcome): BadgeVariant {
     case 'DECLINED':
       return 'danger';
     case 'SHORTLISTED':
+    case 'INTERVIEW':
       return 'info';
     default:
       return 'default';

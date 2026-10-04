@@ -84,6 +84,7 @@ const MyOrdersPage = lazy(() => import('@/pages/dashboard/MyOrdersPage'));
 const ShopOrdersPage = lazy(() => import('@/pages/dashboard/ShopOrdersPage'));
 const ShopProductsPage = lazy(() => import('@/pages/dashboard/ShopProductsPage'));
 const MyJobsPage = lazy(() => import('@/pages/dashboard/MyJobsPage'));
+const JobBoardPage = lazy(() => import('@/pages/public/JobBoardPage'));
 const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPage'));
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
 const MyBidsPage = lazy(() => import('@/pages/dashboard/MyBidsPage'));
@@ -319,10 +320,31 @@ export default function App() {
           path="/jobs"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <JobsPage />
+              {features.jobsV2 ? <JobBoardPage /> : <JobsPage />}
             </Suspense>
           }
         />
+        {features.jobsV2 && (
+          <>
+            {/* Landing pages: the board with one filter fixed by the address. */}
+            <Route
+              path="/jobs/in/:province"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <JobBoardPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/jobs/category/:category"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <JobBoardPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         {/* The code, not the id: it is what somebody can quote, and it does not
             leak how many postings there have ever been. */}
         <Route
