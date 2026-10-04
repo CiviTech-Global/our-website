@@ -17,6 +17,7 @@ import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
 import { isValidPoint, type Point } from '../utils/geo.js';
+import { assertBusinessCategoryUsable, businessCategoryScope } from './business-category.service.js';
 import {
   MAX_RADIUS_KM,
   PUBLIC_PRODUCT_WHERE,
@@ -79,6 +80,8 @@ const MAP_LIMIT = 1000;
 export interface ShopInput {
   name: string;
   summary: string;
+  /** From the guild list. Optional on a draft, required to submit. */
+  businessCategoryId?: string | null;
   description?: string | null;
   industry?: string | null;
   province?: string | null;
@@ -95,6 +98,8 @@ export interface ShopQuery {
   search?: string;
   province?: string;
   industry?: string;
+  /** Shops of this business category, or of a trade under it. */
+  businessCategoryId?: string;
   /** Shops offering this kind of thing — products, or services. */
   kind?: ListingKind;
   /** Shops with something public in this category or one of its children. */
@@ -180,6 +185,9 @@ function normalize(input: Partial<ShopInput>) {
   return {
     ...(input.name !== undefined ? { name: input.name.trim() } : {}),
     ...(input.summary !== undefined ? { summary: input.summary.trim() } : {}),
+    ...(input.businessCategoryId !== undefined
+      ? { businessCategoryId: text(input.businessCategoryId) ?? null }
+      : {}),
     ...(input.description !== undefined ? { description: text(input.description) } : {}),
     ...(input.industry !== undefined ? { industry: text(input.industry) } : {}),
     ...(input.province !== undefined ? { province: text(input.province) } : {}),
@@ -192,8 +200,20 @@ function normalize(input: Partial<ShopInput>) {
   };
 }
 
-async function storeLogo(file: IncomingFile | null) {
+async function storeImage(file: IncomingFile | null) {
   return file ? ((await storeFiles([file], IMAGE_EXTENSIONS))[0] ?? null) : null;
+}
+
+/** The two pictures a shop form may carry. Either may be absent. */
+export interface ShopImages {
+  logo: IncomingFile | null;
+  cover: IncomingFile | null;
+}
+
+/** The shop's own cover photograph, when it has one. */
+export function coverUrl(id: string, storedName: string | null): string | null {
+  // Relative to the API root, as for the logo below.
+  return storedName ? `/trademaster/shops/${id}/cover` : null;
 }
 
 export function logoUrl(id: string, storedName: string | null): string | null {
@@ -209,17 +229,19 @@ export function logoUrl(id: string, storedName: string | null): string | null {
 // The seller's side
 // ---------------------------------------------------------------------------
 
-export async function createShop(userId: string, input: ShopInput, logo: IncomingFile | null) {
+export async function createShop(userId: string, input: ShopInput, images: ShopImages) {
   await assertVerified(userId);
   await assertMarketplaceAllowed(userId);
   const data = normalize(input);
+  if (data.businessCategoryId) await assertBusinessCategoryUsable(data.businessCategoryId);
 
   const existing = await prisma.business.count({ where: { ownerId: userId } });
   if (existing >= MAX_SHOPS_PER_OWNER) {
     throw new AppError(`هر حساب حداکثر می‌تواند ${MAX_SHOPS_PER_OWNER} فروشگاه داشته باشد.`, 409);
   }
 
-  const stored = await storeLogo(logo);
+  const stored = await storeImage(images.logo);
+  const storedCover = await storeImage(images.cover);
 
   try {
     // A second try on a slug collision. uniqueSlug checks before it inserts,
@@ -242,6 +264,9 @@ export async function createShop(userId: string, input: ShopInput, logo: Incomin
             logoStoredName: stored?.storedName,
             logoOriginalName: stored?.originalName,
             logoMimeType: stored?.mimeType,
+            coverStoredName: storedCover?.storedName,
+            coverOriginalName: storedCover?.originalName,
+            coverMimeType: storedCover?.mimeType,
             moderationStatus: 'DRAFT',
           },
           select: { id: true, code: true, slug: true, moderationStatus: true },
@@ -252,9 +277,10 @@ export async function createShop(userId: string, input: ShopInput, logo: Incomin
       }
     }
   } catch (error) {
-    // Nothing references the file yet, so a failed insert must not leave it
-    // behind — an orphan in storage is invisible and never collected.
+    // Nothing references the files yet, so a failed insert must not leave
+    // them behind — an orphan in storage is invisible and never collected.
     if (stored) await removeFile(stored.storedName);
+    if (storedCover) await removeFile(storedCover.storedName);
     throw error;
   }
 }
@@ -272,6 +298,8 @@ async function ownedShop(userId: string, shopId: string) {
       state: true,
       publishedAt: true,
       logoStoredName: true,
+      coverStoredName: true,
+      businessCategoryId: true,
     },
   });
   if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
@@ -295,6 +323,7 @@ export async function getOwnShop(userId: string, shopId: string) {
       slug: true,
       name: true,
       summary: true,
+      businessCategoryId: true,
       description: true,
       industry: true,
       province: true,
@@ -309,25 +338,32 @@ export async function getOwnShop(userId: string, shopId: string) {
       state: true,
       reviewNote: true,
       logoStoredName: true,
+      coverStoredName: true,
     },
   });
   if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
 
-  const { logoStoredName, ...rest } = shop;
-  return { ...rest, logoUrl: logoUrl(shop.id, logoStoredName) };
+  const { logoStoredName, coverStoredName, ...rest } = shop;
+  return {
+    ...rest,
+    logoUrl: logoUrl(shop.id, logoStoredName),
+    coverUrl: coverUrl(shop.id, coverStoredName),
+  };
 }
 
 export async function updateShop(
   userId: string,
   shopId: string,
   input: Partial<ShopInput>,
-  logo: IncomingFile | null
+  images: ShopImages
 ) {
   const shop = await ownedShop(userId, shopId);
   assertAuthorEditable(shop.moderationStatus);
   const data = normalize(input);
+  if (data.businessCategoryId) await assertBusinessCategoryUsable(data.businessCategoryId);
 
-  const stored = await storeLogo(logo);
+  const stored = await storeImage(images.logo);
+  const storedCover = await storeImage(images.cover);
   try {
     const updated = await prisma.business.update({
       where: { id: shop.id },
@@ -340,6 +376,13 @@ export async function updateShop(
               logoMimeType: stored.mimeType,
             }
           : {}),
+        ...(storedCover
+          ? {
+              coverStoredName: storedCover.storedName,
+              coverOriginalName: storedCover.originalName,
+              coverMimeType: storedCover.mimeType,
+            }
+          : {}),
         // The slug deliberately does not follow the name. A shop that renames
         // itself and breaks every link anyone shared is worse off than one
         // with a dated address.
@@ -347,10 +390,13 @@ export async function updateShop(
       select: { id: true, code: true, slug: true, moderationStatus: true },
     });
 
+    // The replaced files go only once the row points at the new ones.
     if (stored && shop.logoStoredName) await removeFile(shop.logoStoredName);
+    if (storedCover && shop.coverStoredName) await removeFile(shop.coverStoredName);
     return updated;
   } catch (error) {
     if (stored) await removeFile(stored.storedName);
+    if (storedCover) await removeFile(storedCover.storedName);
     throw error;
   }
 }
@@ -364,6 +410,11 @@ export async function submitShop(userId: string, shopId: string) {
   // and finished at a desk.
   if (!shop.logoStoredName) {
     throw new AppError('برای ارسال فروشگاه، بارگذاری نشان (لوگو) لازم است.', 400);
+  }
+  // Every shop on the board is in a category, or the category filter quietly
+  // hides it from anyone who uses it.
+  if (!shop.businessCategoryId) {
+    throw new AppError('برای ارسال فروشگاه، انتخاب صنف لازم است.', 400);
   }
 
   return prisma.business.update({
@@ -488,13 +539,17 @@ export async function listOwnShops(userId: string) {
       publishedAt: true,
       createdAt: true,
       logoStoredName: true,
+      coverStoredName: true,
+      businessCategoryId: true,
+      businessCategory: { select: { id: true, name: true } },
       _count: { select: { products: true } },
     },
   });
 
-  return rows.map(({ logoStoredName, _count, ...row }) => ({
+  return rows.map(({ logoStoredName, coverStoredName, _count, ...row }) => ({
     ...row,
     logoUrl: logoUrl(row.id, logoStoredName),
+    coverUrl: coverUrl(row.id, coverStoredName),
     productCount: _count.products,
   }));
 }
@@ -515,9 +570,16 @@ function publicShopFields() {
     city: true,
     latitude: true,
     longitude: true,
+    // What a card and a map popup show without opening the shop: where it
+    // is, and how to reach it. All of it is public on the shop page anyway.
+    address: true,
+    phone: true,
+    website: true,
     featured: true,
     publishedAt: true,
     logoStoredName: true,
+    coverStoredName: true,
+    businessCategory: { select: { id: true, name: true } },
     ownerId: true,
     _count: { select: { products: { where: PUBLIC_LISTING_WHERE } } },
   } satisfies Prisma.BusinessSelect;
@@ -544,6 +606,9 @@ async function publicShopWhere(query: Omit<ShopQuery, 'page' | 'pageSize'>) {
   const where: Prisma.BusinessWhereInput = {
     AND: [
       PUBLIC_LISTING_WHERE,
+      query.businessCategoryId
+        ? { businessCategoryId: { in: await businessCategoryScope(query.businessCategoryId) } }
+        : {},
       query.province ? { province: query.province } : {},
       query.industry ? { industry: query.industry } : {},
       catalogue ? { products: { some: catalogue } } : {},
@@ -565,16 +630,46 @@ async function publicShopWhere(query: Omit<ShopQuery, 'page' | 'pageSize'>) {
   return where;
 }
 
+/**
+ * A picture for each shop that has no cover of its own: its newest public
+ * listing's first picture. One query for the page, not one per shop.
+ */
+async function fallbackCovers(shopIds: string[]): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  if (shopIds.length === 0) return result;
+
+  const rows = await prisma.product.findMany({
+    where: { ...PUBLIC_PRODUCT_WHERE, businessId: { in: shopIds }, images: { some: {} } },
+    orderBy: { publishedAt: 'desc' },
+    distinct: ['businessId'],
+    select: { businessId: true, images: { orderBy: { position: 'asc' }, take: 1, select: { id: true } } },
+  });
+  for (const row of rows) {
+    if (row.images[0]) result.set(row.businessId, `/trademaster/products/images/${row.images[0].id}`);
+  }
+  return result;
+}
+
 /** A shop row as the public sees it, with what it offers. */
 async function presentShops(rows: PublicShopRow[], distances?: Map<string, number>) {
-  const [profiles, kinds] = await Promise.all([
+  const [profiles, kinds, fallbacks] = await Promise.all([
     authorProfileSummaries(rows.map((row) => row.ownerId)),
     shopKinds(rows.map((row) => row.id)),
+    fallbackCovers(rows.filter((row) => !row.coverStoredName).map((row) => row.id)),
   ]);
 
-  return rows.map(({ ownerId, logoStoredName, _count, ...row }) => ({
+  return rows.map(({ ownerId, logoStoredName, coverStoredName, _count, ...row }) => ({
     ...row,
     logoUrl: logoUrl(row.id, logoStoredName),
+    /**
+     * One picture for the card: the shop's own cover, else its newest
+     * listing's picture, else its logo, else nothing. Said once here so the
+     * list, the map and the detail page cannot each choose differently.
+     */
+    coverUrl:
+      coverUrl(row.id, coverStoredName) ?? fallbacks.get(row.id) ?? logoUrl(row.id, logoStoredName),
+    /** Whether that picture is the shop's own cover or a stand-in. */
+    hasCover: Boolean(coverStoredName),
     productCount: _count.products,
     kinds: kinds.get(row.id) ?? [],
     ownerProfile: profiles.get(ownerId) ?? null,
@@ -721,23 +816,47 @@ export async function getPublicShop(slug: string) {
     select: {
       ...publicShopFields(),
       description: true,
-      address: true,
-      phone: true,
       email: true,
-      website: true,
       createdAt: true,
     },
   });
   if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
 
-  const { ownerId, logoStoredName, _count, ...rest } = shop;
-  const kinds = await shopKinds([shop.id]);
+  const [presented] = await presentShops([shop]);
   return {
-    ...rest,
-    logoUrl: logoUrl(shop.id, logoStoredName),
-    productCount: _count.products,
-    kinds: kinds.get(shop.id) ?? [],
-    ownerProfile: await authorProfileSummary(ownerId),
+    ...presented,
+    description: shop.description,
+    email: shop.email,
+    createdAt: shop.createdAt,
+    ownerProfile: await authorProfileSummary(shop.ownerId),
+  };
+}
+
+/** The cover bytes: an approved shop's to anyone, or any shop's to the desk. */
+export async function getCover(id: string, includeUnpublished = false) {
+  const shop = await prisma.business.findFirst({
+    where: { id, ...(includeUnpublished ? {} : PUBLIC_LISTING_WHERE) },
+    select: { coverStoredName: true, coverOriginalName: true, coverMimeType: true },
+  });
+  if (!shop?.coverStoredName) throw new AppError('تصویری برای این فروشگاه ثبت نشده است.', 404);
+  return {
+    storedName: shop.coverStoredName,
+    originalName: shop.coverOriginalName ?? 'cover',
+    mimeType: shop.coverMimeType ?? 'application/octet-stream',
+  };
+}
+
+/** The owner's own cover, whatever the review desk has decided — see getOwnLogo. */
+export async function getOwnCover(userId: string, shopId: string) {
+  const shop = await prisma.business.findFirst({
+    where: { id: shopId, ownerId: userId },
+    select: { coverStoredName: true, coverOriginalName: true, coverMimeType: true },
+  });
+  if (!shop?.coverStoredName) throw new AppError('تصویری برای این فروشگاه ثبت نشده است.', 404);
+  return {
+    storedName: shop.coverStoredName,
+    originalName: shop.coverOriginalName ?? 'cover',
+    mimeType: shop.coverMimeType ?? 'application/octet-stream',
   };
 }
 
@@ -870,14 +989,21 @@ export async function getShopForReview(id: string) {
       publishedAt: true,
       createdAt: true,
       logoStoredName: true,
+      coverStoredName: true,
+      businessCategory: { select: { id: true, name: true } },
       owner: { select: { id: true, email: true, firstName: true, lastName: true } },
       _count: { select: { products: true } },
     },
   });
   if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
 
-  const { logoStoredName, _count, ...rest } = shop;
-  return { ...rest, logoUrl: logoUrl(shop.id, logoStoredName), productCount: _count.products };
+  const { logoStoredName, coverStoredName, _count, ...rest } = shop;
+  return {
+    ...rest,
+    logoUrl: logoUrl(shop.id, logoStoredName),
+    coverUrl: coverUrl(shop.id, coverStoredName),
+    productCount: _count.products,
+  };
 }
 
 /**

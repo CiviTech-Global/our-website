@@ -11,7 +11,7 @@ export default defineConfig({
      * see src/test/globalSetup.ts for what went wrong without it.
      */
     env: {
-      REDIS_URL: 'redis://localhost:6379/15',
+      REDIS_URL: 'redis://127.0.0.1:6379/15',
     },
     globalSetup: ['./src/test/globalSetup.ts'],
   },

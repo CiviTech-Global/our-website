@@ -168,6 +168,8 @@ const kind = z.enum(['PRODUCT', 'SERVICE'], { message: 'نوع مورد را ا�
 const shopFields = {
   name: required(2, 120, 'نام فروشگاه باید دست‌کم ۲ نویسه باشد'),
   summary: required(10, 300, 'معرفی کوتاه باید دست‌کم ۱۰ نویسه باشد'),
+  /** From the guild list; required by the service before the shop can be submitted. */
+  businessCategoryId: clearable(trimmed(40)),
   description: clearable(trimmed(5000)),
   industry: clearable(trimmed(80)),
   province: clearable(trimmed(60)),
@@ -297,6 +299,8 @@ export const shopBoardSchema = z.object({
   search: queryText(120),
   province: queryText(60),
   industry: queryText(80),
+  /** Shops of this business category, or of a trade under it. */
+  businessCategoryId: queryText(40),
   /** Shops that offer products, or services. */
   kind: z.preprocess(blankToUndefined, kind.optional()),
   /** Shops with something in this category, or in one of its children. */
@@ -471,3 +475,16 @@ export const categorySchema = z
   .strict();
 
 export const categoryUpdateSchema = categorySchema.partial();
+
+/** A business category (guild), as the desk sends it. Same rules as above, without a kind. */
+export const businessCategorySchema = z
+  .object({
+    name: required(2, 80, 'نام صنف را وارد کنید'),
+    slug: trimmed(60).optional(),
+    parentId: z.string().cuid('گروه والد نامعتبر است').nullable().optional(),
+    position: z.coerce.number().int().min(0).max(9999).optional(),
+    active: z.boolean().optional(),
+  })
+  .strict();
+
+export const businessCategoryUpdateSchema = businessCategorySchema.partial();

@@ -15,6 +15,7 @@ import * as shops from '../services/trademaster-shop.service.js';
 import * as products from '../services/trademaster-product.service.js';
 import * as orders from '../services/trademaster-order.service.js';
 import * as categories from '../services/trademaster-category.service.js';
+import * as guilds from '../services/business-category.service.js';
 import {
   reviewDecisionSchema,
   reviewQueueSchema,
@@ -34,6 +35,8 @@ import {
   orderListSchema,
   categorySchema,
   categoryUpdateSchema,
+  businessCategorySchema,
+  businessCategoryUpdateSchema,
 } from '../validators/trademaster.schema.js';
 
 /**
@@ -100,8 +103,19 @@ function payloadOf(req: Request): unknown {
   }
 }
 
-const fileOf = (req: Request) =>
-  req.file ? { originalName: req.file.originalname, buffer: req.file.buffer } : null;
+/** One named picture from a multipart form with several, or null. */
+const namedFile = (req: Request, field: string) => {
+  const file = (req.files as Record<string, Express.Multer.File[]> | undefined)?.[field]?.[0];
+  return file ? { originalName: file.originalname, buffer: file.buffer } : null;
+};
+
+/** A shop form's two pictures: the logo, and the cover across the top of its card. */
+const shopImagesOf = (req: Request) => ({ logo: namedFile(req, 'logo'), cover: namedFile(req, 'cover') });
+
+const shopImageFields = upload.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'cover', maxCount: 1 },
+]);
 
 /** Several uploaded files, in the shape the attachment service takes. */
 const filesOf = (req: Request) =>
@@ -200,6 +214,23 @@ router.get(
   })
 );
 
+router.get(
+  '/shops/:id/cover',
+  wrap(async (req, res) => {
+    const image = await shops.getCover(param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  })
+);
+
+/** The guild list, for the board's filter and the shop form. */
+router.get(
+  '/business-categories',
+  publicCache({ maxAgeSeconds: 300, staleWhileRevalidateSeconds: 900 }),
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await guilds.listBusinessCategories()));
+  })
+);
+
 // ---------------------------------------------------------------------------
 // The seller's own shops
 // ---------------------------------------------------------------------------
@@ -215,10 +246,10 @@ router.get(
 router.post(
   '/me/shops',
   authenticate,
-  upload.single('logo'),
+  shopImageFields,
   wrap(async (req, res) => {
     const input = shopSchema.parse(payloadOf(req));
-    const result = await shops.createShop(req.user!.userId, input, fileOf(req));
+    const result = await shops.createShop(req.user!.userId, input, shopImagesOf(req));
     successResponse(res, serialize(result), 'پیش‌نویس فروشگاه ساخته شد.', 201);
   })
 );
@@ -226,10 +257,10 @@ router.post(
 router.patch(
   '/me/shops/:id',
   authenticate,
-  upload.single('logo'),
+  shopImageFields,
   wrap(async (req, res) => {
     const input = shopUpdateSchema.parse(payloadOf(req));
-    const result = await shops.updateShop(req.user!.userId, param(req, 'id'), input, fileOf(req));
+    const result = await shops.updateShop(req.user!.userId, param(req, 'id'), input, shopImagesOf(req));
     successResponse(res, serialize(result), 'ذخیره شد.');
   })
 );
@@ -263,6 +294,15 @@ router.get(
   authenticate,
   wrap(async (req, res) => {
     const image = await shops.getOwnLogo(req.user!.userId, param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  })
+);
+
+router.get(
+  '/me/shops/:id/cover',
+  authenticate,
+  wrap(async (req, res) => {
+    const image = await shops.getOwnCover(req.user!.userId, param(req, 'id'));
     serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
   })
 );
@@ -326,6 +366,15 @@ router.get(
   })
 );
 
+router.get(
+  '/admin/shops/:id/cover',
+  ...canReview,
+  wrap(async (req, res) => {
+    const image = await shops.getCover(param(req, 'id'), true);
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  })
+);
+
 router.post(
   '/admin/shops/:id/review',
   ...canReview,
@@ -380,6 +429,49 @@ router.delete(
   ...canReview,
   wrap(async (req, res) => {
     successResponse(res, serialize(await categories.deleteCategory(param(req, 'id'))), 'دسته‌بندی حذف شد.');
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Business categories (the guild list) — the desk. Same permission and the
+// same shape as the listing categories above.
+// ---------------------------------------------------------------------------
+
+router.get(
+  '/admin/business-categories',
+  ...canReview,
+  wrap(async (_req, res) => {
+    successResponse(res, serialize(await guilds.listBusinessCategoriesForAdmin()));
+  })
+);
+
+router.post(
+  '/admin/business-categories',
+  ...canReview,
+  wrap(async (req, res) => {
+    const body = businessCategorySchema.parse(req.body);
+    successResponse(res, serialize(await guilds.createBusinessCategory(body)), 'صنف ساخته شد.', 201);
+  })
+);
+
+router.patch(
+  '/admin/business-categories/:id',
+  ...canReview,
+  wrap(async (req, res) => {
+    const body = businessCategoryUpdateSchema.parse(req.body);
+    successResponse(
+      res,
+      serialize(await guilds.updateBusinessCategory(param(req, 'id'), body)),
+      'صنف به‌روز شد.'
+    );
+  })
+);
+
+router.delete(
+  '/admin/business-categories/:id',
+  ...canReview,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await guilds.deleteBusinessCategory(param(req, 'id'))), 'صنف حذف شد.');
   })
 );
 

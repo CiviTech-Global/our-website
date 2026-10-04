@@ -390,7 +390,7 @@ describe('editing a shop', () => {
       logoStoredName: null,
     });
 
-    await shops.updateShop('u1', 's1', { phone: null, website: null, latitude: null, longitude: null }, null);
+    await shops.updateShop('u1', 's1', { phone: null, website: null, latitude: null, longitude: null }, { logo: null, cover: null });
 
     expect(mocks.prisma.business.update.mock.calls[0][0].data).toMatchObject({
       phone: null,
@@ -407,7 +407,7 @@ describe('editing a shop', () => {
       logoStoredName: null,
     });
 
-    await shops.updateShop('u1', 's1', { city: '   ' }, null);
+    await shops.updateShop('u1', 's1', { city: '   ' }, { logo: null, cover: null });
 
     expect(mocks.prisma.business.update.mock.calls[0][0].data).toMatchObject({ city: null });
   });

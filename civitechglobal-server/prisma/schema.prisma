@@ -2132,9 +2132,15 @@ model Business {
   summary     String
   description String?
 
-  /// Free text rather than a foreign key. A shop's trade is how it describes
-  /// itself to buyers, not a taxonomy anyone maintains.
+  /// Free text the shop wrote about its trade, from before business
+  /// categories existed. Kept so older shops still say something; new shops
+  /// choose a businessCategory instead, which is what the filters use.
   industry String?
+
+  /// What kind of business this is — a barber, a bookshop — from the staff-
+  /// maintained guild list (BusinessCategory). The board filters on it.
+  businessCategoryId String?           @map("business_category_id")
+  businessCategory   BusinessCategory? @relation(fields: [businessCategoryId], references: [id], onDelete: SetNull)
 
   province String?
   city     String?
@@ -2158,6 +2164,13 @@ model Business {
   logoStoredName   String? @map("logo_stored_name")
   logoOriginalName String? @map("logo_original_name")
   logoMimeType     String? @map("logo_mime_type")
+
+  /// One photograph of the shop itself — the front, the counter, the chair —
+  /// shown across the top of its card and its map popup. Optional: a shop
+  /// without one falls back to its newest product picture, then its logo.
+  coverStoredName   String? @map("cover_stored_name")
+  coverOriginalName String? @map("cover_original_name")
+  coverMimeType     String? @map("cover_mime_type")
 
   /// The same review pipeline every other listing goes through.
   moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
@@ -2186,6 +2199,7 @@ model Business {
   @@index([ownerId])
   @@index([moderationStatus])
   @@index([state, publishedAt])
+  @@index([businessCategoryId])
   @@index([province, city])
   @@index([latitude, longitude])
   /// Trigram index for ILIKE search. Declared here rather than only in the
@@ -2194,6 +2208,34 @@ model Business {
   @@index([name(ops: raw("gin_trgm_ops"))], map: "businesses_name_trgm_idx", type: Gin)
   @@index([featured, createdAt])
   @@map("businesses")
+}
+
+/// What kind of business a shop is: the guild list (اصناف).
+///
+/// A table rather than the old free-text "industry", because buyers filter by
+/// it and a free-text trade is twelve spellings of the same thing. Two levels
+/// — a sector and the trades under it — maintained by staff and seeded from
+/// src/catalog/marketplace-taxonomy.ts.
+model BusinessCategory {
+  id String @id @default(cuid())
+
+  slug String @unique
+  name String
+
+  parentId String?            @map("parent_id")
+  parent   BusinessCategory?  @relation("BusinessCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children BusinessCategory[] @relation("BusinessCategoryTree")
+
+  position Int     @default(0)
+  active   Boolean @default(true)
+
+  businesses Business[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, position])
+  @@map("business_categories")
 }
 
 /// Whether a catalogue entry is a thing or a piece of work.

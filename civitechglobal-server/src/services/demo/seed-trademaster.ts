@@ -4,6 +4,7 @@ import { emailLookupHash } from '../auth.service.js';
 import { generateTrackingCode } from '../insurance-request.service.js';
 import { IMAGE_EXTENSIONS, storeFiles } from '../attachment.service.js';
 import { slugify } from '../trademaster-common.js';
+import { syncMarketplaceTaxonomy } from '../marketplace-taxonomy.service.js';
 import { placeholderPng } from './placeholder-image.js';
 import type { DemoManifest } from './manifest.js';
 
@@ -38,6 +39,7 @@ const SHOPS = [
     offset: { lat: 0.004, lng: 0.006 },
     address: 'قزوین، خیابان فردوسی، نبش کوچه دوازدهم',
     phone: '02833221100',
+    businessCategory: 'handicrafts',
   },
   {
     name: 'کتاب‌فروشی مینودر',
@@ -46,6 +48,7 @@ const SHOPS = [
     offset: { lat: -0.003, lng: 0.002 },
     address: 'قزوین، بلوار مینودر، مجتمع تجاری نگین',
     phone: '02833445566',
+    businessCategory: 'bookshop',
   },
   {
     name: 'شیرینی قزوین',
@@ -54,6 +57,7 @@ const SHOPS = [
     offset: { lat: 0.002, lng: -0.005 },
     address: 'قزوین، خیابان سپه، روبه‌روی بازار',
     phone: '02833778899',
+    businessCategory: 'confectionery',
   },
   {
     name: 'ابزار و یراق کاسپین',
@@ -62,6 +66,7 @@ const SHOPS = [
     offset: { lat: -0.006, lng: -0.003 },
     address: 'قزوین، خیابان طالقانی، پاساژ کاسپین',
     phone: '02833112233',
+    businessCategory: 'hardware-tools',
   },
   {
     name: 'گل و گیاه الوند',
@@ -72,6 +77,7 @@ const SHOPS = [
     // UI needs an example of that.
     address: null,
     phone: '02833554433',
+    businessCategory: 'plant-nursery',
   },
   // Three that sell work rather than things, or clothes — so the products and
   // services split, and a category with children, have something to show.
@@ -82,6 +88,7 @@ const SHOPS = [
     offset: { lat: -0.001, lng: 0.004 },
     address: 'قزوین، خیابان نادری، کوچه ۸',
     phone: '02833667788',
+    businessCategory: 'barber',
   },
   {
     name: 'تعمیرگاه خودرو مینودر',
@@ -90,6 +97,7 @@ const SHOPS = [
     offset: { lat: 0.009, lng: 0.01 },
     address: 'قزوین، بلوار مینودر، روبه‌روی پمپ بنزین',
     phone: '02833990011',
+    businessCategory: 'mechanic',
   },
   {
     name: 'پوشاک پاییزه',
@@ -98,6 +106,7 @@ const SHOPS = [
     offset: { lat: -0.004, lng: 0.007 },
     address: 'قزوین، خیابان پیغمبریه، پاساژ ستاره',
     phone: '02833221144',
+    businessCategory: 'menswear',
   },
 ] as const;
 
@@ -106,20 +115,23 @@ const SHOPS = [
  * the parent on the board — and finding what is filed under the children —
  * can be seen working.
  */
-const CATEGORIES: Array<{ slug: string; name: string; kind: 'PRODUCT' | 'SERVICE'; parent?: string }> = [
-  { slug: 'handicraft', name: 'صنایع دستی', kind: 'PRODUCT' },
-  { slug: 'books', name: 'کتاب', kind: 'PRODUCT' },
-  { slug: 'food', name: 'مواد غذایی', kind: 'PRODUCT' },
-  { slug: 'tools', name: 'ابزار', kind: 'PRODUCT' },
-  { slug: 'plants', name: 'گل و گیاه', kind: 'PRODUCT' },
-  { slug: 'home', name: 'خانه و آشپزخانه', kind: 'PRODUCT' },
-  { slug: 'clothing', name: 'پوشاک', kind: 'PRODUCT' },
-  { slug: 'clothing-coats', name: 'کت و پالتو', kind: 'PRODUCT', parent: 'clothing' },
-  { slug: 'clothing-knitwear', name: 'بافتنی', kind: 'PRODUCT', parent: 'clothing' },
-  { slug: 'barbershop', name: 'آرایشگاه', kind: 'SERVICE' },
-  { slug: 'auto-repair', name: 'تعمیر خودرو', kind: 'SERVICE' },
-  { slug: 'tailoring', name: 'خیاطی و تعمیر لباس', kind: 'SERVICE' },
-];
+/**
+ * The demo files its listings under the real category lists rather than
+ * inventing its own. The lists are not demo data — they are synced from
+ * src/catalog/marketplace-taxonomy.ts and stay when the demo is cleared — so
+ * the slugs below must exist there.
+ */
+async function categoryIdsBySlug(): Promise<Map<string, string>> {
+  await syncMarketplaceTaxonomy();
+  const [listing, business] = await Promise.all([
+    prisma.productCategory.findMany({ select: { id: true, slug: true } }),
+    prisma.businessCategory.findMany({ select: { id: true, slug: true } }),
+  ]);
+  return new Map([
+    ...listing.map((row) => [`listing:${row.slug}`, row.id] as const),
+    ...business.map((row) => [`business:${row.slug}`, row.id] as const),
+  ]);
+}
 
 /** Products, keyed by the index of the shop that sells them. */
 const PRODUCTS: Array<{
@@ -345,24 +357,12 @@ async function storePlaceholder(manifest: DemoManifest, seed: string) {
 
 export async function seedTradeMaster(manifest: DemoManifest) {
   // ---- categories ---------------------------------------------------------
-  const categoryIds = new Map<string, string>();
-
-  // In order: a parent is always listed before its children above, so its id
-  // is known by the time a child needs it.
-  for (const [index, category] of CATEGORIES.entries()) {
-    const row = await prisma.productCategory.create({
-      data: {
-        slug: category.slug,
-        name: category.name,
-        kind: category.kind,
-        parentId: category.parent ? categoryIds.get(category.parent) : null,
-        position: index,
-      },
-      select: { id: true },
-    });
-    await manifest.record('productCategory', row.id);
-    categoryIds.set(category.slug, row.id);
-  }
+  const categoryIds = await categoryIdsBySlug();
+  const categoryId = (prefix: 'listing' | 'business', slug: string) => {
+    const id = categoryIds.get(`${prefix}:${slug}`);
+    if (!id) throw new Error(`Demo refers to ${prefix} category "${slug}", which the taxonomy lacks.`);
+    return id;
+  };
 
   // ---- shops --------------------------------------------------------------
   const shopIds: string[] = [];
@@ -381,6 +381,9 @@ export async function seedTradeMaster(manifest: DemoManifest) {
     await verify(manifest, ownerId, { firstName, lastName, phone: shop.phone });
 
     const logo = await storePlaceholder(manifest, shop.name);
+    // A cover too, so the shop cards and map popups show what a filled-in
+    // shop looks like.
+    const cover = await storePlaceholder(manifest, `${shop.name} — نما`);
     const code = generateTrackingCode();
 
     const row = await prisma.business.create({
@@ -400,6 +403,10 @@ export async function seedTradeMaster(manifest: DemoManifest) {
         logoStoredName: logo.storedName,
         logoOriginalName: logo.originalName,
         logoMimeType: logo.mimeType,
+        coverStoredName: cover.storedName,
+        coverOriginalName: cover.originalName,
+        coverMimeType: cover.mimeType,
+        businessCategoryId: categoryId('business', shop.businessCategory),
         moderationStatus: 'APPROVED',
         state: 'OPEN',
         publishedAt: new Date(),
@@ -422,7 +429,7 @@ export async function seedTradeMaster(manifest: DemoManifest) {
         code: generateTrackingCode(),
         slug: slugify(product.title) || generateTrackingCode().toLowerCase(),
         businessId: shopIds[product.shop],
-        categoryId: categoryIds.get(product.category),
+        categoryId: categoryId('listing', product.category),
         kind: product.kind ?? 'PRODUCT',
         title: product.title,
         summary: product.summary,
@@ -487,6 +494,7 @@ export async function seedTradeMaster(manifest: DemoManifest) {
       name: 'نمایشگاه فرش قزوین',
       summary: 'فرش دست‌باف و ماشینی، با امکان سفارش اندازهٔ دلخواه.',
       industry: 'فرش و منسوجات',
+      businessCategoryId: categoryId('business', 'carpet'),
       province: 'قزوین',
       city: 'قزوین',
       latitude: QAZVIN.latitude - 0.001,
@@ -504,7 +512,7 @@ export async function seedTradeMaster(manifest: DemoManifest) {
   await manifest.record('business', pendingShop.id);
 
   return {
-    categories: CATEGORIES.length,
+    categories: categoryIds.size,
     shops: SHOPS.length + 1,
     products: PRODUCTS.length,
   };

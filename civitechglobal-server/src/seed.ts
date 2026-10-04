@@ -5,6 +5,7 @@ import { hashPassword } from './utils/password.js';
 import { generateSecurePassword } from './utils/passwordPolicy.js';
 import { CATALOG, CATALOG_VERSION, CATEGORIES } from './insurance/catalog/index.js';
 import { ALL_PERMISSIONS } from './auth/permissions.js';
+import { features } from './config/features.js';
 
 const prisma = new PrismaClient();
 
@@ -166,10 +167,30 @@ async function seedCatalog(): Promise<void> {
   if (retired > 0) console.log(`Deactivated ${retired} product(s) no longer in the catalog.`);
 }
 
+/**
+ * The marketplace's category lists — only while the marketplace is on.
+ *
+ * Off in production, so the lists reach the live database only once the module
+ * is switched on there, after they have been reviewed. Imported lazily so a
+ * deployment without the module does not load it at all.
+ */
+async function seedMarketplaceTaxonomy(): Promise<void> {
+  if (!features.tradeMaster) {
+    console.log('Marketplace is off; category lists not seeded.');
+    return;
+  }
+  const { syncMarketplaceTaxonomy } = await import('./services/marketplace-taxonomy.service.js');
+  const created = await syncMarketplaceTaxonomy();
+  console.log(
+    `Marketplace categories: ${created.business} business and ${created.listing} listing categories added.`
+  );
+}
+
 async function main(): Promise<void> {
   console.log('Seeding database...');
   await seedSuperAdmin();
   await seedCatalog();
+  await seedMarketplaceTaxonomy();
   console.log('Seeding complete.');
 }
 
