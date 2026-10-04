@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/app/PageHeader';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
-import { Pencil, Plus, Users } from 'lucide-react';
+import { Eye, Pencil, Plus, Users } from 'lucide-react';
 import {
   useCloseJob,
   useCreateJob,
@@ -11,6 +11,7 @@ import {
   useOwnVerification,
   useSetApplicationOutcome,
   useSubmitJob,
+  reviewFileUrls,
 } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -18,7 +19,10 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
-import { formatDate, toPersianDigits } from '@/i18n/utils';
+import { formatDate, toLatinDigits, toPersianDigits } from '@/i18n/utils';
+import { IRAN_PROVINCES, provinceLabel } from '@/lib/iranProvinces';
+import { DateField } from '@/components/ui/DateField';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
 import { RatingStars } from '@/components/marketplace/RatingStars';
 import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
@@ -61,7 +65,13 @@ const EMPTY_DRAFT = {
   salaryMax: '',
   salaryUndisclosed: false,
   skills: '',
+  category: '',
+  closesAt: '',
+  openings: '1',
 };
+
+/** What somebody typed into a money box, as the digit string the API takes. */
+const moneyDigits = (value: string) => toLatinDigits(value).replace(/[^0-9]/g, '');
 
 const PAGE_SIZE = 10;
 const MODERATION_STATUSES: ModerationStatus[] = [
@@ -136,6 +146,10 @@ export default function MyJobsPage() {
             salaryMax: target.salaryMax ?? '',
             salaryUndisclosed: target.salaryUndisclosed,
             skills: target.skills.join('، '),
+            category: target.category ?? '',
+            // The date part only: the field speaks yyyy-mm-dd.
+            closesAt: target.closesAt ? target.closesAt.slice(0, 10) : '',
+            openings: String(target.openings),
           }
     );
   }
@@ -143,22 +157,30 @@ export default function MyJobsPage() {
   async function handleSave(event: FormEvent) {
     event.preventDefault();
     try {
+      // An emptied box means "remove it" on an edit and "not given" on a new
+      // posting. The edit sends null so the server clears the old value; before,
+      // both sent nothing, and an emptied city kept the city it used to have.
+      const isEdit = editing !== null && editing !== 'new';
+      const blank = isEdit ? null : undefined;
+      const text = (value: string) => value.trim() || blank;
+      const money = (value: string) => (draft.salaryUndisclosed ? blank : moneyDigits(value) || blank);
+      const openings = Number(toLatinDigits(draft.openings));
+
       const payload = {
         title: draft.title.trim(),
         description: draft.description.trim(),
         employmentType: draft.employmentType,
         workArrangement: draft.workArrangement,
-        province: draft.province.trim() || undefined,
-        city: draft.city.trim() || undefined,
+        province: text(draft.province),
+        city: text(draft.city),
+        category: text(draft.category),
+        closesAt: draft.closesAt || blank,
+        openings: Number.isInteger(openings) && openings >= 1 ? openings : 1,
         salaryUndisclosed: draft.salaryUndisclosed,
         // Suppressed rather than merely ignored when the salary is negotiable:
         // sending a number alongside "undisclosed" states two different things.
-        salaryMin: draft.salaryUndisclosed
-          ? undefined
-          : draft.salaryMin.replace(/[^0-9]/g, '') || undefined,
-        salaryMax: draft.salaryUndisclosed
-          ? undefined
-          : draft.salaryMax.replace(/[^0-9]/g, '') || undefined,
+        salaryMin: money(draft.salaryMin),
+        salaryMax: money(draft.salaryMax),
         skills: draft.skills
           // Both commas: somebody typing Persian gets the Persian one, and a
           // list split on the Latin comma alone arrives as a single skill.
@@ -170,7 +192,15 @@ export default function MyJobsPage() {
       if (editing && editing !== 'new') {
         await updateJob.mutateAsync({ id: editing.id, payload });
       } else {
-        await create.mutateAsync(payload);
+        await create.mutateAsync({
+          ...payload,
+          province: payload.province ?? undefined,
+          city: payload.city ?? undefined,
+          category: payload.category ?? undefined,
+          closesAt: payload.closesAt ?? undefined,
+          salaryMin: payload.salaryMin ?? undefined,
+          salaryMax: payload.salaryMax ?? undefined,
+        });
       }
 
       setEditing(null);
@@ -387,15 +417,48 @@ export default function MyJobsPage() {
             </FormField>
 
             <FormField label={t.market.province} htmlFor="province">
-              <Input
-                id="province"
-                value={draft.province}
-                onChange={(e) => set('province')(e.target.value)}
-              />
+              <Select id="province" value={draft.province} onChange={(e) => set('province')(e.target.value)}>
+                <option value="">—</option>
+                {/* A posting written before the list existed keeps what it said,
+                    rather than silently losing its province on the next save. */}
+                {draft.province && !IRAN_PROVINCES.some((p) => p.fa === draft.province) && (
+                  <option value={draft.province}>{draft.province}</option>
+                )}
+                {IRAN_PROVINCES.map((province) => (
+                  <option key={province.slug} value={province.fa}>
+                    {provinceLabel(province, locale)}
+                  </option>
+                ))}
+              </Select>
             </FormField>
 
             <FormField label={t.market.city} htmlFor="city">
               <Input id="city" value={draft.city} onChange={(e) => set('city')(e.target.value)} />
+            </FormField>
+
+            <FormField label={t.market.category} htmlFor="category">
+              <Input id="category" value={draft.category} onChange={(e) => set('category')(e.target.value)} />
+            </FormField>
+
+            <FormField label={t.jobs.openings} htmlFor="openings" hint={t.jobs.openingsHint}>
+              <Input
+                id="openings"
+                inputMode="numeric"
+                className="ltr"
+                value={draft.openings}
+                onChange={(e) => set('openings')(e.target.value)}
+              />
+            </FormField>
+
+            <FormField label={t.market.closesAt} htmlFor="closesAt" hint={t.jobs.closesAtHint}>
+              <DateField
+                id="closesAt"
+                value={draft.closesAt}
+                // Tomorrow at the earliest: a deadline of today has already
+                // passed by the time a reviewer publishes it.
+                min={new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)}
+                onChange={(value) => set('closesAt')(value)}
+              />
             </FormField>
           </div>
 
@@ -466,6 +529,7 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
   const { showToast } = useToast();
   const { data, isLoading } = useJobApplications(jobId);
   const setOutcome = useSetApplicationOutcome();
+  const [previewing, setPreviewing] = useState<{ id: string; filename: string } | null>(null);
 
   async function decide(id: string, outcome: 'SHORTLISTED' | 'ACCEPTED' | 'DECLINED') {
     try {
@@ -530,9 +594,18 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
               )}
 
               {application.cvOriginalName && (
-                <p className="mt-2 text-label text-app-text-4">
-                  {t.market.cv}: {application.cvOriginalName}
-                </p>
+                <div className="mt-2">
+                  {/* Opened through FilePreview, not a plain link: the route
+                      needs the sign-in header a bare <a href> does not send. */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPreviewing({ id: application.id, filename: application.cvOriginalName! })}
+                  >
+                    <Eye className="size-4" aria-hidden="true" />
+                    {t.jobs.viewCv}: {application.cvOriginalName}
+                  </Button>
+                </div>
               )}
 
               <div className="mt-3 flex flex-wrap gap-2">
@@ -555,6 +628,14 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
           </li>
         ))}
       </ul>
+
+      {previewing && (
+        <FilePreview
+          url={reviewFileUrls.employerApplicationCv(previewing.id)}
+          filename={previewing.filename}
+          onClose={() => setPreviewing(null)}
+        />
+      )}
     </Modal>
   );
 }

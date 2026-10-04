@@ -1180,6 +1180,17 @@ const fa = {
     placeCompanyOffer: 'ثبت پیشنهاد رسمی شرکت',
     companyOfferPlaced: 'پیشنهاد شرکت ثبت شد و در نوبت بررسی است.',
   },
+  jobs: {
+    openings: 'تعداد نفرات',
+    openingsHint: 'چند نفر برای این موقعیت استخدام می‌شوند. آگهی پس از پذیرش همین تعداد بسته می‌شود.',
+    allProvinces: 'همهٔ استان‌ها',
+    alreadyApplied: 'شما در تاریخ {date} برای این موقعیت درخواست داده‌اید.',
+    trackApplication: 'پیگیری در «درخواست‌های من»',
+    ownPosting: 'این آگهی خودتان است.',
+    managePosting: 'مدیریت در «آگهی‌های من»',
+    viewCv: 'مشاهدهٔ رزومه',
+    closesAtHint: 'اختیاری. آگهی پس از این تاریخ از فهرست برداشته می‌شود.',
+  },
   meStats: {
     sectionTitle: 'فعالیت من در بازارگاه',
     listings: 'آگهی و پروژه',

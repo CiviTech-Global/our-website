@@ -444,6 +444,21 @@ router.patch(
   }),
 );
 
+/** An applicant's CV, for the employer whose posting it answers. */
+router.get(
+  '/me/applications/:id/cv',
+  wrap(async (req, res) => {
+    const application = await jobs.getApplicationCvForEmployer(req.user!.userId, param(req, 'id'));
+    const object = await openStoredFile(application.cvStoredName);
+
+    serveStoredFile(res, object, {
+      mimeType: application.cvMimeType,
+      originalName: application.cvOriginalName,
+      disposition: requestedDisposition(req.query.disposition),
+    });
+  }),
+);
+
 router.patch(
   '/me/applications/:id/outcome',
   validate({ body: applicationOutcomeSchema }),

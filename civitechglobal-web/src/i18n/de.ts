@@ -1408,6 +1408,17 @@ const de: PartialTranslations = {
     placeCompanyOffer: 'Firmenangebot abgeben',
     companyOfferPlaced: 'Das Firmenangebot wurde erfasst und wartet auf die Prüfung.',
   },
+  jobs: {
+    openings: 'Anzahl der Stellen',
+    openingsHint: 'Wie viele Personen für diese Rolle eingestellt werden. Die Anzeige schließt, sobald so viele angenommen sind.',
+    allProvinces: 'Alle Provinzen',
+    alreadyApplied: 'Sie haben sich am {date} auf diese Stelle beworben.',
+    trackApplication: 'Unter „Meine Bewerbungen“ verfolgen',
+    ownPosting: 'Das ist Ihre eigene Anzeige.',
+    managePosting: 'Unter „Meine Anzeigen“ verwalten',
+    viewCv: 'Lebenslauf ansehen',
+    closesAtHint: 'Optional. Die Anzeige verschwindet nach diesem Datum von der Börse.',
+  },
   app: {
     adminPanel: 'Adminbereich',
     userPanel: 'Mein Konto',

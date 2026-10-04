@@ -3,15 +3,16 @@ import { Briefcase, MapPin, Star } from 'lucide-react';
 import { usePublicJobs, type JobBoardSort } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { formatDate } from '@/i18n/utils';
+import { formatDate, toLatinDigits } from '@/i18n/utils';
 import { formatRange } from '@/lib/marketplace';
+import { IRAN_PROVINCES, displayProvince, provinceLabel } from '@/lib/iranProvinces';
 import { useListControls } from '@/lib/useListControls';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Input } from '@/components/ui/Input';
-import { Pagination } from '@/components/ui/Pagination';
+import { ListPager } from '@/components/ui/ListPager';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { RatingStars } from '@/components/marketplace/RatingStars';
@@ -19,6 +20,7 @@ import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
 import type { JobEmploymentType, JobWorkArrangement } from '@/types/marketplace';
 
 const PAGE_SIZE = 20;
+const PAGE_SIZES = [10, 20, 40, 60];
 
 const EMPLOYMENT: JobEmploymentType[] = [
   'FULL_TIME',
@@ -47,7 +49,9 @@ export default function JobsPage() {
     defaultView: 'table',
     defaultSort: 'newest',
     pageSize: PAGE_SIZE,
+    pageSizeOptions: PAGE_SIZES,
     filters: {
+      province: '',
       employmentType: '',
       workArrangement: '',
       category: '',
@@ -60,7 +64,7 @@ export default function JobsPage() {
 
   // Money crosses as a plain digit string; anything else the user typed
   // (grouping separators, words) is stripped, and an empty box means "no bound".
-  const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '');
+  const digitsOnly = (value: string) => toLatinDigits(value).replace(/[^0-9]/g, '');
   const skillsList = controls.filters.skills
     .split(',')
     .map((skill) => skill.trim())
@@ -68,8 +72,9 @@ export default function JobsPage() {
 
   const { data, isLoading } = usePublicJobs({
     page: controls.page,
-    pageSize: PAGE_SIZE,
+    pageSize: controls.pageSize,
     search: controls.search || undefined,
+    province: controls.filters.province || undefined,
     employmentType: controls.filters.employmentType || undefined,
     workArrangement: controls.filters.workArrangement || undefined,
     category: controls.filters.category.trim() || undefined,
@@ -95,6 +100,19 @@ export default function JobsPage() {
         views={['cards', 'table']}
         filters={
           <>
+            <Select
+              className="w-44"
+              value={controls.filters.province}
+              aria-label={t.market.province}
+              onChange={(e) => controls.setFilter('province', e.target.value)}
+            >
+              <option value="">{t.jobs.allProvinces}</option>
+              {IRAN_PROVINCES.map((province) => (
+                <option key={province.slug} value={province.fa}>
+                  {provinceLabel(province, locale)}
+                </option>
+              ))}
+            </Select>
             <Select
               className="w-44"
               value={controls.filters.employmentType}
@@ -199,7 +217,7 @@ export default function JobsPage() {
           const pay = job.salaryUndisclosed
             ? t.market.salaryUndisclosed
             : formatRange(job.salaryMin, job.salaryMax, locale, t);
-          const where = [job.city, job.province].filter(Boolean).join('، ');
+          const where = [job.city, displayProvince(job.province, locale)].filter(Boolean).join('، ');
 
           return (
             <li key={job.id}>
@@ -280,14 +298,17 @@ export default function JobsPage() {
         })}
       </ul>
 
-      {data && data.totalPages > 1 && (
-        <div className="mt-6">
-          <Pagination
-            page={controls.page}
-            totalPages={data.totalPages}
-            onPageChange={controls.setPage}
-          />
-        </div>
+      {data && (
+        <ListPager
+          className="mt-6"
+          page={controls.page}
+          pageSize={controls.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          onPageChange={controls.setPage}
+          pageSizeOptions={controls.pageSizeOptions}
+          onPageSizeChange={controls.setPageSize}
+        />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { isValidNationalId } from '../utils/persian.js';
+import { isValidNationalId, normalizePersianDigits } from '../utils/persian.js';
 
 /** Matches the upload cap in attachment.service, which is what actually binds. */
 const MAX_DOCUMENTS = 8;
@@ -16,11 +16,21 @@ const trimmed = (max: number) => z.string().trim().max(max);
 const required = (min: number, max: number, message: string) =>
   z.string().trim().min(min, message).max(max);
 
-const money = z
-  .string()
-  .trim()
-  .regex(/^\d{1,15}$/, 'مبلغ باید عددی صحیح باشد')
-  .transform((value) => BigInt(value));
+/**
+ * An Iranian keyboard types ۲۵۰۰۰۰۰۰, and that is the same number as 25000000.
+ * Converted before the format is checked, so the person typing in their own
+ * digits is not told their salary "must be a whole number".
+ */
+const latinDigits = (value: unknown) => (typeof value === 'string' ? normalizePersianDigits(value) : value);
+
+const money = z.preprocess(
+  latinDigits,
+  z
+    .string()
+    .trim()
+    .regex(/^\d{1,15}$/, 'مبلغ باید عددی صحیح باشد')
+    .transform((value) => BigInt(value)),
+);
 
 const optionalMoney = money.optional();
 
@@ -112,7 +122,21 @@ export const verificationReviewSchema = z.object({
 // Jobs
 // ---------------------------------------------------------------------------
 
-export const jobSchema = z.object({
+/**
+ * Blank means "remove it", on an edit.
+ *
+ * An absent key leaves a field as it is; '' or null clears it. Without the
+ * distinction, somebody who emptied the city box on an edit kept the old city,
+ * because the form could only say "no change".
+ */
+const blankToNull = (value: unknown) =>
+  value === null || (typeof value === 'string' && value.trim() === '') ? null : value;
+const clearable = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(blankToNull, schema.nullable()).optional();
+
+/** How many people the role hires. Accepting that many closes it. */
+const openings = z.number().int().min(1, 'تعداد نفرات باید دست‌کم یک باشد').max(100);
+
+const jobFields = {
   title: required(5, 160, 'عنوان آگهی الزامی است'),
   description: required(50, 10_000, 'شرح آگهی باید کامل‌تر باشد'),
   /// Free-text taxonomy tag, the same convention as project.category.
@@ -126,9 +150,42 @@ export const jobSchema = z.object({
   salaryUndisclosed: z.boolean().default(false),
   skills,
   closesAt: isoDate.optional(),
+  openings: openings.default(1),
+};
+
+/** A range that runs backwards is a typo, and the board would show it as written. */
+function salaryInOrder(
+  value: { salaryMin?: bigint | null; salaryMax?: bigint | null },
+  ctx: z.RefinementCtx,
+): void {
+  if (value.salaryMin != null && value.salaryMax != null && value.salaryMin > value.salaryMax) {
+    ctx.addIssue({ code: 'custom', path: ['salaryMax'], message: 'حداکثر حقوق نباید کمتر از حداقل آن باشد' });
+  }
+}
+
+export const jobSchema = z.object(jobFields).superRefine((value, ctx) => {
+  salaryInOrder(value, ctx);
+  // A new posting that has already closed would never be seen by anybody.
+  if (value.closesAt && value.closesAt.getTime() <= Date.now()) {
+    ctx.addIssue({ code: 'custom', path: ['closesAt'], message: 'مهلت آگهی باید در آینده باشد' });
+  }
 });
 
-export const jobUpdateSchema = jobSchema.partial();
+export const jobUpdateSchema = z
+  .object({
+    ...jobFields,
+    category: clearable(trimmed(80)),
+    province: clearable(trimmed(80)),
+    city: clearable(trimmed(80)),
+    salaryMin: clearable(money),
+    salaryMax: clearable(money),
+    closesAt: clearable(isoDate),
+    salaryUndisclosed: z.boolean(),
+    skills: z.array(z.string().trim().min(1).max(40)).max(20),
+    openings,
+  })
+  .partial()
+  .superRefine(salaryInOrder);
 
 export const applicationSchema = z.object({
   coverLetter: trimmed(5000).optional(),

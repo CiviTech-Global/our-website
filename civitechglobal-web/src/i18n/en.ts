@@ -1181,6 +1181,17 @@ const en: typeof fa = {
     placeCompanyOffer: 'Make a company offer',
     companyOfferPlaced: 'The company offer was recorded and is waiting for review.',
   },
+  jobs: {
+    openings: 'Openings',
+    openingsHint: 'How many people this role hires. The posting closes once that many are accepted.',
+    allProvinces: 'All provinces',
+    alreadyApplied: 'You applied for this role on {date}.',
+    trackApplication: 'Track it in My applications',
+    ownPosting: 'This is your own posting.',
+    managePosting: 'Manage it in My postings',
+    viewCv: 'View CV',
+    closesAtHint: 'Optional. The posting disappears from the board after this date.',
+  },
   meStats: {
     sectionTitle: 'My marketplace activity',
     listings: 'Listings and projects',

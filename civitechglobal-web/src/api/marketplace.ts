@@ -16,6 +16,7 @@ import type {
   EmployerApplication,
   FeaturedResponse,
   JobPayload,
+  JobUpdatePayload,
   JobQueueRow,
   JobReviewDetail,
   MarketplaceAnalytics,
@@ -223,13 +224,15 @@ export function useSubmitVerification() {
 
 // --- My job postings -------------------------------------------------------
 
-export function useOwnJobs() {
+/** `enabled` lets a public page ask only when somebody is signed in. */
+export function useOwnJobs(enabled = true) {
   return useQuery({
     queryKey: keys.ownJobs,
     queryFn: async () => {
       const res = await api.get<OwnJob[]>('/market/me/jobs');
       return res.data;
     },
+    enabled,
   });
 }
 
@@ -247,7 +250,7 @@ export function useCreateJob() {
 export function useUpdateJob() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; payload: Partial<JobPayload> }) => {
+    mutationFn: async (input: { id: string; payload: JobUpdatePayload }) => {
       await api.patch(`/market/me/jobs/${input.id}`, input.payload);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.ownJobs }),
@@ -299,13 +302,14 @@ export function useSetApplicationOutcome() {
 
 // --- Applying --------------------------------------------------------------
 
-export function useOwnApplications() {
+export function useOwnApplications(enabled = true) {
   return useQuery({
     queryKey: keys.ownApplications,
     queryFn: async () => {
       const res = await api.get<OwnApplication[]>('/market/me/applications');
       return res.data;
     },
+    enabled,
   });
 }
 
@@ -986,6 +990,8 @@ export const reviewFileUrls = {
   verificationDocument: (id: string) => `/market/admin/verification-documents/${id}`,
   projectAttachment: (id: string) => `/market/admin/project-attachments/${id}`,
   applicationCv: (id: string) => `/market/admin/application-cvs/${id}`,
+  /** The employer's copy of an applicant's CV. Same bytes, the employer's gate. */
+  employerApplicationCv: (id: string) => `/market/me/applications/${id}/cv`,
 };
 
 // --- The book market -------------------------------------------------------

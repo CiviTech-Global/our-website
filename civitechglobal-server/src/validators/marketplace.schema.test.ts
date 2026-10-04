@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   documentKindsSchema,
   jobBoardSchema,
+  jobSchema,
+  jobUpdateSchema,
   projectBoardSchema,
   verificationSchema,
 } from './marketplace.schema.js';
@@ -140,5 +142,41 @@ describe('projectBoardSchema', () => {
 
   it('refuses a sort it does not know', () => {
     expect(projectBoardSchema.safeParse({ sort: 'closingSoon' }).success).toBe(false);
+  });
+});
+
+describe('jobSchema and jobUpdateSchema', () => {
+  const posting = {
+    title: 'Backend developer',
+    description: 'A'.repeat(60),
+    employmentType: 'FULL_TIME',
+    workArrangement: 'ONSITE',
+  };
+
+  it('reads a salary typed in Persian digits', () => {
+    const parsed = jobSchema.parse({ ...posting, salaryMin: '۲۵۰۰۰۰۰۰' });
+    expect(parsed.salaryMin).toBe(BigInt(25_000_000));
+  });
+
+  it('refuses a salary range that runs backwards', () => {
+    const result = jobSchema.safeParse({ ...posting, salaryMin: '50000000', salaryMax: '10000000' });
+    expect(result.success).toBe(false);
+  });
+
+  it('refuses a new posting whose deadline has passed', () => {
+    expect(jobSchema.safeParse({ ...posting, closesAt: '2020-01-01' }).success).toBe(false);
+  });
+
+  it('hires one person unless told otherwise', () => {
+    expect(jobSchema.parse(posting).openings).toBe(1);
+  });
+
+  it('turns an emptied field into null on an edit, and leaves an absent one out', () => {
+    const parsed = jobUpdateSchema.parse({ city: '', province: null, salaryMin: '  ' });
+    expect(parsed).toEqual({ city: null, province: null, salaryMin: null });
+  });
+
+  it('does not invent defaults on an edit', () => {
+    expect(jobUpdateSchema.parse({ title: 'Backend developer' })).toEqual({ title: 'Backend developer' });
   });
 });

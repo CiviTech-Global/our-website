@@ -1,9 +1,9 @@
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { UploadStatus } from '@/components/ui/UploadStatus';
 import { useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
 import { ArrowLeft, Briefcase, MapPin, ShieldCheck } from 'lucide-react';
-import { useApply, useOwnVerification, usePublicJob } from '@/api/marketplace';
+import { useApply, useOwnApplications, useOwnJobs, useOwnVerification, usePublicJob } from '@/api/marketplace';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
@@ -11,7 +11,7 @@ import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTit
 import { breadcrumbSchema, jobPostingSchema } from '@/lib/structuredData';
 import { localeHref } from '@/i18n/localePath';
 import { LOCALE_TAGS } from '@/i18n/locales';
-import { formatDate } from '@/i18n/utils';
+import { formatDate, toLatinDigits } from '@/i18n/utils';
 import { formatRange } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -38,7 +38,13 @@ export default function JobDetailPage() {
   const { showToast } = useToast();
 
   const { data: job, isLoading, isError } = usePublicJob(code);
+  const location = useLocation();
   const { data: verification } = useOwnVerification(Boolean(user));
+  // What this reader already has to do with the posting. The public detail is
+  // cached and identical for everybody, so "you applied" and "this is yours"
+  // come from the reader's own lists rather than from it.
+  const { data: ownApplications } = useOwnApplications(Boolean(user));
+  const { data: ownJobs } = useOwnJobs(Boolean(user));
   const apply = useApply();
   const upload = useUploadFeedback('job-application-cv');
 
@@ -71,7 +77,7 @@ export default function JobDetailPage() {
   useDocumentTitle(job?.title ?? t.market.jobsTitle, {
     // The posting's own text, trimmed to what a result will show. Falling back
     // to the board's description would give every opening the same summary.
-    description: job?.description.replace(/s+/g, ' ').slice(0, 155) ?? t.seo.jobs,
+    description: job?.description.replace(/\s+/g, ' ').trim().slice(0, 155) ?? t.seo.jobs,
     type: 'article',
     jsonLd,
   });
@@ -100,6 +106,10 @@ export default function JobDetailPage() {
     : formatRange(job.salaryMin, job.salaryMax, locale, t);
   const where = [job.city, job.province].filter(Boolean).join('، ');
   const isVerified = verification?.status === 'APPROVED';
+  const myApplication = ownApplications?.find((application) => application.job.code === job.code);
+  const isOwn = Boolean(ownJobs?.some((own) => own.code === job.code));
+  // Back to this posting after signing in, not to the dashboard.
+  const returnHere = { from: { pathname: location.pathname, search: location.search } };
 
   async function handleSubmit(event?: FormEvent) {
     event?.preventDefault();
@@ -115,7 +125,7 @@ export default function JobDetailPage() {
         // that fails validation.
         payload: {
           coverLetter: coverLetter.trim() || undefined,
-          expectedSalary: expectedSalary.replace(/[^0-9]/g, '') || undefined,
+          expectedSalary: toLatinDigits(expectedSalary).replace(/[^0-9]/g, '') || undefined,
         },
         cv,
         onProgress: upload.onProgress,
@@ -211,12 +221,33 @@ export default function JobDetailPage() {
         </CardHeader>
 
         {!user && (
-          <Link to="/login">
+          <Link to="/login" state={returnHere}>
             <Button variant="outline">{t.market.loginToApply}</Button>
           </Link>
         )}
 
-        {user && !isVerified && (
+        {/* Said before the form rather than after a failed submit: the server
+            refuses both, and finding that out by writing a cover letter first
+            is the expensive way. */}
+        {user && isOwn && (
+          <p className="text-sm text-text-secondary">
+            {t.jobs.ownPosting}{' '}
+            <Link to="/dashboard/jobs" className="text-brand-green-600 hover:underline">
+              {t.jobs.managePosting}
+            </Link>
+          </p>
+        )}
+
+        {user && !isOwn && myApplication && !done && (
+          <p className="text-sm text-text-secondary">
+            {t.jobs.alreadyApplied.replace('{date}', formatDate(myApplication.createdAt, locale))}{' '}
+            <Link to="/dashboard/applications" className="text-brand-green-600 hover:underline">
+              {t.jobs.trackApplication}
+            </Link>
+          </p>
+        )}
+
+        {user && !isOwn && !myApplication && !isVerified && (
           <div className="flex flex-col items-start gap-3">
             <p className="flex items-start gap-2 text-sm text-text-secondary">
               <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -228,11 +259,11 @@ export default function JobDetailPage() {
           </div>
         )}
 
-        {user && isVerified && done && (
+        {user && !isOwn && isVerified && done && (
           <p className="text-sm text-brand-green-600">{t.market.applied}</p>
         )}
 
-        {user && isVerified && !done && (
+        {user && !isOwn && !myApplication && isVerified && !done && (
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <FormField label={t.market.coverLetter} htmlFor="coverLetter">
               <TextArea

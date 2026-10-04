@@ -25,7 +25,7 @@ import { RESUME_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './
  * reach staff before they reach the employer.
  *
  * Both halves are gated on verification, which is what makes the board worth
- * reading â€” an advert from an account nobody has checked is worth about as
+ * reading — an advert from an account nobody has checked is worth about as
  * much as no advert.
  */
 
@@ -42,13 +42,19 @@ export interface JobInput {
   salaryUndisclosed?: boolean;
   skills?: string[];
   closesAt?: Date;
+  openings?: number;
 }
+
+/** An edit: absent leaves a field alone, null clears it. */
+export type JobUpdate = {
+  [K in keyof JobInput]?: JobInput[K] | null;
+};
 
 /**
  * The company name is copied from the author's verification at write time.
  *
  * A listing should keep saying which company placed it even if the account
- * later changes what it is verified as â€” the advert somebody replied to does
+ * later changes what it is verified as — the advert somebody replied to does
  * not retroactively become a different company's.
  */
 async function companyNameFor(userId: string): Promise<string | null> {
@@ -78,13 +84,29 @@ export async function createJob(userId: string, input: JobInput) {
   });
 }
 
-export async function updateJob(userId: string, jobId: string, input: Partial<JobInput>) {
+export async function updateJob(userId: string, jobId: string, input: JobUpdate) {
   const job = await requireOwnJob(userId, jobId);
   assertAuthorEditable(job.moderationStatus);
 
+  // Required columns cannot be cleared; a null for one of them is ignored
+  // rather than turned into a database error.
+  const { title, description, employmentType, workArrangement, salaryUndisclosed, skills, openings, ...rest } = input;
+  const data: Prisma.JobPostUpdateInput = {
+    ...rest,
+    ...(title != null ? { title } : {}),
+    ...(description != null ? { description } : {}),
+    ...(employmentType != null ? { employmentType } : {}),
+    ...(workArrangement != null ? { workArrangement } : {}),
+    ...(skills != null ? { skills } : {}),
+    ...(openings != null ? { openings } : {}),
+    ...(salaryUndisclosed != null ? { salaryUndisclosed } : {}),
+    // "Negotiable" and a number say two different things; the switch wins.
+    ...(salaryUndisclosed ? { salaryMin: null, salaryMax: null } : {}),
+  };
+
   return prisma.jobPost.update({
     where: { id: jobId },
-    data: input,
+    data,
     select: { id: true, moderationStatus: true },
   });
 }
@@ -119,7 +141,7 @@ async function requireOwnJob(userId: string, jobId: string) {
 
   // The same answer whether it does not exist or belongs to somebody else:
   // otherwise this endpoint enumerates other people's drafts.
-  if (!job || job.authorId !== userId) throw new AppError('Ø§ÛŒÙ† Ø¢Ú¯Ù‡ÛŒ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!job || job.authorId !== userId) throw new AppError('این آگهی پیدا نشد.', 404);
   return job;
 }
 
@@ -144,7 +166,7 @@ export interface JobQuery {
 /**
  * A listing overlaps a filter range when the ranges intersect, treating a
  * missing endpoint as unbounded. `salaryUndisclosed` listings never match a
- * range filter â€” filtering by pay and then including rows that refuse to say
+ * range filter — filtering by pay and then including rows that refuse to say
  * is not filtering.
  */
 export function salaryRangeWhere(query: JobQuery): Prisma.JobPostWhereInput {
@@ -163,7 +185,7 @@ export function salaryRangeWhere(query: JobQuery): Prisma.JobPostWhereInput {
 }
 
 export function jobSort(query: JobQuery): Prisma.JobPostOrderByWithRelationInput[] {
-  // Featured always sorts first â€” that is what featuring means. The chosen
+  // Featured always sorts first — that is what featuring means. The chosen
   // sort breaks ties among same-prominence listings. Null salaries always sit
   // at the bottom of a pay sort, whichever direction it runs.
   const featured: Prisma.JobPostOrderByWithRelationInput = { featured: 'desc' };
@@ -228,7 +250,7 @@ export async function listPublicJobs(query: JobQuery) {
 
 export async function getPublicJob(code: string) {
   // Count the read before fetching so the returned viewCount includes this
-  // one. A failed counter must never fail the read â€” see the schema note on
+  // one. A failed counter must never fail the read — see the schema note on
   // viewCount about the accepted under-count under the board cache.
   const decoded = code.trim().toUpperCase();
   try {
@@ -253,7 +275,7 @@ export async function getPublicJob(code: string) {
     },
   });
 
-  if (!job) throw new AppError('Ø§ÛŒÙ† Ø¢Ú¯Ù‡ÛŒ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!job) throw new AppError('این آگهی پیدا نشد.', 404);
 
   const [authorProfile, similar] = await Promise.all([
     authorProfileSummary(job.authorId),
@@ -265,7 +287,7 @@ export async function getPublicJob(code: string) {
 
 /**
  * Suggestions for the detail page: same category first, then skill overlap.
- * A count, never identities â€” the sealed-board rule applies to suggestions
+ * A count, never identities — the sealed-board rule applies to suggestions
  * exactly as much as to the board itself.
  */
 async function similarJobs(job: {
@@ -337,6 +359,9 @@ export async function listOwnJobs(userId: string) {
       salaryMax: true,
       salaryUndisclosed: true,
       skills: true,
+      category: true,
+      closesAt: true,
+      openings: true,
       moderationStatus: true,
       state: true,
       reviewNote: true,
@@ -364,17 +389,17 @@ export async function apply(
     where: { id: jobId, ...PUBLIC_LISTING_WHERE },
     select: { id: true, authorId: true },
   });
-  if (!job) throw new AppError('Ø§ÛŒÙ† Ø¢Ú¯Ù‡ÛŒ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯ ÛŒØ§ Ø¯ÛŒÚ¯Ø± Ø¨Ø§Ø² Ù†ÛŒØ³Øª.', 404);
+  if (!job) throw new AppError('این آگهی پیدا نشد یا دیگر باز نیست.', 404);
 
   if (job.authorId === userId) {
-    throw new AppError('Ù†Ù…ÛŒâ€ŒØªÙˆØ§Ù†ÛŒØ¯ Ø¨Ø±Ø§ÛŒ Ø¢Ú¯Ù‡ÛŒ Ø®ÙˆØ¯ØªØ§Ù† Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø¨Ø¯Ù‡ÛŒØ¯.', 400);
+    throw new AppError('نمی‌توانید برای آگهی خودتان درخواست بدهید.', 400);
   }
 
   const existing = await prisma.jobApplication.findUnique({
     where: { jobId_applicantId: { jobId, applicantId: userId } },
     select: { id: true },
   });
-  if (existing) throw new AppError('Ù¾ÛŒØ´â€ŒØªØ± Ø¨Ø±Ø§ÛŒ Ø§ÛŒÙ† Ø¢Ú¯Ù‡ÛŒ Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø¯Ø§Ø¯Ù‡â€ŒØ§ÛŒØ¯.', 409);
+  if (existing) throw new AppError('پیش‌تر برای این آگهی درخواست داده‌اید.', 409);
 
   // Only the CV formats the CV pile already accepts, for the same reasons.
   const stored = cv ? (await storeFiles([cv], RESUME_EXTENSIONS))[0] : null;
@@ -411,7 +436,7 @@ export async function apply(
  * applicant from simply applying again. A review that cannot be answered is
  * just a rejection written politely.
  *
- * A new CV is optional â€” most notes are about the letter â€” and when one comes
+ * A new CV is optional — most notes are about the letter — and when one comes
  * the old file is removed only after the row points at the new one.
  */
 export async function reviseApplication(
@@ -426,7 +451,7 @@ export async function reviseApplication(
   });
 
   if (!application || application.applicantId !== userId) {
-    throw new AppError('Ø§ÛŒÙ† Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+    throw new AppError('این درخواست پیدا نشد.', 404);
   }
   assertAuthorEditable(application.moderationStatus);
 
@@ -462,7 +487,7 @@ export async function reviseApplication(
 }
 
 /**
- * What the employer sees â€” only applications a reviewer has passed on.
+ * What the employer sees — only applications a reviewer has passed on.
  *
  * This is the half of moderation that does the work: the employer's inbox
  * contains what somebody judged worth their time, not everything that arrived.
@@ -503,7 +528,7 @@ export async function listApplicationsForEmployer(userId: string, jobId: string)
  * same reason.
  *
  * The reviewer's note is included, because it is written to the applicant.
- * internalNote is not â€” that one is written about them.
+ * internalNote is not — that one is written about them.
  */
 export async function listOwnApplications(userId: string) {
   return prisma.jobApplication.findMany({
@@ -535,7 +560,7 @@ export async function setApplicationOutcome(
       applicantId: true,
       expectedSalary: true,
       moderationStatus: true,
-      job: { select: { id: true, authorId: true, title: true } },
+      job: { select: { id: true, authorId: true, title: true, openings: true } },
     },
   });
 
@@ -546,24 +571,32 @@ export async function setApplicationOutcome(
     throw new AppError('این درخواست هنوز بررسی نشده است.', 409);
   }
 
-  // Accepting is the mirror of the freelance acceptBid: the role is taken,
-  // everyone else waiting on it gets a clear no, the listing closes to new
-  // applications, and the outcome is recorded as an award — the row the
-  // milestones, reviews and any future settlement hang from.
+  // Accepting is the mirror of the freelance acceptBid, with one difference: a
+  // role can hire more than one person. The award is recorded every time — the
+  // row the milestones, reviews and any future settlement hang from — but the
+  // listing only closes, and everyone still waiting only hears no, once the
+  // last opening is filled. Before, the first hire closed a role advertised for
+  // five people and declined the other four's candidates with it.
   if (outcome === 'ACCEPTED') {
     const result = await prisma.$transaction(async (tx) => {
       await tx.jobApplication.update({
         where: { id: applicationId },
         data: { outcome: 'ACCEPTED' },
       });
-      await tx.jobApplication.updateMany({
-        where: { jobId: application.job.id, id: { not: applicationId }, outcome: 'PENDING' },
-        data: { outcome: 'DECLINED' },
+
+      const hired = await tx.jobApplication.count({
+        where: { jobId: application.job.id, outcome: 'ACCEPTED' },
       });
-      await tx.jobPost.update({
-        where: { id: application.job.id },
-        data: { state: 'AWARDED' },
-      });
+      if (hired >= application.job.openings) {
+        await tx.jobApplication.updateMany({
+          where: { jobId: application.job.id, id: { not: applicationId }, outcome: { in: ['PENDING', 'SHORTLISTED'] } },
+          data: { outcome: 'DECLINED' },
+        });
+        await tx.jobPost.update({
+          where: { id: application.job.id },
+          data: { state: 'AWARDED' },
+        });
+      }
 
       const existing = await tx.marketplaceAward.findFirst({
         where: { jobApplicationId: applicationId },
@@ -614,7 +647,7 @@ export async function reviewJob(
     where: { id: jobId },
     select: { id: true, authorId: true, title: true, moderationStatus: true, publishedAt: true },
   });
-  if (!job) throw new AppError('Ø§ÛŒÙ† Ø¢Ú¯Ù‡ÛŒ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!job) throw new AppError('این آگهی پیدا نشد.', 404);
 
   assertReviewable(job.moderationStatus);
 
@@ -657,12 +690,12 @@ export async function reviewApplication(
       job: { select: { title: true } },
     },
   });
-  if (!application) throw new AppError('Ø§ÛŒÙ† Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!application) throw new AppError('این درخواست پیدا نشد.', 404);
 
   assertReviewable(application.moderationStatus);
 
-  // An application has no publication date â€” it is passed to one employer
-  // rather than published â€” so the patch's publishedAt branch never fires.
+  // An application has no publication date — it is passed to one employer
+  // rather than published — so the patch's publishedAt branch never fires.
   const { publishedAt: _ignored, ...patch } = reviewPatch(decision, reviewer, notes, new Date());
 
   const updated = await prisma.jobApplication.update({
@@ -775,6 +808,44 @@ export async function listApplicationsForReview(query: {
   return toPage(items, total, query.page, query.pageSize);
 }
 
+/**
+ * An applicant's CV, for the employer the application was sent to.
+ *
+ * The employer saw the file's name and had no way to open it — the only route
+ * to the bytes was the staff one. Same rule as the employer's inbox: only an
+ * application that reached them, on a posting that is theirs, and the same
+ * "not found" for both failures so the route does not confirm which it was.
+ */
+export async function getApplicationCvForEmployer(userId: string, applicationId: string) {
+  const application = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: {
+      moderationStatus: true,
+      cvStoredName: true,
+      cvMimeType: true,
+      cvOriginalName: true,
+      job: { select: { authorId: true } },
+    },
+  });
+
+  if (
+    !application ||
+    application.job.authorId !== userId ||
+    application.moderationStatus !== 'APPROVED' ||
+    !application.cvStoredName ||
+    !application.cvMimeType ||
+    !application.cvOriginalName
+  ) {
+    throw new AppError('رزومه‌ای برای این درخواست پیدا نشد.', 404);
+  }
+
+  return {
+    cvStoredName: application.cvStoredName,
+    cvMimeType: application.cvMimeType,
+    cvOriginalName: application.cvOriginalName,
+  };
+}
+
 /** An applicant's CV, for the reviewer holding the application. */
 export async function getApplicationCvForReview(applicationId: string) {
   const application = await prisma.jobApplication.findUnique({
@@ -783,7 +854,7 @@ export async function getApplicationCvForReview(applicationId: string) {
   });
 
   if (!application?.cvStoredName || !application.cvMimeType || !application.cvOriginalName) {
-    throw new AppError('Ø±Ø²ÙˆÙ…Ù‡â€ŒØ§ÛŒ Ø¨Ø±Ø§ÛŒ Ø§ÛŒÙ† Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø«Ø¨Øª Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.', 404);
+    throw new AppError('رزومه‌ای برای این درخواست ثبت نشده است.', 404);
   }
 
   return {
@@ -803,6 +874,6 @@ export async function getJobForReview(jobId: string) {
     },
   });
 
-  if (!job) throw new AppError('Ø§ÛŒÙ† Ø¢Ú¯Ù‡ÛŒ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!job) throw new AppError('این آگهی پیدا نشد.', 404);
   return job;
 }

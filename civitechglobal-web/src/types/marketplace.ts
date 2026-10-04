@@ -308,7 +308,13 @@ export interface JobPayload {
   salaryUndisclosed?: boolean;
   skills?: string[];
   closesAt?: string;
+  openings?: number;
 }
+
+/** An edit: an absent key leaves the field alone, null clears it. */
+export type JobUpdatePayload = {
+  [K in keyof JobPayload]?: JobPayload[K] | null;
+};
 
 /**
  * The author's own posting, carrying everything they may still change.
@@ -330,6 +336,9 @@ export interface OwnJob {
   salaryMax: string | null;
   salaryUndisclosed: boolean;
   skills: string[];
+  category: string | null;
+  closesAt: string | null;
+  openings: number;
   moderationStatus: ModerationStatus;
   state: ListingState;
   reviewNote: string | null;

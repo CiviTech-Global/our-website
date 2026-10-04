@@ -8,7 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
-import { formatDate } from '@/i18n/utils';
+import { formatDate, toLatinDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant, outcomeVariant } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -184,7 +184,7 @@ function ReviseModal({
         id: application.id,
         payload: {
           coverLetter: coverLetter.trim() || undefined,
-          expectedSalary: expectedSalary.replace(/[^0-9]/g, '') || undefined,
+          expectedSalary: toLatinDigits(expectedSalary).replace(/[^0-9]/g, '') || undefined,
         },
         cv,
         onProgress: upload.onProgress,

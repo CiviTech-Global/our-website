@@ -1418,6 +1418,17 @@ const tr: PartialTranslations = {
     placeCompanyOffer: 'Kurumsal teklif ver',
     companyOfferPlaced: 'Kurumsal teklif kaydedildi ve inceleme bekliyor.',
   },
+  jobs: {
+    openings: 'Kadro sayısı',
+    openingsHint: 'Bu pozisyon için kaç kişi alınacak. Bu sayıda kişi kabul edildiğinde ilan kapanır.',
+    allProvinces: 'Tüm iller',
+    alreadyApplied: 'Bu pozisyona {date} tarihinde başvurdunuz.',
+    trackApplication: 'Başvurularım sayfasından takip edin',
+    ownPosting: 'Bu sizin ilanınız.',
+    managePosting: 'İlanlarım sayfasından yönetin',
+    viewCv: 'Özgeçmişi görüntüle',
+    closesAtHint: 'İsteğe bağlı. İlan bu tarihten sonra listeden kalkar.',
+  },
   app: {
     adminPanel: 'Yönetim paneli',
     userPanel: 'Hesabım',

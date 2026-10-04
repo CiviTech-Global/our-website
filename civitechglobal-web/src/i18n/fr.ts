@@ -1408,6 +1408,17 @@ const fr: PartialTranslations = {
     placeCompanyOffer: 'Faire une offre d’entreprise',
     companyOfferPlaced: 'L’offre d’entreprise a été enregistrée et attend son examen.',
   },
+  jobs: {
+    openings: 'Nombre de postes',
+    openingsHint: 'Combien de personnes ce poste recrute. L’annonce se ferme une fois ce nombre accepté.',
+    allProvinces: 'Toutes les provinces',
+    alreadyApplied: 'Vous avez postulé à ce poste le {date}.',
+    trackApplication: 'Suivre dans « Mes candidatures »',
+    ownPosting: 'C’est votre propre annonce.',
+    managePosting: 'La gérer dans « Mes annonces »',
+    viewCv: 'Voir le CV',
+    closesAtHint: 'Facultatif. L’annonce disparaît du tableau après cette date.',
+  },
   app: {
     adminPanel: 'Espace d’administration',
     userPanel: 'Mon compte',

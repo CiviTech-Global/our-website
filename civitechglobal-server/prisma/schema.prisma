@@ -1374,6 +1374,10 @@ model JobPost {
 
   skills String[] @default([])
 
+  /// How many people the role hires. The listing closes once that many are
+  /// accepted, not on the first.
+  openings Int @default(1)
+
   // ---- Moderation ---------------------------------------------------------
   moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
   submittedAt      DateTime?        @map("submitted_at")

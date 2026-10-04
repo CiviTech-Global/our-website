@@ -1412,6 +1412,17 @@ const es: PartialTranslations = {
     placeCompanyOffer: 'Hacer una oferta de empresa',
     companyOfferPlaced: 'La oferta de empresa se ha registrado y espera revisión.',
   },
+  jobs: {
+    openings: 'Número de vacantes',
+    openingsHint: 'Cuántas personas contrata este puesto. La oferta se cierra cuando se acepta ese número.',
+    allProvinces: 'Todas las provincias',
+    alreadyApplied: 'Te postulaste a este puesto el {date}.',
+    trackApplication: 'Síguela en «Mis postulaciones»',
+    ownPosting: 'Esta es tu propia oferta.',
+    managePosting: 'Gestiónala en «Mis ofertas»',
+    viewCv: 'Ver CV',
+    closesAtHint: 'Opcional. La oferta desaparece del tablón después de esta fecha.',
+  },
   app: {
     adminPanel: 'Panel de administración',
     userPanel: 'Mi cuenta',

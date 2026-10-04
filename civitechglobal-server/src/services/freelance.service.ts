@@ -21,7 +21,7 @@ import { removeFile, storeFiles, type IncomingFile } from './attachment.service.
  * The freelance board.
  *
  * A verified client posts a piece of work; verified freelancers bid on it, and
- * so can this company. Bids are sealed â€” a bidder sees only their own â€” because
+ * so can this company. Bids are sealed — a bidder sees only their own — because
  * open bidding turns a marketplace into a race to the bottom and drives the
  * serious bidders out of going first.
  *
@@ -137,7 +137,7 @@ async function requireOwnProject(userId: string, projectId: string) {
     select: { id: true, authorId: true, moderationStatus: true, openToCompanyOffer: true },
   });
 
-  if (!project || project.authorId !== userId) throw new AppError('Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!project || project.authorId !== userId) throw new AppError('این پروژه پیدا نشد.', 404);
   return project;
 }
 
@@ -251,7 +251,7 @@ export async function getPublicProject(code: string) {
     },
   });
 
-  if (!project) throw new AppError('Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
 
   const [authorProfile, similar] = await Promise.all([
     authorProfileSummary(project.authorId),
@@ -354,17 +354,17 @@ export async function placeBid(
     where: { id: projectId, ...PUBLIC_LISTING_WHERE },
     select: { id: true, authorId: true },
   });
-  if (!project) throw new AppError('Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯ ÛŒØ§ Ø¯ÛŒÚ¯Ø± Ø¨Ø§Ø² Ù†ÛŒØ³Øª.', 404);
+  if (!project) throw new AppError('این پروژه پیدا نشد یا دیگر باز نیست.', 404);
 
   if (project.authorId === userId) {
-    throw new AppError('Ù†Ù…ÛŒâ€ŒØªÙˆØ§Ù†ÛŒØ¯ Ø¨Ø±Ø§ÛŒ Ù¾Ø±ÙˆÚ˜Ù‡Ù” Ø®ÙˆØ¯ØªØ§Ù† Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ø¨Ø¯Ù‡ÛŒØ¯.', 400);
+    throw new AppError('نمی‌توانید برای پروژهٔ خودتان پیشنهاد بدهید.', 400);
   }
 
   const existing = await prisma.projectBid.findUnique({
     where: { projectId_bidderId: { projectId, bidderId: userId } },
     select: { id: true },
   });
-  if (existing) throw new AppError('Ù¾ÛŒØ´â€ŒØªØ± Ø¨Ø±Ø§ÛŒ Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ø¯Ø§Ø¯Ù‡â€ŒØ§ÛŒØ¯.', 409);
+  if (existing) throw new AppError('پیش‌تر برای این پروژه پیشنهاد داده‌اید.', 409);
 
   const stored = attachment ? (await storeFiles([attachment]))[0] : null;
 
@@ -395,7 +395,7 @@ export async function placeBid(
  * This company's own offer, placed by staff.
  *
  * Marked so the client sees it as the company's professional offer rather than
- * as one freelancer among many â€” which is the honest presentation, since it is
+ * as one freelancer among many — which is the honest presentation, since it is
  * the platform operator bidding on work advertised on its own platform.
  *
  * It goes through the same review as everyone else's. Exempting ourselves from
@@ -410,19 +410,19 @@ export async function placeCompanyOffer(
     where: { id: projectId, ...PUBLIC_LISTING_WHERE },
     select: { id: true, openToCompanyOffer: true },
   });
-  if (!project) throw new AppError('Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯ ÛŒØ§ Ø¯ÛŒÚ¯Ø± Ø¨Ø§Ø² Ù†ÛŒØ³Øª.', 404);
+  if (!project) throw new AppError('این پروژه پیدا نشد یا دیگر باز نیست.', 404);
 
   if (!project.openToCompanyOffer) {
     // The client said no when they posted it. Somebody looking for an
     // individual should not be pitched by the operator regardless.
-    throw new AppError('Ù†ÙˆÛŒØ³Ù†Ø¯Ù‡Ù” Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ø´Ø±Ú©Øª Ø±Ø§ Ù†Ù¾Ø°ÛŒØ±ÙØªÙ‡ Ø§Ø³Øª.', 403);
+    throw new AppError('نویسندهٔ این پروژه پیشنهاد شرکت را نپذیرفته است.', 403);
   }
 
   const existing = await prisma.projectBid.findFirst({
     where: { projectId, isCompanyOffer: true },
     select: { id: true },
   });
-  if (existing) throw new AppError('Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ø´Ø±Ú©Øª Ø¨Ø±Ø§ÛŒ Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ø«Ø¨Øª Ø´Ø¯Ù‡ Ø§Ø³Øª.', 409);
+  if (existing) throw new AppError('پیشنهاد شرکت برای این پروژه ثبت شده است.', 409);
 
   return prisma.projectBid.create({
     data: {
@@ -467,7 +467,7 @@ export async function reviseBid(userId: string, bidId: string, input: BidInput) 
     select: { id: true, bidderId: true, moderationStatus: true },
   });
 
-  if (!bid || bid.bidderId !== userId) throw new AppError('Ø§ÛŒÙ† Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!bid || bid.bidderId !== userId) throw new AppError('این پیشنهاد پیدا نشد.', 404);
   assertAuthorEditable(bid.moderationStatus);
 
   return prisma.projectBid.update({
@@ -482,7 +482,7 @@ export async function reviseBid(userId: string, bidId: string, input: BidInput) 
 }
 
 /**
- * What the project's author sees â€” approved bids only.
+ * What the project's author sees — approved bids only.
  *
  * The company's offer is flagged rather than filtered, so the client can weigh
  * it knowing exactly what it is.
@@ -522,7 +522,7 @@ export async function listBidsForAuthor(userId: string, projectId: string) {
  * The client picks one.
  *
  * Recorded as an award rather than merely a status, because the outcome is the
- * thing worth keeping even while no money moves through the platform â€” and it
+ * thing worth keeping even while no money moves through the platform — and it
  * is the row a fee or an invoice would later hang from.
  */
 export async function acceptBid(userId: string, bidId: string) {
@@ -539,12 +539,12 @@ export async function acceptBid(userId: string, bidId: string) {
     },
   });
 
-  if (!bid || bid.project.authorId !== userId) throw new AppError('Ø§ÛŒÙ† Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!bid || bid.project.authorId !== userId) throw new AppError('این پیشنهاد پیدا نشد.', 404);
   if (bid.moderationStatus !== 'APPROVED') {
-    throw new AppError('Ø§ÛŒÙ† Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ù‡Ù†ÙˆØ² Ø¨Ø±Ø±Ø³ÛŒ Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.', 409);
+    throw new AppError('این پیشنهاد هنوز بررسی نشده است.', 409);
   }
   if (bid.project.state !== 'OPEN') {
-    throw new AppError('Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ø¯ÛŒÚ¯Ø± Ø¨Ø§Ø² Ù†ÛŒØ³Øª.', 409);
+    throw new AppError('این پروژه دیگر باز نیست.', 409);
   }
 
   const award = await prisma.$transaction(async (tx) => {
@@ -601,7 +601,7 @@ export async function reviewProject(
     where: { id: projectId },
     select: { id: true, authorId: true, title: true, moderationStatus: true, publishedAt: true },
   });
-  if (!project) throw new AppError('Ø§ÛŒÙ† Ù¾Ø±ÙˆÚ˜Ù‡ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
 
   assertReviewable(project.moderationStatus);
 
@@ -651,7 +651,7 @@ export async function reviewBid(
       project: { select: { title: true } },
     },
   });
-  if (!bid) throw new AppError('Ø§ÛŒÙ† Ù¾ÛŒØ´Ù†Ù‡Ø§Ø¯ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!bid) throw new AppError('این پیشنهاد پیدا نشد.', 404);
 
   assertReviewable(bid.moderationStatus);
 
@@ -724,7 +724,7 @@ export async function getAttachmentForReview(attachmentId: string) {
     select: { storedName: true, mimeType: true, originalName: true },
   });
 
-  if (!attachment) throw new AppError('Ø§ÛŒÙ† ÙØ§ÛŒÙ„ Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯.', 404);
+  if (!attachment) throw new AppError('این فایل پیدا نشد.', 404);
   return attachment;
 }
 
