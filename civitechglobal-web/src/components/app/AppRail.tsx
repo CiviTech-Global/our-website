@@ -32,12 +32,12 @@ export function AppRail({
   return (
     <nav
       aria-label={t.app.modules}
-      className="flex h-full w-14 shrink-0 flex-col items-center gap-1 bg-gradient-to-b from-app-rail to-app-rail-2 py-3"
+      className="app-rail flex h-full w-16 shrink-0 flex-col items-center gap-1.5 py-3"
     >
       <Link
         to={homeTo}
         onClick={onNavigate}
-        className="mb-3 flex size-9 items-center justify-center rounded focus-visible:outline-white/70"
+        className="mb-3 flex size-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_0_rgba(0,0,0,0.5)] focus-visible:outline-white/70"
         aria-label={t.common.brand}
       >
         <img src={logoSrc} alt="" className="size-7 object-contain" />
@@ -58,30 +58,26 @@ export function AppRail({
                 aria-current={active ? 'page' : undefined}
                 aria-label={waiting > 0 ? `${module.label} (${formatCount(waiting, localize)})` : module.label}
                 className={cn(
-                  'relative flex size-9 items-center justify-center rounded [&_svg]:size-[18px]',
-                  'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white/70',
+                  'relative flex size-10 items-center justify-center rounded-lg border transition-[transform,box-shadow] duration-100 [&_svg]:size-[18px]',
+                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
                   active
-                    ? 'bg-app-primary text-white'
-                    : 'text-white/55 hover:bg-white/10 hover:text-white/90'
+                    ? 'translate-y-px border-black/60 bg-black/35 text-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.7)]'
+                    : 'border-white/10 bg-gradient-to-b from-white/[0.09] to-white/[0.02] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_2px_0_rgba(0,0,0,0.55)] hover:text-white active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.7)]'
                 )}
               >
                 {module.icon}
-                {waiting > 0 && (
-                  <span
-                    className={cn(
-                      'absolute end-1 top-1 size-2 rounded-full ring-2',
-                      active ? 'bg-white ring-app-primary' : 'bg-brand-amber-400 ring-app-rail'
-                    )}
-                    aria-hidden="true"
-                  />
-                )}
+                <span
+                  className={cn('app-led absolute start-1 top-1 !size-[5px]', !active && 'app-led-off opacity-60')}
+                  aria-hidden="true"
+                />
+                {waiting > 0 && <span className="app-led app-led-wait absolute end-1 top-1" aria-hidden="true" />}
               </Link>
 
               {/* A tooltip, not a title attribute: title waits a second and
                   never appears for keyboard focus. */}
               <span
                 role="tooltip"
-                className="pointer-events-none absolute start-full top-1/2 z-50 ms-2 hidden -translate-y-1/2 whitespace-nowrap rounded bg-[#101828] px-2 py-1 text-label font-medium text-white shadow-app-float group-hover:block group-focus-within:block"
+                className="pointer-events-none absolute start-full top-1/2 z-50 ms-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-black/40 bg-app-rail px-2 py-1 text-label font-medium text-white shadow-app-float group-hover:block group-focus-within:block"
               >
                 {module.label}
                 {waiting > 0 && <span className="ms-1.5 text-white/60">{formatCount(waiting, localize)}</span>}

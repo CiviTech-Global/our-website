@@ -104,7 +104,7 @@ function ConversationRow({ thread, locale }: { thread: ConversationSummary; loca
               </span>
             )}
             {thread.unreadCount > 0 && (
-              <span className="flex min-w-5 items-center justify-center rounded-full bg-app-primary px-1.5 text-label font-semibold text-white">
+              <span className="flex min-w-5 items-center justify-center rounded-full bg-app-primary px-1.5 text-label font-semibold text-app-on-primary">
                 {thread.unreadCount}
               </span>
             )}

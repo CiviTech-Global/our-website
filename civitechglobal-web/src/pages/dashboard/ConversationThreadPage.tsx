@@ -96,7 +96,7 @@ export default function ConversationThreadPage() {
               className={cn(
                 'max-w-[80%] whitespace-pre-line rounded px-4 py-2 text-body sm:max-w-[65%]',
                 message.mine
-                  ? 'rounded-br-sm bg-app-primary text-white'
+                  ? 'rounded-br-sm bg-app-primary text-app-on-primary'
                   : 'rounded-bl-sm bg-app-fill text-app-text',
               )}
             >

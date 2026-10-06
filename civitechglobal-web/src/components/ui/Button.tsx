@@ -31,22 +31,21 @@ const MARKETING_SIZES: Record<ButtonSize, string> = {
 };
 
 /**
- * The dashboards' buttons.
+ * The dashboards' buttons: keys.
  *
- * One height for the ordinary case (34px, matching inputs so a button beside a
- * field lines up), no glow, no press animation: in a tool used all day, motion
- * on every click is noise. `secondary` and `outline` are the same bordered
- * button here — the difference mattered on a marketing hero, not in a toolbar.
+ * Each is a physical key — lit from above, a lip underneath, and a short real
+ * travel when pressed — so what can be pressed looks pressable without a
+ * tooltip saying so. The motion is 90ms and only on press: enough to confirm
+ * the click, not enough to slow somebody who clicks all day. One height for
+ * the ordinary case (34px, matching inputs so a button beside a field lines
+ * up). `secondary` and `outline` are the same key here.
  */
 const APP_VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'border border-app-primary bg-app-primary text-white hover:border-app-primary-hover hover:bg-app-primary-hover',
-  secondary:
-    'border border-app-border bg-app-panel text-app-text-2 hover:bg-app-hover hover:text-app-text',
-  outline:
-    'border border-app-border bg-app-panel text-app-text-2 hover:bg-app-hover hover:text-app-text',
-  ghost: 'border border-transparent bg-transparent text-app-text-2 hover:bg-app-fill hover:text-app-text',
-  danger:
-    'border border-status-error bg-status-error text-white hover:opacity-90',
+  primary: 'app-key app-key-primary',
+  secondary: 'app-key',
+  outline: 'app-key',
+  ghost: 'app-key-flat',
+  danger: 'app-key app-key-danger',
 };
 
 const APP_SIZES: Record<ButtonSize, string> = {
@@ -67,7 +66,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'inline-flex items-center justify-center whitespace-nowrap font-medium',
           'disabled:opacity-50 disabled:pointer-events-none',
           app
-            ? ['rounded', '[&_svg]:size-4', APP_VARIANTS[variant], APP_SIZES[size]]
+            ? ['[&_svg]:size-4', APP_VARIANTS[variant], APP_SIZES[size]]
             : [
                 'rounded-xl transition-all duration-200 active:scale-[0.98]',
                 MARKETING_VARIANTS[variant],

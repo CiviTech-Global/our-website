@@ -21,7 +21,7 @@ export function Card({ className, children, glass = false, ...props }: CardProps
     <div
       className={cn(
         app
-          ? 'rounded border border-app-border bg-app-panel p-4 text-body text-app-text-2'
+          ? 'app-raised p-4 text-body text-app-text-2'
           : ['rounded-xl border border-border-default bg-surface-50 p-6 shadow-soft', glass && 'glass'],
         className
       )}

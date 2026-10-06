@@ -33,10 +33,10 @@ export function AppSidebar({
   const { t } = useLocale();
 
   return (
-    <div className="flex h-full w-60 shrink-0 flex-col border-e border-app-border bg-app-panel">
-      <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-app-border-light ps-4 pe-2">
+    <div className="flex h-full w-60 shrink-0 flex-col border-e border-app-border bg-app-panel shadow-[inset_-1px_0_0_rgba(255,255,255,0.5),2px_0_6px_-4px_rgba(60,44,20,0.25)] dark:shadow-[2px_0_8px_-4px_rgba(0,0,0,0.8)]">
+      <div className="app-faceplate flex h-12 shrink-0 items-center justify-between gap-2 ps-4 pe-2">
         <div className="min-w-0">
-          <p className="truncate text-caption font-medium uppercase tracking-wide text-app-text-4">{panelTitle}</p>
+          <p className="app-label truncate !text-app-text-4">{panelTitle}</p>
           <p className="truncate text-body-lg font-semibold leading-tight text-app-text">{module?.label}</p>
         </div>
         {onCloseDrawer ? (
@@ -44,7 +44,7 @@ export function AppSidebar({
             type="button"
             onClick={onCloseDrawer}
             aria-label={t.app.closeMenu}
-            className="flex size-8 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text"
+            className="app-key flex size-8 items-center justify-center text-app-icon"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
@@ -54,7 +54,7 @@ export function AppSidebar({
             onClick={onHide}
             aria-label={t.app.collapseSidebar}
             title={t.app.collapseSidebar}
-            className="flex size-8 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text"
+            className="app-key-flat flex size-8 items-center justify-center text-app-icon"
           >
             <PanelLeftClose className="size-4 rtl:-scale-x-100" aria-hidden="true" />
           </button>
@@ -65,7 +65,7 @@ export function AppSidebar({
         {module?.sections.map((section, index) => (
           <div key={section.id} className={cn(index > 0 && 'mt-5')}>
             {section.label && (
-              <p className="mb-1 px-2 text-caption font-medium uppercase tracking-wide text-app-text-4">
+              <p className="app-label mb-1.5 px-2">
                 {section.label}
               </p>
             )}
@@ -98,17 +98,18 @@ function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
       onClick={onNavigate}
       className={({ isActive }) =>
         cn(
-          'group flex h-8 items-center gap-2 rounded border px-2 text-body [&_svg]:size-4 [&_svg]:shrink-0',
+          'group relative flex h-9 items-center gap-2 rounded-md border ps-3 pe-2 text-body transition-[background-color,box-shadow] duration-100 [&_svg]:size-4 [&_svg]:shrink-0',
           isActive
-            ? 'border-app-border-light bg-app-fill font-semibold text-app-text [&_svg]:text-app-primary'
-            : 'border-transparent text-app-text-2 hover:bg-app-hover hover:text-app-text [&_svg]:text-app-icon hover:[&_svg]:text-app-primary'
+            ? 'border-app-border bg-app-fill font-semibold text-app-text shadow-[inset_0_2px_3px_rgba(60,44,20,0.18)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.55)] [&_svg]:text-app-primary'
+            : 'border-transparent text-app-text-2 hover:border-app-border-light hover:bg-app-hover hover:text-app-text [&_svg]:text-app-icon hover:[&_svg]:text-app-primary'
         )
       }
     >
+      <span className="app-led absolute start-1 top-1/2 hidden !size-[5px] -translate-y-1/2 group-aria-[current=page]:block" aria-hidden="true" />
       {item.icon}
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {item.count !== undefined && item.count > 0 && (
-        <span className="ms-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-app-fill px-1.5 text-caption font-medium text-app-text-3 group-aria-[current=page]:bg-app-panel">
+        <span className="app-readout ms-auto inline-flex h-[20px] min-w-[22px] items-center justify-center px-1.5 text-caption font-semibold">
           {formatCount(item.count, localize)}
         </span>
       )}

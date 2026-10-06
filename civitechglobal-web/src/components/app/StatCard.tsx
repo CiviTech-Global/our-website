@@ -49,25 +49,26 @@ export function StatCard({ label, value, icon: Icon, hint, tone = 'neutral', to,
           aria-hidden="true"
         />
       )}
-      <p className="relative truncate text-caption font-medium uppercase tracking-wide text-app-text-3">{label}</p>
+      <p className="app-label relative truncate">{label}</p>
       {loading || value === undefined ? (
-        <span className="relative mt-2 block h-7 w-16 animate-pulse rounded bg-app-fill" aria-hidden="true" />
+        <span className="app-readout relative mt-2 block h-9 w-20 animate-pulse" aria-hidden="true" />
       ) : (
-        <p className="relative mt-1 text-metric font-semibold text-app-text">{display}</p>
+        <p className="app-readout relative mt-2 inline-block min-w-14 px-2.5 py-0.5 text-metric font-semibold">
+          {display}
+        </p>
       )}
       {hint && <p className={cn('relative mt-0.5 truncate text-label font-medium', HINT_TONES[tone])}>{hint}</p>}
     </>
   );
 
-  const frame =
-    'group relative block min-h-[92px] overflow-hidden rounded border border-app-border bg-app-panel px-4 py-3.5';
+  const frame = 'app-raised group relative block min-h-[104px] overflow-hidden px-4 py-3.5';
 
   return to ? (
     <Link
       to={to}
       className={cn(
         frame,
-        'hover:border-app-text-4 hover:bg-app-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/40'
+        'transition-transform duration-150 hover:-translate-y-0.5 hover:border-app-border-strong active:translate-y-0'
       )}
     >
       {body}

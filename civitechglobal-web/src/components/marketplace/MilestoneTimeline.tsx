@@ -9,7 +9,7 @@ interface MilestoneTimelineProps {
 }
 
 const STATUS_STYLES: Record<AwardMilestone['status'], string> = {
-  APPROVED: 'border-app-primary bg-app-primary text-white',
+  APPROVED: 'border-app-primary bg-app-primary text-app-on-primary',
   IN_REVIEW: 'border-status-warning bg-status-warning text-white',
   PENDING: 'border-app-border bg-app-subtle text-app-text-4',
 };

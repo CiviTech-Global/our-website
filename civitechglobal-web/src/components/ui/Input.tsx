@@ -16,9 +16,9 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function fieldClasses(app: boolean, invalid: boolean | undefined): string {
   return app
     ? cn(
-        'w-full rounded border bg-app-panel text-body text-app-text placeholder:text-app-text-4',
-        'focus-visible:border-app-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-app-primary/15',
-        invalid ? 'border-status-error' : 'border-app-border',
+        'app-well w-full text-body text-app-text placeholder:text-app-text-4',
+        'focus-visible:border-app-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-app-accent',
+        invalid && 'border-status-error',
         'disabled:cursor-not-allowed disabled:bg-app-fill disabled:opacity-70'
       )
     : cn(

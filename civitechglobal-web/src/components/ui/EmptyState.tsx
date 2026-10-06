@@ -26,11 +26,11 @@ export function EmptyState({ title, description, icon, action, className }: Empt
     return (
       <div
         className={cn(
-          'flex flex-col items-center justify-center rounded border border-app-border bg-app-panel px-6 py-12 text-center',
+          'app-raised flex flex-col items-center justify-center px-6 py-12 text-center',
           className
         )}
       >
-        <span className="flex size-12 items-center justify-center rounded-full border border-app-border-light bg-app-subtle text-app-icon [&_svg]:size-5">
+        <span className="app-well flex size-12 items-center justify-center rounded-full text-app-icon [&_svg]:size-5">
           {icon ?? <Inbox aria-hidden="true" />}
         </span>
         <p className="mt-4 text-title-sm font-semibold text-app-text">{title}</p>

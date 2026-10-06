@@ -63,10 +63,10 @@ export function UserMenu({ panel }: { panel: 'user' | 'admin' }) {
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-label={t.app.userMenu}
-        className="flex w-full items-center gap-2.5 rounded border border-transparent p-2 text-start hover:border-app-border-light hover:bg-app-subtle"
+        className="app-key flex w-full items-center gap-2.5 p-2 text-start"
       >
         <span
-          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-app-primary-soft text-label font-semibold text-app-primary"
+          className="app-well flex size-8 shrink-0 items-center justify-center rounded-full text-label font-bold text-app-primary"
           aria-hidden="true"
         >
           {initials}
@@ -83,7 +83,7 @@ export function UserMenu({ panel }: { panel: 'user' | 'admin' }) {
       {open && (
         <div
           id={panelId}
-          className="absolute inset-x-0 bottom-full z-50 mb-1.5 rounded border border-app-border bg-app-panel p-1.5 shadow-app-float"
+          className="app-raised absolute inset-x-0 bottom-full z-50 mb-2 p-1.5 shadow-app-float"
         >
           <p className="truncate px-2 pb-1.5 pt-1 text-caption text-app-text-3" dir="ltr">
             {user.email}
@@ -114,7 +114,7 @@ export function UserMenu({ panel }: { panel: 'user' | 'admin' }) {
           </button>
 
           <div className="my-1 h-px bg-app-border-light" />
-          <p className="px-2 pb-1 pt-1 text-caption font-medium uppercase tracking-wide text-app-text-3">
+          <p className="app-label px-2 pb-1 pt-1">
             {t.app.language}
           </p>
           <LocalePicker variant="inline" className="px-1 pb-1 [&_button]:px-2 [&_button]:py-1 [&_button]:text-label" />

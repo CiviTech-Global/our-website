@@ -43,21 +43,21 @@ export function Table<T>({
   const alignClass = (col: TableColumn<T>) => (col.align === 'end' ? 'text-end' : 'text-start');
 
   return (
-    <div className="overflow-x-auto rounded border border-app-border bg-app-panel">
+    <div className="app-raised overflow-x-auto">
       {/*
        * min-w keeps columns at a readable width instead of squeezing them on a
        * narrow screen, so the wrapper scrolls horizontally rather than the
        * cells wrapping into illegibility.
        */}
-      <table className="w-full min-w-[640px] border-collapse text-body">
+      <table className="app-ledger w-full min-w-[640px] border-collapse text-body">
         <thead>
-          <tr className="border-b border-app-border bg-app-subtle">
+          <tr className="app-faceplate">
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
                 className={cn(
-                  'whitespace-nowrap px-3 py-2.5 text-label font-medium uppercase tracking-wide text-app-text-3',
+                  'app-label whitespace-nowrap px-3 py-2.5',
                   alignClass(col),
                   col.className
                 )}

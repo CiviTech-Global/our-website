@@ -38,7 +38,7 @@ export function Badge({ className, variant = 'default', dot = false, children, .
     <span
       className={cn(
         app
-          ? 'inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-full border px-2 text-label font-medium [&_svg]:size-3'
+          ? 'inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-full border px-2 text-label font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] [&_svg]:size-3'
           : 'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium',
         app ? APP_VARIANTS[variant] : MARKETING_VARIANTS[variant],
         className

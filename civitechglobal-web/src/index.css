@@ -124,49 +124,78 @@
 
   /* ---- Application surface -------------------------------------------------
    *
-   * The dashboards (user, admin, super admin) are a work tool, not a landing
-   * page, and are styled as one: a calm neutral canvas, 1px borders instead of
-   * shadows, a 4px radius, and a fixed type scale. The glass and glow above
-   * stay on the public site, where they belong.
+   * The dashboards (user, admin, super admin) are a work tool, styled as one
+   * instrument: "retro-tactile". Warm paper and bone instead of cold grey,
+   * depth that means something — a raised panel holds content, a raised key
+   * can be pressed, a recessed well takes typing — and a few cues from
+   * analogue equipment: label-maker captions, numeric readouts, LED status
+   * lights. The glass and glow of the public site stay there.
    *
-   * Taken from the VerifyWise design system and translated to Tailwind tokens,
-   * so a component asks for `border-app-border` rather than a hex value and dark
-   * mode is a change of token, not of component. */
-  --color-app-canvas: #fcfcfd;
-  --color-app-panel: #ffffff;
-  --color-app-subtle: #f9fafb;
-  --color-app-fill: #f2f4f7;
-  --color-app-hover: #f5f6f8;
-  --color-app-border: #d0d5dd;
-  --color-app-border-light: #eaecf0;
-  --color-app-text: #1c2130;
-  --color-app-text-2: #344054;
-  --color-app-text-3: #475467;
-  --color-app-text-4: #838c99;
-  --color-app-icon: #667085;
-  /* Primary actions use the deep brand green: white text on the brighter
-     brand-green-500 is 2.5:1, which fails WCAG AA for a button label. */
-  --color-app-primary: #047857;
-  --color-app-primary-hover: #065f46;
-  --color-app-primary-soft: #ecfdf5;
-  --color-app-rail: #1b2230;
-  --color-app-rail-2: #151b27;
+   * Depth is an affordance system here, not decoration (neo-skeuomorphism,
+   * not neumorphism): every control keeps a real border at 3:1 or better
+   * against its surroundings, and body text keeps 4.5:1, so nothing relies on
+   * a shadow alone to be seen.
+   *
+   * Components ask for a role — `border-app-border`, `app-key` — never a hex
+   * value, so dark mode is a change of token, not of component. */
+  --color-app-canvas: #ece6d8;
+  --color-app-panel: #fbf8f1;
+  --color-app-subtle: #f5f0e5;
+  --color-app-fill: #ebe4d4;
+  --color-app-hover: #f2ecdf;
+  --color-app-border: #c9bda6;
+  --color-app-border-light: #e3dac8;
+  /* The edge of anything that can be operated: 3.9:1 on the panel. */
+  --color-app-border-strong: #857963;
+  --color-app-text: #1f1b16;
+  --color-app-text-2: #383128;
+  --color-app-text-3: #574e41;
+  --color-app-text-4: #6a6051;
+  --color-app-icon: #6a604f;
+  /* Racing green: white on it is 7:1. */
+  --color-app-primary: #11694f;
+  --color-app-primary-hover: #0c5540;
+  --color-app-primary-soft: #e2eee6;
+  --color-app-on-primary: #ffffff;
+  /* Instrument amber, for focus and for what is waiting. */
+  --color-app-accent: #b0660a;
+  --color-app-accent-soft: #f6e7cc;
+  --color-app-rail: #2c261f;
+  --color-app-rail-2: #1d1914;
 
-  --color-status-success: #079455;
-  --color-status-success-bg: #ecfdf3;
-  --color-status-success-border: #abefc6;
-  --color-status-warning: #b54708;
-  --color-status-warning-bg: #fffaeb;
-  --color-status-warning-border: #fedf89;
-  --color-status-error: #d92d20;
-  --color-status-error-bg: #fef3f2;
-  --color-status-error-border: #fecdca;
-  --color-status-info: #175cd3;
-  --color-status-info-bg: #eff8ff;
-  --color-status-info-border: #b2ddff;
-  --color-status-neutral: #344054;
-  --color-status-neutral-bg: #f2f4f7;
-  --color-status-neutral-border: #eaecf0;
+  /* Key faces: lit from above, with a darker lip underneath. */
+  --color-app-key-top: #fffdf8;
+  --color-app-key-bottom: #eee6d6;
+  --color-app-key-edge: #b7a98f;
+  --color-app-key-primary-top: #1b7c5e;
+  --color-app-key-primary-bottom: #0f5e46;
+  --color-app-key-primary-edge: #083d2e;
+  --color-app-key-danger-top: #c4433a;
+  --color-app-key-danger-bottom: #a12a21;
+  --color-app-key-danger-edge: #6c1912;
+  /* The inside of a field: a shade darker than the panel it is cut into. */
+  --color-app-well: #fffdf9;
+  /* A numeric readout: a dark window with lit figures. */
+  --color-app-readout: #f7f2e7;
+  --color-app-readout-text: #1f1b16;
+  --color-app-led-on: #2fbf71;
+  --color-app-led-wait: #f0a32c;
+
+  --color-status-success: #23703a;
+  --color-status-success-bg: #e6f0e1;
+  --color-status-success-border: #a9c9a0;
+  --color-status-warning: #8c5208;
+  --color-status-warning-bg: #f8ead0;
+  --color-status-warning-border: #e3c48a;
+  --color-status-error: #a8261d;
+  --color-status-error-bg: #f7e1dc;
+  --color-status-error-border: #e2aaa1;
+  --color-status-info: #1d5a9e;
+  --color-status-info-bg: #e2ebf3;
+  --color-status-info-border: #a9c2dc;
+  --color-status-neutral: #3d362c;
+  --color-status-neutral-bg: #ece5d6;
+  --color-status-neutral-border: #d4c9b4;
 
   /* The only sizes the application surface uses. Named for their job so a
      page title cannot drift to 22px on one screen and 26px on the next. */
@@ -187,7 +216,16 @@
   --text-metric: 24px;
   --text-metric--line-height: 1.2;
 
-  --shadow-app-float: 0 4px 24px -4px rgba(16, 24, 40, 0.08), 0 3px 3px -3px rgba(16, 24, 40, 0.03);
+  --shadow-app-float: 0 18px 40px -12px rgba(48, 34, 14, 0.35), 0 4px 0 -1px rgba(48, 34, 14, 0.12);
+  /* A raised panel: a lit top edge, a hairline floor and a short soft drop. */
+  --shadow-app-raised: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 1px 0 rgba(72, 54, 26, 0.12),
+    0 3px 8px -4px rgba(72, 54, 26, 0.28);
+  --shadow-app-key: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 0 var(--color-app-key-edge),
+    0 3px 6px -3px rgba(52, 38, 16, 0.4);
+  --shadow-app-key-color: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 2px 0 var(--key-edge),
+    0 3px 6px -3px rgba(30, 20, 8, 0.5);
+  --shadow-app-key-pressed: inset 0 2px 4px rgba(52, 38, 16, 0.32);
+  --shadow-app-inset: inset 0 1px 2px rgba(72, 54, 26, 0.18), inset 0 0 0 1px rgba(72, 54, 26, 0.04);
 
   --animate-fade-up: fade-up 0.6s ease-out both;
 
@@ -233,23 +271,45 @@
   --color-border-strong: #2d3444;
   --color-border-subtle: #121826;
 
-  --color-app-canvas: #0b0f17;
-  --color-app-panel: #111722;
-  --color-app-subtle: #141b28;
-  --color-app-fill: #1a2231;
-  --color-app-hover: #172030;
-  --color-app-border: #2a3344;
-  --color-app-border-light: #1f2837;
-  --color-app-text: #f2f4f7;
-  --color-app-text-2: #d0d5dd;
-  --color-app-text-3: #98a2b3;
-  --color-app-text-4: #667085;
-  --color-app-icon: #98a2b3;
-  --color-app-primary: #059669;
-  --color-app-primary-hover: #047857;
-  --color-app-primary-soft: rgba(16, 185, 129, 0.12);
-  --color-app-rail: #070a10;
-  --color-app-rail-2: #05070c;
+  /* Night console: warm charcoal, lit figures, the same depth reversed into
+     shadow. Text stays 4.5:1 and control edges 3:1, as in daylight. */
+  --color-app-canvas: #13110e;
+  --color-app-panel: #1c1915;
+  --color-app-subtle: #211e19;
+  --color-app-fill: #2a261f;
+  --color-app-hover: #25211b;
+  --color-app-border: #3b342b;
+  --color-app-border-light: #2b2620;
+  --color-app-border-strong: #7a6e5d;
+  --color-app-text: #f3ecdc;
+  --color-app-text-2: #ddd3bf;
+  --color-app-text-3: #b8ad98;
+  --color-app-text-4: #9a8f7b;
+  --color-app-icon: #ab9f89;
+  --color-app-primary: #45c58d;
+  --color-app-primary-hover: #63d6a2;
+  --color-app-primary-soft: rgba(69, 197, 141, 0.14);
+  /* The brighter green of the night palette needs dark lettering. */
+  --color-app-on-primary: #0b1f16;
+  --color-app-accent: #f0a32c;
+  --color-app-accent-soft: rgba(240, 163, 44, 0.14);
+  --color-app-rail: #0f0d0b;
+  --color-app-rail-2: #0a0908;
+
+  --color-app-key-top: #312c25;
+  --color-app-key-bottom: #27231d;
+  --color-app-key-edge: #0b0a08;
+  --color-app-key-primary-top: #52cf97;
+  --color-app-key-primary-bottom: #37ad78;
+  --color-app-key-primary-edge: #1b6345;
+  --color-app-key-danger-top: #e0665b;
+  --color-app-key-danger-bottom: #d65a4f;
+  --color-app-key-danger-edge: #6e1e17;
+  --color-app-well: #16130f;
+  --color-app-readout: #0f0d0a;
+  --color-app-readout-text: #ffd27a;
+  --color-app-led-on: #4ee08f;
+  --color-app-led-wait: #ffb340;
 
   --color-status-success: #47cd89;
   --color-status-success-bg: rgba(23, 178, 106, 0.12);
@@ -267,7 +327,15 @@
   --color-status-neutral-bg: rgba(152, 162, 179, 0.12);
   --color-status-neutral-border: rgba(152, 162, 179, 0.24);
 
-  --shadow-app-float: 0 8px 28px -6px rgba(0, 0, 0, 0.55), 0 3px 3px -3px rgba(0, 0, 0, 0.3);
+  --shadow-app-float: 0 20px 44px -12px rgba(0, 0, 0, 0.75), 0 4px 0 -1px rgba(0, 0, 0, 0.5);
+  --shadow-app-raised: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 0 rgba(0, 0, 0, 0.5),
+    0 4px 10px -4px rgba(0, 0, 0, 0.6);
+  --shadow-app-key: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 0 var(--color-app-key-edge),
+    0 3px 6px -3px rgba(0, 0, 0, 0.7);
+  --shadow-app-key-color: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 0 var(--key-edge),
+    0 3px 6px -3px rgba(0, 0, 0, 0.7);
+  --shadow-app-key-pressed: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  --shadow-app-inset: inset 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 html {
@@ -668,4 +736,231 @@ textarea::placeholder {
 }
 .ct-slide-in-right {
   animation: ct-slide-in-right 0.2s ease-out both;
+}
+
+/* ============================================================================
+ * The application surface's materials.
+ *
+ * Classes rather than long utility strings, because each is a material with
+ * several coordinated properties — a key is a gradient, a border, a lit edge,
+ * a lip and a press — and the same material appears in many components.
+ * ========================================================================= */
+@layer components {
+  /* The desk the panels sit on: warm paper with a grain too faint to read as
+     a pattern, and a soft falloff toward the edges. Behind content only. */
+  .app-canvas {
+    background-color: var(--color-app-canvas);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.24 0 0 0 0 0.15 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E"),
+      radial-gradient(120% 90% at 50% 0%, transparent 60%, rgba(60, 44, 20, 0.06) 100%);
+  }
+  .dark .app-canvas {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.9 0 0 0 0 0.7 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
+      radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
+  }
+
+  /* A raised panel: content sits on it. */
+  .app-raised {
+    background-color: var(--color-app-panel);
+    border: 1px solid var(--color-app-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-app-raised);
+  }
+
+  /* The strip across the top of a panel, like the faceplate of a unit:
+     a faint top-lit gradient and a double rule beneath. */
+  .app-faceplate {
+    background-image: linear-gradient(to bottom, var(--color-app-key-top), var(--color-app-subtle));
+    border-bottom: 1px solid var(--color-app-border);
+    box-shadow: 0 1px 0 var(--color-app-panel), 0 2px 0 var(--color-app-border-light);
+  }
+
+  /* Label-maker captions: small capitals, spaced, slightly heavier. Latin
+     scripts only get the capitals; Persian has no case and keeps its shape. */
+  .app-label {
+    font-size: var(--text-caption);
+    line-height: var(--text-caption--line-height);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-app-text-3);
+  }
+  :lang(fa) .app-label {
+    letter-spacing: 0;
+  }
+
+  /* Figures that should line up digit under digit. */
+  .app-mono {
+    font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Menlo, Consolas, var(--font-sans);
+    font-variant-numeric: tabular-nums;
+  }
+  .app-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A numeric readout: a recessed window with the figure lit inside it. */
+  .app-readout {
+    background-color: var(--color-app-readout);
+    color: var(--color-app-readout-text);
+    border: 1px solid var(--color-app-border);
+    border-radius: 5px;
+    box-shadow: var(--shadow-app-inset);
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .app-readout {
+    text-shadow: 0 0 8px rgba(255, 196, 90, 0.35);
+  }
+
+  /* Keys: anything that can be pressed. Lit from above, a lip below, and a
+     real downward travel when pressed. */
+  .app-key {
+    --key-edge: var(--color-app-key-edge);
+    position: relative;
+    background-image: linear-gradient(to bottom, var(--color-app-key-top), var(--color-app-key-bottom));
+    border: 1px solid var(--color-app-border-strong);
+    border-radius: 6px;
+    color: var(--color-app-text);
+    box-shadow: var(--shadow-app-key);
+    transition:
+      transform 90ms ease-out,
+      box-shadow 90ms ease-out,
+      filter 120ms ease-out;
+  }
+  .app-key:hover {
+    filter: brightness(1.03);
+  }
+  .dark .app-key:hover {
+    filter: brightness(1.15);
+  }
+  .app-key:active:not(:disabled),
+  .app-key[aria-pressed='true'],
+  .app-key[data-pressed='true'] {
+    transform: translateY(2px);
+    box-shadow: var(--shadow-app-key-pressed);
+  }
+  .app-key-primary {
+    --key-edge: var(--color-app-key-primary-edge);
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-app-key-primary-top),
+      var(--color-app-key-primary-bottom)
+    );
+    border-color: var(--color-app-key-primary-edge);
+    color: var(--color-app-on-primary);
+    box-shadow: var(--shadow-app-key-color);
+  }
+  .app-key-danger {
+    --key-edge: var(--color-app-key-danger-edge);
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-app-key-danger-top),
+      var(--color-app-key-danger-bottom)
+    );
+    border-color: var(--color-app-key-danger-edge);
+    color: #ffffff;
+    box-shadow: var(--shadow-app-key-color);
+  }
+  .dark .app-key-danger {
+    color: #1f0805;
+  }
+  /* A key that is flush with the panel until it is touched. */
+  .app-key-flat {
+    position: relative;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--color-app-text-2);
+    transition:
+      background-color 120ms ease-out,
+      box-shadow 90ms ease-out;
+  }
+  .app-key-flat:hover {
+    background-color: var(--color-app-fill);
+    color: var(--color-app-text);
+  }
+  .app-key-flat:active:not(:disabled) {
+    box-shadow: var(--shadow-app-key-pressed);
+  }
+
+  /* A well: somewhere to type, cut into the panel. */
+  .app-well {
+    background-color: var(--color-app-well);
+    border: 1px solid var(--color-app-border-strong);
+    border-radius: 6px;
+    box-shadow: var(--shadow-app-inset);
+  }
+
+  /* Status lights. */
+  .app-led {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, #ffffffcc 0 18%, transparent 30%), var(--color-app-led-on);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.25),
+      0 0 6px var(--color-app-led-on);
+  }
+  .app-led-wait {
+    background: radial-gradient(circle at 35% 30%, #ffffffcc 0 18%, transparent 30%), var(--color-app-led-wait);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.25),
+      0 0 6px var(--color-app-led-wait);
+  }
+  .app-led-off {
+    background: var(--color-app-border);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Ledger rows: faint alternate shading, like ruled accounts paper. */
+  .app-ledger tbody tr:nth-child(even) {
+    background-color: color-mix(in oklab, var(--color-app-subtle) 70%, transparent);
+  }
+
+  /* A dialog's title bar, after the windows of early desktop systems: fine
+     horizontal rules behind the title. */
+  .app-window-bar {
+    background-color: var(--color-app-subtle);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 3px,
+      color-mix(in oklab, var(--color-app-border-strong) 45%, transparent) 3px 4px
+    );
+    background-clip: content-box;
+    padding-block: 0.5rem;
+  }
+
+  /* The hardware rail: dark, with a fine vertical grain like brushed metal. */
+  .app-rail {
+    background-color: var(--color-app-rail);
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px),
+      linear-gradient(to bottom, var(--color-app-rail), var(--color-app-rail-2));
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Focus: an amber ring that is always visible, on every surface — and on
+     every control in the dashboard's dialogs and menus, which render outside
+     the shell. */
+
+  /* An engraved groove: a dark cut with a lit edge under it. */
+  .app-groove {
+    border-bottom: 1px solid var(--color-app-border);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .dark .app-groove {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* The dashboards' focus ring, outside any layer: the site-wide ring above is
+   unlayered too, and a layered rule loses to it whatever its specificity.
+   Amber on every dashboard control, including dialogs and menus, which
+   render outside the shell. */
+.app-surface :focus-visible,
+.app-key:focus-visible,
+.app-key-flat:focus-visible,
+.app-well:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
 }

@@ -29,11 +29,11 @@ export function PageHeader({ title, description, actions, titleAdornment, summar
   usePageCrumb(title);
 
   return (
-    <header className={cn('mb-6 flex flex-col gap-4', className)}>
+    <header className={cn('app-groove mb-6 flex flex-col gap-4 pb-5', className)}>
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-page font-semibold text-app-text">{title}</h1>
+            <h1 className="text-page font-bold tracking-tight text-app-text">{title}</h1>
             {titleAdornment}
           </div>
           {description && <p className="mt-1 text-body text-app-text-3">{description}</p>}

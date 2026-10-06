@@ -134,6 +134,8 @@ const BidQueuePage = lazy(() => import('@/pages/admin/BidQueuePage'));
  * else: this page's buttons delete rows.
  */
 const DemoDataPage = import.meta.env.PROD ? null : lazy(() => import('@/pages/admin/DemoDataPage'));
+// The dashboard materials on one screen, for judging the look. Development only, like the demo panel.
+const DashboardKitPage = import.meta.env.PROD ? null : lazy(() => import('@/pages/dev/DashboardKitPage'));
 
 function RouteLoadingFallback() {
   return (
@@ -971,6 +973,16 @@ export default function App() {
           />
         )}
       </Route>
+      {DashboardKitPage && (
+        <Route
+          path="/dev/dashboard-kit/*"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <DashboardKitPage />
+            </Suspense>
+          }
+        />
+      )}
       </Routes>
     </Suspense>
   );

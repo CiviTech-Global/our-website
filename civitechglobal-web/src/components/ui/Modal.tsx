@@ -95,7 +95,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
           app
             ? // A dialog is the one place a dashboard uses a shadow: it floats.
               // Scrolls inside itself, so a long form never runs off the screen.
-              'relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded border border-app-border bg-app-panel text-body text-app-text-2 shadow-app-float'
+              'app-raised relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden text-body text-app-text-2 shadow-app-float'
             : 'glass relative z-10 w-full max-w-lg rounded-xl p-6 shadow-soft-lg',
           state === 'entering' ? 'ct-pop-in' : 'ct-pop-out',
           className
@@ -104,13 +104,17 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
             <div
               className={cn(
                 'flex items-center justify-between',
-                app ? 'shrink-0 border-b border-app-border-light px-6 py-4' : 'mb-4'
+                app ? 'app-window-bar shrink-0 gap-3 border-b border-app-border px-3' : 'mb-4'
               )}
             >
               {title && (
                 <h2
                   id="modal-title"
-                  className={app ? 'text-title-sm font-semibold text-app-text' : 'text-lg font-semibold text-text-primary'}
+                  className={
+                    app
+                      ? 'min-w-0 truncate bg-app-subtle px-2 text-body-lg font-semibold text-app-text'
+                      : 'text-lg font-semibold text-text-primary'
+                  }
                 >
                   {title}
                 </h2>
@@ -121,7 +125,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
                 aria-label="Close"
                 className={
                   app
-                    ? 'ms-auto flex size-7 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text'
+                    ? 'app-key ms-auto flex size-7 shrink-0 items-center justify-center text-app-icon'
                     : 'ms-auto rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-surface-200 dark:hover:bg-surface-300'
                 }
               >

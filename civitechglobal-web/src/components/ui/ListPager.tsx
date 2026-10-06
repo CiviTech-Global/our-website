@@ -4,6 +4,7 @@ import { LOCALE_TAGS } from '@/i18n/locales';
 import { pageWindow } from '@/lib/pageWindow';
 import { cn } from '@/lib/utils';
 import { Select } from './Select';
+import { useSurface } from './surface';
 
 /**
  * The foot of a list: where the reader is, how to move, and how much to show.
@@ -42,6 +43,8 @@ export function ListPager({
 }: ListPagerProps) {
   const { t, locale } = useLocale();
   const number = (n: number) => new Intl.NumberFormat(LOCALE_TAGS[locale]).format(n);
+  // In a dashboard the pages are keys, like every other control there.
+  const app = useSurface() === 'app';
 
   // Nothing to say about an empty list; the page shows its own empty state.
   if (total <= 0) return null;
@@ -52,12 +55,15 @@ export function ListPager({
   const showSizes = pageSizeOptions.length > 1 && onPageSizeChange && total > Math.min(...pageSizeOptions);
   const rtl = locale === 'fa';
 
-  const pageButton =
-    'inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm transition disabled:pointer-events-none disabled:opacity-40';
+  const pageButton = app
+    ? 'inline-flex h-8 min-w-8 items-center justify-center px-2 text-body app-tabular disabled:pointer-events-none disabled:opacity-40'
+    : 'inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm transition disabled:pointer-events-none disabled:opacity-40';
+  const quiet = app ? 'app-key-flat text-app-text-3' : 'text-text-secondary hover:bg-surface-muted';
+  const text = app ? 'text-body text-app-text-3' : 'text-sm text-text-secondary';
 
   return (
     <div className={cn('flex flex-wrap items-center justify-between gap-3', className)}>
-      <p className="text-sm text-text-secondary" aria-live="polite">
+      <p className={text} aria-live="polite">
         {t.list.showingRange
           .replace('{from}', number(from))
           .replace('{to}', number(to))
@@ -68,7 +74,7 @@ export function ListPager({
         <nav aria-label={t.list.pagination} className="flex items-center gap-1">
           <button
             type="button"
-            className={cn(pageButton, 'text-text-secondary hover:bg-surface-muted')}
+            className={cn(pageButton, quiet)}
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
             aria-label={t.common.previous}
@@ -78,7 +84,7 @@ export function ListPager({
 
           {pageWindow(page, totalPages).map((item, index) =>
             item === 'gap' ? (
-              <span key={`gap-${index}`} className="px-1 text-text-tertiary" aria-hidden="true">
+              <span key={`gap-${index}`} className={app ? 'px-1 text-app-text-4' : 'px-1 text-text-tertiary'} aria-hidden="true">
                 …
               </span>
             ) : (
@@ -91,8 +97,12 @@ export function ListPager({
                 className={cn(
                   pageButton,
                   item === page
-                    ? 'bg-surface-inverse font-semibold text-text-inverse'
-                    : 'text-text-primary hover:bg-surface-muted'
+                    ? app
+                      ? 'app-key font-semibold'
+                      : 'bg-surface-inverse font-semibold text-text-inverse'
+                    : app
+                      ? 'app-key-flat'
+                      : 'text-text-primary hover:bg-surface-muted'
                 )}
               >
                 {number(item)}
@@ -102,7 +112,7 @@ export function ListPager({
 
           <button
             type="button"
-            className={cn(pageButton, 'text-text-secondary hover:bg-surface-muted')}
+            className={cn(pageButton, quiet)}
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
             aria-label={t.common.next}
@@ -113,7 +123,7 @@ export function ListPager({
       )}
 
       {showSizes && (
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
+        <label className={cn('flex items-center gap-2', text)}>
           {t.list.perPage}
           <Select
             className="w-24"

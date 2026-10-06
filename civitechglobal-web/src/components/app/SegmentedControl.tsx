@@ -34,7 +34,7 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={label}
       className={cn(
-        'inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded border border-app-border bg-app-subtle p-0.5',
+        'app-well inline-flex max-w-full items-center gap-1 overflow-x-auto p-1',
         className
       )}
     >
@@ -47,10 +47,8 @@ export function SegmentedControl<T extends string>({
             aria-pressed={active}
             onClick={() => onChange(segment.value)}
             className={cn(
-              'inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] px-2.5 text-body',
-              active
-                ? 'border border-app-border-light bg-app-panel font-medium text-app-text shadow-[0_1px_2px_rgba(16,24,40,0.05)]'
-                : 'border border-transparent text-app-text-3 hover:text-app-text'
+              'inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 text-body',
+              active ? 'app-key font-semibold text-app-text' : 'app-key-flat text-app-text-3'
             )}
           >
             {segment.label}

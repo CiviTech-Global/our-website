@@ -106,7 +106,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
   return (
     <SurfaceContext.Provider value="app">
       <ShellContext.Provider value={shellValue}>
-        <div className="flex h-dvh overflow-hidden bg-app-canvas text-body text-app-text-2">
+        <div className="app-canvas app-surface flex h-dvh overflow-hidden text-body text-app-text-2">
           {/* Desktop frame */}
           <div className="hidden h-full lg:flex">
             {rail}
@@ -148,12 +148,12 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
           )}
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <header className="flex h-12 shrink-0 items-center gap-2 border-b border-app-border bg-app-panel px-3 sm:px-4">
+            <header className="app-faceplate relative z-10 flex h-12 shrink-0 items-center gap-2 px-3 sm:px-4">
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
                 aria-label={t.app.openMenu}
-                className="flex size-8 shrink-0 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text lg:hidden"
+                className="app-key flex size-8 shrink-0 items-center justify-center text-app-icon lg:hidden"
               >
                 <Menu className="size-[18px]" aria-hidden="true" />
               </button>
@@ -163,7 +163,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
                   onClick={() => setHidden(false)}
                   aria-label={t.app.expandSidebar}
                   title={t.app.expandSidebar}
-                  className="hidden size-8 shrink-0 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text lg:flex"
+                  className="app-key hidden size-8 shrink-0 items-center justify-center text-app-icon lg:flex"
                 >
                   <PanelLeftOpen className="size-4 rtl:-scale-x-100" aria-hidden="true" />
                 </button>
@@ -215,7 +215,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
                   rel="noopener noreferrer"
                   aria-label={t.nav.viewSite}
                   title={t.nav.viewSite}
-                  className="flex size-8 items-center justify-center rounded text-app-icon hover:bg-app-fill hover:text-app-text"
+                  className="app-key-flat flex size-8 items-center justify-center text-app-icon"
                 >
                   <ExternalLink className="size-4" aria-hidden="true" />
                 </a>

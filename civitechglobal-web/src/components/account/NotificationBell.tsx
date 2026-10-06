@@ -31,7 +31,7 @@ export function NotificationBell({ to }: NotificationBellProps) {
       className={cn(
         'relative flex items-center justify-center',
         app
-          ? 'size-8 rounded text-app-icon hover:bg-app-fill hover:text-app-text'
+          ? 'app-key-flat size-8 text-app-icon'
           : 'size-11 rounded-lg text-text-secondary transition-colors hover:bg-surface-200 hover:text-text-primary'
       )}
     >
