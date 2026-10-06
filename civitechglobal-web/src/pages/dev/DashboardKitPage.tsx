@@ -33,6 +33,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Table } from '@/components/ui/Table';
 import { TextArea } from '@/components/ui/TextArea';
+import { StageTracker } from '@/components/jobs/StageTracker';
 
 /**
  * Every dashboard material on one screen, with sample data.
@@ -221,6 +222,13 @@ export default function DashboardKitPage() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
+          <Panel title="Application progress">
+            <div className="flex flex-col gap-4">
+              <StageTracker application={{ outcome: 'PENDING', employerSeenAt: null }} />
+              <StageTracker application={{ outcome: 'INTERVIEW', employerSeenAt: '2026-10-01' }} />
+              <StageTracker application={{ outcome: 'DECLINED', employerSeenAt: '2026-10-01' }} />
+            </div>
+          </Panel>
           <Panel title="Needs your attention" flush>
             <ul className="divide-y divide-app-border-light">
               {['5 new applicants to review', '2 offers awaiting your decision', '3 unread messages'].map((item) => (

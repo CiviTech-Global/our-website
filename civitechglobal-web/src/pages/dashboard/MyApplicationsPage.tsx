@@ -26,6 +26,7 @@ import type { ModerationStatus, OwnApplication } from '@/types/marketplace';
 import { Eye, Undo2 } from 'lucide-react';
 import { Link } from 'react-router';
 import { features } from '@/lib/features';
+import { StageTracker } from '@/components/jobs/StageTracker';
 import { apiMessage } from '@/lib/apiMessage';
 import { useWithdrawApplication } from '@/api/jobs';
 
@@ -138,6 +139,10 @@ export default function MyApplicationsPage() {
                   )}
                 </div>
               </div>
+
+              {features.jobsV2 && application.moderationStatus === 'APPROVED' && application.outcome !== 'WITHDRAWN' && (
+                <StageTracker application={application} />
+              )}
 
               {application.expectedSalary && (
                 <p className="mt-2 text-body text-app-text-3">

@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { RatingStars } from '@/components/marketplace/RatingStars';
 import { VerifiedBadge } from '@/components/marketplace/VerifiedBadge';
+import { JobRow } from '@/components/jobs/JobUi';
+import { features } from '@/lib/features';
 
 /**
  * The marketplace window on the landing page.
@@ -128,6 +130,11 @@ export function MarketplaceShowcase() {
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {listings.map((listing) => {
                 const isJob = tab === 'jobs';
+                // On the new board, a featured job is the same card as everywhere else.
+                if (isJob && features.jobsV2 && 'id' in listing) {
+                  const job = listing as (typeof jobs)[number];
+                  return <JobRow key={job.code} job={{ ...job, publishedAt: job.publishedAt ?? null }} variant="compact" />;
+                }
                 const money = isJob
                   ? (listing as (typeof jobs)[number]).salaryUndisclosed
                     ? t.market.salaryUndisclosed

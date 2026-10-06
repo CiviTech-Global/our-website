@@ -46,7 +46,26 @@ export function salaryText(
 
 /** City and province, in the reader's language where we know the province. */
 export function placeText(job: { city: string | null; province: string | null }, locale: Locale): string {
-  return [job.city, displayProvince(job.province, locale)].filter(Boolean).join(locale === 'fa' ? '، ' : ', ');
+  const province = displayProvince(job.province, locale);
+  // A provincial capital named after its province — Tehran, Tehran — says it once.
+  const same = job.city && province && job.city.trim().toLowerCase() === province.trim().toLowerCase();
+  const sameStored = job.city && job.province && job.city.trim() === job.province.trim();
+  return (same || sameStored ? [province] : [job.city, province])
+    .filter(Boolean)
+    .join(locale === 'fa' ? '، ' : ', ');
+}
+
+/**
+ * Calendar days until a deadline: 0 on its last day, 1 the day before, null
+ * once it has passed or when there is none. Counted by date, not by elapsed
+ * hours, so a deadline the day after tomorrow never reads as "tomorrow".
+ */
+export function daysUntil(closesAt: string | null | undefined, now = new Date()): number | null {
+  if (!closesAt) return null;
+  const end = new Date(closesAt);
+  if (end.getTime() < now.getTime()) return null;
+  const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  return Math.round((startOfDay(end) - startOfDay(now)) / 86_400_000);
 }
 
 /**

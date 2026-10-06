@@ -1,6 +1,6 @@
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { UploadStatus } from '@/components/ui/UploadStatus';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { ArrowLeft, Briefcase, MapPin, ShieldCheck } from 'lucide-react';
 import { useApply, useOwnApplications, useOwnJobs, useOwnVerification, usePublicJob } from '@/api/marketplace';
@@ -23,6 +23,8 @@ import { TextArea } from '@/components/ui/TextArea';
 import { AuthorCard } from '@/components/marketplace/AuthorCard';
 import { ListingStats } from '@/components/marketplace/ListingStats';
 import { SimilarListings } from '@/components/marketplace/SimilarListings';
+import { JobRow, type JobRowData } from '@/components/jobs/JobUi';
+import { markJobViewed } from '@/lib/viewedJobs';
 import { features } from '@/lib/features';
 import { useJobMatch } from '@/api/jobs';
 import {
@@ -61,6 +63,19 @@ export default function JobDetailPage() {
   // application that goes straight to the employer.
   const v2 = features.jobsV2;
   const { data: match } = useJobMatch(job?.id, v2 && Boolean(user));
+
+  // Opened: the cards elsewhere say "Viewed" from now on, on this device.
+  useEffect(() => {
+    if (job?.code) markJobViewed(job.code);
+  }, [job?.code]);
+
+  // "Apply" on a card links here with #apply; the router does not scroll to a
+  // hash on its own, and the form is far down the page.
+  useEffect(() => {
+    if (job && location.hash === '#apply') {
+      document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [job, location.hash]);
 
   const [coverLetter, setCoverLetter] = useState('');
   const [expectedSalary, setExpectedSalary] = useState('');
@@ -253,11 +268,24 @@ export default function JobDetailPage() {
 
       {job.similar.length > 0 && (
         <div className="mt-6">
-          <SimilarListings title={t.market.similarJobs} basePath="/jobs" items={job.similar} />
+          {v2 && job.similar.every((item) => 'id' in item) ? (
+            <section aria-labelledby="similar-heading">
+              <h2 id="similar-heading" className="mb-3 text-lg font-semibold text-text-primary">
+                {t.market.similarJobs}
+              </h2>
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(job.similar as JobRowData[]).map((item) => (
+                  <JobRow key={item.code} job={item} variant="compact" />
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <SimilarListings title={t.market.similarJobs} basePath="/jobs" items={job.similar} />
+          )}
         </div>
       )}
 
-      <Card className="mt-6">
+      <Card className="mt-6 scroll-mt-24" id="apply">
         <CardHeader>
           <CardTitle>{v2 ? t.jobs.applyCta : t.market.apply}</CardTitle>
           {v2 && <p className="mt-1 text-sm text-text-secondary">{t.jobs.applyDirectHint}</p>}

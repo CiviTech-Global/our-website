@@ -159,8 +159,8 @@ export default function CompanyPage() {
                 key={job.id}
                 job={{
                   ...job,
-                  companyName: company.name,
-                  company: { slug: company.slug, name: company.name, logoUrl: company.logoUrl },
+                  companyName: job.companyName ?? company.name,
+                  company: job.company ?? { slug: company.slug, name: company.name, logoUrl: company.logoUrl },
                 }}
               />
             ))}

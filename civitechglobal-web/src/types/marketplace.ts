@@ -71,7 +71,8 @@ export interface BoardStats {
   verifiedUsers: number;
 }
 
-export type FeaturedJob = Omit<PublicJobSummary, 'publishedAt'>;
+/** The home page's featured jobs: the board's own cards. publishedAt may be absent from older servers. */
+export type FeaturedJob = Omit<PublicJobSummary, 'publishedAt'> & { publishedAt?: string | null };
 
 export type FeaturedProject = Omit<PublicProjectSummary, 'publishedAt'>;
 
@@ -308,6 +309,15 @@ export interface PublicJobSummary {
   disabilityFriendly?: boolean;
   openings?: number;
   company?: CompanySummary | null;
+  closesAt?: string | null;
+  skills?: string[];
+  state?: ListingState;
+  /** Counted per list on the new board; absent elsewhere. */
+  applicantCount?: number;
+  /** The employer opened applications this week. */
+  reviewingNow?: boolean;
+  /** The employer answers most applications that reach them. */
+  responsiveEmployer?: boolean;
 }
 
 export interface PublicJobDetail extends PublicJobSummary {
@@ -316,7 +326,8 @@ export interface PublicJobDetail extends PublicJobSummary {
   closesAt: string | null;
   viewCount: number;
   _count: { applications: number };
-  similar: Array<{ code: string; title: string; category: string | null; employmentType: JobEmploymentType }>;
+  /** Full cards on servers with the shared card fields; the four basics on older ones. */
+  similar: Array<PublicJobSummary | { code: string; title: string; category: string | null; employmentType: JobEmploymentType }>;
   educationLevel?: EducationLevel | null;
   fieldOfStudy?: string | null;
   workingHours?: string | null;

@@ -1,4 +1,4 @@
-import type { JobEmploymentType, JobWorkArrangement, ListingState } from './marketplace';
+import type { PublicJobSummary } from './marketplace';
 
 /**
  * The job board's second generation, as the API sends it.
@@ -137,22 +137,7 @@ export interface CompanyListItem {
   openJobs: number;
 }
 
-export interface CompanyJob {
-  id: string;
-  code: string;
-  title: string;
-  employmentType: JobEmploymentType;
-  workArrangement: JobWorkArrangement;
-  province: string | null;
-  city: string | null;
-  seniority: JobSeniority | null;
-  urgent: boolean;
-  salaryMin: string | null;
-  salaryMax: string | null;
-  salaryUndisclosed: boolean;
-  currency: string;
-  publishedAt: string | null;
-}
+export type CompanyJob = PublicJobSummary;
 
 export interface PublicCompany {
   id: string;
@@ -204,28 +189,8 @@ export interface CompanyPayload {
   city?: string | null;
 }
 
-/** A posting as a compact card: saved lists and recommendations. */
-export interface JobCard {
-  id: string;
-  code: string;
-  title: string;
-  companyName: string | null;
-  employmentType: JobEmploymentType;
-  workArrangement: JobWorkArrangement;
-  province: string | null;
-  city: string | null;
-  seniority: JobSeniority | null;
-  urgent: boolean;
-  skills: string[];
-  salaryMin: string | null;
-  salaryMax: string | null;
-  salaryUndisclosed: boolean;
-  currency: string;
-  publishedAt: string | null;
-  closesAt: string | null;
-  state: ListingState;
-  company: CompanySummary | null;
-}
+/** A posting as a card: every list of jobs sends the same row. */
+export type JobCard = PublicJobSummary;
 
 export interface SavedJobEntry {
   savedAt: string;

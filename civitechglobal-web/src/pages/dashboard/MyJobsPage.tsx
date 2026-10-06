@@ -24,6 +24,8 @@ import { IRAN_PROVINCES, provinceLabel } from '@/lib/iranProvinces';
 import { DateField } from '@/components/ui/DateField';
 import { FilePreview } from '@/components/ui/FilePreview';
 import { features } from '@/lib/features';
+import { daysUntil, formatNumber, placeText, salaryText } from '@/lib/jobFormat';
+import { cn } from '@/lib/utils';
 import { EMPTY_EXTRAS, extrasFromJob, extrasPayload, type JobExtrasDraft } from '@/lib/jobForm';
 import { JobFormExtras } from '@/components/jobs/JobFormExtras';
 import { useEmployerNote, usePipelineCounts } from '@/api/jobs';
@@ -298,12 +300,19 @@ export default function MyJobsPage() {
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-app-text">{job.title}</p>
+                  {job.moderationStatus === 'APPROVED' ? (
+                    <Link to={`/jobs/${job.code}`} className="font-medium text-app-text hover:underline">
+                      {job.title}
+                    </Link>
+                  ) : (
+                    <p className="font-medium text-app-text">{job.title}</p>
+                  )}
                   <p className="mt-0.5 text-label text-app-text-4">
-                    <span className="ltr font-mono">{job.code}</span>
+                    <span className="app-mono">{job.code}</span>
                     {' · '}
                     {formatDate(job.createdAt, locale)}
                   </p>
+                  <PostingFacts job={job} />
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge variant={moderationVariant(job.moderationStatus)}>
@@ -312,6 +321,10 @@ export default function MyJobsPage() {
                   <Badge variant={stateVariant(job.state)}>{t.market[job.state]}</Badge>
                 </div>
               </div>
+
+              {features.jobsV2 && job.moderationStatus === 'APPROVED' && (
+                <PostingGauges job={job} counts={pipeline?.[job.id]} />
+              )}
 
               {job.reviewNote && (
                 <div className="mt-3 rounded border border-app-border-light bg-app-fill p-3">
@@ -721,5 +734,65 @@ function EmployerNote({ applicationId, initial }: { applicationId: string; initi
         </Button>
       )}
     </div>
+  );
+}
+
+/** Where, what kind and for how much — the line a reader of the advert sees first. */
+function PostingFacts({ job }: { job: OwnJob }) {
+  const { t, locale } = useLocale();
+  const parts = [
+    placeText(job, locale),
+    t.market[job.employmentType],
+    job.workArrangement !== 'ONSITE' ? t.market[job.workArrangement] : '',
+    job.seniority ? t.jobs.seniorityLevels[job.seniority] : '',
+    salaryText(job, locale, t) ?? '',
+  ].filter(Boolean);
+  if (parts.length === 0) return null;
+  return <p className="mt-1 text-label text-app-text-3">{parts.join(' · ')}</p>;
+}
+
+/**
+ * A posting's figures as a row of small gauges: how many looked, applied,
+ * are new, shortlisted, invited — and how long it has left. Each figure a
+ * readout, the way the rest of the dashboard shows numbers.
+ */
+function PostingGauges({
+  job,
+  counts,
+}: {
+  job: OwnJob;
+  counts?: { total: number; unseen: number; byOutcome: Record<string, number> };
+}) {
+  const { t, locale } = useLocale();
+  const number = (value: number) => formatNumber(value, locale);
+  const left = job.closesAt ? (daysUntil(job.closesAt) ?? -1) : null;
+  const gauges: Array<{ label: string; value: string; tone?: 'attention' }> = [
+    { label: t.jobs.viewsCount.replace('{count}', '').trim(), value: number(job.viewCount ?? 0) },
+    { label: t.workspace.applicants, value: number(counts?.total ?? job._count.applications) },
+    { label: t.workspace.newApplicants, value: number(counts?.unseen ?? 0), tone: (counts?.unseen ?? 0) > 0 ? 'attention' : undefined },
+    { label: t.workspace.shortlisted, value: number(counts?.byOutcome.SHORTLISTED ?? 0) },
+    { label: t.workspace.interviews, value: number(counts?.byOutcome.INTERVIEW ?? 0) },
+    {
+      label: t.market.closesAt,
+      value: left === null ? t.jobs.noDeadline : left < 0 ? t.market.CLOSED : left === 0 ? t.jobs.closesToday : t.jobs.closesIn.replace('{n}', number(left)),
+    },
+  ];
+
+  return (
+    <dl className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+      {gauges.map((gauge) => (
+        <div key={gauge.label} className="min-w-0">
+          <dt className="app-label truncate">{gauge.label}</dt>
+          <dd
+            className={cn(
+              'app-readout mt-1 truncate px-2 py-0.5 text-body font-semibold',
+              gauge.tone === 'attention' && 'text-status-warning',
+            )}
+          >
+            {gauge.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

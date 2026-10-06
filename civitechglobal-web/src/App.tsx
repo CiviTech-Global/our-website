@@ -136,6 +136,7 @@ const BidQueuePage = lazy(() => import('@/pages/admin/BidQueuePage'));
 const DemoDataPage = import.meta.env.PROD ? null : lazy(() => import('@/pages/admin/DemoDataPage'));
 // The dashboard materials on one screen, for judging the look. Development only, like the demo panel.
 const DashboardKitPage = import.meta.env.PROD ? null : lazy(() => import('@/pages/dev/DashboardKitPage'));
+const JobCardsKitPage = import.meta.env.PROD ? null : lazy(() => import('@/pages/dev/JobCardsKitPage'));
 
 function RouteLoadingFallback() {
   return (
@@ -973,6 +974,16 @@ export default function App() {
           />
         )}
       </Route>
+      {JobCardsKitPage && (
+        <Route
+          path="/dev/job-cards"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <JobCardsKitPage />
+            </Suspense>
+          }
+        />
+      )}
       {DashboardKitPage && (
         <Route
           path="/dev/dashboard-kit/*"
