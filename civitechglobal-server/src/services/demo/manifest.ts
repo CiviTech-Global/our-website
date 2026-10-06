@@ -75,6 +75,12 @@ const DELETERS: Record<string, Deleter> = {
   freelanceProject: async (id) =>
     void (await prisma.freelanceProject.deleteMany({ where: { id } })),
   projectBid: async (id) => void (await prisma.projectBid.deleteMany({ where: { id } })),
+  company: async (id) => void (await prisma.company.deleteMany({ where: { id } })),
+  savedJob: async (id) => void (await prisma.savedJob.deleteMany({ where: { id } })),
+  jobAlert: async (id) => void (await prisma.jobAlert.deleteMany({ where: { id } })),
+  marketplaceAward: async (id) =>
+    void (await prisma.marketplaceAward.deleteMany({ where: { id } })),
+  notification: async (id) => void (await prisma.notification.deleteMany({ where: { id } })),
 };
 
 /** The models a seed may record. Anything else is a programming mistake. */
@@ -213,6 +219,11 @@ async function countExisting(model: string, id: string): Promise<boolean> {
     jobApplication: () => prisma.jobApplication.count({ where: { id } }),
     freelanceProject: () => prisma.freelanceProject.count({ where: { id } }),
     projectBid: () => prisma.projectBid.count({ where: { id } }),
+    company: () => prisma.company.count({ where: { id } }),
+    savedJob: () => prisma.savedJob.count({ where: { id } }),
+    jobAlert: () => prisma.jobAlert.count({ where: { id } }),
+    marketplaceAward: () => prisma.marketplaceAward.count({ where: { id } }),
+    notification: () => prisma.notification.count({ where: { id } }),
   };
 
   const counter = counters[model];
