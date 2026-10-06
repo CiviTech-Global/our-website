@@ -113,19 +113,32 @@ export function jobPostingSchema(
   if (!job.publishedAt) return null;
 
   const remote = job.workArrangement === 'REMOTE';
+  const country = job.country ?? COUNTRY;
+  // schema.org wants an ISO 4217 code. The toman has none, so a toman figure
+  // is given as rials — ten to the toman — rather than as an unknown code.
+  const toman = job.currency === 'IRT';
+  const currency = toman ? 'IRR' : job.currency;
+  const amount = (value: string) => Number(value) * (toman ? 10 : 1);
   const salary =
     !job.salaryUndisclosed && (job.salaryMin || job.salaryMax)
       ? {
-          estimatedSalary: {
-            '@type': 'MonetaryAmount',
-            currency: job.currency,
-            value: {
-              '@type': 'QuantitativeValue',
-              ...(job.salaryMin ? { minValue: Number(job.salaryMin) } : {}),
-              ...(job.salaryMax ? { maxValue: Number(job.salaryMax) } : {}),
-              unitText: 'MONTH',
-            },
-          },
+          // baseSalary is what Google's job results read; estimatedSalary is
+          // kept for the parsers that read that instead.
+          ...Object.fromEntries(
+            ['baseSalary', 'estimatedSalary'].map((key) => [
+              key,
+              {
+                '@type': 'MonetaryAmount',
+                currency,
+                value: {
+                  '@type': 'QuantitativeValue',
+                  ...(job.salaryMin ? { minValue: amount(job.salaryMin) } : {}),
+                  ...(job.salaryMax ? { maxValue: amount(job.salaryMax) } : {}),
+                  unitText: job.salaryPeriod ?? 'MONTH',
+                },
+              },
+            ]),
+          ),
         }
       : {};
 
@@ -149,7 +162,7 @@ export function jobPostingSchema(
       '@type': 'Place',
       address: {
         '@type': 'PostalAddress',
-        addressCountry: COUNTRY,
+        addressCountry: country,
         ...(job.province ? { addressRegion: job.province } : {}),
         ...(job.city ? { addressLocality: job.city } : {}),
       },
@@ -157,7 +170,10 @@ export function jobPostingSchema(
     // Google requires this pair together for a remote listing; without them a
     // remote job is filtered out of location-based searches entirely.
     ...(remote
-      ? { jobLocationType: 'TELECOMMUTE', applicantLocationRequirements: { '@type': 'Country', name: COUNTRY } }
+      ? {
+          jobLocationType: 'TELECOMMUTE',
+          ...(job.remoteWorldwide ? {} : { applicantLocationRequirements: { '@type': 'Country', name: country } }),
+        }
       : {}),
     ...(job.skills.length ? { skills: job.skills.join(', ') } : {}),
     ...salary,

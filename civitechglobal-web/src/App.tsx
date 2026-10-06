@@ -353,6 +353,15 @@ export default function App() {
                 </Suspense>
               }
             />
+            {/* A country's roles, and the worldwide remote ones: the board is not only Iran's. */}
+            <Route
+              path="/jobs/country/:country"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <JobBoardPage />
+                </Suspense>
+              }
+            />
             <Route
               path="/companies"
               element={

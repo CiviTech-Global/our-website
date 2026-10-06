@@ -5,8 +5,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { localeHref } from '@/i18n/localePath';
 import { apiAssetSrc } from '@/lib/apiAsset';
 import { CANONICAL_ORIGIN, useDocumentTitle } from '@/lib/documentTitle';
-import { displayProvince } from '@/lib/iranProvinces';
-import { fill, formatNumber } from '@/lib/jobFormat';
+import { fill, formatNumber, placeText } from '@/lib/jobFormat';
 import { breadcrumbSchema } from '@/lib/structuredData';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -63,7 +62,7 @@ export default function CompanyPage() {
     );
   }
 
-  const where = [company.city, displayProvince(company.province, locale)].filter(Boolean).join('، ');
+  const where = placeText(company, locale);
   const facts: Array<[typeof Building2, string, string]> = [];
   if (company.industry) facts.push([Building2, t.jobs.industry, t.jobs.industries[company.industry]]);
   if (company.size) facts.push([Users, t.jobs.companySize, t.jobs.companySizes[company.size]]);

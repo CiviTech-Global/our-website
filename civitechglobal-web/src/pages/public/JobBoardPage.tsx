@@ -25,6 +25,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { JobCategorySelect, JobRow } from '@/components/jobs/JobUi';
+import { CountrySelect, CurrencySelect } from '@/components/jobs/GeoFields';
+import { COUNTRY_CODES, DEFAULT_CURRENCY, POPULAR_COUNTRIES, countryName } from '@/lib/geo';
 import { JOB_BENEFITS, SENIORITY_LEVELS, type AlertQuery } from '@/types/jobs';
 import type { JobEmploymentType, JobWorkArrangement } from '@/types/marketplace';
 
@@ -53,11 +55,13 @@ export default function JobBoardPage() {
   const { t, locale } = useLocale();
   const { user } = useAuth();
   const location = useLocation();
-  const params = useParams<{ province?: string; category?: string }>();
+  const params = useParams<{ province?: string; category?: string; country?: string }>();
   const fixedProvince = provinceBySlug(params.province);
+  const countryParam = params.country?.toUpperCase();
+  const fixedCountry = COUNTRY_CODES.find((code) => code === countryParam);
   const { data: categories } = useJobCategories();
   const fixedCategory = params.category ? categories?.find((category) => category.slug === params.category) : undefined;
-  const landing = Boolean(params.province || params.category);
+  const landing = Boolean(params.province || params.category || params.country);
 
   const controls = useListControls({
     defaultSort: 'newest',
@@ -76,6 +80,9 @@ export default function JobBoardPage() {
       urgent: '',
       amriehEligible: '',
       disabilityFriendly: '',
+      country: '',
+      remoteWorldwide: '',
+      currency: '',
     },
     typedFilters: ['salaryMin'],
   });
@@ -83,7 +90,15 @@ export default function JobBoardPage() {
 
   // The address's own filter wins over the query string: /jobs/in/qazvin is
   // Qazvin's page whatever ?province says.
-  const province = fixedProvince?.fa ?? filters.province;
+  // A province is Iran's, so a province page is Iran's; otherwise the
+  // address's country, or the reader's choice.
+  const country = fixedProvince ? 'IR' : (fixedCountry ?? filters.country);
+  // Provinces are Iran's: a province left over from before the country
+  // changed would only ever return nothing.
+  const provinceApplies = !country || country === 'IR';
+  const province = fixedProvince?.fa ?? (provinceApplies ? filters.province : '');
+  // The pay floor's currency: the reader's choice, else the chosen country's own.
+  const floorCurrency = filters.currency || (country && DEFAULT_CURRENCY[country]) || 'IRT';
   const jobCategoryId = fixedCategory?.id ?? filters.jobCategoryId;
   const benefits = filters.benefits.split(',').filter(Boolean);
   const salaryMin = toLatinDigits(filters.salaryMin).replace(/[^0-9]/g, '');
@@ -105,6 +120,10 @@ export default function JobBoardPage() {
     urgent: filters.urgent === 'true',
     amriehEligible: filters.amriehEligible === 'true',
     disabilityFriendly: filters.disabilityFriendly === 'true',
+    country: country || undefined,
+    remoteWorldwide: filters.remoteWorldwide === 'true',
+    // The floor's currency travels with the floor, and only then.
+    currency: salaryMin ? floorCurrency : undefined,
   };
   // A category page waits for the list that says which id its slug is, so it
   // never shows the unfiltered board for a moment first.
@@ -122,17 +141,22 @@ export default function JobBoardPage() {
 
   // ---- Headings and search-engine description -------------------------------
   const placeName = fixedProvince ? provinceLabel(fixedProvince, locale) : '';
+  const countryLabel = fixedCountry ? countryName(fixedCountry, locale) : '';
   const categoryLabel = fixedCategory ? categoryName(fixedCategory, locale) : '';
   const title = fixedProvince
     ? fill(t.jobs.landingProvinceTitle, { province: placeName })
-    : fixedCategory
-      ? fill(t.jobs.landingCategoryTitle, { category: categoryLabel })
-      : t.jobs.boardTitle;
+    : fixedCountry
+      ? fill(t.jobs.landingCountryTitle, { country: countryLabel })
+      : fixedCategory
+        ? fill(t.jobs.landingCategoryTitle, { category: categoryLabel })
+        : t.jobs.boardTitle;
   const subtitle = fixedProvince
     ? fill(t.jobs.landingProvinceSubtitle, { province: placeName })
-    : fixedCategory
-      ? fill(t.jobs.landingCategorySubtitle, { category: categoryLabel })
-      : t.jobs.boardSubtitle;
+    : fixedCountry
+      ? fill(t.jobs.landingCountrySubtitle, { country: countryLabel })
+      : fixedCategory
+        ? fill(t.jobs.landingCategorySubtitle, { category: categoryLabel })
+        : t.jobs.boardSubtitle;
 
   const faqs = [
     { question: t.jobs.faq1q, answer: t.jobs.faq1a },
@@ -155,7 +179,7 @@ export default function JobBoardPage() {
 
   // A landing address that names nothing we have is a dead link, not the
   // whole board under a heading that promises something narrower.
-  const unknownPlace = Boolean(params.province) && !fixedProvince;
+  const unknownPlace = (Boolean(params.province) && !fixedProvince) || (Boolean(params.country) && !fixedCountry);
   const unknownCategory = Boolean(params.category) && Boolean(categories) && !fixedCategory;
   if (unknownPlace || unknownCategory) {
     return (
@@ -172,7 +196,7 @@ export default function JobBoardPage() {
     const next = benefits.includes(key) ? benefits.filter((item) => item !== key) : [...benefits, key];
     controls.setFilter('benefits', next.join(','));
   };
-  const toggleSwitch = (name: 'urgent' | 'amriehEligible' | 'disabilityFriendly') =>
+  const toggleSwitch = (name: 'urgent' | 'amriehEligible' | 'disabilityFriendly' | 'remoteWorldwide') =>
     controls.setFilter(name, filters[name] === 'true' ? '' : 'true');
 
   const filterPanel = (
@@ -245,14 +269,23 @@ export default function JobBoardPage() {
         </Select>
       </FormField>
 
-      <FormField label={t.jobs.minSalary} htmlFor="f-salary">
-        <Input
-          id="f-salary"
-          inputMode="numeric"
-          className="ltr"
-          value={controls.filterInput('salaryMin')}
-          onChange={(e) => controls.setFilter('salaryMin', e.target.value)}
-        />
+      <FormField label={t.jobs.minSalary.replace(/\s*\([^)]*\)/, '')} htmlFor="f-salary">
+        <div className="flex gap-2">
+          <Input
+            id="f-salary"
+            inputMode="numeric"
+            className="ltr min-w-0 flex-1"
+            value={controls.filterInput('salaryMin')}
+            onChange={(e) => controls.setFilter('salaryMin', e.target.value)}
+          />
+          {/* A floor means something only in one currency at a time. */}
+          <CurrencySelect
+            className="w-28"
+            aria-label={t.jobs.currencyLabel}
+            value={floorCurrency}
+            onChange={(value) => controls.setFilter('currency', value)}
+          />
+        </div>
       </FormField>
 
       <FormField label={t.jobs.postedWithin} htmlFor="f-posted">
@@ -302,6 +335,7 @@ export default function JobBoardPage() {
               ['urgent', t.jobs.urgentOnly],
               ['amriehEligible', t.jobs.amriehOnly],
               ['disabilityFriendly', t.jobs.disabilityOnly],
+              ['remoteWorldwide', t.jobs.remoteWorldwideOnly],
             ] as const
           ).map(([name, label]) => (
             <label key={name} className="flex items-center gap-2 text-sm text-text-secondary">
@@ -347,7 +381,16 @@ export default function JobBoardPage() {
             onChange={(e) => controls.setSearch(e.target.value)}
           />
         </div>
-        {!fixedProvince && (
+        {!fixedProvince && !fixedCountry && (
+          <CountrySelect
+            className="sm:w-48"
+            value={filters.country}
+            placeholder={t.jobs.allCountries}
+            aria-label={t.jobs.country}
+            onChange={(value) => controls.setFilter('country', value)}
+          />
+        )}
+        {!fixedProvince && provinceApplies && (
           <Select
             className="sm:w-56"
             value={filters.province}
@@ -463,6 +506,7 @@ export default function JobBoardPage() {
           defaultName={controls.search || categoryLabel || placeName || t.market.jobsTitle}
           query={{
             search: controls.search || undefined,
+            country: country || undefined,
             province: province || undefined,
             jobCategoryId: jobCategoryId || undefined,
             employmentType: filters.employmentType || undefined,
@@ -602,6 +646,21 @@ function LandingFooter({ faqs }: { faqs: Array<{ question: string; answer: strin
         </dl>
       </section>
       <section className="flex flex-col gap-6">
+        <div>
+          <h2 className="mb-3 text-lg font-semibold text-text-primary">{t.jobs.browseByCountry}</h2>
+          <ul className="flex flex-wrap gap-2">
+            {POPULAR_COUNTRIES.map((code) => (
+              <li key={code}>
+                <Link
+                  to={`/jobs/country/${code.toLowerCase()}`}
+                  className="inline-block rounded-full border border-border-default px-3 py-1 text-sm text-text-secondary hover:border-border-strong hover:text-text-primary"
+                >
+                  {countryName(code, locale)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
         <div>
           <h2 className="mb-3 text-lg font-semibold text-text-primary">{t.jobs.browseByProvince}</h2>
           <ul className="flex flex-wrap gap-2">

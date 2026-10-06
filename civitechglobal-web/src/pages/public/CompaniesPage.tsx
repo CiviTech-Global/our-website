@@ -3,8 +3,9 @@ import { Briefcase, MapPin, Search } from 'lucide-react';
 import { useCompanies } from '@/api/jobs';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { IRAN_PROVINCES, displayProvince, provinceLabel } from '@/lib/iranProvinces';
-import { fill, formatNumber } from '@/lib/jobFormat';
+import { IRAN_PROVINCES, provinceLabel } from '@/lib/iranProvinces';
+import { fill, formatNumber, placeText } from '@/lib/jobFormat';
+import { CountrySelect } from '@/components/jobs/GeoFields';
 import { useListControls } from '@/lib/useListControls';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
@@ -31,7 +32,7 @@ export default function CompaniesPage() {
   const controls = useListControls({
     pageSize: PAGE_SIZE,
     pageSizeOptions: PAGE_SIZES,
-    filters: { industry: '', province: '' },
+    filters: { industry: '', country: '', province: '' },
   });
 
   const { data, isLoading } = useCompanies({
@@ -39,7 +40,9 @@ export default function CompaniesPage() {
     pageSize: controls.pageSize,
     search: controls.search || undefined,
     industry: controls.filters.industry || undefined,
-    province: controls.filters.province || undefined,
+    country: controls.filters.country || undefined,
+    // Provinces are Iran's; one left over from before the country changed is dropped.
+    province: !controls.filters.country || controls.filters.country === 'IR' ? controls.filters.province || undefined : undefined,
   });
 
   return (
@@ -76,19 +79,28 @@ export default function CompaniesPage() {
             </option>
           ))}
         </Select>
-        <Select
+        <CountrySelect
           className="sm:w-48"
-          value={controls.filters.province}
-          aria-label={t.market.province}
-          onChange={(e) => controls.setFilter('province', e.target.value)}
-        >
-          <option value="">{t.jobs.allProvinces}</option>
-          {IRAN_PROVINCES.map((item) => (
-            <option key={item.slug} value={item.fa}>
-              {provinceLabel(item, locale)}
-            </option>
-          ))}
-        </Select>
+          value={controls.filters.country}
+          placeholder={t.jobs.allCountries}
+          aria-label={t.jobs.country}
+          onChange={(value) => controls.setFilter('country', value)}
+        />
+        {(!controls.filters.country || controls.filters.country === 'IR') && (
+          <Select
+            className="sm:w-48"
+            value={controls.filters.province}
+            aria-label={t.market.province}
+            onChange={(e) => controls.setFilter('province', e.target.value)}
+          >
+            <option value="">{t.jobs.allProvinces}</option>
+            {IRAN_PROVINCES.map((item) => (
+              <option key={item.slug} value={item.fa}>
+                {provinceLabel(item, locale)}
+              </option>
+            ))}
+          </Select>
+        )}
       </div>
 
       {isLoading && (
@@ -101,7 +113,7 @@ export default function CompaniesPage() {
 
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {data?.items.map((company) => {
-          const where = [company.city, displayProvince(company.province, locale)].filter(Boolean).join('، ');
+          const where = placeText(company, locale);
           return (
             <li key={company.id}>
               <Link

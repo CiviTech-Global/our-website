@@ -7,7 +7,6 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { toLatinDigits } from '@/i18n/utils';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { IRAN_PROVINCES, provinceLabel } from '@/lib/iranProvinces';
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +18,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { TextArea } from '@/components/ui/TextArea';
 import { CoverField } from '@/components/marketplace/CoverField';
 import { COMPANY_INDUSTRIES, COMPANY_SIZES, type CompanyPayload } from '@/types/jobs';
+import { CountrySelect, RegionField } from '@/components/jobs/GeoFields';
 
 const EMPTY = {
   name: '',
@@ -28,6 +28,7 @@ const EMPTY = {
   size: '',
   foundedYear: '',
   website: '',
+  country: 'IR',
   province: '',
   city: '',
 };
@@ -39,7 +40,7 @@ const EMPTY = {
  * and the first save creates it and links every posting already published.
  */
 export default function MyCompanyPage() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   useDocumentTitle(t.jobs.myCompany);
   const { showToast } = useToast();
   const { data: verification } = useOwnVerification();
@@ -62,6 +63,7 @@ export default function MyCompanyPage() {
       size: company.size ?? '',
       foundedYear: company.foundedYear ? String(company.foundedYear) : '',
       website: company.website ?? '',
+      country: company.country ?? 'IR',
       province: company.province ?? '',
       city: company.city ?? '',
     });
@@ -82,7 +84,8 @@ export default function MyCompanyPage() {
       size: (draft.size || null) as CompanyPayload['size'],
       foundedYear: toLatinDigits(draft.foundedYear).trim() || null,
       website: draft.website.trim() || null,
-      province: draft.province || null,
+      country: draft.country,
+      province: draft.province.trim() || null,
       city: draft.city.trim() || null,
     };
     try {
@@ -225,15 +228,20 @@ export default function MyCompanyPage() {
                   onChange={(e) => set('website')(e.target.value)}
                 />
               </FormField>
-              <FormField label={t.market.province} htmlFor="company-province">
-                <Select id="company-province" value={draft.province} onChange={(e) => set('province')(e.target.value)}>
-                  <option value="">—</option>
-                  {IRAN_PROVINCES.map((item) => (
-                    <option key={item.slug} value={item.fa}>
-                      {provinceLabel(item, locale)}
-                    </option>
-                  ))}
-                </Select>
+              <FormField label={t.jobs.country} htmlFor="company-country">
+                <CountrySelect
+                  id="company-country"
+                  value={draft.country}
+                  onChange={(value) => setDraft((prev) => ({ ...prev, country: value, province: '' }))}
+                />
+              </FormField>
+              <FormField label={draft.country === 'IR' ? t.market.province : t.jobs.region} htmlFor="company-province">
+                <RegionField
+                  id="company-province"
+                  country={draft.country}
+                  value={draft.province}
+                  onChange={(value) => set('province')(value)}
+                />
               </FormField>
               <FormField label={t.market.city} htmlFor="company-city">
                 <Input id="company-city" maxLength={80} value={draft.city} onChange={(e) => set('city')(e.target.value)} />

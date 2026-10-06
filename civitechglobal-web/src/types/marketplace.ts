@@ -312,6 +312,10 @@ export interface PublicJobSummary {
   closesAt?: string | null;
   skills?: string[];
   state?: ListingState;
+  /** ISO 3166-1 alpha-2; Iran when absent. */
+  country?: string;
+  remoteWorldwide?: boolean;
+  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR';
   /** Counted per list on the new board; absent elsewhere. */
   applicantCount?: number;
   /** The employer opened applications this week. */
@@ -366,6 +370,10 @@ export interface JobPayload {
   militaryService?: MilitaryServiceRequirement;
   amriehEligible?: boolean;
   disabilityFriendly?: boolean;
+  country?: string;
+  currency?: string;
+  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR';
+  remoteWorldwide?: boolean;
 }
 
 /** An edit: an absent key leaves the field alone, null clears it. */
@@ -411,6 +419,10 @@ export interface OwnJob {
   amriehEligible?: boolean;
   disabilityFriendly?: boolean;
   viewCount?: number;
+  country?: string;
+  currency?: string;
+  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR';
+  remoteWorldwide?: boolean;
   moderationStatus: ModerationStatus;
   state: ListingState;
   reviewNote: string | null;

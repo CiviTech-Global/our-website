@@ -3,6 +3,7 @@ import { LOCALE_TAGS } from '@/i18n/locales';
 import type fa from '@/i18n/fa';
 import { formatRange } from '@/lib/marketplace';
 import { displayProvince } from '@/lib/iranProvinces';
+import { HOME_COUNTRY, countryName, formatMoneyIn } from '@/lib/geo';
 import type { JobCategory } from '@/types/jobs';
 
 /**
@@ -35,17 +36,48 @@ export function groupCategories(categories: JobCategory[] | undefined) {
   }));
 }
 
-/** The pay line: the range, "negotiable", or nothing when it was not given. */
+/**
+ * The pay line: the range in its own currency and period, "negotiable", or
+ * nothing when it was not given.
+ *
+ * Toman per month — what every Iranian posting means — reads as it always
+ * has, with no "/ month". Anything else names itself: "€4,000 to €5,500 / month",
+ * "$45 / hour", "AED 18,000 to AED 22,000 / month".
+ */
 export function salaryText(
-  job: { salaryMin: string | null; salaryMax: string | null; salaryUndisclosed: boolean },
+  job: {
+    salaryMin: string | null;
+    salaryMax: string | null;
+    salaryUndisclosed: boolean;
+    currency?: string;
+    salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR';
+  },
   locale: Locale,
   t: Dictionary,
 ): string | null {
-  return job.salaryUndisclosed ? t.market.salaryUndisclosed : formatRange(job.salaryMin, job.salaryMax, locale, t);
+  if (job.salaryUndisclosed) return t.market.salaryUndisclosed;
+  const currency = job.currency ?? 'IRT';
+  const period = job.salaryPeriod ?? 'MONTH';
+  if (currency === 'IRT' && period === 'MONTH') return formatRange(job.salaryMin, job.salaryMax, locale, t);
+
+  const low = formatMoneyIn(job.salaryMin, currency, locale, t.market.currency);
+  const high = formatMoneyIn(job.salaryMax, currency, locale, t.market.currency);
+  const range = low && high ? `${low} ${t.market.to} ${high}` : low ? `${t.market.from} ${low}` : high ? `${t.market.to} ${high}` : null;
+  return range ? `${range} / ${t.jobs.periods[period]}` : null;
 }
 
 /** City and province, in the reader's language where we know the province. */
-export function placeText(job: { city: string | null; province: string | null }, locale: Locale): string {
+export function placeText(
+  job: { city: string | null; province: string | null; country?: string },
+  locale: Locale,
+): string {
+  // Abroad, the country is part of the place; at home it would only repeat
+  // what every Iranian reader assumes.
+  if (job.country && job.country !== HOME_COUNTRY) {
+    return [job.city, job.province, countryName(job.country, locale)]
+      .filter(Boolean)
+      .join(locale === 'fa' ? '، ' : ', ');
+  }
   const province = displayProvince(job.province, locale);
   // A provincial capital named after its province — Tehran, Tehran — says it once.
   const same = job.city && province && job.city.trim().toLowerCase() === province.trim().toLowerCase();

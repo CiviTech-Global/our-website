@@ -28,6 +28,8 @@ import { daysUntil, formatNumber, placeText, salaryText } from '@/lib/jobFormat'
 import { cn } from '@/lib/utils';
 import { EMPTY_EXTRAS, extrasFromJob, extrasPayload, type JobExtrasDraft } from '@/lib/jobForm';
 import { JobFormExtras } from '@/components/jobs/JobFormExtras';
+import { CountrySelect, CurrencySelect, RegionField } from '@/components/jobs/GeoFields';
+import { DEFAULT_CURRENCY } from '@/lib/geo';
 import { useEmployerNote, usePipelineCounts } from '@/api/jobs';
 import { formatMoney, moderationVariant, outcomeVariant, stateVariant } from '@/lib/marketplace';
 import { RatingStars } from '@/components/marketplace/RatingStars';
@@ -74,6 +76,10 @@ const EMPTY_DRAFT = {
   category: '',
   closesAt: '',
   openings: '1',
+  country: 'IR',
+  currency: 'IRT',
+  salaryPeriod: 'MONTH' as 'HOUR' | 'MONTH' | 'YEAR',
+  remoteWorldwide: false,
 };
 
 /** What somebody typed into a money box, as the digit string the API takes. */
@@ -159,6 +165,10 @@ export default function MyJobsPage() {
             // The date part only: the field speaks yyyy-mm-dd.
             closesAt: target.closesAt ? target.closesAt.slice(0, 10) : '',
             openings: String(target.openings),
+            country: target.country ?? 'IR',
+            currency: target.currency ?? 'IRT',
+            salaryPeriod: target.salaryPeriod ?? 'MONTH',
+            remoteWorldwide: target.remoteWorldwide ?? false,
           }
     );
   }
@@ -185,6 +195,15 @@ export default function MyJobsPage() {
         category: text(draft.category),
         closesAt: draft.closesAt || blank,
         openings: Number.isInteger(openings) && openings >= 1 ? openings : 1,
+        // Where and in what money: sent only on the new board, whose form shows them.
+        ...(features.jobsV2
+          ? {
+              country: draft.country,
+              currency: draft.currency,
+              salaryPeriod: draft.salaryPeriod,
+              remoteWorldwide: draft.workArrangement === 'REMOTE' && draft.remoteWorldwide,
+            }
+          : {}),
         salaryUndisclosed: draft.salaryUndisclosed,
         // Suppressed rather than merely ignored when the salary is negotiable:
         // sending a number alongside "undisclosed" states two different things.
@@ -446,6 +465,29 @@ export default function MyJobsPage() {
               </Select>
             </FormField>
 
+            {features.jobsV2 && (
+              <FormField label={t.jobs.country} htmlFor="country">
+                <CountrySelect
+                  id="country"
+                  value={draft.country}
+                  onChange={(value) =>
+                    // A new country starts its region afresh, and its usual currency.
+                    setDraft((prev) => ({
+                      ...prev,
+                      country: value,
+                      province: '',
+                      currency: prev.salaryMin || prev.salaryMax ? prev.currency : (DEFAULT_CURRENCY[value] ?? prev.currency),
+                    }))
+                  }
+                />
+              </FormField>
+            )}
+
+            {features.jobsV2 && draft.country !== 'IR' ? (
+              <FormField label={t.jobs.region} htmlFor="province">
+                <RegionField id="province" country={draft.country} value={draft.province} onChange={(value) => set('province')(value)} />
+              </FormField>
+            ) : (
             <FormField label={t.market.province} htmlFor="province">
               <Select id="province" value={draft.province} onChange={(e) => set('province')(e.target.value)}>
                 <option value="">—</option>
@@ -461,6 +503,19 @@ export default function MyJobsPage() {
                 ))}
               </Select>
             </FormField>
+            )}
+
+            {features.jobsV2 && draft.workArrangement === 'REMOTE' && (
+              <label className="flex items-center gap-2 self-end pb-2 text-body text-app-text-3 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-app-border"
+                  checked={draft.remoteWorldwide}
+                  onChange={(e) => set('remoteWorldwide')(e.target.checked)}
+                />
+                {t.jobs.remoteWorldwideOption}
+              </label>
+            )}
 
             <FormField label={t.market.city} htmlFor="city">
               <Input id="city" value={draft.city} onChange={(e) => set('city')(e.target.value)} />
@@ -504,6 +559,23 @@ export default function MyJobsPage() {
             />
             {t.market.salaryUndisclosed}
           </label>
+
+          {!draft.salaryUndisclosed && features.jobsV2 && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label={t.jobs.currencyLabel} htmlFor="currency">
+                <CurrencySelect id="currency" value={draft.currency} onChange={(value) => set('currency')(value)} />
+              </FormField>
+              <FormField label={t.jobs.salaryPeriodLabel} htmlFor="salaryPeriod">
+                <Select id="salaryPeriod" value={draft.salaryPeriod} onChange={(e) => set('salaryPeriod')(e.target.value)}>
+                  {(['MONTH', 'YEAR', 'HOUR'] as const).map((period) => (
+                    <option key={period} value={period}>
+                      {t.jobs.periodOptions[period]}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+            </div>
+          )}
 
           {!draft.salaryUndisclosed && (
             <div className="grid gap-4 sm:grid-cols-2">

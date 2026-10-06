@@ -7,6 +7,7 @@ import { formatDate } from '@/i18n/utils';
 import { apiMessage } from '@/lib/apiMessage';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { displayProvince } from '@/lib/iranProvinces';
+import { countryName } from '@/lib/geo';
 import { categoryName, formatNumber } from '@/lib/jobFormat';
 import { formatMoney } from '@/lib/marketplace';
 import { PageHeader } from '@/components/app/PageHeader';
@@ -22,7 +23,7 @@ import type { JobEmploymentType, JobWorkArrangement } from '@/types/marketplace'
 function searchHref(query: AlertQuery): string {
   const params = new URLSearchParams();
   if (query.search) params.set('q', query.search);
-  for (const key of ['province', 'jobCategoryId', 'employmentType', 'workArrangement', 'seniority', 'salaryMin'] as const) {
+  for (const key of ['country', 'province', 'jobCategoryId', 'employmentType', 'workArrangement', 'seniority', 'salaryMin'] as const) {
     if (query[key]) params.set(key, query[key]!);
   }
   const text = params.toString();
@@ -47,6 +48,7 @@ export default function JobAlertsPage() {
       const category = categories?.find((item) => item.id === query.jobCategoryId);
       if (category) parts.push(categoryName(category, locale));
     }
+    if (query.country) parts.push(countryName(query.country, locale));
     if (query.province) parts.push(displayProvince(query.province, locale));
     if (query.employmentType) parts.push(t.market[query.employmentType as JobEmploymentType]);
     if (query.workArrangement) parts.push(t.market[query.workArrangement as JobWorkArrangement]);

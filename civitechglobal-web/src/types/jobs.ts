@@ -131,6 +131,7 @@ export interface CompanyListItem {
   tagline: string | null;
   industry: CompanyIndustry | null;
   size: CompanySize | null;
+  country?: string;
   province: string | null;
   city: string | null;
   logoUrl: string | null;
@@ -149,6 +150,7 @@ export interface PublicCompany {
   size: CompanySize | null;
   foundedYear: number | null;
   website: string | null;
+  country?: string;
   province: string | null;
   city: string | null;
   logoUrl: string | null;
@@ -169,6 +171,7 @@ export interface OwnCompany {
   size: CompanySize | null;
   foundedYear: number | null;
   website: string | null;
+  country?: string;
   province: string | null;
   city: string | null;
   hidden: boolean;
@@ -185,6 +188,7 @@ export interface CompanyPayload {
   size?: CompanySize | null;
   foundedYear?: number | string | null;
   website?: string | null;
+  country?: string;
   province?: string | null;
   city?: string | null;
 }
@@ -200,6 +204,7 @@ export interface SavedJobEntry {
 
 export interface AlertQuery {
   search?: string;
+  country?: string;
   province?: string;
   jobCategoryId?: string;
   employmentType?: string;

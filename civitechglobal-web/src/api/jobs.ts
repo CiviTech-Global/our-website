@@ -51,6 +51,7 @@ export interface CompanyListQuery extends Record<string, string | number | undef
   pageSize: number;
   search?: string;
   industry?: string;
+  country?: string;
   province?: string;
 }
 

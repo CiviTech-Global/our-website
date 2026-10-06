@@ -102,6 +102,9 @@ export interface JobBoardQuery {
   disabilityFriendly?: boolean;
   postedWithinDays?: string;
   companySlug?: string;
+  country?: string;
+  remoteWorldwide?: boolean;
+  currency?: string;
 }
 
 export function usePublicJobs(query: JobBoardQuery, enabled = true) {
@@ -121,6 +124,7 @@ export function usePublicJobs(query: JobBoardQuery, enabled = true) {
           urgent: query.urgent ? 'true' : undefined,
           amriehEligible: query.amriehEligible ? 'true' : undefined,
           disabilityFriendly: query.disabilityFriendly ? 'true' : undefined,
+          remoteWorldwide: query.remoteWorldwide ? 'true' : undefined,
         },
       });
       return res.data;

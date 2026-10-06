@@ -21,7 +21,8 @@ export function JobHeader({ job }: { job: PublicJobDetail }) {
   const { t, locale } = useLocale();
   const { showToast } = useToast();
   const company = job.company?.name ?? job.companyName;
-  const where = placeText(job, locale);
+  // A worldwide remote role is "anywhere", whatever office it is attached to.
+  const where = job.remoteWorldwide && job.workArrangement === 'REMOTE' ? t.jobs.remoteWorldwide : placeText(job, locale);
 
   async function share() {
     const url = window.location.href;
@@ -108,7 +109,8 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 export function JobFacts({ job }: { job: PublicJobDetail }) {
   const { t, locale } = useLocale();
   const pay = salaryText(job, locale, t);
-  const where = placeText(job, locale);
+  // A worldwide remote role is "anywhere", whatever office it is attached to.
+  const where = job.remoteWorldwide && job.workArrangement === 'REMOTE' ? t.jobs.remoteWorldwide : placeText(job, locale);
   const experience =
     job.minExperienceYears == null || job.minExperienceYears === 0
       ? t.jobs.notRequired

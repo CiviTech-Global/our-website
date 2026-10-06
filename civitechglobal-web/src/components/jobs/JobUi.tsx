@@ -37,6 +37,7 @@ import { useSavedJobIds, useToggleSavedJob } from '@/api/jobs';
 import { useOwnApplications, useOwnProfile } from '@/api/marketplace';
 import { features } from '@/lib/features';
 import { useViewedJobs } from '@/lib/viewedJobs';
+import { countryName } from '@/lib/geo';
 import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Select';
 import type { CompanySummary, JobCategory, JobSeniority } from '@/types/jobs';
@@ -152,6 +153,10 @@ export interface JobRowData {
   workArrangement: JobWorkArrangement;
   province: string | null;
   city: string | null;
+  country?: string;
+  remoteWorldwide?: boolean;
+  currency?: string;
+  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR';
   seniority?: JobSeniority | null;
   minExperienceYears?: number | null;
   urgent?: boolean;
@@ -217,8 +222,17 @@ export function JobRow({
 
   const pay = salaryText(job, locale, t);
   const company = job.company?.name ?? job.companyName;
-  const place =
-    placeText(job, locale) || (job.workArrangement === 'REMOTE' ? t.jobs.remoteAnywhere : '');
+  // Where it is, and for a remote role who may take it: anyone anywhere,
+  // or anyone in the posting's own country.
+  const remotePlace =
+    job.workArrangement !== 'REMOTE'
+      ? ''
+      : job.remoteWorldwide
+        ? t.jobs.remoteWorldwide
+        : !job.country || job.country === 'IR'
+          ? t.jobs.remoteAnywhere
+          : t.jobs.remoteAnywhereIn.replace('{country}', countryName(job.country, locale));
+  const place = job.remoteWorldwide ? remotePlace : placeText(job, locale) || remotePlace;
   const applied = ownApplications?.some((row) => row.job.code === job.code && row.outcome !== 'WITHDRAWN');
   const seen = !applied && viewed.has(job.code);
   const left = daysUntil(job.closesAt);
