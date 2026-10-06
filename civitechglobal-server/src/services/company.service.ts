@@ -29,6 +29,7 @@ export interface CompanyInput {
   size?: 'SIZE_1_10' | 'SIZE_11_50' | 'SIZE_51_200' | 'SIZE_201_500' | 'SIZE_501_1000' | 'SIZE_1000_PLUS' | null;
   foundedYear?: number | null;
   website?: string | null;
+  country?: string;
   province?: string | null;
   city?: string | null;
 }
@@ -172,6 +173,7 @@ export interface CompanyQuery {
   pageSize: number;
   search?: string;
   industry?: string;
+  country?: string;
   province?: string;
 }
 
@@ -181,6 +183,7 @@ export async function listCompanies(query: CompanyQuery) {
     AND: [
       PUBLIC_COMPANY_WHERE,
       query.industry ? { industry: query.industry } : {},
+      query.country ? { country: query.country } : {},
       query.province ? { province: query.province } : {},
       query.search
         ? {
@@ -207,6 +210,7 @@ export async function listCompanies(query: CompanyQuery) {
         tagline: true,
         industry: true,
         size: true,
+        country: true,
         province: true,
         city: true,
         logoStoredName: true,
@@ -239,6 +243,7 @@ export async function getPublicCompany(slug: string) {
       size: true,
       foundedYear: true,
       website: true,
+      country: true,
       province: true,
       city: true,
       logoStoredName: true,

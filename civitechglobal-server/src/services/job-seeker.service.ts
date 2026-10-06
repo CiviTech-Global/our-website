@@ -77,6 +77,7 @@ export async function listSavedJobIds(userId: string): Promise<string[]> {
 
 export interface AlertQuery {
   search?: string;
+  country?: string;
   province?: string;
   jobCategoryId?: string;
   employmentType?: string;
@@ -118,6 +119,9 @@ export async function deleteAlert(userId: string, id: string) {
 interface MatchableJob {
   title: string;
   description: string;
+  country: string;
+  remoteWorldwide: boolean;
+  currency: string;
   province: string | null;
   jobCategoryId: string | null;
   categoryParentId: string | null;
@@ -143,6 +147,10 @@ export function alertMatches(query: AlertQuery, job: MatchableJob): boolean {
     const needle = query.search.trim().toLowerCase();
     if (needle && !`${job.title}\n${job.description}`.toLowerCase().includes(needle)) return false;
   }
+  // A worldwide remote role answers any country; otherwise the country must match.
+  if (query.country && job.country !== query.country && !(job.workArrangement === 'REMOTE' && job.remoteWorldwide)) {
+    return false;
+  }
   if (query.province && job.province !== query.province && job.workArrangement !== 'REMOTE') return false;
   if (
     query.jobCategoryId &&
@@ -155,6 +163,8 @@ export function alertMatches(query: AlertQuery, job: MatchableJob): boolean {
   if (query.workArrangement && job.workArrangement !== query.workArrangement) return false;
   if (query.seniority && job.seniority !== query.seniority) return false;
   if (query.salaryMin) {
+    // Alert floors are in toman, as the board's are by default.
+    if (job.currency !== 'IRT') return false;
     const floor = BigInt(query.salaryMin);
     const top = job.salaryMax ?? job.salaryMin;
     if (job.salaryUndisclosed || top === null || top < floor) return false;
@@ -183,6 +193,9 @@ export async function notifyMatchingAlerts(jobId: string): Promise<number> {
         title: true,
         description: true,
         companyName: true,
+        country: true,
+        remoteWorldwide: true,
+        currency: true,
         province: true,
         jobCategoryId: true,
         jobCategory: { select: { parentId: true } },

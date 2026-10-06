@@ -31,6 +31,9 @@ const { alertMatches, createAlert, notifyMatchingAlerts, skillMatch } = await im
 const JOB = {
   title: 'Senior React developer',
   description: 'Build our dashboard.',
+  country: 'IR',
+  remoteWorldwide: false,
+  currency: 'IRT',
   province: 'تهران',
   jobCategoryId: 'web',
   categoryParentId: 'it',
@@ -68,6 +71,19 @@ describe('alertMatches', () => {
     expect(alertMatches({ salaryMin: '50000000' }, JOB)).toBe(true);
     expect(alertMatches({ salaryMin: '70000000' }, JOB)).toBe(false);
     expect(alertMatches({ salaryMin: '1' }, { ...JOB, salaryUndisclosed: true })).toBe(false);
+  });
+});
+
+describe('alertMatches across countries', () => {
+  it('matches a country, and a worldwide remote role from any country', () => {
+    expect(alertMatches({ country: 'DE' }, JOB)).toBe(false);
+    expect(alertMatches({ country: 'IR' }, JOB)).toBe(true);
+    expect(alertMatches({ country: 'DE' }, { ...JOB, workArrangement: 'REMOTE', remoteWorldwide: true })).toBe(true);
+    expect(alertMatches({ country: 'DE' }, { ...JOB, workArrangement: 'REMOTE', remoteWorldwide: false })).toBe(false);
+  });
+
+  it('never compares a toman floor with pay in another currency', () => {
+    expect(alertMatches({ salaryMin: '1' }, { ...JOB, currency: 'EUR' })).toBe(false);
   });
 });
 

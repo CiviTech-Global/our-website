@@ -1375,13 +1375,22 @@ model JobPost {
 
   employmentType  JobEmploymentType
   workArrangement JobWorkArrangement
+  /// ISO 3166-1 alpha-2. Iran by default, which is what every posting written
+  /// before this field meant.
+  country         String  @default("IR")
+  /// For Iran, one of the 31 provinces by its Persian name; elsewhere the
+  /// state or region as the employer writes it.
   province        String?
   city            String?
+  /// A remote role open to people in any country, not only the posting's own.
+  remoteWorldwide Boolean @default(false) @map("remote_worldwide")
 
-  salaryMin         BigInt? @map("salary_min")
-  salaryMax         BigInt? @map("salary_max")
-  currency          String  @default("IRT")
-  salaryUndisclosed Boolean @default(false) @map("salary_undisclosed")
+  salaryMin         BigInt?      @map("salary_min")
+  salaryMax         BigInt?      @map("salary_max")
+  /// ISO 4217, or IRT for the toman. See catalog/geo.
+  currency          String       @default("IRT")
+  salaryPeriod      SalaryPeriod @default(MONTH) @map("salary_period")
+  salaryUndisclosed Boolean      @default(false) @map("salary_undisclosed")
 
   skills String[] @default([])
 
@@ -1461,6 +1470,7 @@ model JobPost {
   @@index([featured, state])
   @@index([jobCategoryId])
   @@index([companyId])
+  @@index([country])
   @@map("job_posts")
 }
 
@@ -2751,6 +2761,13 @@ enum MilitaryServiceRequirement {
   COMPLETED_OR_EXEMPT
 }
 
+/// What a salary figure is per.
+enum SalaryPeriod {
+  HOUR
+  MONTH
+  YEAR
+}
+
 enum CompanySize {
   SIZE_1_10
   SIZE_11_50
@@ -2805,6 +2822,8 @@ model Company {
   size        CompanySize?
   foundedYear Int?         @map("founded_year")
   website     String?
+  /// ISO 3166-1 alpha-2, as on postings.
+  country     String       @default("IR")
   province    String?
   city        String?
 

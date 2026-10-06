@@ -109,7 +109,12 @@ describe('the job board', () => {
         { province: 'Somewhere', _max: { updatedAt: new Date('2026-10-01') } },
       ])
       // By category.
-      .mockResolvedValueOnce([{ jobCategoryId: 'c1', _max: { updatedAt: new Date('2026-10-01') } }]);
+      .mockResolvedValueOnce([{ jobCategoryId: 'c1', _max: { updatedAt: new Date('2026-10-01') } }])
+      // By country.
+      .mockResolvedValueOnce([
+        { country: 'IR', _max: { updatedAt: new Date('2026-10-01') } },
+        { country: 'DE', _max: { updatedAt: new Date('2026-10-01') } },
+      ]);
     categoryFindMany.mockResolvedValueOnce([
       { slug: 'web-development', parent: { slug: 'it-software', active: true } },
     ]);
@@ -118,6 +123,7 @@ describe('the job board', () => {
     const response = await request(app).get('/api/sitemap/extras.xml');
 
     expect(response.text).toContain('/jobs/in/qazvin</loc>');
+    expect(response.text).toContain('/jobs/country/de</loc>');
     expect(response.text).not.toContain('Somewhere');
     // The child's page, and its parent's, since the parent's page lists it too.
     expect(response.text).toContain('/jobs/category/web-development</loc>');

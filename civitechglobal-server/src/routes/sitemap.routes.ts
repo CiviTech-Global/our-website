@@ -130,13 +130,18 @@ async function collectJobBoardUrls(): Promise<SitemapUrl[]> {
     state: 'OPEN' as const,
     OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
   };
-  const [byProvince, byCategory, companies] = await Promise.all([
-    prisma.jobPost.groupBy({ by: ['province'], where: open, _max: { updatedAt: true } }),
+  const [byProvince, byCategory, companies, byCountry] = await Promise.all([
+    prisma.jobPost.groupBy({ by: ['province'], where: { ...open, country: 'IR' }, _max: { updatedAt: true } }),
     prisma.jobPost.groupBy({ by: ['jobCategoryId'], where: open, _max: { updatedAt: true } }),
     prisma.company.findMany({ where: PUBLIC_COMPANY_WHERE, select: { slug: true, updatedAt: true } }),
+    prisma.jobPost.groupBy({ by: ['country'], where: open, _max: { updatedAt: true } }),
   ]);
 
   const urls: SitemapUrl[] = [{ path: '/companies', modified: new Date(), priority: '0.5' }];
+  // One page per country with open roles: the board is not only Iran's.
+  for (const row of byCountry) {
+    urls.push({ path: `/jobs/country/${row.country.toLowerCase()}`, modified: row._max.updatedAt ?? new Date(), priority: '0.6' });
+  }
   for (const row of byProvince) {
     const province = IRAN_PROVINCES.find((entry) => entry.fa === row.province);
     if (province) {

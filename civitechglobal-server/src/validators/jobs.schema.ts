@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { normalizePersianDigits } from '../utils/persian.js';
 import { COMPANY_INDUSTRIES } from '../catalog/job-taxonomy.js';
+import { COUNTRY_CODES } from '../catalog/geo.js';
+
+const country = z.preprocess(
+  (value) => (typeof value === 'string' ? value.trim().toUpperCase() : value),
+  z.enum(COUNTRY_CODES, { message: 'کشور نامعتبر است' }),
+);
 
 /**
  * Wire formats for the job board's second generation: company pages, alerts,
@@ -39,6 +45,7 @@ export const companySchema = z
         .nullable(),
     ).optional(),
     website: clearable(webUrl),
+    country: country.optional(),
     province: clearable(trimmed(80)),
     city: clearable(trimmed(80)),
   })
@@ -48,6 +55,7 @@ export const companySchema = z
 export const alertQuerySchema = z
   .object({
     search: trimmed(120).optional(),
+    country: country.optional(),
     province: trimmed(80).optional(),
     jobCategoryId: trimmed(40).optional(),
     employmentType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'FREELANCE']).optional(),
@@ -80,6 +88,7 @@ export const companyListSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(60).default(24),
   search: trimmed(120).optional(),
   industry: z.enum(COMPANY_INDUSTRIES).optional().or(z.literal('').transform(() => undefined)),
+  country: country.optional().or(z.literal('').transform(() => undefined)),
   province: trimmed(80).optional(),
 });
 

@@ -180,3 +180,31 @@ describe('jobSchema and jobUpdateSchema', () => {
     expect(jobUpdateSchema.parse({ title: 'Backend developer' })).toEqual({ title: 'Backend developer' });
   });
 });
+
+describe('postings beyond Iran', () => {
+  const posting = {
+    title: 'Backend developer',
+    description: 'A'.repeat(60),
+    employmentType: 'FULL_TIME',
+    workArrangement: 'REMOTE',
+  };
+
+  it('is in Iran, in toman, per month, unless it says otherwise', () => {
+    const parsed = jobSchema.parse(posting);
+    expect(parsed).toMatchObject({ country: 'IR', currency: 'IRT', salaryPeriod: 'MONTH', remoteWorldwide: false });
+  });
+
+  it('takes a country and currency in either case', () => {
+    const parsed = jobSchema.parse({ ...posting, country: 'de', currency: 'eur', salaryPeriod: 'YEAR' });
+    expect(parsed).toMatchObject({ country: 'DE', currency: 'EUR', salaryPeriod: 'YEAR' });
+  });
+
+  it('refuses a country or currency that does not exist', () => {
+    expect(jobSchema.safeParse({ ...posting, country: 'XX' }).success).toBe(false);
+    expect(jobSchema.safeParse({ ...posting, currency: 'DOGE' }).success).toBe(false);
+  });
+
+  it('filters the board by country', () => {
+    expect(jobBoardSchema.parse({ country: 'tr' }).country).toBe('TR');
+  });
+});

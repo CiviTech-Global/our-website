@@ -48,6 +48,10 @@ export interface JobInput {
   skills?: string[];
   closesAt?: Date;
   openings?: number;
+  country?: string;
+  currency?: string;
+  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR';
+  remoteWorldwide?: boolean;
   jobCategoryId?: string;
   seniority?: 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'MANAGER' | 'EXECUTIVE';
   minExperienceYears?: number;
@@ -134,10 +138,18 @@ export async function updateJob(userId: string, jobId: string, input: JobUpdate)
     militaryService,
     amriehEligible,
     disabilityFriendly,
+    country,
+    currency,
+    salaryPeriod,
+    remoteWorldwide,
     ...rest
   } = input;
   const data: Prisma.JobPostUpdateInput = {
     ...rest,
+    ...(country != null ? { country } : {}),
+    ...(currency != null ? { currency } : {}),
+    ...(salaryPeriod != null ? { salaryPeriod } : {}),
+    ...(remoteWorldwide != null ? { remoteWorldwide } : {}),
     ...(jobCategoryId !== undefined
       ? { jobCategory: jobCategoryId === null ? { disconnect: true } : { connect: { id: jobCategoryId } } }
       : {}),
@@ -224,6 +236,9 @@ export interface JobQuery {
   disabilityFriendly?: boolean;
   postedWithinDays?: number;
   companySlug?: string;
+  country?: string;
+  remoteWorldwide?: boolean;
+  currency?: string;
 }
 
 /**
@@ -249,6 +264,14 @@ async function v2Where(query: JobQuery): Promise<Prisma.JobPostWhereInput[]> {
     clauses.push({ publishedAt: { gte: new Date(Date.now() - query.postedWithinDays * 86_400_000) } });
   }
   if (query.companySlug) clauses.push({ company: { slug: query.companySlug, hidden: false } });
+  if (query.country) {
+    // A country's roles, and the remote ones open to anybody anywhere — a
+    // reader in Germany can take a worldwide remote role based in Iran.
+    clauses.push({
+      OR: [{ country: query.country }, { workArrangement: 'REMOTE', remoteWorldwide: true }],
+    });
+  }
+  if (query.remoteWorldwide) clauses.push({ workArrangement: 'REMOTE', remoteWorldwide: true });
   return clauses;
 }
 
@@ -262,6 +285,9 @@ export function salaryRangeWhere(query: JobQuery): Prisma.JobPostWhereInput {
   if (query.salaryMin === undefined && query.salaryMax === undefined) return {};
   return {
     salaryUndisclosed: false,
+    // A floor in one currency says nothing about a range in another; the
+    // board's floor is in toman unless the reader chose otherwise.
+    currency: query.currency ?? 'IRT',
     AND: [
       ...(query.salaryMax !== undefined
         ? [{ OR: [{ salaryMin: null }, { salaryMin: { lte: query.salaryMax } }] }]
@@ -430,6 +456,9 @@ function publicJobFields() {
     salaryUndisclosed: true,
     currency: true,
     publishedAt: true,
+    country: true,
+    salaryPeriod: true,
+    remoteWorldwide: true,
     jobCategoryId: true,
     jobCategory: { select: { id: true, slug: true, name: true, nameEn: true } },
     seniority: true,
@@ -472,6 +501,10 @@ export async function listOwnJobs(userId: string) {
       category: true,
       closesAt: true,
       openings: true,
+      country: true,
+      currency: true,
+      salaryPeriod: true,
+      remoteWorldwide: true,
       jobCategoryId: true,
       seniority: true,
       minExperienceYears: true,

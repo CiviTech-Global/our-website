@@ -1,6 +1,17 @@
 import { z } from 'zod';
 import { isValidNationalId, normalizePersianDigits } from '../utils/persian.js';
 import { JOB_BENEFITS } from '../catalog/job-taxonomy.js';
+import { COUNTRY_CODES, CURRENCIES, SALARY_PERIODS } from '../catalog/geo.js';
+
+/** An ISO country code, whatever case it arrives in. */
+const country = z.preprocess(
+  (value) => (typeof value === 'string' ? value.trim().toUpperCase() : value),
+  z.enum(COUNTRY_CODES, { message: 'کشور نامعتبر است' }),
+);
+const currency = z.preprocess(
+  (value) => (typeof value === 'string' ? value.trim().toUpperCase() : value),
+  z.enum(CURRENCIES, { message: 'واحد پول نامعتبر است' }),
+);
 
 /** Matches the upload cap in attachment.service, which is what actually binds. */
 const MAX_DOCUMENTS = 8;
@@ -166,10 +177,14 @@ const jobFields = {
   category: trimmed(80).optional(),
   employmentType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'FREELANCE']),
   workArrangement: z.enum(['ONSITE', 'HYBRID', 'REMOTE']),
+  country: country.default('IR'),
   province: trimmed(80).optional(),
   city: trimmed(80).optional(),
+  remoteWorldwide: z.boolean().default(false),
   salaryMin: optionalMoney,
   salaryMax: optionalMoney,
+  currency: currency.default('IRT'),
+  salaryPeriod: z.enum(SALARY_PERIODS).default('MONTH'),
   salaryUndisclosed: z.boolean().default(false),
   skills,
   closesAt: isoDate.optional(),
@@ -231,6 +246,10 @@ export const jobUpdateSchema = z
     salaryUndisclosed: z.boolean(),
     skills: z.array(z.string().trim().min(1).max(40)).max(20),
     openings,
+    country,
+    currency,
+    salaryPeriod: z.enum(SALARY_PERIODS),
+    remoteWorldwide: z.boolean(),
     jobCategoryId: clearable(z.string().trim().min(1).max(40)),
     seniority: clearable(seniority),
     minExperienceYears: z.preprocess(blankToNull, years.nullable()).optional(),
@@ -404,6 +423,11 @@ export const jobBoardSchema = listQuerySchema.extend({
   disabilityFriendly: flagParam,
   postedWithinDays: z.coerce.number().int().refine((n) => [1, 3, 7, 14, 30].includes(n)).optional(),
   companySlug: trimmed(80).optional(),
+  country: country.optional(),
+  /** Remote roles open to people anywhere. */
+  remoteWorldwide: flagParam,
+  /** The currency a pay floor is in; ranges in other currencies cannot be compared to it. */
+  currency: currency.optional(),
 });
 
 export const projectBoardSchema = listQuerySchema.extend({
