@@ -6,6 +6,7 @@ import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './a
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
 import { PUBLIC_LISTING_WHERE } from './moderation.js';
 import { slugify } from './trademaster-common.js';
+import { JOB_CARD_SELECT, presentJobCards } from './job-cards.service.js';
 
 /**
  * Company pages: who an employer is, and every role they have open.
@@ -43,29 +44,10 @@ export const PUBLIC_COMPANY_WHERE: Prisma.CompanyWhereInput = {
   owner: { deletedAt: null, marketplacePaused: false, verification: { status: 'APPROVED' } },
 };
 
-export const logoUrl = (id: string, storedName: string | null) => (storedName ? `/jobs/companies/${id}/logo` : null);
-export const coverUrl = (id: string, storedName: string | null) =>
-  storedName ? `/jobs/companies/${id}/cover` : null;
-
-/** The few fields a job row carries of its company. */
-export const companySummarySelect = {
-  id: true,
-  slug: true,
-  name: true,
-  logoStoredName: true,
-  hidden: true,
-} as const;
-
-export function presentCompanySummary(
-  company: { id: string; slug: string; name: string; logoStoredName: string | null; hidden: boolean } | null,
-) {
-  if (!company || company.hidden) return null;
-  return {
-    slug: company.slug,
-    name: company.name,
-    logoUrl: logoUrl(company.id, company.logoStoredName),
-  };
-}
+// The summary a job row carries, in a module of its own so job-cards can use
+// it without importing this one (which imports job-cards).
+export { companySummarySelect, coverUrl, logoUrl, presentCompanySummary } from './company-summary.js';
+import { coverUrl, logoUrl } from './company-summary.js';
 
 async function storeImage(file: IncomingFile | null) {
   return file ? ((await storeFiles([file], IMAGE_EXTENSIONS))[0] ?? null) : null;
@@ -275,22 +257,7 @@ export async function getPublicCompany(slug: string) {
       },
       orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }],
       take: 50,
-      select: {
-        id: true,
-        code: true,
-        title: true,
-        employmentType: true,
-        workArrangement: true,
-        province: true,
-        city: true,
-        seniority: true,
-        urgent: true,
-        salaryMin: true,
-        salaryMax: true,
-        salaryUndisclosed: true,
-        currency: true,
-        publishedAt: true,
-      },
+      select: JOB_CARD_SELECT,
     }),
     employerResponsiveness(company.ownerId),
     prisma.jobApplication.count({ where: { job: { companyId: company.id }, outcome: 'ACCEPTED' } }),
@@ -301,7 +268,7 @@ export async function getPublicCompany(slug: string) {
     ...rest,
     logoUrl: logoUrl(company.id, logoStoredName),
     coverUrl: coverUrl(company.id, coverStoredName),
-    jobs,
+    jobs: await presentJobCards(jobs),
     responsiveness,
     hiredCount: hired,
   };

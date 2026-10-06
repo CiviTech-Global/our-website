@@ -3,7 +3,7 @@ import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { PUBLIC_LISTING_WHERE } from './moderation.js';
 import { notifySafely } from './notifications.service.js';
-import { companySummarySelect, presentCompanySummary } from './company.service.js';
+import { JOB_CARD_SELECT, presentJobCards } from './job-cards.service.js';
 
 /**
  * The job-seeker's side of the board: what they saved, what they are waiting
@@ -16,30 +16,6 @@ const openJobWhere = (): Prisma.JobPostWhereInput => ({
   OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
 });
 
-const jobCardSelect = {
-  id: true,
-  code: true,
-  title: true,
-  companyName: true,
-  employmentType: true,
-  workArrangement: true,
-  province: true,
-  city: true,
-  seniority: true,
-  urgent: true,
-  skills: true,
-  salaryMin: true,
-  salaryMax: true,
-  salaryUndisclosed: true,
-  currency: true,
-  publishedAt: true,
-  closesAt: true,
-  state: true,
-  company: { select: companySummarySelect },
-} as const;
-
-type JobCardRow = Prisma.JobPostGetPayload<{ select: typeof jobCardSelect }>;
-const presentCard = ({ company, ...row }: JobCardRow) => ({ ...row, company: presentCompanySummary(company) });
 
 // ---------------------------------------------------------------------------
 // Saved jobs
@@ -78,13 +54,14 @@ export async function listSavedJobs(userId: string) {
     where: { userId, job: { moderationStatus: 'APPROVED' } },
     orderBy: { createdAt: 'desc' },
     take: MAX_SAVED,
-    select: { createdAt: true, job: { select: jobCardSelect } },
+    select: { createdAt: true, job: { select: JOB_CARD_SELECT } },
   });
   const now = Date.now();
-  return rows.map((row) => ({
+  const cards = await presentJobCards(rows.map((row) => row.job));
+  return rows.map((row, index) => ({
     savedAt: row.createdAt,
     open: row.job.state === 'OPEN' && (!row.job.closesAt || row.job.closesAt.getTime() > now),
-    job: presentCard(row.job),
+    job: cards[index],
   }));
 }
 
@@ -309,7 +286,7 @@ export async function recommendedJobs(userId: string, limit = 12) {
     where: { ...openJobWhere(), authorId: { not: userId } },
     orderBy: { publishedAt: 'desc' },
     take: RECOMMEND_POOL,
-    select: { ...jobCardSelect, jobCategoryId: true },
+    select: JOB_CARD_SELECT,
   });
 
   const scored = pool
@@ -323,11 +300,12 @@ export async function recommendedJobs(userId: string, limit = 12) {
     .sort((a, b) => b.score - a.score || (b.job.publishedAt?.getTime() ?? 0) - (a.job.publishedAt?.getTime() ?? 0))
     .slice(0, limit);
 
+  const cards = await presentJobCards(scored.map((entry) => entry.job));
   return {
     basis: mySkills.length > 0 ? ('skills' as const) : ('activity' as const),
-    items: scored.map(({ job: { jobCategoryId: _category, ...job }, match }) => ({
-      ...presentCard(job),
-      match: { matched: match.matched.length, total: match.total },
+    items: cards.map((card, index) => ({
+      ...card,
+      match: { matched: scored[index].match.matched.length, total: scored[index].match.total },
     })),
   };
 }

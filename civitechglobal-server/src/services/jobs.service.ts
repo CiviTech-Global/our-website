@@ -20,6 +20,7 @@ import { features } from '../config/features.js';
 import { assertJobCategoryUsable, jobCategoryScope } from './job-taxonomy.service.js';
 import { companySummarySelect, employerResponsiveness, presentCompanySummary } from './company.service.js';
 import { notifyMatchingAlerts } from './job-seeker.service.js';
+import { JOB_CARD_SELECT, presentJobCards } from './job-cards.service.js';
 
 /**
  * The job board.
@@ -323,19 +324,12 @@ export async function listPublicJobs(query: JobQuery) {
       orderBy: jobSort(query),
       skip: (query.page - 1) * query.pageSize,
       take: query.pageSize,
-      select: { ...publicJobFields(), authorId: true },
+      select: JOB_CARD_SELECT,
     }),
     prisma.jobPost.count({ where }),
   ]);
 
-  const profiles = await authorProfileSummaries(rows.map((row) => row.authorId));
-  const items = rows.map(({ authorId, company, ...row }) => ({
-    ...row,
-    company: presentCompanySummary(company),
-    authorProfile: profiles.get(authorId) ?? null,
-  }));
-
-  return toPage(items, total, query.page, query.pageSize);
+  return toPage(await presentJobCards(rows), total, query.page, query.pageSize);
 }
 
 export async function getPublicJob(code: string) {
@@ -394,10 +388,12 @@ async function similarJobs(job: {
   category: string | null;
   jobCategoryId: string | null;
   skills: string[];
-}): Promise<Array<{ code: string; title: string; category: string | null; employmentType: string }>> {
+}) {
   const where: Prisma.JobPostWhereInput = {
     ...PUBLIC_LISTING_WHERE,
     id: { not: job.id },
+    // Still open: a suggestion that has closed is a dead end.
+    AND: [{ OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }] }],
     OR: [
       ...(job.jobCategoryId ? [{ jobCategoryId: job.jobCategoryId }] : []),
       ...(job.category ? [{ category: job.category }] : []),
@@ -406,12 +402,15 @@ async function similarJobs(job: {
   };
   if (!where.OR || where.OR.length === 0) return [];
 
-  return prisma.jobPost.findMany({
+  // Full cards, the same as the board's: a suggestion is only useful if the
+  // reader can judge it without opening it.
+  const rows = await prisma.jobPost.findMany({
     where,
     orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }],
     take: 4,
-    select: { code: true, title: true, category: true, employmentType: true },
+    select: JOB_CARD_SELECT,
   });
+  return presentJobCards(rows);
 }
 
 function publicJobFields() {

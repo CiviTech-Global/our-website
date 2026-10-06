@@ -1,6 +1,7 @@
 import { prisma } from '../config/database.js';
 import { PUBLIC_LISTING_WHERE } from './moderation.js';
 import { authorProfileSummaries, type AuthorProfileSummary } from './profile.service.js';
+import { JOB_CARD_SELECT, presentJobCards } from './job-cards.service.js';
 
 /**
  * The landing page's window into the marketplace.
@@ -83,22 +84,8 @@ export async function getFeatured(): Promise<{
     Omit<FeaturedProjectRow, 'authorId'> & { authorProfile: AuthorProfileSummary | null }
   >;
 }> {
-  const jobSelect = {
-    code: true,
-    title: true,
-    companyName: true,
-    category: true,
-    employmentType: true,
-    workArrangement: true,
-    province: true,
-    city: true,
-    salaryMin: true,
-    salaryMax: true,
-    salaryUndisclosed: true,
-    currency: true,
-    featured: true,
-    authorId: true,
-  } as const;
+  // The home page shows the same job cards as the board.
+  const jobSelect = JOB_CARD_SELECT;
 
   const projectSelect = {
     code: true,
@@ -148,8 +135,8 @@ export async function getFeatured(): Promise<{
     ),
   ]);
 
-  const [jobProfiles, projectProfiles] = await Promise.all([
-    authorProfileSummaries(jobs.map((row) => row.authorId)),
+  const [jobCards, projectProfiles] = await Promise.all([
+    presentJobCards(jobs),
     authorProfileSummaries(projects.map((row) => row.authorId)),
   ]);
 
@@ -159,7 +146,7 @@ export async function getFeatured(): Promise<{
   };
 
   return {
-    jobs: jobs.map((row) => ({ ...strip(row), authorProfile: jobProfiles.get(row.authorId) ?? null })),
+    jobs: jobCards,
     projects: projects.map((row) => ({
       ...strip(row),
       authorProfile: projectProfiles.get(row.authorId) ?? null,
