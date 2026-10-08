@@ -16,6 +16,7 @@ import marketplaceRoutes from './marketplace.routes.js';
 import tradeMasterRoutes from './trademaster.routes.js';
 import jobsRoutes from './jobs.routes.js';
 import workRoutes from './work.routes.js';
+import bookshopRoutes from './bookshop.routes.js';
 import demoRoutes from './demo.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
@@ -82,6 +83,11 @@ router.use('/jobs', jobsRoutes);
 // invitations, NDAs, alerts and timesheets. Every route answers 404 unless
 // FEATURE_PROJECTS_V2 is on.
 router.use('/work', workRoutes);
+
+// The book market's second generation: the catalogue, offers with photos,
+// purchase requests and their threads. Every route answers 404 unless
+// FEATURE_BOOKS_V2 is on.
+router.use('/bookshop', bookshopRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper

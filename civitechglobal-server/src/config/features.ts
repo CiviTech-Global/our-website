@@ -80,6 +80,16 @@ export const features = {
    * exactly as it does until this is set.
    */
   projectsV2: flag('FEATURE_PROJECTS_V2', true),
+
+  /**
+   * The book market's second generation: a shared catalogue of books with
+   * every seller's offer on one page, graded conditions, photos and delivery
+   * options, and purchase requests with their own threads and reviews.
+   *
+   * Like the other second generations it gates only what is new; the live
+   * noticeboard keeps working exactly as it does until this is set.
+   */
+  booksV2: flag('FEATURE_BOOKS_V2', true),
 } as const;
 
 export type FeatureName = keyof typeof features;

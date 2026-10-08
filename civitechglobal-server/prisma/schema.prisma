@@ -138,8 +138,11 @@ model User {
   serviceOrdersPlaced   ServiceOrder[]        @relation("ServiceBuyer")
   serviceOrdersReceived ServiceOrder[]        @relation("ServiceSeller")
 
-  books         BookListing[] @relation("BookSeller")
-  booksReviewed BookListing[] @relation("BookReviewer")
+  books                BookListing[] @relation("BookSeller")
+  booksReviewed        BookListing[] @relation("BookReviewer")
+  booksCatalogued      Book[]        @relation("BookCreator")
+  bookRequestsPlaced   BookRequest[] @relation("BookBuyer")
+  bookRequestsReceived BookRequest[] @relation("BookSeller")
 
   /// TradeMaster. A shop belongs to the person who opened it; the reviewer
   /// side is staff, and is the same shape as every other moderation queue.
@@ -1776,6 +1779,8 @@ model MarketplaceAward {
   projectBidId     String?       @unique @map("project_bid_id")
   serviceOrderId   String?       @unique @map("service_order_id")
   serviceOrder     ServiceOrder? @relation(fields: [serviceOrderId], references: [id], onDelete: SetNull)
+  bookRequestId    String?       @unique @map("book_request_id")
+  bookRequest      BookRequest?  @relation(fields: [bookRequestId], references: [id], onDelete: SetNull)
 
   /// Copied at award time. The bid's amount may later be edited or the bid
   /// deleted; what was agreed should not move.
@@ -1831,6 +1836,9 @@ model MarketplaceMessage {
   application   JobApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   bidId         String?         @map("bid_id")
   bid           ProjectBid?     @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  /// Second generation: a thread about a book purchase request.
+  bookRequestId String?         @map("book_request_id")
+  bookRequest   BookRequest?    @relation(fields: [bookRequestId], references: [id], onDelete: Cascade)
 
   senderId String @map("sender_id")
   sender   User   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
@@ -1846,6 +1854,7 @@ model MarketplaceMessage {
 
   @@index([applicationId, createdAt])
   @@index([bidId, createdAt])
+  @@index([bookRequestId, createdAt])
   @@index([senderId])
   @@map("marketplace_messages")
 }
@@ -2026,6 +2035,29 @@ model BookListing {
   coverStoredName   String? @map("cover_stored_name")
   coverOriginalName String? @map("cover_original_name")
   coverMimeType     String? @map("cover_mime_type")
+
+  // ---- Second generation (FEATURE_BOOKS_V2) --------------------------------
+  //
+  // A listing becomes an offer of one copy (or several) of a catalogue book.
+  // The book's own facts live on Book; what is particular to this copy —
+  // its condition, photos, price, how it can be delivered — stays here.
+
+  bookId String? @map("book_id")
+  book   Book?   @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  /// The trade's condition scale (see catalog/book-taxonomy). `condition`
+  /// above stays for the first-generation pages.
+  grade           String?
+  conditionNotes  String?  @map("condition_notes")
+  quantity        Int      @default(1)
+  /// IN_PERSON | POST | COURIER
+  deliveryOptions String[] @default([]) @map("delivery_options")
+  /// What posting it costs the buyer; null means "ask", 0 means free.
+  shippingCost    BigInt?  @map("shipping_cost")
+  soldCount       Int      @default(0) @map("sold_count")
+
+  photos   BookListingPhoto[]
+  requests BookRequest[]
 
   moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
   submittedAt      DateTime?        @map("submitted_at")
@@ -3314,4 +3346,183 @@ model ServiceOrder {
   @@index([sellerId, status])
   @@index([serviceId])
   @@map("service_orders")
+}
+
+// ===========================================================================
+// Book market, second generation (FEATURE_BOOKS_V2)
+// ===========================================================================
+
+enum BookRequestStatus {
+  /// Waiting for the seller.
+  REQUESTED
+  /// The seller agreed; they are arranging the hand-over.
+  ACCEPTED
+  DECLINED
+  /// The buyer withdrew before the seller answered.
+  CANCELLED
+  /// Handed over: the copy is sold.
+  COMPLETED
+}
+
+/// The book shelves. See catalog/book-taxonomy.ts.
+model BookCategory {
+  id String @id @default(cuid())
+
+  slug   String @unique
+  name   String
+  nameEn String @default("") @map("name_en")
+
+  parentId String?        @map("parent_id")
+  parent   BookCategory?  @relation("BookCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children BookCategory[] @relation("BookCategoryTree")
+
+  position Int     @default(0)
+  active   Boolean @default(true)
+
+  books Book[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, position])
+  @@map("book_categories")
+}
+
+/// One edition of one book: the catalogue entry every seller's offer of it
+/// hangs off, so a reader finds one page with every copy for sale.
+///
+/// Created by the first seller who lists it (or by staff), shared by everyone
+/// after. Public once any offer of it is public; staff mark it verified once
+/// they have checked its facts against the copy or the publisher.
+model Book {
+  id String @id @default(cuid())
+
+  /// Quotable public reference, as on every listing.
+  code String @unique
+
+  title       String
+  subtitle    String?
+  authors     String[] @default([])
+  translators String[] @default([])
+  publisher   String?
+  /// Stored as ISBN-13, check digit verified; ISBN-10 is converted.
+  isbn        String?  @unique
+
+  publishYear      Int?    @map("publish_year")
+  /// SOLAR | GREGORIAN — Iranian books print a solar year.
+  yearCalendar     String  @default("SOLAR") @map("year_calendar")
+  /// Which printing (نوبت چاپ).
+  edition          Int?
+  /// How many copies the printing ran to (تیراژ).
+  printRun         Int?    @map("print_run")
+  pageCount        Int?    @map("page_count")
+  /// ISO 639-1 language of this edition.
+  language         String  @default("fa")
+  /// For translations: what it was, and in what language.
+  originalTitle    String? @map("original_title")
+  originalLanguage String? @map("original_language")
+  series           String?
+  seriesNumber     Int?    @map("series_number")
+  /// PAPERBACK | HARDCOVER | … — catalog/book-taxonomy.
+  binding          String?
+  /// POCKET | ROGHEI | VAZIRI | … — the Iranian trade sizes.
+  trimSize         String? @map("trim_size")
+  weightGrams      Int?    @map("weight_grams")
+  /// The cover price (قیمت پشت جلد), what a discount is measured against.
+  listPrice        BigInt? @map("list_price")
+  currency         String  @default("IRT")
+
+  description String?
+  /// Free shelves beyond the category: "Booker Prize", "Banned books"…
+  tags        String[] @default([])
+
+  categoryId String?       @map("category_id")
+  category   BookCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  coverStoredName   String? @map("cover_stored_name")
+  coverOriginalName String? @map("cover_original_name")
+  coverMimeType     String? @map("cover_mime_type")
+
+  verified    Boolean @default(false)
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("BookCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  viewCount Int @default(0) @map("view_count")
+
+  /// Title, subtitle, authors, translators, publisher, series, tags and ISBN,
+  /// lower-cased in one column, so a search for part of a name finds it —
+  /// which an array column cannot do. Kept by the service on every write.
+  searchText String @default("") @map("search_text")
+
+  listings BookListing[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "books_title_trgm_idx", type: Gin)
+  @@index([searchText(ops: raw("gin_trgm_ops"))], map: "books_search_text_trgm_idx", type: Gin)
+  @@map("books")
+}
+
+/// A photograph of one particular copy: the spine, the wear, the inscription.
+model BookListingPhoto {
+  id String @id @default(cuid())
+
+  listingId String      @map("listing_id")
+  listing   BookListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  originalName String @map("original_name")
+  storedName   String @unique @map("stored_name")
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  checksum     String
+  position     Int    @default(0)
+
+  @@index([listingId])
+  @@map("book_listing_photos")
+}
+
+/// A buyer asking a seller for a copy. No money moves: the seller accepts or
+/// declines, they arrange the hand-over in the request's thread, and the
+/// seller marks it completed — which opens the two-way review, through a
+/// contract (MarketplaceAward) like every other deal on the site.
+model BookRequest {
+  id String @id @default(cuid())
+
+  code String @unique
+
+  listingId String      @map("listing_id")
+  listing   BookListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  buyerId  String @map("buyer_id")
+  buyer    User   @relation("BookBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId String @map("seller_id")
+  seller   User   @relation("BookSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  quantity       Int     @default(1)
+  /// IN_PERSON | POST | COURIER
+  deliveryMethod String  @map("delivery_method")
+  /// Copied at asking time: the price may change later; what was asked for should not.
+  unitPrice      BigInt  @map("unit_price")
+  shippingCost   BigInt? @map("shipping_cost")
+  /// A counter-offer, when the listing is negotiable.
+  offeredPrice   BigInt? @map("offered_price")
+  currency       String  @default("IRT")
+  note           String?
+
+  status        BookRequestStatus @default(REQUESTED)
+  respondedAt   DateTime?         @map("responded_at")
+  declineReason String?           @map("decline_reason")
+  completedAt   DateTime?         @map("completed_at")
+
+  messages MarketplaceMessage[]
+  award    MarketplaceAward?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([buyerId])
+  @@index([sellerId, status])
+  @@index([listingId])
+  @@map("book_requests")
 }

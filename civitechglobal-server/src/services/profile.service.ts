@@ -192,7 +192,7 @@ export interface PublicProfileReview {
   /// of the listing (employer/client) or the person who took it on
   /// (applicant/freelancer). The rater's own identity stays hidden — see the
   /// note on getPublicProfile.
-  role: 'employer' | 'applicant' | 'client' | 'freelancer';
+  role: 'employer' | 'applicant' | 'client' | 'freelancer' | 'buyer' | 'seller';
   listingCode: string;
   listingTitle: string;
 }
@@ -311,7 +311,15 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
   // instead of a traversal Prisma cannot type.
   const awards = await prisma.marketplaceAward.findMany({
     where: { id: { in: reviews.map((review) => review.awardId) } },
-    select: { id: true, jobApplicationId: true, projectBidId: true },
+    select: { id: true, jobApplicationId: true, projectBidId: true, serviceOrderId: true, bookRequestId: true },
+  });
+  const orders = await prisma.serviceOrder.findMany({
+    where: { id: { in: awards.map((award) => award.serviceOrderId).filter(Boolean) as string[] } },
+    select: { id: true, buyerId: true, service: { select: { code: true, title: true } } },
+  });
+  const bookRequests = await prisma.bookRequest.findMany({
+    where: { id: { in: awards.map((award) => award.bookRequestId).filter(Boolean) as string[] } },
+    select: { id: true, buyerId: true, listing: { select: { title: true, book: { select: { code: true } } } } },
   });
   const applications = await prisma.jobApplication.findMany({
     where: { id: { in: awards.map((award) => award.jobApplicationId).filter(Boolean) as string[] } },
@@ -323,7 +331,7 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
   });
   const listingByAward = new Map<
     string,
-    { code: string; title: string; authorId: string; kind: 'job' | 'project' }
+    { code: string; title: string; authorId: string; kind: 'job' | 'project' | 'service' | 'book' }
   >();
   for (const award of awards) {
     if (award.jobApplicationId) {
@@ -335,6 +343,21 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
       const bid = bids.find((row) => row.id === award.projectBidId);
       if (bid) {
         listingByAward.set(award.id, { ...bid.project, kind: 'project' });
+      }
+    } else if (award.serviceOrderId) {
+      const order = orders.find((row) => row.id === award.serviceOrderId);
+      if (order) {
+        listingByAward.set(award.id, { ...order.service, authorId: order.buyerId, kind: 'service' });
+      }
+    } else if (award.bookRequestId) {
+      const request = bookRequests.find((row) => row.id === award.bookRequestId);
+      if (request) {
+        listingByAward.set(award.id, {
+          code: request.listing.book?.code ?? '',
+          title: request.listing.title,
+          authorId: request.buyerId,
+          kind: 'book',
+        });
       }
     }
   }
@@ -354,9 +377,13 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
         ? raterIsAuthor
           ? ('employer' as const)
           : ('applicant' as const)
-        : raterIsAuthor
-          ? ('client' as const)
-          : ('freelancer' as const);
+        : listing.kind === 'book'
+          ? raterIsAuthor
+            ? ('buyer' as const)
+            : ('seller' as const)
+          : raterIsAuthor
+            ? ('client' as const)
+            : ('freelancer' as const);
     return [{ rating: review.rating, text: review.text, createdAt: review.createdAt, role, listingCode: listing.code, listingTitle: listing.title }];
   });
 

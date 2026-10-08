@@ -90,6 +90,9 @@ const DELETERS: Record<string, Deleter> = {
   marketplaceReview: async (id) => void (await prisma.marketplaceReview.deleteMany({ where: { id } })),
   service: async (id) => void (await prisma.service.deleteMany({ where: { id } })),
   serviceOrder: async (id) => void (await prisma.serviceOrder.deleteMany({ where: { id } })),
+  book: async (id) => void (await prisma.book.deleteMany({ where: { id } })),
+  bookRequest: async (id) => void (await prisma.bookRequest.deleteMany({ where: { id } })),
+  marketplaceMessage: async (id) => void (await prisma.marketplaceMessage.deleteMany({ where: { id } })),
 };
 
 /** The models a seed may record. Anything else is a programming mistake. */
@@ -242,6 +245,9 @@ async function countExisting(model: string, id: string): Promise<boolean> {
     marketplaceReview: () => prisma.marketplaceReview.count({ where: { id } }),
     service: () => prisma.service.count({ where: { id } }),
     serviceOrder: () => prisma.serviceOrder.count({ where: { id } }),
+    book: () => prisma.book.count({ where: { id } }),
+    bookRequest: () => prisma.bookRequest.count({ where: { id } }),
+    marketplaceMessage: () => prisma.marketplaceMessage.count({ where: { id } }),
   };
 
   const counter = counters[model];

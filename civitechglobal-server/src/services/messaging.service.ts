@@ -3,6 +3,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { notifySafely } from './notifications.service.js';
 import { assertMarketplaceAllowed } from './verification.service.js';
 import { authorProfileSummary, type AuthorProfileSummary } from './profile.service.js';
+import { requireRequestParty } from './book-market.service.js';
 
 /**
  * Two-party threads, anchored to an approved application or bid.
@@ -228,7 +229,7 @@ export async function listBidMessages(userId: string, bidId: string) {
 export interface ConversationSummary {
   /** The thread anchor id — doubles as the thread URL segment. */
   threadId: string;
-  kind: 'application' | 'bid';
+  kind: 'application' | 'bid' | 'book';
   listingTitle: string;
   listingCode: string;
   path: string;
@@ -371,6 +372,42 @@ export async function listConversations(userId: string): Promise<ConversationSum
     });
   }
 
+  // Book purchase requests (FEATURE_BOOKS_V2): the thread exists from the
+  // request on, since arranging the hand-over is the whole point of it.
+  const requests = await prisma.bookRequest.findMany({
+    where: { OR: [{ buyerId: userId }, { sellerId: userId }], messages: { some: {} } },
+    select: {
+      id: true,
+      buyerId: true,
+      sellerId: true,
+      listing: { select: { title: true, book: { select: { code: true } } } },
+      messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { body: true, createdAt: true, senderId: true } },
+    },
+  });
+  const unreadRequests = await prisma.marketplaceMessage.groupBy({
+    by: ['bookRequestId'],
+    where: { bookRequestId: { in: requests.map((row) => row.id) }, senderId: { not: userId }, readAt: null },
+    _count: { _all: true },
+  });
+  const unreadByRequest = new Map(unreadRequests.map((row) => [row.bookRequestId, row._count._all]));
+  for (const row of requests) {
+    const otherId = row.buyerId === userId ? row.sellerId : row.buyerId;
+    const profile = await authorProfileSummary(otherId);
+    const last = row.messages[0];
+    const code = row.listing.book?.code ?? '';
+    conversations.push({
+      threadId: row.id,
+      kind: 'book',
+      listingTitle: row.listing.title,
+      listingCode: code,
+      path: `/books/${code}`,
+      counterpart: profile,
+      counterpartName: profile ? `@${profile.username}` : null,
+      lastMessage: last ? { body: last.body, createdAt: last.createdAt, mine: last.senderId === userId } : null,
+      unreadCount: unreadByRequest.get(row.id) ?? 0,
+    });
+  }
+
   conversations.sort((a, b) => {
     const aTime = a.lastMessage?.createdAt.getTime() ?? 0;
     const bTime = b.lastMessage?.createdAt.getTime() ?? 0;
@@ -378,4 +415,50 @@ export async function listConversations(userId: string): Promise<ConversationSum
   });
 
   return conversations;
+}
+
+export async function sendBookRequestMessage(userId: string, requestId: string, body: string) {
+  const request = await requireRequestParty(userId, requestId);
+  await assertCanMessage(userId);
+
+  const message = await prisma.marketplaceMessage.create({
+    data: { bookRequestId: requestId, senderId: userId, body },
+    select: { id: true, createdAt: true },
+  });
+
+  const counterpart = request.buyerId === userId ? request.sellerId : request.buyerId;
+  notifySafely(counterpart, {
+    type: 'message.received',
+    title: 'پیام جدید',
+    body: `پیام جدید دربارهٔ «${request.listing.title}»: ${body.slice(0, 80)}`,
+    link: `/dashboard/messages/k/${requestId}`,
+  });
+  return message;
+}
+
+/** A purchase request's thread, read by the buyer or the seller. */
+export async function listBookRequestMessages(userId: string, requestId: string) {
+  const request = await requireRequestParty(userId, requestId);
+
+  const messages = await prisma.marketplaceMessage.findMany({
+    where: { bookRequestId: requestId },
+    orderBy: { createdAt: 'asc' },
+    select: messageSelect,
+  });
+
+  await prisma.marketplaceMessage.updateMany({
+    where: { bookRequestId: requestId, senderId: { not: userId }, readAt: null },
+    data: { readAt: new Date() },
+  });
+
+  const code = request.listing.book?.code ?? '';
+  return {
+    anchor: {
+      kind: 'book' as const,
+      listingTitle: request.listing.title,
+      listingCode: code,
+      path: `/books/${code}`,
+    },
+    messages: messages.map((message) => ({ ...message, mine: message.senderId === userId })),
+  };
 }

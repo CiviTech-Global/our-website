@@ -65,6 +65,13 @@ export const features = {
   projectsV2: flag(import.meta.env.VITE_FEATURE_PROJECTS_V2, true),
 
   /**
+   * The book market's second generation: one page per book with every offer,
+   * graded copies with photos, and purchase requests with their threads.
+   * Matches FEATURE_BOOKS_V2 on the server.
+   */
+  booksV2: flag(import.meta.env.VITE_FEATURE_BOOKS_V2, true),
+
+  /**
    * The demo-data panel: fill the site with example records, and empty it again.
    *
    * No environment override, unlike the two above: there is no production where

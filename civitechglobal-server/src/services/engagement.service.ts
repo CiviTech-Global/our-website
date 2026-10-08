@@ -41,11 +41,12 @@ export interface AwardContext {
     jobApplicationId: string | null;
     projectBidId: string | null;
     serviceOrderId?: string | null;
+    bookRequestId?: string | null;
     pricingType?: 'FIXED' | 'HOURLY';
     hourlyRate?: string | bigint | null;
     weeklyHourLimit?: number | null;
   };
-  kind: 'job' | 'project' | 'service';
+  kind: 'job' | 'project' | 'service' | 'book';
   listing: { code: string; title: string };
   /** The account that posted the listing — employer or client. */
   authorId: string;
@@ -99,16 +100,24 @@ interface AnchorIds {
   listingByBid: Map<string, { code: string; title: string }>;
   /** Service orders: the buyer is the author, the seller the counterparty. */
   orders: Map<string, { authorId: string; counterpartyId: string; listing: { code: string; title: string } }>;
+  /** Book purchases: the buyer is the author, the seller the counterparty. */
+  bookRequests: Map<string, { authorId: string; counterpartyId: string; listing: { code: string; title: string } }>;
 }
 
 async function resolveAnchors(
-  awards: Array<{ jobApplicationId: string | null; projectBidId: string | null; serviceOrderId?: string | null }>,
+  awards: Array<{
+    jobApplicationId: string | null;
+    projectBidId: string | null;
+    serviceOrderId?: string | null;
+    bookRequestId?: string | null;
+  }>,
 ): Promise<AnchorIds> {
   const applicationIds = awards.map((a) => a.jobApplicationId).filter((id): id is string => Boolean(id));
   const bidIds = awards.map((a) => a.projectBidId).filter((id): id is string => Boolean(id));
   const orderIds = awards.map((a) => a.serviceOrderId).filter((id): id is string => Boolean(id));
+  const bookRequestIds = awards.map((a) => a.bookRequestId).filter((id): id is string => Boolean(id));
 
-  const [applications, bids, orders] = await Promise.all([
+  const [applications, bids, orders, bookRequests] = await Promise.all([
     prisma.jobApplication.findMany({
       where: { id: { in: applicationIds } },
       select: {
@@ -129,6 +138,12 @@ async function resolveAnchors(
       ? prisma.serviceOrder.findMany({
           where: { id: { in: orderIds } },
           select: { id: true, buyerId: true, sellerId: true, service: { select: { code: true, title: true } } },
+        })
+      : Promise.resolve([]),
+    bookRequestIds.length > 0
+      ? prisma.bookRequest.findMany({
+          where: { id: { in: bookRequestIds } },
+          select: { id: true, buyerId: true, sellerId: true, listing: { select: { title: true, book: { select: { code: true } } } } },
         })
       : Promise.resolve([]),
   ]);
@@ -152,6 +167,16 @@ async function resolveAnchors(
       orders.map((row) => [
         row.id,
         { authorId: row.buyerId, counterpartyId: row.sellerId, listing: { code: row.service.code, title: row.service.title } },
+      ]),
+    ),
+    bookRequests: new Map(
+      bookRequests.map((row) => [
+        row.id,
+        {
+          authorId: row.buyerId,
+          counterpartyId: row.sellerId,
+          listing: { code: row.listing.book?.code ?? '', title: row.listing.title },
+        },
       ]),
     ),
   };
@@ -184,6 +209,11 @@ function contextOf(
     if (!order) return null;
     return { kind: 'service', ...order };
   }
+  if (award.bookRequestId) {
+    const request = anchors.bookRequests.get(award.bookRequestId);
+    if (!request) return null;
+    return { kind: 'book', ...request };
+  }
   return null;
 }
 
@@ -202,6 +232,7 @@ async function requireAwardContext(awardId: string): Promise<AwardContext> {
       jobApplicationId: true,
       projectBidId: true,
       serviceOrderId: true,
+      bookRequestId: true,
       pricingType: true,
       hourlyRate: true,
       weeklyHourLimit: true,
@@ -245,6 +276,10 @@ export async function listMyAwards(userId: string): Promise<AwardView[]> {
       select: { id: true },
     }),
   ]);
+  const myBookRequests = await prisma.bookRequest.findMany({
+    where: { OR: [{ buyerId: userId }, { sellerId: userId }], status: { in: ['ACCEPTED', 'COMPLETED', 'CANCELLED'] } },
+    select: { id: true },
+  });
 
   const [jobApplications, projectBids] = await Promise.all([
     prisma.jobApplication.findMany({
@@ -266,6 +301,7 @@ export async function listMyAwards(userId: string): Promise<AwardView[]> {
         { jobApplicationId: { in: applicationIds } },
         { projectBidId: { in: bidIds } },
         { serviceOrderId: { in: myOrders.map((row) => row.id) } },
+        { bookRequestId: { in: myBookRequests.map((row) => row.id) } },
       ],
     },
     orderBy: { createdAt: 'desc' },
@@ -318,6 +354,7 @@ export async function listMyAwards(userId: string): Promise<AwardView[]> {
         jobApplicationId: award.jobApplicationId,
         projectBidId: award.projectBidId,
         serviceOrderId: award.serviceOrderId,
+        bookRequestId: award.bookRequestId,
         pricingType: award.pricingType,
         hourlyRate: award.hourlyRate,
         weeklyHourLimit: award.weeklyHourLimit,

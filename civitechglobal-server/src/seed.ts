@@ -206,6 +206,16 @@ async function seedWorkTaxonomy(): Promise<void> {
   console.log(`Work categories: ${await syncWorkTaxonomy()} added.`);
 }
 
+/** The book shelves — only while the book market v2 is on. */
+async function seedBookTaxonomy(): Promise<void> {
+  if (!features.booksV2) {
+    console.log('Book market v2 is off; book categories not seeded.');
+    return;
+  }
+  const { syncBookTaxonomy } = await import('./services/book-taxonomy.service.js');
+  console.log(`Book categories: ${await syncBookTaxonomy()} added.`);
+}
+
 async function main(): Promise<void> {
   console.log('Seeding database...');
   await seedSuperAdmin();
@@ -213,6 +223,7 @@ async function main(): Promise<void> {
   await seedMarketplaceTaxonomy();
   await seedJobTaxonomy();
   await seedWorkTaxonomy();
+  await seedBookTaxonomy();
   console.log('Seeding complete.');
 }
 

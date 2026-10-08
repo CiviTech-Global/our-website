@@ -50,6 +50,8 @@ async function main(): Promise<void> {
         `  proposals        ${result.work.bids}  (every stage)  ·  invitations ${result.work.invites}`,
         `  services         ${result.work.services}  ·  orders ${result.work.orders}`,
         `  contracts        ${result.work.contracts}  (fixed, hourly with ${result.work.timesheets} timesheets, service orders)`,
+        `  books            ${result.books.books} in the catalogue  ·  ${result.books.offers} copies offered`,
+        `  book requests    ${result.books.requests}  (every state; ${result.books.deals} deals)`,
         '',
         '  Seller accounts: seller1@demo.invalid … seller5@demo.invalid',
         '  Employers:       employer.rayan@demo.invalid, employer.nordlicht@demo.invalid, …',
