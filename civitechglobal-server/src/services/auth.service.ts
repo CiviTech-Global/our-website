@@ -76,6 +76,22 @@ function userResponseFields() {
   } as const;
 }
 
+type ResponseUserKey = keyof ReturnType<typeof userResponseFields>;
+
+/**
+ * The account as a sign-in response carries it: the same fields as getMe,
+ * picked from the full row.
+ *
+ * Never the row itself. Spreading the record minus its password also sent the
+ * MFA secret, the recovery codes and the e-mail lookup hash to the browser —
+ * and broke the response outright once the row gained a BigInt column, which
+ * JSON cannot carry.
+ */
+function responseUser<T extends Record<ResponseUserKey, unknown>>(user: T): Pick<T, ResponseUserKey> {
+  const fields = Object.keys(userResponseFields()) as ResponseUserKey[];
+  return Object.fromEntries(fields.map((key) => [key, user[key]])) as Pick<T, ResponseUserKey>;
+}
+
 interface IssuedTokens {
   accessToken: string;
   refreshToken: string;
@@ -229,8 +245,7 @@ export async function issueSessionFor(userId: string) {
   if (!user) throw new AppError('Invalid credentials', 401);
 
   const tokens = await issueTokenPair(user);
-  const { password: _password, ...safeUser } = user;
-  return { user: safeUser, ...tokens };
+  return { user: responseUser(user), ...tokens };
 }
 
 export async function login(input: LoginInput) {
@@ -256,8 +271,7 @@ export async function login(input: LoginInput) {
   await clearFailedAttempts(input.email);
 
   const tokens = await issueTokenPair(user);
-  const { password: _password, ...safeUser } = user;
-  return { user: safeUser, ...tokens };
+  return { user: responseUser(user), ...tokens };
 }
 
 export async function refreshTokens(oldRefreshToken: string) {
