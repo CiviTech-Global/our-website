@@ -103,6 +103,9 @@ export default function MyAwardsPage() {
   );
 }
 
+/** The status as its label key: the dictionary spells them awardActive, not awardACTIVE. */
+const AWARD_STATUS_LABEL = { ACTIVE: 'awardActive', COMPLETED: 'awardCompleted', CANCELLED: 'awardCancelled' } as const;
+
 function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
   const { t } = useLocale();
   const active = award.award.status === 'ACTIVE';
@@ -138,7 +141,7 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
             >
               {award.award.disputeStatus === 'OPEN'
                 ? t.market.disputeOpenBadge
-                : t.market[`award${award.award.status}` as 'awardActive']}
+                : t.market[AWARD_STATUS_LABEL[award.award.status]]}
             </Badge>
           </div>
           <p className="mt-1 text-body text-app-text-3">

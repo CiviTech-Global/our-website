@@ -265,7 +265,7 @@ function ProjectBody({ project }: { project: ProjectDetail }) {
                 <h2 id="skills" className="text-lg font-semibold text-text-primary">
                   {t.work.skillsRequired}
                 </h2>
-                {viewer && viewer.match.total > 0 && !viewer.isAuthor && (
+                {viewer && viewer.match.matched.length > 0 && !viewer.isAuthor && (
                   <span className="flex items-center gap-1 text-sm text-brand-green-700 dark:text-brand-green-400">
                     <BadgeCheck className="size-4" aria-hidden="true" />
                     {fill(t.work.yourMatch, {
@@ -757,7 +757,11 @@ function ProposalSection({ project }: { project: ProjectDetail }) {
           </fieldset>
         </form>
 
-        {guide.data && <PriceGuidePanel guide={guide.data} amount={amountValue} />}
+        {guide.data && (
+          <div className="self-start">
+            <PriceGuidePanel guide={guide.data} amount={amountValue} />
+          </div>
+        )}
       </div>
     </section>
   );

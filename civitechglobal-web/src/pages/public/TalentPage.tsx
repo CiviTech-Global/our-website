@@ -174,7 +174,7 @@ export default function TalentPage() {
         </aside>
         <section className="min-w-0 flex-1" id="talent-results">
           <p className="mb-4 text-sm text-text-secondary" aria-live="polite">
-            {data && fill(t.jobs.resultsCount, { count: formatNumber(data.total, locale) })}
+            {data && fill(t.work.resultsCount, { count: formatNumber(data.total, locale) })}
           </p>
           {isLoading && (
             <div className="flex justify-center py-16">

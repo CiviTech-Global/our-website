@@ -413,7 +413,7 @@ export default function ProjectBoardPage() {
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-text-secondary" aria-live="polite">
-              {data && fill(t.jobs.resultsCount, { count: formatNumber(data.total, locale) })}
+              {data && fill(t.work.projectsCount, { count: formatNumber(data.total, locale) })}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setAlertOpen(true)}>
@@ -600,7 +600,7 @@ function CategoryLinks() {
   if (parents.length === 0) return null;
   return (
     <section className="mt-14">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">{t.jobs.browseByCategory}</h2>
+      <h2 className="mb-3 text-lg font-semibold text-text-primary">{t.work.browseCategories}</h2>
       <ul className="flex flex-wrap gap-2">
         {parents.map((category) => (
           <li key={category.id}>
