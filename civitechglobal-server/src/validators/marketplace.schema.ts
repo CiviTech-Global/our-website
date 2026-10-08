@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { isValidNationalId, normalizePersianDigits } from '../utils/persian.js';
 import { JOB_BENEFITS } from '../catalog/job-taxonomy.js';
+import {
+  EXPERIENCE_LEVELS,
+  MAX_SCREENING_QUESTIONS,
+  PROJECT_DURATIONS,
+  WEEKLY_HOURS,
+  WORK_LANGUAGES,
+} from '../catalog/work-taxonomy.js';
 import { COUNTRY_CODES, CURRENCIES, SALARY_PERIODS } from '../catalog/geo.js';
 
 /** An ISO country code, whatever case it arrives in. */
@@ -286,7 +293,19 @@ export const applicationOutcomeSchema = z.object({
 // Freelance
 // ---------------------------------------------------------------------------
 
-export const projectSchema = z.object({
+const languages = z
+  .array(z.enum(WORK_LANGUAGES))
+  .max(WORK_LANGUAGES.length)
+  .transform((list) => [...new Set(list)]);
+const countries = z
+  .array(country)
+  .max(30)
+  .transform((list) => [...new Set(list)]);
+const screeningQuestions = z
+  .array(z.string().trim().min(5, 'پرسش کوتاه است').max(300))
+  .max(MAX_SCREENING_QUESTIONS, `حداکثر ${MAX_SCREENING_QUESTIONS} پرسش`);
+
+const projectFields = {
   title: required(5, 160, 'عنوان پروژه الزامی است'),
   description: required(50, 10_000, 'شرح پروژه باید کامل‌تر باشد'),
   category: trimmed(80).optional(),
@@ -294,19 +313,102 @@ export const projectSchema = z.object({
   budgetMin: optionalMoney,
   budgetMax: optionalMoney,
   budgetUnknown: z.boolean().default(false),
+  currency: currency.default('IRT'),
   deliverBy: isoDate.optional(),
   /** Asked at posting time: somebody looking for an individual should not be
    *  pitched by the platform operator without having agreed to it. */
   openToCompanyOffer: z.boolean().default(true),
   closesAt: isoDate.optional(),
+
+  // The second-generation fields. Accepted whatever the flag says, like the
+  // job posting's: a column nobody sends is harmless.
+  workCategoryId: z.string().trim().min(1).max(40).optional(),
+  pricingType: z.enum(['FIXED', 'HOURLY']).default('FIXED'),
+  experienceLevel: z.enum(EXPERIENCE_LEVELS).optional(),
+  duration: z.enum(PROJECT_DURATIONS).optional(),
+  weeklyHours: z.enum(WEEKLY_HOURS).optional(),
+  urgent: z.boolean().default(false),
+  sealed: z.boolean().default(true),
+  nda: z.boolean().default(false),
+  visibility: z.enum(['PUBLIC', 'SIGNED_IN', 'INVITE_ONLY']).default('PUBLIC'),
+  preferredCountries: countries.default([]),
+  languages: languages.default([]),
+  screeningQuestions: screeningQuestions.default([]),
+  contractToHire: z.boolean().default(false),
+  freelancersNeeded: z.number().int().min(1).max(50).default(1),
+  onsite: z.boolean().default(false),
+  country: country.optional(),
+  province: trimmed(80).optional(),
+  city: trimmed(80).optional(),
+};
+
+/** A budget that runs backwards is a typo, as a salary range is. */
+function budgetInOrder(value: { budgetMin?: bigint | null; budgetMax?: bigint | null }, ctx: z.RefinementCtx): void {
+  if (value.budgetMin != null && value.budgetMax != null && value.budgetMin > value.budgetMax) {
+    ctx.addIssue({ code: 'custom', path: ['budgetMax'], message: 'حداکثر بودجه نباید کمتر از حداقل آن باشد' });
+  }
+}
+
+export const projectSchema = z.object(projectFields).superRefine((value, ctx) => {
+  budgetInOrder(value, ctx);
+  // Weekly hours only mean something when the work is paid by the hour.
+  if (value.pricingType === 'FIXED' && value.weeklyHours) {
+    ctx.addIssue({ code: 'custom', path: ['weeklyHours'], message: 'ساعت هفتگی فقط برای پروژه‌های ساعتی است' });
+  }
+  if (value.closesAt && value.closesAt.getTime() <= Date.now()) {
+    ctx.addIssue({ code: 'custom', path: ['closesAt'], message: 'مهلت پیشنهاد باید در آینده باشد' });
+  }
 });
 
-export const projectUpdateSchema = projectSchema.partial();
+export const projectUpdateSchema = z
+  .object({
+    ...projectFields,
+    category: clearable(trimmed(80)),
+    budgetMin: clearable(money),
+    budgetMax: clearable(money),
+    deliverBy: clearable(isoDate),
+    closesAt: clearable(isoDate),
+    workCategoryId: clearable(z.string().trim().min(1).max(40)),
+    experienceLevel: clearable(z.enum(EXPERIENCE_LEVELS)),
+    duration: clearable(z.enum(PROJECT_DURATIONS)),
+    weeklyHours: clearable(z.enum(WEEKLY_HOURS)),
+    country: clearable(country),
+    province: clearable(trimmed(80)),
+    city: clearable(trimmed(80)),
+    skills: z.array(z.string().trim().min(1).max(40)).max(20),
+    budgetUnknown: z.boolean(),
+    currency,
+    openToCompanyOffer: z.boolean(),
+    pricingType: z.enum(['FIXED', 'HOURLY']),
+    urgent: z.boolean(),
+    sealed: z.boolean(),
+    nda: z.boolean(),
+    visibility: z.enum(['PUBLIC', 'SIGNED_IN', 'INVITE_ONLY']),
+    preferredCountries: countries,
+    languages,
+    screeningQuestions,
+    contractToHire: z.boolean(),
+    freelancersNeeded: z.number().int().min(1).max(50),
+    onsite: z.boolean(),
+  })
+  .partial()
+  .superRefine(budgetInOrder);
+
+/** One step of the plan a bidder proposes. */
+const proposedMilestone = z.object({
+  title: required(2, 160, 'عنوان مرحله الزامی است'),
+  amount: z.preprocess(latinDigits, z.string().trim().regex(/^\d{1,15}$/, 'مبلغ باید عددی صحیح باشد')),
+  days: z.number().int().min(1).max(3650),
+});
 
 export const bidSchema = z.object({
+  /** On an hourly project, the hourly rate. */
   amount: money,
   deliveryDays: z.number().int().min(1).max(3650).optional(),
   message: required(20, 5000, 'توضیح پیشنهاد الزامی است'),
+  // Second generation.
+  milestones: z.array(proposedMilestone).max(10).optional(),
+  screeningAnswers: z.array(z.string().trim().min(1, 'پاسخ همهٔ پرسش‌ها الزامی است').max(2000)).max(MAX_SCREENING_QUESTIONS).optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -448,7 +550,28 @@ export const projectBoardSchema = listQuerySchema.extend({
     .optional(),
   budgetMin: optionalMoney,
   budgetMax: optionalMoney,
-  sort: z.enum(['newest', 'budgetAsc', 'budgetDesc']).default('newest'),
+  sort: z.enum(['newest', 'budgetAsc', 'budgetDesc', 'fewestBids', 'closingSoon']).default('newest'),
+
+  // Second generation: the filters the leading boards offer.
+  workCategoryId: trimmed(40).optional(),
+  pricingType: z.enum(['FIXED', 'HOURLY']).optional(),
+  experienceLevel: z.enum(EXPERIENCE_LEVELS).optional(),
+  duration: z.enum(PROJECT_DURATIONS).optional(),
+  weeklyHours: z.enum(WEEKLY_HOURS).optional(),
+  /** Bid count no more than this: "fewer than 5 proposals". */
+  maxBids: z.coerce.number().int().min(0).max(1000).optional(),
+  /** Clients who have hired here before. */
+  clientHired: flagParam,
+  clientVerified: flagParam,
+  urgent: flagParam,
+  featured: flagParam,
+  nda: flagParam,
+  onsite: flagParam,
+  contractToHire: flagParam,
+  country: country.optional(),
+  language: z.enum(WORK_LANGUAGES).optional(),
+  currency: currency.optional(),
+  postedWithinDays: z.coerce.number().int().refine((n) => [1, 3, 7, 14, 30].includes(n)).optional(),
 });
 
 // ---------------------------------------------------------------------------

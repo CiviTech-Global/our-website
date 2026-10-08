@@ -196,12 +196,23 @@ async function seedJobTaxonomy(): Promise<void> {
   console.log(`Job categories: ${await syncJobTaxonomy()} added.`);
 }
 
+/** The freelance work categories — only while the freelance v2 board is on. */
+async function seedWorkTaxonomy(): Promise<void> {
+  if (!features.projectsV2) {
+    console.log('Freelance v2 is off; work categories not seeded.');
+    return;
+  }
+  const { syncWorkTaxonomy } = await import('./services/work-taxonomy.service.js');
+  console.log(`Work categories: ${await syncWorkTaxonomy()} added.`);
+}
+
 async function main(): Promise<void> {
   console.log('Seeding database...');
   await seedSuperAdmin();
   await seedCatalog();
   await seedMarketplaceTaxonomy();
   await seedJobTaxonomy();
+  await seedWorkTaxonomy();
   console.log('Seeding complete.');
 }
 

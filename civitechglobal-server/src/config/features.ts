@@ -69,6 +69,17 @@ export const features = {
    * production board keeps working exactly as it does until this is set.
    */
   jobsV2: flag('FEATURE_JOBS_V2', true),
+
+  /**
+   * The freelance side's second generation: fixed categories, fixed and
+   * hourly projects with the details the leading boards ask for, invitations,
+   * NDAs, saved projects and alerts, bids straight to the client, hourly
+   * timesheets, and the service catalogue with its packages and orders.
+   *
+   * Like jobsV2 it gates only what is new, so the live board keeps working
+   * exactly as it does until this is set.
+   */
+  projectsV2: flag('FEATURE_PROJECTS_V2', true),
 } as const;
 
 export type FeatureName = keyof typeof features;

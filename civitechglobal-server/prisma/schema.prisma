@@ -128,8 +128,15 @@ model User {
   trackedRequests      TrackedRequest[]
   applicationsReviewed JobApplication[] @relation("ApplicationReviewer")
 
-  freelanceProjects FreelanceProject[] @relation("ProjectAuthor")
-  projectsReviewed  FreelanceProject[] @relation("ProjectReviewer")
+  freelanceProjects     FreelanceProject[]    @relation("ProjectAuthor")
+  projectsReviewed      FreelanceProject[]    @relation("ProjectReviewer")
+  projectInvites        ProjectInvite[]       @relation("ProjectInvitee")
+  savedProjects         SavedProject[]
+  projectAlerts         ProjectAlert[]
+  ndaSignatures         ProjectNdaSignature[]
+  services              Service[]             @relation("ServiceOwner")
+  serviceOrdersPlaced   ServiceOrder[]        @relation("ServiceBuyer")
+  serviceOrdersReceived ServiceOrder[]        @relation("ServiceSeller")
 
   books         BookListing[] @relation("BookSeller")
   booksReviewed BookListing[] @relation("BookReviewer")
@@ -161,9 +168,22 @@ model User {
   /// What the person can do, as tags. Public, and what a job's skills are
   /// matched against for "you have 4 of 6".
   skills   String[] @default([])
+
+  // ---- Freelancer profile (FEATURE_PROJECTS_V2) ---------------------------
+  /// ISO 639-1 codes the person works in.
+  languages      String[]  @default([])
+  /// Asking rate per hour, in hourlyCurrency. Shown on the talent card.
+  hourlyRate     BigInt?   @map("hourly_rate")
+  hourlyCurrency String    @default("IRT") @map("hourly_currency")
+  /// AVAILABLE | LIMITED | UNAVAILABLE: whether to invite them now.
+  availability   String    @default("AVAILABLE")
+  /// ISO alpha-2, for the talent filter and "preferred countries".
+  country        String    @default("IR")
+  /// Last time the person did anything signed in, for "active recently".
+  lastActiveAt   DateTime? @map("last_active_at")
   /// Free text, ~1000 chars max (validated in the service layer).
-  bio      String?
-  website  String?
+  bio            String?
+  website        String?
 
   /// Staff-controlled circuit breaker: a paused user cannot post, apply, bid
   /// or message, but their existing listings stay readable. Pausing hides the
@@ -1377,13 +1397,13 @@ model JobPost {
   workArrangement JobWorkArrangement
   /// ISO 3166-1 alpha-2. Iran by default, which is what every posting written
   /// before this field meant.
-  country         String  @default("IR")
+  country         String             @default("IR")
   /// For Iran, one of the 31 provinces by its Persian name; elsewhere the
   /// state or region as the employer writes it.
   province        String?
   city            String?
   /// A remote role open to people in any country, not only the posting's own.
-  remoteWorldwide Boolean @default(false) @map("remote_worldwide")
+  remoteWorldwide Boolean            @default(false) @map("remote_worldwide")
 
   salaryMin         BigInt?      @map("salary_min")
   salaryMax         BigInt?      @map("salary_max")
@@ -1574,6 +1594,61 @@ model FreelanceProject {
   /// See the note on JobPost.viewCount.
   viewCount Int @default(0) @map("view_count")
 
+  // ---- Second generation (FEATURE_PROJECTS_V2) ---------------------------
+  //
+  // Everything a client says on the leading boards when they post work, so a
+  // freelancer can judge fit before spending a proposal on it. All optional
+  // or defaulted, so projects posted before keep reading exactly as they did.
+
+  /// The fixed category, replacing the free-text one above for new projects.
+  workCategoryId String?       @map("work_category_id")
+  workCategory   WorkCategory? @relation(fields: [workCategoryId], references: [id], onDelete: SetNull)
+
+  /// FIXED: budgetMin/Max are the whole price. HOURLY: they are the hourly
+  /// rate range, and weeklyHours says how much of it.
+  pricingType     ProjectPricing @default(FIXED) @map("pricing_type")
+  /// ENTRY | INTERMEDIATE | EXPERT, keys from catalog/work-taxonomy.
+  experienceLevel String?        @map("experience_level")
+  /// A PROJECT_DURATIONS key.
+  duration        String?
+  /// A WEEKLY_HOURS key; hourly projects only.
+  weeklyHours     String?        @map("weekly_hours")
+
+  urgent Boolean @default(false)
+  /// Sealed hides the average bid from everyone but the client. Individual
+  /// amounts are never public either way.
+  sealed Boolean @default(true)
+  /// Bidders must accept a non-disclosure agreement before they can read the
+  /// full brief or open the attachments.
+  nda    Boolean @default(false)
+
+  visibility ProjectVisibility @default(PUBLIC)
+
+  /// ISO alpha-2 codes. Empty means anywhere.
+  preferredCountries String[] @default([]) @map("preferred_countries")
+  /// ISO 639-1 codes the work must be done in.
+  languages          String[] @default([])
+  /// Up to five questions every bidder answers.
+  screeningQuestions String[] @default([]) @map("screening_questions")
+
+  /// The client may offer a permanent role afterwards.
+  contractToHire    Boolean @default(false) @map("contract_to_hire")
+  /// How many freelancers the client means to hire.
+  freelancersNeeded Int     @default(1) @map("freelancers_needed")
+
+  /// Work done in person rather than remotely ("local jobs").
+  onsite   Boolean @default(false)
+  country  String?
+  province String?
+  city     String?
+
+  /// When the client last opened the proposals: "last viewed by client".
+  clientViewedAt DateTime? @map("client_viewed_at")
+
+  invites       ProjectInvite[]
+  savedBy       SavedProject[]
+  ndaSignatures ProjectNdaSignature[]
+
   attachments FreelanceAttachment[]
   bids        ProjectBid[]
 
@@ -1655,6 +1730,21 @@ model ProjectBid {
   /// applied automatically — the price on the bid stays the bidder's own.
   suggestedAmount  BigInt?          @map("suggested_amount")
 
+  // ---- Second generation (FEATURE_PROJECTS_V2) ---------------------------
+  // On an hourly project, amount is the hourly rate.
+
+  /// The bidder's proposed plan: [{ title, amount, days }], amounts as strings.
+  milestones       Json?
+  /// One answer per screening question, in order.
+  screeningAnswers String[]  @default([]) @map("screening_answers")
+  /// When the client first opened it: "seen" for the bidder.
+  clientSeenAt     DateTime? @map("client_seen_at")
+  /// The client's own note on a bid. Never shown to the bidder.
+  clientNote       String?   @map("client_note")
+  outcomeChangedAt DateTime? @map("outcome_changed_at")
+  /// Came in answer to an invitation.
+  invited          Boolean   @default(false)
+
   outcome OfferOutcome @default(PENDING)
 
   /// Contact opens only after staff approved the bid. See the note on
@@ -1682,8 +1772,10 @@ model ProjectBid {
 model MarketplaceAward {
   id String @id @default(cuid())
 
-  jobApplicationId String? @unique @map("job_application_id")
-  projectBidId     String? @unique @map("project_bid_id")
+  jobApplicationId String?       @unique @map("job_application_id")
+  projectBidId     String?       @unique @map("project_bid_id")
+  serviceOrderId   String?       @unique @map("service_order_id")
+  serviceOrder     ServiceOrder? @relation(fields: [serviceOrderId], references: [id], onDelete: SetNull)
 
   /// Copied at award time. The bid's amount may later be edited or the bid
   /// deleted; what was agreed should not move.
@@ -1705,6 +1797,12 @@ model MarketplaceAward {
 
   status      AwardStatus @default(ACTIVE)
   completedAt DateTime?   @map("completed_at")
+
+  /// HOURLY contracts are billed by approved weekly timesheets at this rate.
+  pricingType     ProjectPricing         @default(FIXED) @map("pricing_type")
+  hourlyRate      BigInt?                @map("hourly_rate")
+  weeklyHourLimit Int?                   @map("weekly_hour_limit")
+  timesheets      MarketplaceTimesheet[]
 
   milestones MarketplaceMilestone[]
   reviews    MarketplaceReview[]
@@ -2906,4 +3004,314 @@ model TrackedRequest {
   @@unique([userId, code])
   @@index([userId, createdAt])
   @@map("tracked_requests")
+}
+
+// ===========================================================================
+// Freelance, second generation (FEATURE_PROJECTS_V2)
+// ===========================================================================
+
+enum ProjectPricing {
+  FIXED
+  HOURLY
+}
+
+enum ProjectVisibility {
+  /// Anyone, and search engines.
+  PUBLIC
+  /// Signed-in members only; left out of the sitemap.
+  SIGNED_IN
+  /// Only freelancers the client invited.
+  INVITE_ONLY
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum TimesheetStatus {
+  SUBMITTED
+  APPROVED
+  /// The client asked a question; the freelancer revises and resubmits.
+  QUERIED
+}
+
+enum ServiceState {
+  ACTIVE
+  PAUSED
+}
+
+enum ServiceOrderStatus {
+  /// Waiting for the seller.
+  REQUESTED
+  /// The seller took it on; a contract exists.
+  ACCEPTED
+  DECLINED
+  /// The buyer withdrew before the seller answered.
+  CANCELLED
+}
+
+/// The freelance work tree. See catalog/work-taxonomy.ts.
+model WorkCategory {
+  id String @id @default(cuid())
+
+  slug   String @unique
+  name   String
+  nameEn String @default("") @map("name_en")
+
+  parentId String?        @map("parent_id")
+  parent   WorkCategory?  @relation("WorkCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children WorkCategory[] @relation("WorkCategoryTree")
+
+  position Int     @default(0)
+  active   Boolean @default(true)
+
+  projects FreelanceProject[]
+  services Service[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, position])
+  @@map("work_categories")
+}
+
+/// A client asking a particular freelancer to bid.
+model ProjectInvite {
+  id String @id @default(cuid())
+
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  freelancerId String @map("freelancer_id")
+  freelancer   User   @relation("ProjectInvitee", fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  message     String?
+  status      InviteStatus @default(PENDING)
+  respondedAt DateTime?    @map("responded_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([projectId, freelancerId])
+  @@index([freelancerId, status])
+  @@map("project_invites")
+}
+
+model SavedProject {
+  id String @id @default(cuid())
+
+  userId    String           @map("user_id")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, projectId])
+  @@map("saved_projects")
+}
+
+/// A saved project search that notifies. Same shape as JobAlert.
+model ProjectAlert {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name           String
+  query          Json
+  active         Boolean   @default(true)
+  lastNotifiedAt DateTime? @map("last_notified_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([active])
+  @@map("project_alerts")
+}
+
+/// A bidder accepting a project's NDA, before the brief opens to them.
+model ProjectNdaSignature {
+  id String @id @default(cuid())
+
+  projectId String           @map("project_id")
+  project   FreelanceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String           @map("user_id")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The name the signer typed, as a signature.
+  signedName String   @map("signed_name")
+  signedAt   DateTime @default(now()) @map("signed_at")
+
+  @@unique([projectId, userId])
+  @@map("project_nda_signatures")
+}
+
+/// One week of hours on an hourly contract.
+model MarketplaceTimesheet {
+  id String @id @default(cuid())
+
+  awardId String           @map("award_id")
+  award   MarketplaceAward @relation(fields: [awardId], references: [id], onDelete: Cascade)
+
+  /// The Saturday the week starts on, at midnight UTC.
+  weekStart DateTime @map("week_start") @db.Date
+  /// Whole minutes, so no rounding ever happens on the way in.
+  minutes   Int
+  memo      String
+
+  status      TimesheetStatus @default(SUBMITTED)
+  clientNote  String?         @map("client_note")
+  submittedAt DateTime        @default(now()) @map("submitted_at")
+  reviewedAt  DateTime?       @map("reviewed_at")
+
+  @@unique([awardId, weekStart])
+  @@map("marketplace_timesheets")
+}
+
+/// A ready-made service a freelancer sells: "I will design your logo".
+///
+/// Moderated like every listing; packages, extras and gallery hang off it.
+model Service {
+  id String @id @default(cuid())
+
+  code String @unique
+
+  ownerId String @map("owner_id")
+  owner   User   @relation("ServiceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+
+  workCategoryId String?       @map("work_category_id")
+  workCategory   WorkCategory? @relation(fields: [workCategoryId], references: [id], onDelete: SetNull)
+
+  skills       String[] @default([])
+  languages    String[] @default([])
+  /// [{ question, answer }]
+  faqs         Json     @default("[]")
+  /// What the seller needs from the buyer to start; the buyer answers on ordering.
+  requirements String[] @default([])
+
+  moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  reviewedAt       DateTime?        @map("reviewed_at")
+  reviewedById     String?          @map("reviewed_by_id")
+  reviewNote       String?          @map("review_note")
+  internalNote     String?          @map("internal_note")
+
+  state      ServiceState @default(ACTIVE)
+  featured   Boolean      @default(false)
+  featuredAt DateTime?    @map("featured_at")
+  viewCount  Int          @default(0) @map("view_count")
+
+  packages ServicePackage[]
+  extras   ServiceExtra[]
+  images   ServiceImage[]
+  orders   ServiceOrder[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([moderationStatus])
+  @@index([ownerId])
+  @@index([workCategoryId])
+  @@index([featured, state])
+  @@map("services")
+}
+
+model ServicePackage {
+  id String @id @default(cuid())
+
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  /// BASIC | STANDARD | PREMIUM
+  tier         String
+  name         String
+  description  String
+  price        BigInt
+  currency     String   @default("IRT")
+  deliveryDays Int      @map("delivery_days")
+  /// -1 means unlimited.
+  revisions    Int      @default(1)
+  features     String[] @default([])
+
+  @@unique([serviceId, tier])
+  @@map("service_packages")
+}
+
+model ServiceExtra {
+  id String @id @default(cuid())
+
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  title     String
+  price     BigInt
+  extraDays Int    @default(0) @map("extra_days")
+  position  Int    @default(0)
+
+  @@index([serviceId])
+  @@map("service_extras")
+}
+
+model ServiceImage {
+  id String @id @default(cuid())
+
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  originalName String @map("original_name")
+  storedName   String @unique @map("stored_name")
+  mimeType     String @map("mime_type")
+  sizeBytes    Int    @map("size_bytes")
+  checksum     String
+  position     Int    @default(0)
+
+  @@index([serviceId])
+  @@map("service_images")
+}
+
+/// A buyer asking for a package. No money moves: the seller accepts or
+/// declines, and accepting opens a contract (a MarketplaceAward) with one
+/// delivery milestone, so milestones, disputes and reviews work as for bids.
+model ServiceOrder {
+  id String @id @default(cuid())
+
+  code String @unique
+
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  buyerId  String @map("buyer_id")
+  buyer    User   @relation("ServiceBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId String @map("seller_id")
+  seller   User   @relation("ServiceSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  /// Copied at ordering, so a later edit to the package cannot move what was asked for.
+  tier               String
+  packageName        String   @map("package_name")
+  price              BigInt
+  currency           String   @default("IRT")
+  deliveryDays       Int      @map("delivery_days")
+  revisions          Int
+  /// [{ title, price, extraDays }]
+  extras             Json     @default("[]")
+  requirementAnswers String[] @default([]) @map("requirement_answers")
+  note               String?
+
+  status        ServiceOrderStatus @default(REQUESTED)
+  respondedAt   DateTime?          @map("responded_at")
+  declineReason String?            @map("decline_reason")
+
+  award MarketplaceAward?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([buyerId])
+  @@index([sellerId, status])
+  @@index([serviceId])
+  @@map("service_orders")
 }

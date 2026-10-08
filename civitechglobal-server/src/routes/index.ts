@@ -15,6 +15,7 @@ import telemetryRoutes from './telemetry.routes.js';
 import marketplaceRoutes from './marketplace.routes.js';
 import tradeMasterRoutes from './trademaster.routes.js';
 import jobsRoutes from './jobs.routes.js';
+import workRoutes from './work.routes.js';
 import demoRoutes from './demo.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
@@ -76,6 +77,11 @@ router.use('/trademaster', tradeMasterRoutes);
 // The job board's second generation: company pages, saved jobs, alerts and
 // matching. Every route answers 404 unless FEATURE_JOBS_V2 is on.
 router.use('/jobs', jobsRoutes);
+
+// The freelance side's second generation: the service catalogue, talent,
+// invitations, NDAs, alerts and timesheets. Every route answers 404 unless
+// FEATURE_PROJECTS_V2 is on.
+router.use('/work', workRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper

@@ -40,8 +40,12 @@ export interface AwardContext {
     disputeOpenedAt: Date | null;
     jobApplicationId: string | null;
     projectBidId: string | null;
+    serviceOrderId?: string | null;
+    pricingType?: 'FIXED' | 'HOURLY';
+    hourlyRate?: string | bigint | null;
+    weeklyHourLimit?: number | null;
   };
-  kind: 'job' | 'project';
+  kind: 'job' | 'project' | 'service';
   listing: { code: string; title: string };
   /** The account that posted the listing — employer or client. */
   authorId: string;
@@ -67,6 +71,17 @@ export interface AwardView extends AwardContext {
   }>;
   myReview: { rating: number; text: string | null } | null;
   theirReview: { rating: number; text: string | null } | null;
+  /** Hourly contracts only: the weeks logged, newest first. */
+  timesheets?: Array<{
+    id: string;
+    weekStart: Date;
+    minutes: number;
+    memo: string;
+    status: 'SUBMITTED' | 'APPROVED' | 'QUERIED';
+    clientNote: string | null;
+    submittedAt: Date;
+    reviewedAt: Date | null;
+  }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,14 +97,18 @@ interface AnchorIds {
   counterpartyByBid: Map<string, string>;
   listingByApplication: Map<string, { code: string; title: string }>;
   listingByBid: Map<string, { code: string; title: string }>;
+  /** Service orders: the buyer is the author, the seller the counterparty. */
+  orders: Map<string, { authorId: string; counterpartyId: string; listing: { code: string; title: string } }>;
 }
 
-/** The joins the award columns cannot do themselves, for a set of awards. */
-async function resolveAnchors(awards: Array<{ jobApplicationId: string | null; projectBidId: string | null }>): Promise<AnchorIds> {
+async function resolveAnchors(
+  awards: Array<{ jobApplicationId: string | null; projectBidId: string | null; serviceOrderId?: string | null }>,
+): Promise<AnchorIds> {
   const applicationIds = awards.map((a) => a.jobApplicationId).filter((id): id is string => Boolean(id));
   const bidIds = awards.map((a) => a.projectBidId).filter((id): id is string => Boolean(id));
+  const orderIds = awards.map((a) => a.serviceOrderId).filter((id): id is string => Boolean(id));
 
-  const [applications, bids] = await Promise.all([
+  const [applications, bids, orders] = await Promise.all([
     prisma.jobApplication.findMany({
       where: { id: { in: applicationIds } },
       select: {
@@ -106,6 +125,12 @@ async function resolveAnchors(awards: Array<{ jobApplicationId: string | null; p
         project: { select: { code: true, title: true, authorId: true } },
       },
     }),
+    orderIds.length > 0
+      ? prisma.serviceOrder.findMany({
+          where: { id: { in: orderIds } },
+          select: { id: true, buyerId: true, sellerId: true, service: { select: { code: true, title: true } } },
+        })
+      : Promise.resolve([]),
   ]);
 
   return {
@@ -122,6 +147,12 @@ async function resolveAnchors(awards: Array<{ jobApplicationId: string | null; p
     ),
     listingByBid: new Map(
       bids.map((row) => [row.id, { code: row.project.code, title: row.project.title }]),
+    ),
+    orders: new Map(
+      orders.map((row) => [
+        row.id,
+        { authorId: row.buyerId, counterpartyId: row.sellerId, listing: { code: row.service.code, title: row.service.title } },
+      ]),
     ),
   };
 }
@@ -148,6 +179,11 @@ function contextOf(
       counterpartyId: anchors.counterpartyByBid.get(award.projectBidId) ?? null,
     };
   }
+  if (award.serviceOrderId) {
+    const order = anchors.orders.get(award.serviceOrderId);
+    if (!order) return null;
+    return { kind: 'service', ...order };
+  }
   return null;
 }
 
@@ -165,6 +201,10 @@ async function requireAwardContext(awardId: string): Promise<AwardContext> {
       disputeOpenedAt: true,
       jobApplicationId: true,
       projectBidId: true,
+      serviceOrderId: true,
+      pricingType: true,
+      hourlyRate: true,
+      weeklyHourLimit: true,
     },
   });
   if (!award) throw new AppError('این همکاری پیدا نشد.', 404);
@@ -194,12 +234,16 @@ function assertNoOpenDispute(context: AwardContext): void {
 
 export async function listMyAwards(userId: string): Promise<AwardView[]> {
   // The award columns cannot join, so the candidate ids come first: every
-  // application and bid the user is party to, on either side of the deal.
-  const [asApplicant, asBidder, authoredJobs, authoredProjects] = await Promise.all([
+  // application, bid and service order the user is party to, on either side.
+  const [asApplicant, asBidder, authoredJobs, authoredProjects, myOrders] = await Promise.all([
     prisma.jobApplication.findMany({ where: { applicantId: userId }, select: { id: true } }),
     prisma.projectBid.findMany({ where: { bidderId: userId }, select: { id: true } }),
     prisma.jobPost.findMany({ where: { authorId: userId }, select: { id: true } }),
     prisma.freelanceProject.findMany({ where: { authorId: userId }, select: { id: true } }),
+    prisma.serviceOrder.findMany({
+      where: { OR: [{ buyerId: userId }, { sellerId: userId }], status: 'ACCEPTED' },
+      select: { id: true },
+    }),
   ]);
 
   const [jobApplications, projectBids] = await Promise.all([
@@ -218,24 +262,30 @@ export async function listMyAwards(userId: string): Promise<AwardView[]> {
 
   const awards = await prisma.marketplaceAward.findMany({
     where: {
-      OR: [{ jobApplicationId: { in: applicationIds } }, { projectBidId: { in: bidIds } }],
+      OR: [
+        { jobApplicationId: { in: applicationIds } },
+        { projectBidId: { in: bidIds } },
+        { serviceOrderId: { in: myOrders.map((row) => row.id) } },
+      ],
     },
     orderBy: { createdAt: 'desc' },
   });
 
-  const anchors = await resolveAnchors(awards);
-  const milestones = await prisma.marketplaceMilestone.findMany({
-    where: { awardId: { in: awards.map((award) => award.id) } },
-    orderBy: { order: 'asc' },
-  });
-  const reviews = await prisma.marketplaceReview.findMany({
-    where: { awardId: { in: awards.map((award) => award.id) } },
-  });
+  const awardIds = awards.map((award) => award.id);
+  const [anchors, milestones, reviews, timesheets] = await Promise.all([
+    resolveAnchors(awards),
+    prisma.marketplaceMilestone.findMany({ where: { awardId: { in: awardIds } }, orderBy: { order: 'asc' } }),
+    prisma.marketplaceReview.findMany({ where: { awardId: { in: awardIds } } }),
+    prisma.marketplaceTimesheet.findMany({ where: { awardId: { in: awardIds } }, orderBy: { weekStart: 'desc' } }),
+  ]);
   const profiles = await Promise.all(
     awards.map((award) => {
       const context = contextOf(award, anchors);
       const counterpartyId = context?.counterpartyId ?? null;
-      return counterpartyId ? authorProfileSummary(counterpartyId) : null;
+      const authorId = context?.authorId ?? null;
+      // The other side of the deal, whichever side the reader is on.
+      const otherId = authorId === userId ? counterpartyId : authorId;
+      return otherId ? authorProfileSummary(otherId) : null;
     }),
   );
 
@@ -267,6 +317,10 @@ export async function listMyAwards(userId: string): Promise<AwardView[]> {
         disputeOpenedAt: award.disputeOpenedAt,
         jobApplicationId: award.jobApplicationId,
         projectBidId: award.projectBidId,
+        serviceOrderId: award.serviceOrderId,
+        pricingType: award.pricingType,
+        hourlyRate: award.hourlyRate,
+        weeklyHourLimit: award.weeklyHourLimit,
       },
       ...context,
       myRole,
@@ -289,6 +343,13 @@ export async function listMyAwards(userId: string): Promise<AwardView[]> {
       theirReview: awardReviews
         .filter((row) => row.rateeId === userId)
         .map((row) => ({ rating: row.rating, text: row.text }))[0] ?? null,
+      ...(award.pricingType === 'HOURLY'
+        ? {
+            timesheets: timesheets
+              .filter((row) => row.awardId === award.id)
+              .map(({ awardId: _award, ...row }) => row),
+          }
+        : {}),
     });
   }
 
@@ -631,3 +692,116 @@ export async function resolveDispute(awardId: string, note: string) {
 
   return { id: awardId, disputeStatus: 'RESOLVED' as const };
 }
+
+/**
+ * The Saturday a date's week starts on, at midnight UTC — the Iranian working
+ * week, which every timesheet is keyed by so a week cannot be logged twice.
+ */
+export function weekStartOf(date: Date): Date {
+  const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const sinceSaturday = (day.getUTCDay() + 1) % 7;
+  day.setUTCDate(day.getUTCDate() - sinceSaturday);
+  return day;
+}
+
+/**
+ * The freelancer logs a week on an hourly contract.
+ *
+ * One sheet per week. A queried sheet is revised in place and goes back to
+ * the client; an approved one is final. The weekly limit is the client's
+ * protection and is enforced here rather than only shown.
+ */
+export async function submitTimesheet(
+  userId: string,
+  awardId: string,
+  input: { weekStart: Date; minutes: number; memo: string },
+) {
+  const context = await requireAwardContext(awardId);
+  if (requireParty(context, userId) !== 'counterparty') {
+    throw new AppError('فقط فریلنسر این همکاری می‌تواند ساعت کار ثبت کند.', 403);
+  }
+  if (context.award.pricingType !== 'HOURLY') throw new AppError('این همکاری ساعتی نیست.', 400);
+  if (context.award.status !== 'ACTIVE') throw new AppError('این همکاری دیگر فعال نیست.', 409);
+  assertNoOpenDispute(context);
+
+  const weekStart = weekStartOf(input.weekStart);
+  if (weekStart.getTime() > weekStartOf(new Date()).getTime()) {
+    throw new AppError('برای هفته‌های آینده نمی‌توان ساعت ثبت کرد.', 400);
+  }
+  const cap = context.award.weeklyHourLimit ? context.award.weeklyHourLimit * 60 : MAX_WEEK_MINUTES;
+  if (input.minutes < 1 || input.minutes > cap) {
+    throw new AppError(
+      context.award.weeklyHourLimit
+        ? `سقف این همکاری ${context.award.weeklyHourLimit} ساعت در هفته است.`
+        : 'ساعت ثبت‌شده نامعتبر است.',
+      400,
+    );
+  }
+
+  const existing = await prisma.marketplaceTimesheet.findUnique({
+    where: { awardId_weekStart: { awardId, weekStart } },
+    select: { id: true, status: true },
+  });
+  if (existing?.status === 'APPROVED') throw new AppError('ساعت این هفته پیش‌تر تأیید شده است.', 409);
+
+  const sheet = existing
+    ? await prisma.marketplaceTimesheet.update({
+        where: { id: existing.id },
+        data: { minutes: input.minutes, memo: input.memo, status: 'SUBMITTED', submittedAt: new Date(), reviewedAt: null },
+        select: { id: true, weekStart: true, minutes: true, status: true },
+      })
+    : await prisma.marketplaceTimesheet.create({
+        data: { awardId, weekStart, minutes: input.minutes, memo: input.memo },
+        select: { id: true, weekStart: true, minutes: true, status: true },
+      });
+
+  notifySafely(context.authorId, {
+    type: 'timesheet.submitted',
+    title: 'گزارش ساعت کار تازه',
+    body: `گزارش ساعت هفتگی برای «${context.listing.title}» ثبت شد و منتظر تأیید شماست.`,
+    link: '/dashboard/awards',
+  });
+  return sheet;
+}
+
+/** The client approves a week, or queries it with a note. */
+export async function reviewTimesheet(
+  userId: string,
+  timesheetId: string,
+  input: { decision: 'APPROVED' | 'QUERIED'; note?: string },
+) {
+  const sheet = await prisma.marketplaceTimesheet.findUnique({
+    where: { id: timesheetId },
+    select: { id: true, awardId: true, status: true },
+  });
+  if (!sheet) throw new AppError('این گزارش پیدا نشد.', 404);
+
+  const context = await requireAwardContext(sheet.awardId);
+  if (requireParty(context, userId) !== 'author') {
+    throw new AppError('فقط کارفرمای این همکاری می‌تواند گزارش ساعت را تأیید کند.', 403);
+  }
+  assertNoOpenDispute(context);
+  if (sheet.status !== 'SUBMITTED') throw new AppError('این گزارش منتظر بررسی نیست.', 409);
+  if (input.decision === 'QUERIED' && !input.note?.trim()) {
+    throw new AppError('برای پرسش دربارهٔ گزارش، توضیح بنویسید.', 400);
+  }
+
+  const updated = await prisma.marketplaceTimesheet.update({
+    where: { id: timesheetId },
+    data: { status: input.decision, clientNote: input.note?.trim() || null, reviewedAt: new Date() },
+    select: { id: true, status: true, clientNote: true },
+  });
+
+  if (context.counterpartyId) {
+    notifySafely(context.counterpartyId, {
+      type: 'timesheet.reviewed',
+      title: input.decision === 'APPROVED' ? 'ساعت کار شما تأیید شد' : 'کارفرما دربارهٔ ساعت کار پرسید',
+      body: `گزارش هفتگی «${context.listing.title}» ${input.decision === 'APPROVED' ? 'تأیید شد' : 'نیازمند توضیح است'}.`,
+      link: '/dashboard/awards',
+    });
+  }
+  return updated;
+}
+
+/** No week holds more than this, whatever the contract says. */
+const MAX_WEEK_MINUTES = 7 * 24 * 60;

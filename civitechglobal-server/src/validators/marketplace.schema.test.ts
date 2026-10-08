@@ -141,7 +141,7 @@ describe('projectBoardSchema', () => {
   });
 
   it('refuses a sort it does not know', () => {
-    expect(projectBoardSchema.safeParse({ sort: 'closingSoon' }).success).toBe(false);
+    expect(projectBoardSchema.safeParse({ sort: 'salaryAsc' }).success).toBe(false);
   });
 });
 
