@@ -17,6 +17,8 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { MfaSettings } from '@/components/account/MfaSettings';
 import { SecuritySettings } from '@/components/account/SecuritySettings';
 import { PublicProfileForm } from '@/components/account/PublicProfileForm';
+import { FreelancerProfileForm } from '@/components/work/FreelancerProfileForm';
+import { features } from '@/lib/features';
 
 /** NOTE: relies on an assumed `PUT /api/auth/me` endpoint (see AuthProvider.updateProfile). */
 export default function ProfilePage() {
@@ -87,6 +89,12 @@ export default function ProfilePage() {
       <AnimatedSection delay={0.04}>
         <PublicProfileForm />
       </AnimatedSection>
+
+      {features.projectsV2 && (
+        <AnimatedSection delay={0.045}>
+          <FreelancerProfileForm />
+        </AnimatedSection>
+      )}
 
       <AnimatedSection delay={0.05}>
         <SecuritySettings />

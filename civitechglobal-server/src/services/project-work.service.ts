@@ -951,3 +951,68 @@ export async function touchActivity(userId: string): Promise<void> {
     // Presence is a nicety; it must never fail a request.
   }
 }
+
+// ---------------------------------------------------------------------------
+// Files
+// ---------------------------------------------------------------------------
+
+/**
+ * One of a project's attachments, for a reader the brief is open to: the
+ * author, or a member who may read the project and — when it has an NDA —
+ * has signed it. The same rules as viewProject, applied to the files.
+ */
+export async function getProjectAttachment(userId: string, attachmentId: string) {
+  const attachment = await prisma.freelanceAttachment.findUnique({
+    where: { id: attachmentId },
+    select: {
+      storedName: true,
+      mimeType: true,
+      originalName: true,
+      project: { select: { id: true, authorId: true, nda: true, visibility: true, moderationStatus: true } },
+    },
+  });
+  if (!attachment) throw new AppError('این فایل پیدا نشد.', 404);
+  const { project } = attachment;
+  if (project.authorId !== userId) {
+    if (project.moderationStatus !== 'APPROVED') throw new AppError('این فایل پیدا نشد.', 404);
+    const [invite, signature, bid] = await Promise.all([
+      prisma.projectInvite.findUnique({
+        where: { projectId_freelancerId: { projectId: project.id, freelancerId: userId } },
+        select: { id: true },
+      }),
+      prisma.projectNdaSignature.findUnique({
+        where: { projectId_userId: { projectId: project.id, userId } },
+        select: { id: true },
+      }),
+      prisma.projectBid.findUnique({
+        where: { projectId_bidderId: { projectId: project.id, bidderId: userId } },
+        select: { id: true },
+      }),
+    ]);
+    if (project.visibility === 'INVITE_ONLY' && !invite && !bid) throw new AppError('این فایل پیدا نشد.', 404);
+    if (project.nda && !signature) throw new AppError('پیش از دیدن فایل‌ها توافق‌نامه را امضا کنید.', 403);
+  }
+  return { storedName: attachment.storedName, mimeType: attachment.mimeType, originalName: attachment.originalName };
+}
+
+/** A bid's supporting file, for the project's author or the bidder. */
+export async function getBidAttachment(userId: string, bidId: string) {
+  const bid = await prisma.projectBid.findUnique({
+    where: { id: bidId },
+    select: {
+      bidderId: true,
+      attachmentStoredName: true,
+      attachmentMimeType: true,
+      attachmentOriginalName: true,
+      project: { select: { authorId: true } },
+    },
+  });
+  if (!bid || !bid.attachmentStoredName || (bid.bidderId !== userId && bid.project.authorId !== userId)) {
+    throw new AppError('این فایل پیدا نشد.', 404);
+  }
+  return {
+    storedName: bid.attachmentStoredName,
+    mimeType: bid.attachmentMimeType ?? 'application/octet-stream',
+    originalName: bid.attachmentOriginalName ?? 'attachment',
+  };
+}

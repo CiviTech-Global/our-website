@@ -3,6 +3,7 @@ import { DemoManifest, assertNotProduction, demoSummary, teardownDemoData } from
 import { seedTradeMaster } from './seed-trademaster.js';
 import { seedSite } from './seed-site.js';
 import { seedJobs } from './seed-jobs.js';
+import { seedWork } from './seed-work.js';
 
 export { demoSummary, teardownDemoData, assertNotProduction };
 
@@ -11,6 +12,7 @@ export interface SeedResult {
   tradeMaster: Awaited<ReturnType<typeof seedTradeMaster>>;
   site: Awaited<ReturnType<typeof seedSite>>;
   jobs: Awaited<ReturnType<typeof seedJobs>>;
+  work: Awaited<ReturnType<typeof seedWork>>;
 }
 
 /**
@@ -35,8 +37,10 @@ export async function seedDemoData(): Promise<SeedResult> {
   const tradeMaster = await seedTradeMaster(manifest);
   const site = await seedSite(manifest);
   const jobs = await seedJobs(manifest);
+  // After the jobs: it borrows their people as clients and freelancers.
+  const work = await seedWork(manifest);
 
-  logger.info({ batch: manifest.batch, tradeMaster, site, jobs }, 'demo seed: done');
+  logger.info({ batch: manifest.batch, tradeMaster, site, jobs, work }, 'demo seed: done');
 
-  return { batch: manifest.batch, tradeMaster, site, jobs };
+  return { batch: manifest.batch, tradeMaster, site, jobs, work };
 }

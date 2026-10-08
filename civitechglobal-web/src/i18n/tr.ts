@@ -1,4 +1,5 @@
 import type { PartialTranslations } from './merge';
+import work from './work/tr';
 
 /**
  * Türkçe.
@@ -65,6 +66,8 @@ const tr: PartialTranslations = {
     marketplaceMenu: 'Pazar yeri',
     jobs: 'İş ilanları',
     freelance: 'Serbest projeler',
+    freelanceServices: 'Serbest hizmetler',
+    freelancers: 'Serbest çalışanlar',
     team: 'Ekibimiz',
     home: 'Ana sayfa',
     servicesMenu: 'Hizmetler',
@@ -2596,6 +2599,7 @@ const tr: PartialTranslations = {
     emptyHint: 'Kategori olmadan satıcı ürününü hiçbir yere yerleştiremez.',
     depthHint: 'Kategoriler en fazla iki düzey derinliğindedir.',
   },
+  work,
 };
 
 export default tr;

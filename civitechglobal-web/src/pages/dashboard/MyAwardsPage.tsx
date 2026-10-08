@@ -21,6 +21,7 @@ import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
 import { formatMoney } from '@/lib/marketplace';
 import { Badge } from '@/components/ui/Badge';
+import { TimesheetPanel } from '@/components/work/TimesheetPanel';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -105,7 +106,7 @@ export default function MyAwardsPage() {
 function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
   const { t } = useLocale();
   const active = award.award.status === 'ACTIVE';
-  const listPath = award.kind === 'job' ? '/jobs' : '/projects';
+  const listPath = award.kind === 'job' ? '/jobs' : award.kind === 'service' ? '/freelance-services' : '/projects';
 
   return (
     <Card className="flex flex-col gap-4">
@@ -118,7 +119,14 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
             >
               {award.listing.title}
             </Link>
-            <Badge variant="info">{award.kind === 'job' ? t.market.awardKindJob : t.market.awardKindProject}</Badge>
+            <Badge variant="info">
+              {award.kind === 'job'
+                ? t.market.awardKindJob
+                : award.kind === 'service'
+                  ? t.work.serviceOrderContract
+                  : t.market.awardKindProject}
+            </Badge>
+            {award.award.pricingType === 'HOURLY' && <Badge variant="info">{t.work.hourlyContract}</Badge>}
             <Badge
               variant={
                 award.award.status === 'COMPLETED'
@@ -170,6 +178,8 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
           </div>
         </div>
       )}
+
+      {award.award.pricingType === 'HOURLY' && <TimesheetPanel award={award} />}
 
       {award.milestones.length > 0 && (
         <div>

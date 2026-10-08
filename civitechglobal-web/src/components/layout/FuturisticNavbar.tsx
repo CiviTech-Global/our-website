@@ -30,6 +30,8 @@ type NavKey =
   | 'track'
   | 'jobs'
   | 'freelance'
+  | 'freelanceServices'
+  | 'freelancers'
   | 'books'
   | 'consult'
   | 'experts'
@@ -82,6 +84,12 @@ const NAV_ENTRIES: NavEntry[] = [
     items: [
       { to: '/jobs', key: 'jobs' },
       { to: '/projects', key: 'freelance' },
+      ...(features.projectsV2
+        ? ([
+            { to: '/freelance-services', key: 'freelanceServices' },
+            { to: '/freelancers', key: 'freelancers' },
+          ] as const)
+        : []),
       { to: '/books', key: 'books' },
       // Absent rather than disabled while the module is off: a menu item that
       // leads to a route that does not resolve is worse than no item.

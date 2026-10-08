@@ -187,8 +187,13 @@ export interface AwardView {
     disputeOpenedAt: string | null;
     jobApplicationId: string | null;
     projectBidId: string | null;
+    /** Second generation: a service order's contract, and hourly terms. */
+    serviceOrderId?: string | null;
+    pricingType?: 'FIXED' | 'HOURLY';
+    hourlyRate?: string | null;
+    weeklyHourLimit?: number | null;
   };
-  kind: 'job' | 'project';
+  kind: 'job' | 'project' | 'service';
   listing: { code: string; title: string };
   authorId: string;
   counterpartyId: string | null;
@@ -197,6 +202,8 @@ export interface AwardView {
   milestones: AwardMilestone[];
   myReview: { rating: number; text: string | null } | null;
   theirReview: { rating: number; text: string | null } | null;
+  /** Hourly contracts only, newest week first. */
+  timesheets?: import('./work').Timesheet[];
 }
 
 // --- Public profiles --------------------------------------------------------

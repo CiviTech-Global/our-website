@@ -674,7 +674,7 @@ export async function placeOrder(buyerId: string, serviceId: string, input: Orde
     type: 'service.order',
     title: 'سفارش تازه',
     body: `سفارش تازه‌ای برای «${service.title}» (${pkg.name}) رسید.`,
-    link: '/dashboard/orders',
+    link: '/dashboard/service-orders',
   });
   return order;
 }
@@ -789,7 +789,7 @@ export async function declineOrder(sellerId: string, orderId: string, reason: st
     type: 'service.order.declined',
     title: 'سفارش شما پذیرفته نشد',
     body: `فروشنده نتوانست سفارش «${order.service.title}» را بپذیرد: ${reason.trim()}`,
-    link: '/dashboard/orders',
+    link: '/dashboard/service-orders',
   });
   return updated;
 }

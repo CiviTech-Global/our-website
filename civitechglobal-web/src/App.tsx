@@ -95,6 +95,22 @@ const MyApplicationsPage = lazy(() => import('@/pages/dashboard/MyApplicationsPa
 const MyProjectsPage = lazy(() => import('@/pages/dashboard/MyProjectsPage'));
 const MyBidsPage = lazy(() => import('@/pages/dashboard/MyBidsPage'));
 const MyAwardsPage = lazy(() => import('@/pages/dashboard/MyAwardsPage'));
+// The freelance side's second generation (features.projectsV2).
+const ProjectBoardPage = lazy(() => import('@/pages/public/ProjectBoardPage'));
+const ProjectPage = lazy(() => import('@/pages/public/ProjectPage'));
+const ServiceCatalogPage = lazy(() => import('@/pages/public/ServiceCatalogPage'));
+const ServicePage = lazy(() => import('@/pages/public/ServicePage'));
+const TalentPage = lazy(() => import('@/pages/public/TalentPage'));
+const ClientProjectsPage = lazy(() => import('@/pages/dashboard/ClientProjectsPage'));
+const PostProjectPage = lazy(() => import('@/pages/dashboard/PostProjectPage'));
+const MyProposalsPage = lazy(() => import('@/pages/dashboard/MyProposalsPage'));
+const ProjectInvitesPage = lazy(() => import('@/pages/dashboard/ProjectInvitesPage'));
+const SavedProjectsPage = lazy(() => import('@/pages/dashboard/SavedProjectsPage'));
+const ProjectAlertsPage = lazy(() => import('@/pages/dashboard/ProjectAlertsPage'));
+const MyServicesPage = lazy(() => import('@/pages/dashboard/MyServicesPage'));
+const ServiceEditorPage = lazy(() => import('@/pages/dashboard/ServiceEditorPage'));
+const ServiceOrdersPage = lazy(() => import('@/pages/dashboard/ServiceOrdersPage'));
+const ServiceQueuePage = lazy(() => import('@/pages/admin/ServiceQueuePage'));
 const ConversationsPage = lazy(() => import('@/pages/dashboard/ConversationsPage'));
 const ConversationThreadPage = lazy(() => import('@/pages/dashboard/ConversationThreadPage'));
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage'));
@@ -394,7 +410,7 @@ export default function App() {
           path="/projects"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <FreelanceProjectsPage />
+              {features.projectsV2 ? <ProjectBoardPage /> : <FreelanceProjectsPage />}
             </Suspense>
           }
         />
@@ -402,10 +418,46 @@ export default function App() {
           path="/projects/:code"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <FreelanceProjectDetailPage />
+              {features.projectsV2 ? <ProjectPage /> : <FreelanceProjectDetailPage />}
             </Suspense>
           }
         />
+        {features.projectsV2 && (
+          <>
+            <Route
+              path="/projects/category/:category"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectBoardPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/freelance-services"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ServiceCatalogPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/freelance-services/:code"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ServicePage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/freelancers"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <TalentPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         <Route path="/profiles/:username" element={<PublicProfilePage />} />
         <Route
           path="/team"
@@ -611,7 +663,7 @@ export default function App() {
           path="projects"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <MyProjectsPage />
+              {features.projectsV2 ? <ClientProjectsPage /> : <MyProjectsPage />}
             </Suspense>
           }
         />
@@ -619,7 +671,7 @@ export default function App() {
           path="bids"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <MyBidsPage />
+              {features.projectsV2 ? <MyProposalsPage /> : <MyBidsPage />}
             </Suspense>
           }
         />
@@ -631,6 +683,82 @@ export default function App() {
             </Suspense>
           }
         />
+        {features.projectsV2 && (
+          <>
+            <Route
+              path="projects/new"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <PostProjectPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="projects/:id/edit"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <PostProjectPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="invites"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectInvitesPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="saved-projects"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <SavedProjectsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="project-alerts"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectAlertsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="services"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <MyServicesPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="services/new"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ServiceEditorPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="services/:id/edit"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ServiceEditorPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="service-orders"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ServiceOrdersPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         <Route
           path="messages"
           element={
@@ -933,6 +1061,18 @@ export default function App() {
             </RequirePermission>
           }
         />
+        {features.projectsV2 && (
+          <Route
+            path="services-queue"
+            element={
+              <RequirePermission permission="freelance">
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ServiceQueuePage />
+                </Suspense>
+              </RequirePermission>
+            }
+          />
+        )}
         <Route
           path="bids"
           element={

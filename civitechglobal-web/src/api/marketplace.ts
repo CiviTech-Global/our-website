@@ -143,7 +143,7 @@ export function usePublicJob(code: string | undefined) {
   });
 }
 
-export type ProjectBoardSort = 'newest' | 'budgetAsc' | 'budgetDesc';
+export type ProjectBoardSort = 'newest' | 'budgetAsc' | 'budgetDesc' | 'fewestBids' | 'closingSoon';
 
 export interface ProjectBoardQuery {
   page: number;
@@ -154,6 +154,25 @@ export interface ProjectBoardQuery {
   budgetMin?: string;
   budgetMax?: string;
   sort?: ProjectBoardSort;
+  // Second generation (features.projectsV2); the server ignores none of these
+  // and the old board never sends them.
+  workCategoryId?: string;
+  pricingType?: string;
+  experienceLevel?: string;
+  duration?: string;
+  weeklyHours?: string;
+  maxBids?: string;
+  clientHired?: boolean;
+  clientVerified?: boolean;
+  urgent?: boolean;
+  featured?: boolean;
+  nda?: boolean;
+  onsite?: boolean;
+  contractToHire?: boolean;
+  country?: string;
+  language?: string;
+  currency?: string;
+  postedWithinDays?: string;
 }
 
 export function usePublicProjects(query: ProjectBoardQuery) {

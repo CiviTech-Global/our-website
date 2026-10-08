@@ -29,7 +29,7 @@ describe('client feature flags', () => {
   it('exposes flags as a frozen-shaped constant object', () => {
     // A mutable flag object invites somebody to flip it at runtime to "test
     // something", which then ships.
-    expect(Object.keys(features)).toEqual(['tradeMaster', 'tradeMasterOrders', 'jobsV2', 'demoData']);
+    expect(Object.keys(features)).toEqual(['tradeMaster', 'tradeMasterOrders', 'jobsV2', 'projectsV2', 'demoData']);
   });
 
   it('has the demo panel on outside a production build', () => {

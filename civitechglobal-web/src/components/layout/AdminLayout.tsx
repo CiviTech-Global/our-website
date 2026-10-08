@@ -29,6 +29,7 @@ import {
   UserRound,
   Users,
   UsersRound,
+  Layers,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -185,6 +186,11 @@ export function AdminLayout() {
             ...when(can('jobs'), queue.jobPosts, queue.applications),
             ...when(can('jobs') && features.jobsV2, companies),
             ...when(can('freelance'), queue.freelanceProjects, queue.bids),
+            ...when(can('freelance') && features.projectsV2, {
+              to: '/admin/services-queue',
+              label: t.work.serviceQueueTitle,
+              icon: <Layers />,
+            }),
             ...when(can('books'), queue.books),
             // Both behind one permission: a shop and its catalogue are
             // judged together, and a refused shop whose products nobody on

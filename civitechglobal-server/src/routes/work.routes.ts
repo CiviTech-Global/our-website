@@ -10,7 +10,7 @@ import { validate } from '../middleware/validate.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { features } from '../config/features.js';
 import { MAX_FILE_BYTES, openStoredFile } from '../services/attachment.service.js';
-import { serveStoredFile } from '../services/file-response.js';
+import { requestedDisposition, serveStoredFile } from '../services/file-response.js';
 import { listWorkCategories } from '../services/work-taxonomy.service.js';
 import * as work from '../services/project-work.service.js';
 import * as catalog from '../services/service-catalog.service.js';
@@ -198,6 +198,22 @@ router.get(
   '/me/projects/:id/price-guide',
   wrap(async (req, res) => {
     successResponse(res, await work.priceGuide(param(req, 'id')));
+  }),
+);
+
+router.get(
+  '/me/project-attachments/:id',
+  wrap(async (req, res) => {
+    const file = await work.getProjectAttachment(req.user!.userId, param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(file.storedName), { ...file, disposition: requestedDisposition(req.query.disposition) });
+  }),
+);
+
+router.get(
+  '/me/bids/:id/attachment',
+  wrap(async (req, res) => {
+    const file = await work.getBidAttachment(req.user!.userId, param(req, 'id'));
+    serveStoredFile(res, await openStoredFile(file.storedName), { ...file, disposition: requestedDisposition(req.query.disposition) });
   }),
 );
 

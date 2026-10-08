@@ -1,3 +1,5 @@
+import work from './work/fa';
+
 const fa = {
   common: {
     brand: 'رایان تمدن جهان گستر',
@@ -64,6 +66,8 @@ const fa = {
     marketplaceMenu: 'بازارگاه',
     jobs: 'فرصت‌های شغلی',
     freelance: 'پروژه‌های فریلنسری',
+    freelanceServices: 'خدمات فریلنسری',
+    freelancers: 'فریلنسرها',
     books: 'بازار کتاب',
     consult: 'مشاوره',
     experts: 'باشگاه متخصصان',
@@ -2756,6 +2760,7 @@ const fa = {
     emptyHint: 'تا وقتی دسته‌ای نباشد، فروشنده نمی‌تواند کالایش را دسته‌بندی کند.',
     depthHint: 'دسته‌بندی حداکثر در دو سطح تعریف می‌شود.',
   },
+  work,
 };
 
 export default fa;

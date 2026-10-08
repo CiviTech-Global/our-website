@@ -1,4 +1,5 @@
 import type fa from './fa';
+import work from './work/en';
 
 const en: typeof fa = {
   common: {
@@ -66,6 +67,8 @@ const en: typeof fa = {
     marketplaceMenu: 'Marketplace',
     jobs: 'Jobs',
     freelance: 'Freelance projects',
+    freelanceServices: 'Freelance services',
+    freelancers: 'Freelancers',
     books: 'Book market',
     consult: 'Consultation',
     experts: 'Club of experts',
@@ -2769,6 +2772,7 @@ const en: typeof fa = {
     emptyHint: 'Until there is one, a seller cannot file a product anywhere.',
     depthHint: 'Categories go two levels deep at most.',
   },
+  work,
 };
 
 export default en;

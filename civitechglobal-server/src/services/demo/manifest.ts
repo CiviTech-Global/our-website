@@ -81,6 +81,15 @@ const DELETERS: Record<string, Deleter> = {
   marketplaceAward: async (id) =>
     void (await prisma.marketplaceAward.deleteMany({ where: { id } })),
   notification: async (id) => void (await prisma.notification.deleteMany({ where: { id } })),
+  projectInvite: async (id) => void (await prisma.projectInvite.deleteMany({ where: { id } })),
+  savedProject: async (id) => void (await prisma.savedProject.deleteMany({ where: { id } })),
+  projectAlert: async (id) => void (await prisma.projectAlert.deleteMany({ where: { id } })),
+  projectNdaSignature: async (id) => void (await prisma.projectNdaSignature.deleteMany({ where: { id } })),
+  marketplaceTimesheet: async (id) => void (await prisma.marketplaceTimesheet.deleteMany({ where: { id } })),
+  marketplaceMilestone: async (id) => void (await prisma.marketplaceMilestone.deleteMany({ where: { id } })),
+  marketplaceReview: async (id) => void (await prisma.marketplaceReview.deleteMany({ where: { id } })),
+  service: async (id) => void (await prisma.service.deleteMany({ where: { id } })),
+  serviceOrder: async (id) => void (await prisma.serviceOrder.deleteMany({ where: { id } })),
 };
 
 /** The models a seed may record. Anything else is a programming mistake. */
@@ -224,6 +233,15 @@ async function countExisting(model: string, id: string): Promise<boolean> {
     jobAlert: () => prisma.jobAlert.count({ where: { id } }),
     marketplaceAward: () => prisma.marketplaceAward.count({ where: { id } }),
     notification: () => prisma.notification.count({ where: { id } }),
+    projectInvite: () => prisma.projectInvite.count({ where: { id } }),
+    savedProject: () => prisma.savedProject.count({ where: { id } }),
+    projectAlert: () => prisma.projectAlert.count({ where: { id } }),
+    projectNdaSignature: () => prisma.projectNdaSignature.count({ where: { id } }),
+    marketplaceTimesheet: () => prisma.marketplaceTimesheet.count({ where: { id } }),
+    marketplaceMilestone: () => prisma.marketplaceMilestone.count({ where: { id } }),
+    marketplaceReview: () => prisma.marketplaceReview.count({ where: { id } }),
+    service: () => prisma.service.count({ where: { id } }),
+    serviceOrder: () => prisma.serviceOrder.count({ where: { id } }),
   };
 
   const counter = counters[model];

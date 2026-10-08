@@ -1,4 +1,5 @@
 import type { PartialTranslations } from './merge';
+import work from './work/es';
 
 /**
  * Español.
@@ -59,6 +60,8 @@ const es: PartialTranslations = {
     marketplaceMenu: 'Mercado',
     jobs: 'Empleos',
     freelance: 'Proyectos freelance',
+    freelanceServices: 'Servicios freelance',
+    freelancers: 'Freelancers',
     team: 'Nuestro equipo',
     home: 'Inicio',
     servicesMenu: 'Servicios',
@@ -2590,6 +2593,7 @@ const es: PartialTranslations = {
     emptyHint: 'Mientras no haya ninguna, un vendedor no puede clasificar su producto.',
     depthHint: 'Las categorías tienen como máximo dos niveles.',
   },
+  work,
 };
 
 export default es;

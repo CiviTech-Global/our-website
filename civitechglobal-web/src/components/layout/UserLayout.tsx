@@ -19,6 +19,11 @@ import {
   ShoppingBag,
   Store,
   UserCircle,
+  MailPlus,
+  BookmarkPlus,
+  BellPlus,
+  Layers,
+  ReceiptText,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useUnreadCounts } from '@/api/marketplace';
@@ -82,7 +87,16 @@ export function UserLayout() {
                 ]
               : []),
             { to: '/dashboard/projects', label: t.market.myProjects, icon: <FolderKanban /> },
-            { to: '/dashboard/bids', label: t.market.myBids, icon: <Gavel /> },
+            { to: '/dashboard/bids', label: features.projectsV2 ? t.work.navProposals : t.market.myBids, icon: <Gavel /> },
+            ...(features.projectsV2
+              ? [
+                  { to: '/dashboard/invites', label: t.work.navInvites, icon: <MailPlus /> },
+                  { to: '/dashboard/saved-projects', label: t.work.navSavedProjects, icon: <BookmarkPlus /> },
+                  { to: '/dashboard/project-alerts', label: t.work.navProjectAlerts, icon: <BellPlus /> },
+                  { to: '/dashboard/services', label: t.work.navMyServices, icon: <Layers /> },
+                  { to: '/dashboard/service-orders', label: t.work.navOrders, icon: <ReceiptText /> },
+                ]
+              : []),
             { to: '/dashboard/awards', label: t.market.myAwards, icon: <Handshake /> },
           ],
         },

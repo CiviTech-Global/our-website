@@ -56,6 +56,15 @@ export const features = {
   jobsV2: flag(import.meta.env.VITE_FEATURE_JOBS_V2, true),
 
   /**
+   * The freelance side's second generation: richer projects, the client's
+   * pipeline and invitations, NDAs, saved projects and alerts, hourly
+   * timesheets, the talent directory and the service catalogue.
+   *
+   * Matches FEATURE_PROJECTS_V2 on the server, which is what actually refuses.
+   */
+  projectsV2: flag(import.meta.env.VITE_FEATURE_PROJECTS_V2, true),
+
+  /**
    * The demo-data panel: fill the site with example records, and empty it again.
    *
    * No environment override, unlike the two above: there is no production where
