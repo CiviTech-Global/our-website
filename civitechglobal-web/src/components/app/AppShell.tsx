@@ -106,7 +106,11 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
   return (
     <SurfaceContext.Provider value="app">
       <ShellContext.Provider value={shellValue}>
-        <div data-app-shell="" className="app-canvas app-surface flex h-dvh overflow-hidden text-body text-app-text-2">
+        {/* Pinned to the window, not merely one window tall: then nothing else
+            in the document — the trust seal after #root, whatever a browser
+            extension injects — can make the page scroll and carry the sidebar
+            with it. Only <main> scrolls. */}
+        <div data-app-shell="" className="app-canvas app-surface fixed inset-0 flex overflow-hidden text-body text-app-text-2">
           {/* Desktop frame */}
           <div className="hidden h-full lg:flex">
             {rail}
@@ -222,7 +226,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
               </div>
             </header>
 
-            <main id="main-content" className="min-h-0 flex-1 overflow-y-auto">
+            <main id="main-content" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-6">{children}</div>
             </main>
           </div>
