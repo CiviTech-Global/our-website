@@ -22,7 +22,7 @@ export function Card({ className, children, glass = false, ...props }: CardProps
       className={cn(
         app
           ? 'app-raised p-4 text-body text-app-text-2'
-          : ['rounded-xl border border-border-default bg-surface-50 p-6 shadow-soft', glass && 'glass'],
+          : ['rounded-2xl border border-border-default bg-surface-50 p-6 shadow-soft', glass && 'glass'],
         className
       )}
       {...props}

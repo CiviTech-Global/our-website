@@ -4,7 +4,9 @@ import { FuturisticFooter } from './FuturisticFooter';
 
 export function PublicLayout() {
   return (
-    <div className="flex min-h-screen flex-col">
+    // The public site speaks Bagh at its expressive intensity: slower
+    // curves, the garden ground, room for one performance per page.
+    <div data-intensity="expressive" className="flex min-h-screen flex-col">
       <FuturisticNavbar />
       <main className="flex-1">
         <Outlet />

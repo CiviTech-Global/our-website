@@ -80,7 +80,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className={cn(
-          app ? 'absolute inset-0 bg-[#0c111d]/45' : 'absolute inset-0 bg-surface-950/60 backdrop-blur-sm',
+          'absolute inset-0 bg-[oklch(18%_0.035_264/0.55)]',
           state === 'entering' ? 'ct-fade-in' : 'ct-fade-out'
         )}
         onClick={onClose}
@@ -96,7 +96,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
             ? // A dialog is the one place a dashboard uses a shadow: it floats.
               // Scrolls inside itself, so a long form never runs off the screen.
               'app-raised relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden text-body text-app-text-2 shadow-app-float'
-            : 'glass relative z-10 w-full max-w-lg rounded-xl p-6 shadow-soft-lg',
+            : 'relative z-10 w-full max-w-lg rounded-2xl border border-border-default bg-surface-50 p-6 shadow-soft-lg',
           state === 'entering' ? 'ct-pop-in' : 'ct-pop-out',
           className
         )}

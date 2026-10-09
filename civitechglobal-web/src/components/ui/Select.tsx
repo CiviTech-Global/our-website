@@ -19,7 +19,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           className={cn(
             fieldClasses(app, invalid),
             'appearance-none',
-            app ? 'h-[34px] ps-3 pe-8' : 'h-11 ps-3.5 pe-10',
+            app ? 'h-9 ps-3 pe-8' : 'h-12 ps-4 pe-10',
             className
           )}
           {...props}

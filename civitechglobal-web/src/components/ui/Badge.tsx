@@ -14,7 +14,7 @@ const MARKETING_VARIANTS: Record<BadgeVariant, string> = {
   success: 'bg-brand-green-100 text-brand-green-700 dark:bg-brand-green-900/40 dark:text-brand-green-300',
   warning: 'bg-brand-amber-100 text-brand-amber-700 dark:bg-brand-amber-900/40 dark:text-brand-amber-300',
   danger: 'bg-brand-red-100 text-brand-red-700 dark:bg-brand-red-900/40 dark:text-brand-red-300',
-  info: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+  info: 'bg-brand-lapis-100 text-brand-lapis-700 dark:bg-brand-lapis-900/40 dark:text-brand-lapis-300',
   default: 'bg-surface-200 text-text-secondary dark:bg-surface-300',
 };
 
@@ -38,8 +38,8 @@ export function Badge({ className, variant = 'default', dot = false, children, .
     <span
       className={cn(
         app
-          ? 'inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-full border px-2 text-label font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] [&_svg]:size-3'
-          : 'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium',
+          ? 'inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-caption font-semibold [&_svg]:size-3'
+          : 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
         app ? APP_VARIANTS[variant] : MARKETING_VARIANTS[variant],
         className
       )}

@@ -19,6 +19,7 @@ import { LOCALE_TAGS } from '@/i18n/locales';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { KineticWords } from '@/components/ui/KineticWords';
 import { HeroMotif } from '@/components/home/HeroMotif';
 import { MarketplaceShowcase } from '@/components/home/MarketplaceShowcase';
 
@@ -71,18 +72,18 @@ export default function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24">
       {/* Hero */}
-      <section className="grid grid-cols-1 items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
+      {/* The garden ground runs edge to edge behind the hero, under the plan. */}
+      <section className="bagh-ground relative -mx-4 grid grid-cols-1 items-center gap-10 rounded-b-[var(--radius-feature)] px-4 py-16 lg:grid-cols-2 lg:py-24">
         <AnimatedSection>
-          <p className="mb-3 inline-block rounded-full border border-brand-green-500/30 bg-brand-green-500/10 px-3 py-1 text-xs font-medium text-brand-green-600 dark:text-brand-green-400">
-            {t.home.heroEyebrow}
-          </p>
-          <h1 className="text-4xl font-bold leading-tight text-text-primary sm:text-5xl">
-            {t.home.heroTitle}
-          </h1>
-          <p className="mt-4 max-w-lg text-lg text-text-secondary">{t.home.heroSubtitle}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <p className="bagh-chip mb-5">{t.home.heroEyebrow}</p>
+          <KineticWords
+            text={t.home.heroTitle}
+            className="text-[clamp(2.25rem,1.6rem+2.6vw,3.6rem)] font-extrabold leading-[1.25] text-text-primary"
+          />
+          <p className="mt-5 max-w-lg text-lg leading-loose text-text-secondary">{t.home.heroSubtitle}</p>
+          <div className="mt-9 flex flex-wrap gap-3">
             <Link to="/services">
-              <Button size="lg">
+              <Button size="lg" className="bagh-clay">
                 {t.home.heroCtaPrimary}
                 <ArrowIcon className="size-4" aria-hidden="true" />
               </Button>
@@ -101,15 +102,18 @@ export default function HomePage() {
 
       {/* What we do */}
       <section className="py-12">
-        <AnimatedSection className="mb-10 text-center">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{t.home.whatWeDoTitle}</h2>
-          <p className="mt-2 text-text-secondary">{t.home.whatWeDoSubtitle}</p>
+        <AnimatedSection className="mb-10">
+          <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.home.whatWeDoTitle}</h2>
+          <p className="mt-2 max-w-2xl text-text-secondary">{t.home.whatWeDoSubtitle}</p>
+          <hr className="neon-line mt-5 w-40 [mask-image:none]" />
         </AnimatedSection>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, i) => (
             <AnimatedSection key={feature.title} delay={i * 0.08}>
               <GlowCard glow={feature.glow} className="h-full">
-                <feature.icon className="mb-4 size-8 text-brand-green-500" aria-hidden="true" />
+                <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-brand-green-50 text-brand-green-600 ring-1 ring-brand-green-200 dark:bg-brand-green-400/10 dark:text-brand-green-300 dark:ring-brand-green-400/25">
+                  <feature.icon className="size-6" aria-hidden="true" />
+                </span>
                 <h3 className="mb-2 text-lg font-semibold text-text-primary">{feature.title}</h3>
                 <p className="text-sm text-text-secondary">{feature.desc}</p>
               </GlowCard>
@@ -120,15 +124,18 @@ export default function HomePage() {
 
       {/* How we work */}
       <section className="py-12">
-        <AnimatedSection className="mb-10 text-center">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{t.home.howWeWorkTitle}</h2>
-          <p className="mt-2 text-text-secondary">{t.home.howWeWorkSubtitle}</p>
+        <AnimatedSection className="mb-10">
+          <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.home.howWeWorkTitle}</h2>
+          <p className="mt-2 max-w-2xl text-text-secondary">{t.home.howWeWorkSubtitle}</p>
+          <hr className="neon-line mt-5 w-40 [mask-image:none]" />
         </AnimatedSection>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {howWeWork.map((item, i) => (
             <AnimatedSection key={item.title} delay={i * 0.08}>
               <GlowCard glow="green" className="h-full">
-                <item.icon className="mb-4 size-8 text-brand-green-500" aria-hidden="true" />
+                <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-brand-amber-50 text-brand-amber-700 ring-1 ring-brand-amber-200 dark:bg-brand-amber-400/10 dark:text-brand-amber-300 dark:ring-brand-amber-400/25">
+                  <item.icon className="size-6" aria-hidden="true" />
+                </span>
                 <h3 className="mb-2 text-lg font-semibold text-text-primary">{item.title}</h3>
                 <p className="text-sm text-text-secondary">{item.desc}</p>
               </GlowCard>
@@ -143,9 +150,7 @@ export default function HomePage() {
       {/* Insurance: one service, stated once, and easy to find. */}
       <section className="py-12">
         <AnimatedSection className="mb-6">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-text-muted">
-            {t.home.alsoTitle}
-          </h2>
+          <h2 className="text-lg font-bold text-text-primary">{t.home.alsoTitle}</h2>
         </AnimatedSection>
         <AnimatedSection delay={0.06}>
           <div className="flex flex-col gap-4 rounded-2xl border border-border-default bg-surface-50 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -186,7 +191,7 @@ export default function HomePage() {
 
       {/* CTA */}
       <AnimatedSection>
-        <section className="glow-border rounded-2xl bg-surface-50 p-6 text-center shadow-soft sm:p-10">
+        <section className="bagh-ground glow-border rounded-[var(--radius-feature)] bg-surface-50 p-8 text-center shadow-soft sm:p-12">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{t.home.ctaTitle}</h2>
           <p className="mx-auto mt-2 max-w-md text-text-secondary">{t.home.ctaSubtitle}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">

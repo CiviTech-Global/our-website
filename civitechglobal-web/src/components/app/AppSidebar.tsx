@@ -9,10 +9,10 @@ import { UserMenu } from './UserMenu';
 /**
  * The screens inside the active module.
  *
- * 32px rows at 13px: dense enough that a module with a dozen screens fits
- * without scrolling, and the active screen is marked by a quiet filled row with
- * a brand-coloured icon rather than a block of colour — the page, not the
- * sidebar, is where the eye should go.
+ * 36px rows at 14px: dense enough that a module with a dozen screens fits
+ * without scrolling, and the active screen is marked by a soft turquoise row
+ * and a bar on its inner edge rather than a block of colour — the page, not
+ * the sidebar, is where the eye should go.
  */
 export function AppSidebar({
   panel,
@@ -33,7 +33,7 @@ export function AppSidebar({
   const { t } = useLocale();
 
   return (
-    <div className="flex h-full w-60 shrink-0 flex-col border-e border-app-border bg-app-panel shadow-[inset_-1px_0_0_rgba(255,255,255,0.5),2px_0_6px_-4px_rgba(60,44,20,0.25)] dark:shadow-[2px_0_8px_-4px_rgba(0,0,0,0.8)]">
+    <div className="flex h-full w-64 shrink-0 flex-col border-e border-app-border bg-app-panel">
       <div className="app-faceplate flex h-12 shrink-0 items-center justify-between gap-2 ps-4 pe-2">
         <div className="min-w-0">
           <p className="app-label truncate !text-app-text-4">{panelTitle}</p>
@@ -98,14 +98,14 @@ function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
       onClick={onNavigate}
       className={({ isActive }) =>
         cn(
-          'group relative flex h-9 items-center gap-2 rounded-md border ps-3 pe-2 text-body transition-[background-color,box-shadow] duration-100 [&_svg]:size-4 [&_svg]:shrink-0',
+          'group relative flex h-9 items-center gap-2.5 rounded-lg ps-3 pe-2 text-body transition-[background-color,color] duration-(--dur-feedback) ease-(--ease) [&_svg]:size-4 [&_svg]:shrink-0',
+          'before:absolute before:start-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-full before:bg-app-primary before:opacity-0',
           isActive
-            ? 'border-app-border bg-app-fill font-semibold text-app-text shadow-[inset_0_2px_3px_rgba(60,44,20,0.18)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.55)] [&_svg]:text-app-primary'
-            : 'border-transparent text-app-text-2 hover:border-app-border-light hover:bg-app-hover hover:text-app-text [&_svg]:text-app-icon hover:[&_svg]:text-app-primary'
+            ? 'bg-app-primary-soft font-semibold text-app-text before:opacity-100 [&_svg]:text-app-primary'
+            : 'text-app-text-2 hover:bg-app-hover hover:text-app-text [&_svg]:text-app-icon hover:[&_svg]:text-app-primary'
         )
       }
     >
-      <span className="app-led absolute start-1 top-1/2 hidden !size-[5px] -translate-y-1/2 group-aria-[current=page]:block" aria-hidden="true" />
       {item.icon}
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {item.count !== undefined && item.count > 0 && (

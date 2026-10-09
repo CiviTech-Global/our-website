@@ -110,7 +110,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
             in the document — the trust seal after #root, whatever a browser
             extension injects — can make the page scroll and carry the sidebar
             with it. Only <main> scrolls. */}
-        <div data-app-shell="" className="app-canvas app-surface fixed inset-0 flex overflow-hidden text-body text-app-text-2">
+        <div data-app-shell="" data-intensity="productive" className="app-canvas app-surface fixed inset-0 flex overflow-hidden text-body text-app-text-2">
           {/* Desktop frame */}
           <div className="hidden h-full lg:flex">
             {rail}

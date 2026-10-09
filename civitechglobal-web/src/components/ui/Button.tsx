@@ -14,14 +14,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const MARKETING_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-brand-green-500 text-white hover:bg-brand-green-600 shadow-soft hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] focus-visible:outline-brand-green-500',
+    'bg-brand-green-500 text-white shadow-[0_2px_0_var(--color-brand-green-800)] hover:bg-brand-green-600 dark:bg-brand-green-400 dark:text-surface-50 dark:shadow-[0_2px_0_var(--color-brand-green-800)] dark:hover:bg-brand-green-300',
   secondary:
-    'bg-surface-200 text-text-primary hover:bg-surface-300 dark:bg-surface-300 dark:hover:bg-surface-400',
+    'border border-border-default bg-surface-200 text-text-primary hover:border-border-strong hover:bg-surface-300',
   outline:
-    'border border-border-strong bg-transparent text-text-primary hover:bg-surface-200 dark:hover:bg-surface-300',
+    'border border-border-strong bg-transparent text-text-primary hover:border-brand-green-500 hover:bg-brand-green-50 hover:text-brand-green-700 dark:hover:border-brand-green-400 dark:hover:bg-brand-green-400/10 dark:hover:text-brand-green-300',
   ghost: 'bg-transparent text-text-primary hover:bg-surface-200 dark:hover:bg-surface-300',
   danger:
-    'bg-brand-red-500 text-white hover:bg-brand-red-600 shadow-soft hover:shadow-[0_0_20px_rgba(239,68,68,0.35)]',
+    'bg-brand-red-500 text-white shadow-[0_2px_0_var(--color-brand-red-800)] hover:bg-brand-red-600 dark:bg-brand-red-400 dark:text-surface-50 dark:hover:bg-brand-red-300',
 };
 
 const MARKETING_SIZES: Record<ButtonSize, string> = {
@@ -33,12 +33,12 @@ const MARKETING_SIZES: Record<ButtonSize, string> = {
 /**
  * The dashboards' buttons: keys.
  *
- * Each is a physical key — lit from above, a lip underneath, and a short real
- * travel when pressed — so what can be pressed looks pressable without a
- * tooltip saying so. The motion is 90ms and only on press: enough to confirm
- * the click, not enough to slow somebody who clicks all day. One height for
- * the ordinary case (34px, matching inputs so a button beside a field lines
- * up). `secondary` and `outline` are the same key here.
+ * A flat face on a tile lip, with a short real travel when pressed, so what
+ * can be pressed looks pressable without a tooltip saying so. The motion is
+ * 70ms and only on press: enough to confirm the click, not enough to slow
+ * somebody who clicks all day. One height for the ordinary case (36px,
+ * matching fields so a button beside a field lines up). `secondary` and
+ * `outline` are the same key here.
  */
 const APP_VARIANTS: Record<ButtonVariant, string> = {
   primary: 'app-key app-key-primary',
@@ -49,9 +49,9 @@ const APP_VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const APP_SIZES: Record<ButtonSize, string> = {
-  sm: 'h-7 px-2.5 text-label gap-1',
-  md: 'h-[34px] px-3 text-body gap-1.5',
-  lg: 'h-10 px-4 text-body-lg gap-2',
+  sm: 'h-8 px-3 text-label gap-1.5',
+  md: 'h-9 px-3.5 text-body gap-1.5',
+  lg: 'h-11 px-5 text-body-lg gap-2',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -68,7 +68,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           app
             ? ['[&_svg]:size-4', APP_VARIANTS[variant], APP_SIZES[size]]
             : [
-                'rounded-xl transition-all duration-200 active:scale-[0.98]',
+                'rounded-xl font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-(--dur-feedback) ease-(--ease) active:translate-y-px active:shadow-none',
                 MARKETING_VARIANTS[variant],
                 MARKETING_SIZES[size],
               ],

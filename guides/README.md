@@ -28,6 +28,17 @@ otherwise starts from zero.
   over the phone. This is the document `src/insurance/catalog/` was written
   from; change the catalog and change this too.
 
+## Design
+
+- [`ui-style-synthesis.md`](./ui-style-synthesis.md) — the research behind
+  **Bagh**, the platform's design language: eight UI styles (Swiss modernism,
+  minimalism, motion-driven, organic/biophilic, claymorphism, neubrutalism,
+  kinetic type, Soft UI) compared on accessibility, performance, trust and
+  Persian/RTL fit, with what was borrowed from each and what was rejected. The
+  source notes are in [`research/ui-style-synthesis/`](./research/ui-style-synthesis/).
+  `civitechglobal-web/src/index.css` implements it; change one and change the
+  other.
+
 ## Deployment & operations
 
 - [`production-deployment.md`](./production-deployment.md) — the complete

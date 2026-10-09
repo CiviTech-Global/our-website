@@ -185,10 +185,10 @@ export function FuturisticNavbar() {
                   to={entry.to}
                   className={({ isActive }) =>
                     cn(
-                      'whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors lg:px-3',
+                      'whitespace-nowrap rounded-lg px-2 py-2 text-sm font-semibold transition-colors duration-(--dur-feedback) lg:px-3',
                       isActive
-                        ? 'text-brand-green-600 dark:text-brand-green-400'
-                        : 'text-text-secondary hover:text-text-primary'
+                        ? 'bg-brand-green-50 text-brand-green-700 dark:bg-brand-green-400/10 dark:text-brand-green-300'
+                        : 'text-text-secondary hover:bg-surface-200 hover:text-text-primary'
                     )
                   }
                 >
@@ -257,7 +257,7 @@ export function FuturisticNavbar() {
             {NAV_ENTRIES.map((entry) =>
               isMenu(entry) ? (
                 <li key={entry.id}>
-                  <p className="px-3 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  <p className="px-3 pb-1 pt-3 text-xs font-bold text-text-muted">
                     {t.nav[entry.key]}
                   </p>
                   <ul className="flex flex-col gap-1">
@@ -321,7 +321,7 @@ function MobileLink({ to, label }: { to: string; label: string }) {
       className={({ isActive }) =>
         cn(
           'block rounded-lg px-3 py-3 text-sm font-medium hover:bg-surface-200',
-          isActive ? 'text-brand-green-600 dark:text-brand-green-400' : 'text-text-primary'
+          isActive ? 'bg-brand-green-50 text-brand-green-700 dark:bg-brand-green-400/10 dark:text-brand-green-300' : 'text-text-primary'
         )
       }
     >
@@ -435,10 +435,10 @@ function NavMenuButton({
         aria-expanded={open}
         aria-controls={id}
         className={cn(
-          'flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors lg:px-3',
+          'flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-semibold transition-colors duration-(--dur-feedback) lg:px-3',
           containsCurrent
-            ? 'text-brand-green-600 dark:text-brand-green-400'
-            : 'text-text-secondary hover:text-text-primary'
+            ? 'bg-brand-green-50 text-brand-green-700 dark:bg-brand-green-400/10 dark:text-brand-green-300'
+            : 'text-text-secondary hover:bg-surface-200 hover:text-text-primary'
         )}
       >
         {t.nav[menu.key]}
@@ -468,7 +468,7 @@ function NavMenuButton({
                       cn(
                         'block whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                         isActive
-                          ? 'bg-brand-green-500/10 text-brand-green-600 dark:text-brand-green-400'
+                          ? 'bg-brand-green-50 text-brand-green-700 dark:bg-brand-green-400/10 dark:text-brand-green-300'
                           : 'text-text-secondary hover:bg-surface-200 hover:text-text-primary'
                       )
                     }

@@ -8,8 +8,9 @@ import { formatCount, moduleCount, moduleHome, type NavModule } from './navigati
 /**
  * The module switcher: one icon per area of work.
  *
- * Dark and narrow on purpose, so it reads as the frame of the application
- * rather than as part of any one screen. A dot on a module says something is
+ * Lapis and narrow on purpose, so it reads as the frame of the application —
+ * the garden's wall — rather than as part of any one screen. The module in
+ * use carries a turquoise bar on its inner edge. A dot on a module says something is
  * waiting inside it without the reader having to open it to find out.
  *
  * Each icon names itself in a tooltip on hover and on keyboard focus — a rail
@@ -32,12 +33,14 @@ export function AppRail({
   return (
     <nav
       aria-label={t.app.modules}
-      className="app-rail flex h-full w-16 shrink-0 flex-col items-center gap-1.5 py-3"
+      // On lapis the dark saffron ring would vanish; the rail's own subtree
+      // gets the lighter saffron (7:1) through the token the ring reads.
+      className="app-rail flex h-full w-16 shrink-0 flex-col items-center gap-1.5 py-3 [--color-app-accent:var(--color-brand-amber-400)]"
     >
       <Link
         to={homeTo}
         onClick={onNavigate}
-        className="mb-3 flex size-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_0_rgba(0,0,0,0.5)] focus-visible:outline-white/70"
+        className="mb-3 flex size-10 items-center justify-center rounded-xl bg-white/[0.07] ring-1 ring-white/10 transition-colors duration-(--dur-feedback) hover:bg-white/[0.12]"
         aria-label={t.common.brand}
       >
         <img src={logoSrc} alt="" className="size-7 object-contain" />
@@ -58,18 +61,15 @@ export function AppRail({
                 aria-current={active ? 'page' : undefined}
                 aria-label={waiting > 0 ? `${module.label} (${formatCount(waiting, localize)})` : module.label}
                 className={cn(
-                  'relative flex size-10 items-center justify-center rounded-lg border transition-[transform,box-shadow] duration-100 [&_svg]:size-[18px]',
-                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent',
+                  'relative flex size-10 items-center justify-center rounded-xl transition-[background-color,color] duration-(--dur-feedback) ease-(--ease) [&_svg]:size-[19px]',
+                  // The turquoise bar on the inner edge marks the module in use.
+                  'before:absolute before:-end-3 before:top-2 before:bottom-2 before:w-[3px] before:rounded-s-full before:bg-brand-green-400 before:opacity-0 before:transition-opacity',
                   active
-                    ? 'translate-y-px border-black/60 bg-black/35 text-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.7)]'
-                    : 'border-white/10 bg-gradient-to-b from-white/[0.09] to-white/[0.02] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_2px_0_rgba(0,0,0,0.55)] hover:text-white active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.7)]'
+                    ? 'bg-brand-green-400/15 text-brand-green-200 before:opacity-100'
+                    : 'text-white/65 hover:bg-white/[0.08] hover:text-white active:bg-white/[0.12]'
                 )}
               >
                 {module.icon}
-                <span
-                  className={cn('app-led absolute start-1 top-1 !size-[5px]', !active && 'app-led-off opacity-60')}
-                  aria-hidden="true"
-                />
                 {waiting > 0 && <span className="app-led app-led-wait absolute end-1 top-1" aria-hidden="true" />}
               </Link>
 
@@ -77,7 +77,7 @@ export function AppRail({
                   never appears for keyboard focus. */}
               <span
                 role="tooltip"
-                className="pointer-events-none absolute start-full top-1/2 z-50 ms-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-black/40 bg-app-rail px-2 py-1 text-label font-medium text-white shadow-app-float group-hover:block group-focus-within:block"
+                className="pointer-events-none absolute start-full top-1/2 z-50 ms-3 hidden -translate-y-1/2 whitespace-nowrap rounded-lg bg-app-rail px-2.5 py-1.5 text-label font-medium text-white shadow-app-float ring-1 ring-white/10 group-hover:block group-focus-within:block"
               >
                 {module.label}
                 {waiting > 0 && <span className="ms-1.5 text-white/60">{formatCount(waiting, localize)}</span>}

@@ -3,231 +3,259 @@
 /* Explicit `.dark` class toggling (in addition to the OS preference on first load) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Vazir, as WOFF2 and only in the weights the interface actually uses.
- *
- * Previously five TTF faces totalling 472 kB were downloaded on every visit —
- * more than the entire JavaScript bundle. Two of them (Thin 100 and Light 300)
- * were referenced by nothing at all; the other three shipped as TTF, a format
- * with no compression, where WOFF2 is Brotli-compressed and universally
- * supported by every browser this app targets. Same three weights now cost
- * 128 kB.
- *
- * Weight 600 (`font-semibold`, the most-used utility here) has no face on
- * purpose: the browser interpolates it between 500 and 700, which costs
- * nothing and is visually indistinguishable at UI sizes from shipping a fourth
- * file. `font-display: swap` keeps text readable while the face loads.
- */
+/* ===========================================================================
+   Bagh (باغ) — the design language
+   ===========================================================================
+   One language for the whole platform, after the Persian garden: a strict
+   geometric plan with living things inside it. Synthesised from eight styles
+   (research: guides/ui-style-synthesis.md), each admitted only
+   for what it does well:
 
-@font-face {
-  font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+   - Swiss modernism and minimalism are the plan: an 8px module, a start-
+     aligned grid, hierarchy from weight (Persian has no capitals to lean on),
+     one accent, restraint. Minimalism keeps its signifiers — every control has
+     a real border — because weak signifiers cost 22% more time in dense UI.
+   - Organic/biophilic is the planting: a palette taken from the garden and
+     its tiles (firouzeh turquoise, saffron, lajvard lapis, anar pomegranate,
+     khesht sun-dried brick) and low-density girih geometry, not blobs.
+   - Soft UI and claymorphism give depth that means something: one light,
+     straight overhead (so nothing has to be mirrored for RTL), a short drop
+     under what floats, a pressed state for what is pressed. Never a shadow as
+     the only boundary.
+   - Neubrutalism gives its outline: a solid 3px ring for focus and selection,
+     and the flat "tile lip" under a key in place of a gradient.
+   - Motion-driven and kinetic design are tokens with two intensities, after
+     IBM Carbon: productive (dashboards, forms, booking — fast, quiet) and
+     expressive (the public pages — slower, and allowed to perform). Persian
+     moves by the word, never by the letter: splitting letters breaks joining.
 
-@font-face {
-  font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+   Colours are OKLCH ramps, gamut-mapped to sRGB and checked against WCAG 2.2
+   AA: text 4.5:1, control edges and focus 3:1, in light and dark.
+   ======================================================================== */
 
+/* Vazirmatn, the maintained successor of Vazir: one variable file (111 kB)
+   for every weight from 100 to 900, where three static Vazir weights cost
+   131 kB. Weight is the only hierarchy Persian type has, so having all of
+   them matters. OFL-1.1; the licence is beside the file. */
 @font-face {
-  font-family: 'Vazir';
-  src: url('./assets/fonts/Vazir-Bold.woff2') format('woff2');
-  font-weight: 700;
+  font-family: 'Vazirmatn';
+  src: url('./assets/fonts/Vazirmatn-Variable.woff2') format('woff2-variations'),
+    url('./assets/fonts/Vazirmatn-Variable.woff2') format('woff2');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @theme {
-  --font-sans: 'Vazir', 'Inter', 'Segoe UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Vazirmatn', 'Segoe UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
 
-  /* Surface / neutral — 55% */
-  --color-surface-50: #ffffff;
-  --color-surface-100: #f8fafc;
-  --color-surface-200: #f1f5f9;
-  --color-surface-300: #e2e8f0;
-  --color-surface-400: #cbd5e1;
-  --color-surface-500: #94a3b8;
-  --color-surface-600: #64748b;
-  --color-surface-700: #475569;
-  --color-surface-800: #334155;
-  --color-surface-900: #1e293b;
-  --color-surface-950: #0f172a;
+  /* ---- Khesht: warm neutrals, sun-dried brick and lime plaster ---------- */
+  --color-surface-50: oklch(99.5% 0.003 75);
+  --color-surface-100: oklch(97.5% 0.0072 75);
+  --color-surface-200: oklch(95% 0.012 75);
+  --color-surface-300: oklch(90.5% 0.012 75);
+  --color-surface-400: oklch(84% 0.012 75);
+  --color-surface-500: oklch(63.5% 0.012 75);
+  --color-surface-600: oklch(56% 0.012 75);
+  --color-surface-700: oklch(46% 0.012 75);
+  --color-surface-800: oklch(37% 0.012 75);
+  --color-surface-900: oklch(27% 0.012 75);
+  --color-surface-950: oklch(20% 0.012 75);
 
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
-  --color-text-muted: #94a3b8;
-  --color-text-inverse: #f8fafc;
+  --color-text-primary: var(--color-surface-950);
+  --color-text-secondary: var(--color-surface-700);
+  --color-text-muted: oklch(53% 0.012 75);
+  --color-text-inverse: var(--color-surface-50);
 
-  /*
-   * Semantic names for the public pages, as aliases of the scale above so the
-   * dark theme follows. Pages used these for months before they existed —
-   * Tailwind emits nothing for an unknown colour, so every one of them rendered
-   * with no background at all, the "out of stock" strip on product cards
-   * included.
-   */
+  /* Semantic names for the public pages, as aliases of the scale above so the
+     dark theme follows. */
   --color-surface-default: var(--color-surface-50);
   --color-surface-raised: var(--color-surface-50);
   --color-surface-muted: var(--color-surface-200);
   --color-surface-inverse: var(--color-surface-950);
   --color-text-tertiary: var(--color-text-muted);
 
-  --color-border-default: #e2e8f0;
-  --color-border-strong: #cbd5e1;
-  --color-border-subtle: #f1f5f9;
+  --color-border-default: var(--color-surface-300);
+  /* The edge of anything that can be operated: 3.2:1 or better. */
+  --color-border-strong: var(--color-surface-500);
+  --color-border-subtle: var(--color-surface-200);
 
-  /* Brand green — primary action, 25% */
-  --color-brand-green-50: #ecfdf5;
-  --color-brand-green-100: #d1fae5;
-  --color-brand-green-200: #a7f3d0;
-  --color-brand-green-300: #6ee7b7;
-  --color-brand-green-400: #34d399;
-  --color-brand-green-500: #10b981;
-  --color-brand-green-600: #059669;
-  --color-brand-green-700: #047857;
-  --color-brand-green-800: #065f46;
-  --color-brand-green-900: #064e3b;
-  --color-brand-green-950: #022c22;
+  /* ---- Firouzeh: turquoise, the primary action ------------------------
+     Named brand-green for continuity: the brand's green, moved toward the
+     tilework. White on 500 is 5.1:1. */
+  --color-brand-green-50: oklch(97.5% 0.021 182);
+  --color-brand-green-100: oklch(94.5% 0.035 182);
+  --color-brand-green-200: oklch(89.5% 0.058 182);
+  --color-brand-green-300: oklch(82% 0.086 182);
+  --color-brand-green-400: oklch(72% 0.109 182);
+  --color-brand-green-500: oklch(52.5% 0.093 182);
+  --color-brand-green-600: oklch(47% 0.085 182);
+  --color-brand-green-700: oklch(41% 0.074 182);
+  --color-brand-green-800: oklch(35% 0.064 182);
+  --color-brand-green-900: oklch(30% 0.055 182);
+  --color-brand-green-950: oklch(22% 0.042 182);
 
-  /* Brand red — danger, 15% */
-  --color-brand-red-50: #fef2f2;
-  --color-brand-red-100: #fee2e2;
-  --color-brand-red-200: #fecaca;
-  --color-brand-red-300: #fca5a5;
-  --color-brand-red-400: #f87171;
-  --color-brand-red-500: #ef4444;
-  --color-brand-red-600: #dc2626;
-  --color-brand-red-700: #b91c1c;
-  --color-brand-red-800: #991b1b;
-  --color-brand-red-900: #7f1d1d;
-  --color-brand-red-950: #450a0a;
+  /* ---- Anar: pomegranate, danger. White on 500 is 5.4:1. ------------- */
+  --color-brand-red-50: oklch(97.5% 0.012 25);
+  --color-brand-red-100: oklch(94.5% 0.027 25);
+  --color-brand-red-200: oklch(89.5% 0.053 25);
+  --color-brand-red-300: oklch(82% 0.101 25);
+  --color-brand-red-400: oklch(72% 0.174 25);
+  --color-brand-red-500: oklch(55% 0.19 25);
+  --color-brand-red-600: oklch(48% 0.18 25);
+  --color-brand-red-700: oklch(41% 0.162 25);
+  --color-brand-red-800: oklch(35% 0.143 25);
+  --color-brand-red-900: oklch(30% 0.124 25);
+  --color-brand-red-950: oklch(22% 0.095 25);
 
-  /* Brand amber — accent, 5% */
-  --color-brand-amber-50: #fffbeb;
-  --color-brand-amber-100: #fef3c7;
-  --color-brand-amber-200: #fde68a;
-  --color-brand-amber-300: #fcd34d;
-  --color-brand-amber-400: #fbbf24;
-  --color-brand-amber-500: #f59e0b;
-  --color-brand-amber-600: #d97706;
-  --color-brand-amber-700: #b45309;
-  --color-brand-amber-800: #92400e;
-  --color-brand-amber-900: #78350f;
-  --color-brand-amber-950: #451a03;
+  /* ---- Saffron: the accent, focus, and whatever is waiting ------------ */
+  --color-brand-amber-50: oklch(97.5% 0.017 72);
+  --color-brand-amber-100: oklch(94.5% 0.042 72);
+  --color-brand-amber-200: oklch(89.5% 0.081 72);
+  --color-brand-amber-300: oklch(82% 0.124 72);
+  --color-brand-amber-400: oklch(72% 0.153 72);
+  --color-brand-amber-500: oklch(55% 0.117 72);
+  --color-brand-amber-600: oklch(48% 0.104 72);
+  --color-brand-amber-700: oklch(41% 0.088 72);
+  --color-brand-amber-800: oklch(35% 0.076 72);
+  --color-brand-amber-900: oklch(30% 0.067 72);
+  --color-brand-amber-950: oklch(22% 0.052 72);
 
-  --color-glow-blue: #22d3ee;
-  --color-glow-purple: #c084fc;
+  /* ---- Lajvard: lapis, information and links ------------------------- */
+  --color-brand-lapis-50: oklch(97.5% 0.011 264);
+  --color-brand-lapis-100: oklch(94.5% 0.026 264);
+  --color-brand-lapis-200: oklch(89.5% 0.05 264);
+  --color-brand-lapis-300: oklch(82% 0.088 264);
+  --color-brand-lapis-400: oklch(72% 0.144 264);
+  --color-brand-lapis-500: oklch(55% 0.16 264);
+  --color-brand-lapis-600: oklch(48% 0.152 264);
+  --color-brand-lapis-700: oklch(41% 0.136 264);
+  --color-brand-lapis-800: oklch(35% 0.12 264);
+  --color-brand-lapis-900: oklch(30% 0.104 264);
+  --color-brand-lapis-950: oklch(22% 0.08 264);
 
-  /* ---- Application surface -------------------------------------------------
+  /* Former glow colours, kept as names: now the garden's two waters. */
+  --color-glow-blue: var(--color-brand-lapis-400);
+  --color-glow-purple: var(--color-brand-green-300);
+
+  /* ---- Application surface (productive intensity) ----------------------
    *
-   * The dashboards (user, admin, super admin) are a work tool, styled as one
-   * instrument: "retro-tactile". Warm paper and bone instead of cold grey,
-   * depth that means something — a raised panel holds content, a raised key
-   * can be pressed, a recessed well takes typing — and a few cues from
-   * analogue equipment: label-maker captions, numeric readouts, LED status
-   * lights. The glass and glow of the public site stay there.
+   * The dashboards are a work tool: the same garden, at working intensity.
+   * Plaster panels on a sun-warmed ground, a lapis rail, keys that sit on a
+   * flat tile lip and travel when pressed, fields cut into the panel. Every
+   * control keeps a real border at 3:1 or better and body text 4.5:1, so
+   * nothing relies on a shadow alone to be seen.
    *
-   * Depth is an affordance system here, not decoration (neo-skeuomorphism,
-   * not neumorphism): every control keeps a real border at 3:1 or better
-   * against its surroundings, and body text keeps 4.5:1, so nothing relies on
-   * a shadow alone to be seen.
-   *
-   * Components ask for a role — `border-app-border`, `app-key` — never a hex
-   * value, so dark mode is a change of token, not of component. */
-  --color-app-canvas: #ece6d8;
-  --color-app-panel: #fbf8f1;
-  --color-app-subtle: #f5f0e5;
-  --color-app-fill: #ebe4d4;
-  --color-app-hover: #f2ecdf;
-  --color-app-border: #c9bda6;
-  --color-app-border-light: #e3dac8;
-  /* The edge of anything that can be operated: 3.9:1 on the panel. */
-  --color-app-border-strong: #857963;
-  --color-app-text: #1f1b16;
-  --color-app-text-2: #383128;
-  --color-app-text-3: #574e41;
-  --color-app-text-4: #6a6051;
-  --color-app-icon: #6a604f;
-  /* Racing green: white on it is 7:1. */
-  --color-app-primary: #11694f;
-  --color-app-primary-hover: #0c5540;
-  --color-app-primary-soft: #e2eee6;
+   * Components ask for a role — `border-app-border`, `app-key` — never a
+   * colour, so dark mode is a change of token, not of component. */
+  --color-app-canvas: oklch(95.5% 0.011 75);
+  --color-app-panel: oklch(99.5% 0.003 75);
+  --color-app-subtle: oklch(97.6% 0.007 75);
+  --color-app-fill: oklch(94% 0.012 75);
+  --color-app-hover: oklch(96.8% 0.009 75);
+  --color-app-border: oklch(88.5% 0.012 75);
+  --color-app-border-light: oklch(92.5% 0.01 75);
+  --color-app-border-strong: oklch(62% 0.013 75);
+  --color-app-text: oklch(20% 0.012 75);
+  --color-app-text-2: oklch(29% 0.012 75);
+  --color-app-text-3: oklch(44% 0.012 75);
+  --color-app-text-4: oklch(52% 0.012 75);
+  --color-app-icon: oklch(50% 0.014 75);
+  --color-app-primary: var(--color-brand-green-500);
+  --color-app-primary-hover: var(--color-brand-green-600);
+  --color-app-primary-soft: var(--color-brand-green-50);
   --color-app-on-primary: #ffffff;
-  /* Instrument amber, for focus and for what is waiting. */
-  --color-app-accent: #b0660a;
-  --color-app-accent-soft: #f6e7cc;
-  --color-app-rail: #2c261f;
-  --color-app-rail-2: #1d1914;
+  /* Saffron, for focus and for what is waiting: 8.9:1 on a panel. */
+  --color-app-accent: var(--color-brand-amber-700);
+  --color-app-accent-soft: var(--color-brand-amber-50);
+  /* The rail: lapis at dusk. */
+  --color-app-rail: oklch(24% 0.045 264);
+  --color-app-rail-2: oklch(20% 0.04 264);
 
-  /* Key faces: lit from above, with a darker lip underneath. */
-  --color-app-key-top: #fffdf8;
-  --color-app-key-bottom: #eee6d6;
-  --color-app-key-edge: #b7a98f;
-  --color-app-key-primary-top: #1b7c5e;
-  --color-app-key-primary-bottom: #0f5e46;
-  --color-app-key-primary-edge: #083d2e;
-  --color-app-key-danger-top: #c4433a;
-  --color-app-key-danger-bottom: #a12a21;
-  --color-app-key-danger-edge: #6c1912;
-  /* The inside of a field: a shade darker than the panel it is cut into. */
-  --color-app-well: #fffdf9;
-  /* A numeric readout: a dark window with lit figures. */
-  --color-app-readout: #f7f2e7;
-  --color-app-readout-text: #1f1b16;
-  --color-app-led-on: #2fbf71;
-  --color-app-led-wait: #f0a32c;
+  /* Keys: a flat face on a tile lip. Top and bottom are kept as two tokens
+     so a key can still be given a face gradient, but in Bagh they match. */
+  --color-app-key-top: oklch(99.5% 0.003 75);
+  --color-app-key-bottom: oklch(99.5% 0.003 75);
+  --color-app-key-edge: oklch(80% 0.014 75);
+  --color-app-key-primary-top: var(--color-brand-green-500);
+  --color-app-key-primary-bottom: var(--color-brand-green-500);
+  --color-app-key-primary-edge: var(--color-brand-green-800);
+  --color-app-key-danger-top: var(--color-brand-red-500);
+  --color-app-key-danger-bottom: var(--color-brand-red-500);
+  --color-app-key-danger-edge: var(--color-brand-red-800);
+  --color-app-well: #ffffff;
+  --color-app-readout: oklch(97.6% 0.007 75);
+  --color-app-readout-text: oklch(20% 0.012 75);
+  --color-app-led-on: var(--color-brand-green-400);
+  --color-app-led-wait: var(--color-brand-amber-400);
 
-  --color-status-success: #23703a;
-  --color-status-success-bg: #e6f0e1;
-  --color-status-success-border: #a9c9a0;
-  --color-status-warning: #8c5208;
-  --color-status-warning-bg: #f8ead0;
-  --color-status-warning-border: #e3c48a;
-  --color-status-error: #a8261d;
-  --color-status-error-bg: #f7e1dc;
-  --color-status-error-border: #e2aaa1;
-  --color-status-info: #1d5a9e;
-  --color-status-info-bg: #e2ebf3;
-  --color-status-info-border: #a9c2dc;
-  --color-status-neutral: #3d362c;
-  --color-status-neutral-bg: #ece5d6;
-  --color-status-neutral-border: #d4c9b4;
+  --color-status-success: var(--color-brand-green-700);
+  --color-status-success-bg: var(--color-brand-green-50);
+  --color-status-success-border: var(--color-brand-green-200);
+  --color-status-warning: var(--color-brand-amber-800);
+  --color-status-warning-bg: var(--color-brand-amber-50);
+  --color-status-warning-border: var(--color-brand-amber-200);
+  --color-status-error: var(--color-brand-red-700);
+  --color-status-error-bg: var(--color-brand-red-50);
+  --color-status-error-border: var(--color-brand-red-200);
+  --color-status-info: var(--color-brand-lapis-700);
+  --color-status-info-bg: var(--color-brand-lapis-50);
+  --color-status-info-border: var(--color-brand-lapis-200);
+  --color-status-neutral: var(--color-surface-800);
+  --color-status-neutral-bg: var(--color-surface-200);
+  --color-status-neutral-border: var(--color-surface-300);
 
-  /* The only sizes the application surface uses. Named for their job so a
-     page title cannot drift to 22px on one screen and 26px on the next. */
-  --text-caption: 11px;
-  --text-caption--line-height: 1.4;
-  --text-label: 12px;
-  --text-label--line-height: 1.5;
-  --text-body: 13px;
-  --text-body--line-height: 1.5;
-  --text-body-lg: 14px;
-  --text-body-lg--line-height: 1.5;
+  /* The only sizes the application surface uses, named for their job. Set
+     a step larger than Latin defaults: Persian at 13px loses its dots. */
+  --text-caption: 12px;
+  --text-caption--line-height: 1.5;
+  --text-label: 13px;
+  --text-label--line-height: 1.55;
+  --text-body: 14px;
+  --text-body--line-height: 1.65;
+  --text-body-lg: 15px;
+  --text-body-lg--line-height: 1.6;
   --text-title-sm: 16px;
-  --text-title-sm--line-height: 1.4;
+  --text-title-sm--line-height: 1.5;
   --text-title: 18px;
-  --text-title--line-height: 1.4;
-  --text-page: 20px;
-  --text-page--line-height: 1.3;
-  --text-metric: 24px;
+  --text-title--line-height: 1.45;
+  --text-page: 22px;
+  --text-page--line-height: 1.35;
+  --text-metric: 26px;
   --text-metric--line-height: 1.2;
 
-  --shadow-app-float: 0 18px 40px -12px rgba(48, 34, 14, 0.35), 0 4px 0 -1px rgba(48, 34, 14, 0.12);
-  /* A raised panel: a lit top edge, a hairline floor and a short soft drop. */
-  --shadow-app-raised: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 1px 0 rgba(72, 54, 26, 0.12),
-    0 3px 8px -4px rgba(72, 54, 26, 0.28);
-  --shadow-app-key: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 0 var(--color-app-key-edge),
-    0 3px 6px -3px rgba(52, 38, 16, 0.4);
-  --shadow-app-key-color: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 2px 0 var(--key-edge),
-    0 3px 6px -3px rgba(30, 20, 8, 0.5);
-  --shadow-app-key-pressed: inset 0 2px 4px rgba(52, 38, 16, 0.32);
-  --shadow-app-inset: inset 0 1px 2px rgba(72, 54, 26, 0.18), inset 0 0 0 1px rgba(72, 54, 26, 0.04);
+  /* Shape. A small set, so radii never drift screen to screen. */
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-feature: 24px;
 
-  --animate-fade-up: fade-up 0.6s ease-out both;
+  /* Depth: one light, straight overhead — x is always 0, so RTL needs no
+     mirrored shadows. A drop for what floats, a lip for what is pressed. */
+  --shadow-app-float: 0 24px 48px -16px oklch(22% 0.03 75 / 0.32), 0 2px 6px oklch(22% 0.03 75 / 0.08);
+  --shadow-app-raised: 0 1px 0 oklch(22% 0.03 75 / 0.05), 0 1px 3px oklch(22% 0.03 75 / 0.06);
+  --shadow-app-key: 0 2px 0 var(--color-app-key-edge), 0 3px 6px -4px oklch(22% 0.03 75 / 0.25);
+  --shadow-app-key-color: 0 2px 0 var(--key-edge), 0 3px 6px -4px oklch(22% 0.03 75 / 0.35);
+  --shadow-app-key-pressed: inset 0 2px 3px oklch(22% 0.03 75 / 0.2);
+  --shadow-app-inset: inset 0 1px 2px oklch(22% 0.03 75 / 0.07);
+
+  /* Motion tokens, after IBM Carbon: durations shared, curves per intensity. */
+  --duration-instant: 70ms;
+  --duration-fast: 110ms;
+  --duration-moderate: 150ms;
+  --duration-slow: 240ms;
+  --duration-slower: 400ms;
+  --duration-slowest: 700ms;
+  --ease-productive: cubic-bezier(0.2, 0, 0.38, 0.9);
+  --ease-productive-enter: cubic-bezier(0, 0, 0.38, 0.9);
+  --ease-productive-exit: cubic-bezier(0.2, 0, 1, 0.9);
+  --ease-expressive: cubic-bezier(0.4, 0.14, 0.3, 1);
+  --ease-expressive-enter: cubic-bezier(0, 0, 0.3, 1);
+  --ease-expressive-exit: cubic-bezier(0.4, 0.14, 1, 1);
+  /* A critically damped spring, for the one pop the public pages allow. */
+  --ease-spring: linear(0, 0.18 6%, 0.58 18%, 0.86 30%, 0.97 42%, 1.01 55%, 1 70%, 1);
+
+  --animate-fade-up: fade-up var(--duration-slower) var(--ease-expressive-enter) both;
 
   @keyframes fade-up {
     from {
@@ -241,101 +269,96 @@
   }
 }
 
-/* Dark mode overrides for semantic tokens */
+/* Dark: a night garden. Lapis-black ground, lit plaster text, the same
+   turquoise brightened so dark lettering sits on it. */
 .dark {
-  --color-surface-50: #060911;
-  --color-surface-100: #0a0f1a;
-  --color-surface-200: #121826;
-  --color-surface-300: #1e2535;
-  --color-surface-400: #2d3444;
-  --color-surface-500: #525c6e;
-  --color-surface-600: #6e7787;
-  --color-surface-700: #8b92a1;
-  --color-surface-800: #a8adb9;
-  --color-surface-900: #d0d4db;
-  --color-surface-950: #ebedf0;
+  --color-surface-50: oklch(17% 0.02 262);
+  --color-surface-100: oklch(20% 0.02 262);
+  --color-surface-200: oklch(23.5% 0.02 262);
+  --color-surface-300: oklch(29% 0.02 262);
+  --color-surface-400: oklch(36% 0.02 262);
+  --color-surface-500: oklch(50% 0.012 262);
+  --color-surface-600: oklch(62% 0.012 262);
+  --color-surface-700: oklch(72% 0.012 262);
+  --color-surface-800: oklch(82% 0.012 262);
+  --color-surface-900: oklch(90% 0.012 262);
+  --color-surface-950: oklch(96% 0.012 262);
 
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #a8adb9;
-  --color-text-muted: #6e7787;
-  --color-text-inverse: #0f172a;
+  --color-text-primary: var(--color-surface-950);
+  --color-text-secondary: var(--color-surface-800);
+  --color-text-muted: var(--color-surface-700);
+  --color-text-inverse: var(--color-surface-50);
 
-  /* The same aliases, resolved against the dark scale. */
   --color-surface-default: var(--color-surface-50);
-  --color-surface-raised: var(--color-surface-50);
+  --color-surface-raised: var(--color-surface-100);
   --color-surface-muted: var(--color-surface-200);
   --color-surface-inverse: var(--color-surface-950);
   --color-text-tertiary: var(--color-text-muted);
 
-  --color-border-default: #1e2535;
-  --color-border-strong: #2d3444;
-  --color-border-subtle: #121826;
+  --color-border-default: var(--color-surface-300);
+  --color-border-strong: var(--color-surface-500);
+  --color-border-subtle: var(--color-surface-200);
 
-  /* Night console: warm charcoal, lit figures, the same depth reversed into
-     shadow. Text stays 4.5:1 and control edges 3:1, as in daylight. */
-  --color-app-canvas: #13110e;
-  --color-app-panel: #1c1915;
-  --color-app-subtle: #211e19;
-  --color-app-fill: #2a261f;
-  --color-app-hover: #25211b;
-  --color-app-border: #3b342b;
-  --color-app-border-light: #2b2620;
-  --color-app-border-strong: #7a6e5d;
-  --color-app-text: #f3ecdc;
-  --color-app-text-2: #ddd3bf;
-  --color-app-text-3: #b8ad98;
-  --color-app-text-4: #9a8f7b;
-  --color-app-icon: #ab9f89;
-  --color-app-primary: #45c58d;
-  --color-app-primary-hover: #63d6a2;
-  --color-app-primary-soft: rgba(69, 197, 141, 0.14);
-  /* The brighter green of the night palette needs dark lettering. */
-  --color-app-on-primary: #0b1f16;
-  --color-app-accent: #f0a32c;
-  --color-app-accent-soft: rgba(240, 163, 44, 0.14);
-  --color-app-rail: #0f0d0b;
-  --color-app-rail-2: #0a0908;
+  --color-app-canvas: oklch(15.5% 0.02 262);
+  --color-app-panel: oklch(20% 0.02 262);
+  --color-app-subtle: oklch(22% 0.02 262);
+  --color-app-fill: oklch(27% 0.02 262);
+  --color-app-hover: oklch(24.5% 0.02 262);
+  --color-app-border: oklch(30% 0.02 262);
+  --color-app-border-light: oklch(26% 0.02 262);
+  --color-app-border-strong: oklch(52% 0.014 262);
+  --color-app-text: oklch(96% 0.012 262);
+  --color-app-text-2: oklch(90% 0.012 262);
+  --color-app-text-3: oklch(80% 0.012 262);
+  --color-app-text-4: oklch(71% 0.012 262);
+  --color-app-icon: oklch(74% 0.014 262);
+  --color-app-primary: var(--color-brand-green-400);
+  --color-app-primary-hover: var(--color-brand-green-300);
+  --color-app-primary-soft: oklch(72% 0.109 182 / 0.14);
+  /* The brighter turquoise of the night palette needs dark lettering. */
+  --color-app-on-primary: oklch(17% 0.02 262);
+  --color-app-accent: var(--color-brand-amber-400);
+  --color-app-accent-soft: oklch(72% 0.153 72 / 0.14);
+  --color-app-rail: oklch(12% 0.025 264);
+  --color-app-rail-2: oklch(10% 0.02 264);
 
-  --color-app-key-top: #312c25;
-  --color-app-key-bottom: #27231d;
-  --color-app-key-edge: #0b0a08;
-  --color-app-key-primary-top: #52cf97;
-  --color-app-key-primary-bottom: #37ad78;
-  --color-app-key-primary-edge: #1b6345;
-  --color-app-key-danger-top: #e0665b;
-  --color-app-key-danger-bottom: #d65a4f;
-  --color-app-key-danger-edge: #6e1e17;
-  --color-app-well: #16130f;
-  --color-app-readout: #0f0d0a;
-  --color-app-readout-text: #ffd27a;
-  --color-app-led-on: #4ee08f;
-  --color-app-led-wait: #ffb340;
+  --color-app-key-top: oklch(27% 0.02 262);
+  --color-app-key-bottom: oklch(27% 0.02 262);
+  --color-app-key-edge: oklch(9% 0.01 262);
+  --color-app-key-primary-top: var(--color-brand-green-400);
+  --color-app-key-primary-bottom: var(--color-brand-green-400);
+  --color-app-key-primary-edge: var(--color-brand-green-800);
+  --color-app-key-danger-top: var(--color-brand-red-400);
+  --color-app-key-danger-bottom: var(--color-brand-red-400);
+  --color-app-key-danger-edge: var(--color-brand-red-900);
+  --color-app-well: oklch(16% 0.02 262);
+  --color-app-readout: oklch(16% 0.02 262);
+  --color-app-readout-text: var(--color-brand-amber-300);
+  --color-app-led-on: var(--color-brand-green-400);
+  --color-app-led-wait: var(--color-brand-amber-400);
 
-  --color-status-success: #47cd89;
-  --color-status-success-bg: rgba(23, 178, 106, 0.12);
-  --color-status-success-border: rgba(23, 178, 106, 0.3);
-  --color-status-warning: #fdb022;
-  --color-status-warning-bg: rgba(247, 144, 9, 0.12);
-  --color-status-warning-border: rgba(247, 144, 9, 0.3);
-  --color-status-error: #f97066;
-  --color-status-error-bg: rgba(240, 68, 56, 0.12);
-  --color-status-error-border: rgba(240, 68, 56, 0.3);
-  --color-status-info: #53b1fd;
-  --color-status-info-bg: rgba(46, 144, 250, 0.12);
-  --color-status-info-border: rgba(46, 144, 250, 0.3);
-  --color-status-neutral: #d0d5dd;
-  --color-status-neutral-bg: rgba(152, 162, 179, 0.12);
-  --color-status-neutral-border: rgba(152, 162, 179, 0.24);
+  --color-status-success: var(--color-brand-green-300);
+  --color-status-success-bg: oklch(72% 0.109 182 / 0.12);
+  --color-status-success-border: oklch(72% 0.109 182 / 0.32);
+  --color-status-warning: var(--color-brand-amber-300);
+  --color-status-warning-bg: oklch(72% 0.153 72 / 0.12);
+  --color-status-warning-border: oklch(72% 0.153 72 / 0.32);
+  --color-status-error: var(--color-brand-red-300);
+  --color-status-error-bg: oklch(72% 0.174 25 / 0.12);
+  --color-status-error-border: oklch(72% 0.174 25 / 0.32);
+  --color-status-info: var(--color-brand-lapis-300);
+  --color-status-info-bg: oklch(72% 0.144 264 / 0.12);
+  --color-status-info-border: oklch(72% 0.144 264 / 0.32);
+  --color-status-neutral: var(--color-surface-900);
+  --color-status-neutral-bg: oklch(62% 0.012 262 / 0.12);
+  --color-status-neutral-border: oklch(62% 0.012 262 / 0.28);
 
-  --shadow-app-float: 0 20px 44px -12px rgba(0, 0, 0, 0.75), 0 4px 0 -1px rgba(0, 0, 0, 0.5);
-  --shadow-app-raised: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 0 rgba(0, 0, 0, 0.5),
-    0 4px 10px -4px rgba(0, 0, 0, 0.6);
-  --shadow-app-key: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 0 var(--color-app-key-edge),
-    0 3px 6px -3px rgba(0, 0, 0, 0.7);
-  --shadow-app-key-color: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 0 var(--key-edge),
-    0 3px 6px -3px rgba(0, 0, 0, 0.7);
-  --shadow-app-key-pressed: inset 0 2px 4px rgba(0, 0, 0, 0.6);
-  --shadow-app-inset: inset 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  --shadow-app-float: 0 28px 56px -16px oklch(0% 0 0 / 0.7), 0 2px 6px oklch(0% 0 0 / 0.4);
+  --shadow-app-raised: 0 1px 0 oklch(0% 0 0 / 0.35), 0 1px 3px oklch(0% 0 0 / 0.3);
+  --shadow-app-key: 0 2px 0 var(--color-app-key-edge), 0 3px 6px -4px oklch(0% 0 0 / 0.6);
+  --shadow-app-key-color: 0 2px 0 var(--key-edge), 0 3px 6px -4px oklch(0% 0 0 / 0.6);
+  --shadow-app-key-pressed: inset 0 2px 3px oklch(0% 0 0 / 0.5);
+  --shadow-app-inset: inset 0 1px 2px oklch(0% 0 0 / 0.45);
 }
 
 html {
@@ -357,35 +380,64 @@ body {
   background-color: var(--color-surface-100);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  /* Persian needs room above and below for its dots and descenders. */
+  line-height: 1.75;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Letter-spacing breaks Persian joins and ligatures; tracking utilities are
+   for Latin only. */
+:lang(fa) {
+  letter-spacing: 0;
 }
 
-/* Focus ring — accessible, brand-colored */
+/* Headings get their hierarchy from weight and size, never from case. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+/* Focus: the neubrutalist outline, kept for its one honest job. A solid
+   3px saffron ring, offset, on every focusable thing on every surface —
+   8.9:1 on plaster, 7.1:1 at night (WCAG 2.4.13). */
 :focus-visible {
-  outline: 2px solid var(--color-brand-green-500);
+  outline: 3px solid var(--color-brand-amber-700);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+.dark :focus-visible {
+  outline-color: var(--color-brand-amber-400);
 }
 
-/* Glassmorphism */
-.glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+/* Selection in the garden's turquoise. */
+::selection {
+  background-color: color-mix(in oklch, var(--color-brand-green-400) 35%, transparent);
 }
+
+/* ---- Expressive materials (public pages) --------------------------------
+   The class names predate Bagh and are kept, so every page that used the
+   old look now wears the new one. */
+
+/* A plaster panel over the garden: mostly opaque, a light blur only where
+   something sits on top of moving content. The heavy 20px blur is gone —
+   it cost frames on the mid-range phones much of the audience uses. */
+.glass {
+  background: color-mix(in oklch, var(--color-surface-50) 90%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border-default);
+}
+.dark .glass {
+  background: color-mix(in oklch, var(--color-surface-100) 88%, transparent);
+  border: 1px solid var(--color-border-default);
+}
+
 /*
  * The shop card a map pin opens. Leaflet insets popup content and pads its
  * wrapper; the card has its own picture and spacing, so both go, and the
@@ -419,73 +471,151 @@ body {
   line-height: 24px;
 }
 
-.dark .glass {
-  background: rgba(10, 15, 26, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-/* Soft glow on hover — restrained, not a harsh neon border */
+/* A card that answers the pointer: its edge turns turquoise and it rises
+   on the overhead light. No neon. */
 .glow-border {
   position: relative;
   border: 1px solid var(--color-border-default);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    border-color var(--duration-moderate) var(--ease-expressive),
+    box-shadow var(--duration-slow) var(--ease-expressive),
+    transform var(--duration-slow) var(--ease-expressive);
 }
 .glow-border:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.14), 0 8px 30px -8px rgba(15, 23, 42, 0.15);
+  border-color: var(--color-brand-green-400);
+  box-shadow: 0 14px 28px -16px oklch(22% 0.03 75 / 0.35);
+  transform: translateY(-2px);
 }
 .dark .glow-border:hover {
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.18), 0 8px 30px -8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 14px 28px -16px oklch(0% 0 0 / 0.7);
 }
 
-/* Glow text */
 .glow-text {
-  text-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+  color: var(--color-brand-green-600);
+}
+.dark .glow-text {
+  color: var(--color-brand-green-300);
 }
 
-/* Neon line divider */
+/* The kashi strip: a row of small eight-point stars, as a tile border runs
+   along a garden wall. Replaces the old neon line. Decorative only. */
 .neon-line {
-  height: 1px;
+  height: 12px;
   border: none;
-  background: linear-gradient(90deg, transparent, var(--color-brand-green-500), var(--color-brand-amber-500), transparent);
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12' viewBox='0 0 24 12'%3E%3Cpath d='M12 1l1.6 3.4L17 6l-3.4 1.6L12 11l-1.6-3.4L7 6l3.4-1.6z' fill='%23057b6e' fill-opacity='.55'/%3E%3Ccircle cx='0' cy='6' r='1.2' fill='%239b6403' fill-opacity='.6'/%3E%3Ccircle cx='24' cy='6' r='1.2' fill='%239b6403' fill-opacity='.6'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: center;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
 }
 
-/* Gradient accent text */
+/* Accent text: turquoise into lapis. Both ends keep 4.5:1 on their ground,
+   so the gradient never decides whether a word can be read. */
 .gradient-text {
-  background: linear-gradient(90deg, var(--color-brand-green-500), var(--color-brand-amber-500));
+  background: linear-gradient(90deg, var(--color-brand-green-600), var(--color-brand-lapis-600));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
+.dark .gradient-text {
+  background-image: linear-gradient(90deg, var(--color-brand-green-300), var(--color-brand-lapis-300));
+}
 
-/* Soft themed shadows */
+/* Soft drops on the overhead light. */
 .shadow-soft {
-  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 2px oklch(22% 0.03 75 / 0.05), 0 6px 16px -8px oklch(22% 0.03 75 / 0.14);
 }
 .shadow-soft-lg {
-  box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 2px 4px oklch(22% 0.03 75 / 0.05), 0 22px 44px -18px oklch(22% 0.03 75 / 0.3);
 }
 .dark .shadow-soft {
-  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.4), 0 6px 16px -8px oklch(0% 0 0 / 0.55);
 }
 .dark .shadow-soft-lg {
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 4px oklch(0% 0 0 / 0.4), 0 22px 44px -18px oklch(0% 0 0 / 0.75);
+}
+
+/* ---- Bagh signatures (new) --------------------------------------------- */
+
+/* The garden ground: a girih lattice at very low density behind a hero or
+   a section head. Fractal-like mid-complexity, which is the range the
+   environmental-psychology work finds least stressful — and faint enough
+   that text over it keeps its contrast. */
+.bagh-ground {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23057b6e' stroke-opacity='.13' stroke-width='1'%3E%3Cpath d='M48 8l11.3 28.7L88 48 59.3 59.3 48 88 36.7 59.3 8 48l28.7-11.3z'/%3E%3Cpath d='M48 20l20 8 8 20-8 20-20 8-20-8-8-20 8-20z'/%3E%3Cpath d='M0 0l20 8M96 0l-20 8M0 96l20-8M96 96l-20-8'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 96px 96px;
+}
+.dark .bagh-ground {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%2342bbaa' stroke-opacity='.12' stroke-width='1'%3E%3Cpath d='M48 8l11.3 28.7L88 48 59.3 59.3 48 88 36.7 59.3 8 48l28.7-11.3z'/%3E%3Cpath d='M48 20l20 8 8 20-8 20-20 8-20-8-8-20 8-20z'/%3E%3Cpath d='M0 0l20 8M96 0l-20 8M0 96l20-8M96 96l-20-8'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* The one clay object on a page: the hero's main action. One outer drop and
+   two inner lights, all vertical. Colour still comes from the button. */
+.bagh-clay {
+  box-shadow:
+    0 10px 20px -8px oklch(30% 0.06 182 / 0.45),
+    inset 0 -4px 8px oklch(0% 0 0 / 0.16),
+    inset 0 4px 8px oklch(100% 0 0 / 0.25);
+}
+.bagh-clay:active {
+  box-shadow:
+    0 4px 10px -6px oklch(30% 0.06 182 / 0.45),
+    inset 0 3px 6px oklch(0% 0 0 / 0.22);
+}
+
+/* An eyebrow chip above a headline: a small tile. */
+.bagh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-brand-green-200);
+  background: var(--color-brand-green-50);
+  color: var(--color-brand-green-700);
+  border-radius: 999px;
+  padding: 0.25rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.dark .bagh-chip {
+  border-color: color-mix(in oklch, var(--color-brand-green-400) 35%, transparent);
+  background: color-mix(in oklch, var(--color-brand-green-400) 12%, transparent);
+  color: var(--color-brand-green-300);
+}
+
+/* Kinetic headline, Persian-safe: words rise into place one after another.
+   Each word is one span, so letters stay joined. Off for reduced motion. */
+.bagh-words > span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.45em);
+  animation: bagh-word var(--duration-slower) var(--ease-expressive-enter) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 80ms);
+}
+@keyframes bagh-word {
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-surface-200);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-surface-400);
+  border: 2px solid transparent;
+  background-clip: content-box;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-surface-500);
+  background-clip: content-box;
 }
 
 input::placeholder,
@@ -573,15 +703,16 @@ textarea::placeholder {
 /* ===========================================================================
    Motion
    ===========================================================================
-   Replaces the animation library this app used to load on every page. These
-   run on the compositor rather than the main thread, so they are cheaper than
-   what they replace as well as smaller. The only animation left in JavaScript
-   is the scroll trigger and the exit delay, in lib/motion.ts. */
+   CSS-only, on the compositor: transform and opacity, nothing that relays
+   out. Durations and curves are the tokens above — expressive on the public
+   pages, productive in the dashboards (see [data-intensity] below). The only
+   animation left in JavaScript is the scroll trigger and the exit delay, in
+   lib/motion.ts. */
 
 @keyframes ct-fade-up {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -601,7 +732,7 @@ textarea::placeholder {
 @keyframes ct-pop-in {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.96);
+    transform: translateY(6px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -616,14 +747,14 @@ textarea::placeholder {
   }
   to {
     opacity: 0;
-    transform: translateY(8px) scale(0.96);
+    transform: translateY(6px) scale(0.97);
   }
 }
 
 @keyframes ct-drop-in {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -637,7 +768,7 @@ textarea::placeholder {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.03);
   }
 }
 
@@ -650,6 +781,26 @@ textarea::placeholder {
   }
 }
 
+/* The intensity a subtree speaks. Set on the public layout (expressive) and
+   on the dashboard shell (productive); components read --ease and --dur-*. */
+:root,
+[data-intensity='expressive'] {
+  --ease: var(--ease-expressive);
+  --ease-enter: var(--ease-expressive-enter);
+  --ease-exit: var(--ease-expressive-exit);
+  --dur-feedback: var(--duration-moderate);
+  --dur-enter: var(--duration-slow);
+  --dur-reveal: var(--duration-slower);
+}
+[data-intensity='productive'] {
+  --ease: var(--ease-productive);
+  --ease-enter: var(--ease-productive-enter);
+  --ease-exit: var(--ease-productive-exit);
+  --dur-feedback: var(--duration-instant);
+  --dur-enter: var(--duration-fast);
+  --dur-reveal: var(--duration-moderate);
+}
+
 /* Scroll reveal. The element is laid out from the start — only its paint
    changes — so revealing it cannot shift anything around it. */
 .ct-reveal {
@@ -657,48 +808,49 @@ textarea::placeholder {
 }
 
 .ct-reveal-in {
-  animation: ct-fade-up 0.5s ease-out both;
+  animation: ct-fade-up var(--dur-reveal) var(--ease-enter) both;
   animation-delay: var(--ct-delay, 0s);
 }
 
 .ct-fade-in {
-  animation: ct-fade-in 0.2s ease-out both;
+  animation: ct-fade-in var(--dur-enter) var(--ease-enter) both;
 }
 .ct-fade-out {
-  animation: ct-fade-in 0.2s ease-in both reverse;
+  animation: ct-fade-in var(--dur-enter) var(--ease-exit) both reverse;
 }
 .ct-pop-in {
-  animation: ct-pop-in 0.2s ease-out both;
+  animation: ct-pop-in var(--dur-enter) var(--ease-enter) both;
 }
 .ct-pop-out {
-  animation: ct-pop-out 0.2s ease-in both;
+  animation: ct-pop-out var(--dur-enter) var(--ease-exit) both;
 }
 .ct-drop-in {
-  animation: ct-drop-in 0.2s ease-out both;
+  animation: ct-drop-in var(--dur-enter) var(--ease-enter) both;
 }
 .ct-enter {
-  animation: ct-fade-up 0.4s ease-out both;
+  animation: ct-fade-up var(--dur-reveal) var(--ease-enter) both;
 }
 .ct-pulse-soft {
-  animation: ct-pulse-soft 6s ease-in-out infinite;
+  animation: ct-pulse-soft 7s ease-in-out infinite;
 }
 .ct-spin-slow {
-  animation: ct-spin-slow 40s linear infinite;
+  animation: ct-spin-slow 90s linear infinite;
 }
 
-/* Hover lift, previously a JS-driven spring. A transition on two compositable
-   properties does the same job without a frame loop. */
+/* Hover lift: rise on the overhead light. */
 .ct-lift {
   transition:
-    transform 0.25s ease-out,
-    box-shadow 0.25s ease-out;
+    transform var(--duration-slow) var(--ease),
+    box-shadow var(--duration-slow) var(--ease),
+    border-color var(--duration-moderate) var(--ease);
 }
 .ct-lift:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 
 /* One place, for every animation on the page — including the CSS-only ones a
-   per-component JS check would never have covered. */
+   per-component JS check would never have covered. Motion becomes a plain
+   cross-fade or nothing; nothing auto-moves. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -709,8 +861,10 @@ textarea::placeholder {
     scroll-behavior: auto !important;
   }
 
-  .ct-reveal {
+  .ct-reveal,
+  .bagh-words > span {
     opacity: 1;
+    transform: none;
   }
 }
 
@@ -732,62 +886,48 @@ textarea::placeholder {
   }
 }
 .ct-slide-in-left {
-  animation: ct-slide-in-left 0.2s ease-out both;
+  animation: ct-slide-in-left var(--duration-slow) var(--ease-productive-enter) both;
 }
 .ct-slide-in-right {
-  animation: ct-slide-in-right 0.2s ease-out both;
+  animation: ct-slide-in-right var(--duration-slow) var(--ease-productive-enter) both;
 }
 
 /* ============================================================================
- * The application surface's materials.
+ * The application surface's materials (productive intensity).
  *
  * Classes rather than long utility strings, because each is a material with
- * several coordinated properties — a key is a gradient, a border, a lit edge,
- * a lip and a press — and the same material appears in many components.
+ * several coordinated properties, and the same material appears in many
+ * components.
  * ========================================================================= */
 @layer components {
-  /* The desk the panels sit on: warm paper with a grain too faint to read as
-     a pattern, and a soft falloff toward the edges. Behind content only. */
+  /* The ground the panels sit on: plain warm plaster. No grain in a work
+     tool — texture behind data is decoration the eye has to read past. */
   .app-canvas {
     background-color: var(--color-app-canvas);
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.24 0 0 0 0 0.15 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E"),
-      radial-gradient(120% 90% at 50% 0%, transparent 60%, rgba(60, 44, 20, 0.06) 100%);
-  }
-  .dark .app-canvas {
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.9 0 0 0 0 0.7 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
-      radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
   }
 
-  /* A raised panel: content sits on it. */
+  /* A panel: content sits on it. Its border is what defines it; the drop is
+     a hairline, because a dashboard shows dozens at once. */
   .app-raised {
     background-color: var(--color-app-panel);
     border: 1px solid var(--color-app-border);
-    border-radius: 8px;
+    border-radius: var(--radius-card);
     box-shadow: var(--shadow-app-raised);
   }
 
-  /* The strip across the top of a panel, like the faceplate of a unit:
-     a faint top-lit gradient and a double rule beneath. */
+  /* The head of a panel or table: a quiet band and one rule. */
   .app-faceplate {
-    background-image: linear-gradient(to bottom, var(--color-app-key-top), var(--color-app-subtle));
+    background-color: var(--color-app-subtle);
     border-bottom: 1px solid var(--color-app-border);
-    box-shadow: 0 1px 0 var(--color-app-panel), 0 2px 0 var(--color-app-border-light);
   }
 
-  /* Label-maker captions: small capitals, spaced, slightly heavier. Latin
-     scripts only get the capitals; Persian has no case and keeps its shape. */
+  /* Captions: hierarchy from weight and colour, not from capitals and
+     tracking — Swiss order, written for a script without case. */
   .app-label {
     font-size: var(--text-caption);
     line-height: var(--text-caption--line-height);
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
     color: var(--color-app-text-3);
-  }
-  :lang(fa) .app-label {
-    letter-spacing: 0;
   }
 
   /* Figures that should line up digit under digit. */
@@ -799,39 +939,39 @@ textarea::placeholder {
     font-variant-numeric: tabular-nums;
   }
 
-  /* A numeric readout: a recessed window with the figure lit inside it. */
+  /* A numeric readout: a small inset well with the figure in it. */
   .app-readout {
     background-color: var(--color-app-readout);
     color: var(--color-app-readout-text);
     border: 1px solid var(--color-app-border);
-    border-radius: 5px;
+    border-radius: 6px;
     box-shadow: var(--shadow-app-inset);
     font-variant-numeric: tabular-nums;
   }
-  .dark .app-readout {
-    text-shadow: 0 0 8px rgba(255, 196, 90, 0.35);
-  }
 
-  /* Keys: anything that can be pressed. Lit from above, a lip below, and a
-     real downward travel when pressed. */
+  /* Keys: anything that can be pressed. A flat face on a tile lip — the
+     neubrutalist hard edge, softened and vertical — and a real 2px travel
+     with an inset shadow when pressed, which is all of Soft UI worth
+     keeping. */
   .app-key {
     --key-edge: var(--color-app-key-edge);
     position: relative;
+    background-color: var(--color-app-key-top);
     background-image: linear-gradient(to bottom, var(--color-app-key-top), var(--color-app-key-bottom));
     border: 1px solid var(--color-app-border-strong);
-    border-radius: 6px;
+    border-radius: var(--radius-control);
     color: var(--color-app-text);
     box-shadow: var(--shadow-app-key);
     transition:
-      transform 90ms ease-out,
-      box-shadow 90ms ease-out,
-      filter 120ms ease-out;
+      transform var(--duration-instant) var(--ease-productive),
+      box-shadow var(--duration-instant) var(--ease-productive),
+      background-color var(--duration-fast) var(--ease-productive),
+      border-color var(--duration-fast) var(--ease-productive);
   }
   .app-key:hover {
-    filter: brightness(1.03);
-  }
-  .dark .app-key:hover {
-    filter: brightness(1.15);
+    background-image: none;
+    background-color: var(--color-app-hover);
+    border-color: var(--color-app-text-4);
   }
   .app-key:active:not(:disabled),
   .app-key[aria-pressed='true'],
@@ -841,38 +981,43 @@ textarea::placeholder {
   }
   .app-key-primary {
     --key-edge: var(--color-app-key-primary-edge);
-    background-image: linear-gradient(
-      to bottom,
-      var(--color-app-key-primary-top),
-      var(--color-app-key-primary-bottom)
-    );
+    background-image: linear-gradient(to bottom, var(--color-app-key-primary-top), var(--color-app-key-primary-bottom));
     border-color: var(--color-app-key-primary-edge);
     color: var(--color-app-on-primary);
     box-shadow: var(--shadow-app-key-color);
   }
+  .app-key-primary:hover {
+    background-image: none;
+    background-color: var(--color-app-primary-hover);
+    border-color: var(--color-app-key-primary-edge);
+  }
   .app-key-danger {
     --key-edge: var(--color-app-key-danger-edge);
-    background-image: linear-gradient(
-      to bottom,
-      var(--color-app-key-danger-top),
-      var(--color-app-key-danger-bottom)
-    );
+    background-image: linear-gradient(to bottom, var(--color-app-key-danger-top), var(--color-app-key-danger-bottom));
     border-color: var(--color-app-key-danger-edge);
     color: #ffffff;
     box-shadow: var(--shadow-app-key-color);
   }
+  .app-key-danger:hover {
+    background-image: none;
+    background-color: var(--color-brand-red-600);
+    border-color: var(--color-app-key-danger-edge);
+  }
   .dark .app-key-danger {
-    color: #1f0805;
+    color: oklch(17% 0.02 262);
+  }
+  .dark .app-key-danger:hover {
+    background-color: var(--color-brand-red-300);
   }
   /* A key that is flush with the panel until it is touched. */
   .app-key-flat {
     position: relative;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: var(--radius-control);
     color: var(--color-app-text-2);
     transition:
-      background-color 120ms ease-out,
-      box-shadow 90ms ease-out;
+      background-color var(--duration-fast) var(--ease-productive),
+      box-shadow var(--duration-instant) var(--ease-productive);
   }
   .app-key-flat:hover {
     background-color: var(--color-app-fill);
@@ -886,82 +1031,71 @@ textarea::placeholder {
   .app-well {
     background-color: var(--color-app-well);
     border: 1px solid var(--color-app-border-strong);
-    border-radius: 6px;
+    border-radius: var(--radius-control);
     box-shadow: var(--shadow-app-inset);
+    transition:
+      border-color var(--duration-fast) var(--ease-productive),
+      box-shadow var(--duration-fast) var(--ease-productive);
+  }
+  .app-well:hover:not(:disabled):not(:focus-visible) {
+    border-color: var(--color-app-text-4);
   }
 
-  /* Status lights. */
+  /* Status lights: a small lit tile. */
   .app-led {
     display: inline-block;
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 9999px;
-    background: radial-gradient(circle at 35% 30%, #ffffffcc 0 18%, transparent 30%), var(--color-app-led-on);
-    box-shadow:
-      0 0 0 1px rgba(0, 0, 0, 0.25),
-      0 0 6px var(--color-app-led-on);
+    background: var(--color-app-led-on);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-app-led-on) 25%, transparent);
   }
   .app-led-wait {
-    background: radial-gradient(circle at 35% 30%, #ffffffcc 0 18%, transparent 30%), var(--color-app-led-wait);
-    box-shadow:
-      0 0 0 1px rgba(0, 0, 0, 0.25),
-      0 0 6px var(--color-app-led-wait);
+    background: var(--color-app-led-wait);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-app-led-wait) 25%, transparent);
   }
   .app-led-off {
-    background: var(--color-app-border);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3);
+    background: var(--color-app-border-strong);
+    box-shadow: none;
   }
 
-  /* Ledger rows: faint alternate shading, like ruled accounts paper. */
+  /* Ledger rows: the faintest alternate shading. */
   .app-ledger tbody tr:nth-child(even) {
-    background-color: color-mix(in oklab, var(--color-app-subtle) 70%, transparent);
+    background-color: color-mix(in oklch, var(--color-app-subtle) 70%, transparent);
   }
 
-  /* A dialog's title bar, after the windows of early desktop systems: fine
-     horizontal rules behind the title. */
+  /* A dialog's title bar: a quiet band with a kashi strip along its foot. */
   .app-window-bar {
     background-color: var(--color-app-subtle);
-    background-image: repeating-linear-gradient(
-      to bottom,
-      transparent 0 3px,
-      color-mix(in oklab, var(--color-app-border-strong) 45%, transparent) 3px 4px
-    );
-    background-clip: content-box;
-    padding-block: 0.5rem;
+    background-image: linear-gradient(90deg, var(--color-app-primary), var(--color-app-accent));
+    background-size: 100% 2px;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    padding-block: 0.625rem;
   }
 
-  /* The hardware rail: dark, with a fine vertical grain like brushed metal. */
+  /* The rail: lapis at dusk, the garden's wall. */
   .app-rail {
     background-color: var(--color-app-rail);
-    background-image:
-      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px),
-      linear-gradient(to bottom, var(--color-app-rail), var(--color-app-rail-2));
-    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06);
+    background-image: linear-gradient(to bottom, var(--color-app-rail), var(--color-app-rail-2));
+    box-shadow: inset -1px 0 0 oklch(100% 0 0 / 0.06);
   }
 
-  /* Focus: an amber ring that is always visible, on every surface — and on
-     every control in the dashboard's dialogs and menus, which render outside
-     the shell. */
-
-  /* An engraved groove: a dark cut with a lit edge under it. */
+  /* A rule between groups. */
   .app-groove {
     border-bottom: 1px solid var(--color-app-border);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
-  }
-  .dark .app-groove {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 }
 
 /* The dashboards' focus ring, outside any layer: the site-wide ring above is
    unlayered too, and a layered rule loses to it whatever its specificity.
-   Amber on every dashboard control, including dialogs and menus, which
+   The same saffron outline as everywhere, including dialogs and menus, which
    render outside the shell. */
 .app-surface :focus-visible,
 .app-key:focus-visible,
 .app-key-flat:focus-visible,
 .app-well:focus-visible {
-  outline: 2px solid var(--color-app-accent);
+  outline: 3px solid var(--color-app-accent);
   outline-offset: 2px;
 }
 
@@ -973,4 +1107,16 @@ textarea::placeholder {
    display:flex, which only !important outranks. */
 body:has([data-app-shell]) #enamad-seal {
   display: none !important;
+}
+
+/* Forced colours (Windows high contrast): shadows and fills vanish there, so
+   every control is given a real system-coloured border. */
+@media (forced-colors: active) {
+  .app-key,
+  .app-key-flat,
+  .app-well,
+  .app-raised,
+  .glass {
+    border: 1px solid CanvasText;
+  }
 }

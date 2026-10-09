@@ -9,11 +9,19 @@ export interface GlowCardProps {
   glow?: GlowColor;
 }
 
+/* A drop on the overhead light, tinted by the tile it belongs to, and an
+   edge in the same colour. No glow: a glow has no light source. */
 const GLOW_SHADOW: Record<GlowColor, string> = {
-  green: '0 0 32px rgba(16,185,129,0.22), 0 12px 32px -10px rgba(15,23,42,0.25)',
-  red: '0 0 32px rgba(239,68,68,0.2), 0 12px 32px -10px rgba(15,23,42,0.25)',
-  amber: '0 0 32px rgba(245,158,11,0.2), 0 12px 32px -10px rgba(15,23,42,0.25)',
-  default: '0 0 28px rgba(148,163,184,0.18), 0 12px 32px -10px rgba(15,23,42,0.25)',
+  green: '0 18px 36px -20px oklch(35% 0.064 182 / 0.55)',
+  red: '0 18px 36px -20px oklch(35% 0.143 25 / 0.5)',
+  amber: '0 18px 36px -20px oklch(35% 0.076 72 / 0.5)',
+  default: '0 18px 36px -20px oklch(22% 0.03 75 / 0.4)',
+};
+const GLOW_EDGE: Record<GlowColor, string> = {
+  green: 'var(--color-brand-green-400)',
+  red: 'var(--color-brand-red-300)',
+  amber: 'var(--color-brand-amber-300)',
+  default: 'var(--color-border-strong)',
 };
 
 /**
@@ -27,10 +35,10 @@ const GLOW_SHADOW: Record<GlowColor, string> = {
 export function GlowCard({ children, className, glow = 'green' }: GlowCardProps) {
   return (
     <div
-      style={{ '--ct-glow': GLOW_SHADOW[glow] } as React.CSSProperties}
+      style={{ '--ct-glow': GLOW_SHADOW[glow], '--ct-edge': GLOW_EDGE[glow] } as React.CSSProperties}
       className={cn(
-        'ct-lift rounded-xl border border-border-default bg-surface-50 p-6 shadow-soft',
-        'hover:[box-shadow:var(--ct-glow)]',
+        'ct-lift rounded-2xl border border-border-default bg-surface-50 p-6 shadow-soft',
+        'hover:[box-shadow:var(--ct-glow)] hover:[border-color:var(--ct-edge)]',
         className
       )}
     >

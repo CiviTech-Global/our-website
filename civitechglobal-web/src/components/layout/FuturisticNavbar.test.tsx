@@ -186,10 +186,10 @@ describe('FuturisticNavbar', () => {
   it('marks the menu holding the current page, including detail routes', () => {
     renderAt('/insurance/third-party');
     expect(screen.getByRole('button', { name: /Services menu/ })).toHaveClass(
-      'text-brand-green-600'
+      'text-brand-green-700'
     );
     expect(screen.getByRole('button', { name: /Company/ })).not.toHaveClass(
-      'text-brand-green-600'
+      'text-brand-green-700'
     );
   });
 
