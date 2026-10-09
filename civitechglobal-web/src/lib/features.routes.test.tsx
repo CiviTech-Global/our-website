@@ -51,7 +51,10 @@ beforeAll(async () => {
 
   const { preloadLocale } = await import('@/i18n/dictionaries');
   await preloadLocale('en');
-});
+  // Importing the whole App transforms most of the source tree: about two
+  // seconds alone, but well past the 10s default when the suite runs in
+  // parallel on a busy machine, which made this the one flaky file.
+}, 60_000);
 
 function mountAt(path: string) {
   const queryClient = new QueryClient({

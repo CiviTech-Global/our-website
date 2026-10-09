@@ -112,7 +112,7 @@ export default function ConsultPage() {
 
   if (receipt) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16">
+      <div className="page-frame page-frame-reading">
         <AnimatedSection>
           <Card className="text-center">
             <CheckCircle2 className="mx-auto mb-4 size-12 text-brand-green-500" aria-hidden="true" />
@@ -155,7 +155,7 @@ export default function ConsultPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame page-frame-reading">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-text-primary">{t.consult.title}</h1>
         <p className="mt-2 text-text-secondary">{t.consult.subtitle}</p>

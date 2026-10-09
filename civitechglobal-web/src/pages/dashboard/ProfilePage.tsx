@@ -51,7 +51,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <PageHeader title={t.dashboard.profile} description={t.app.memberDescriptions.profile} className="mb-0" />
       <AnimatedSection>
         <Card>

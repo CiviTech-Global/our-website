@@ -46,7 +46,7 @@ export default function ServicePage() {
   }
   if (!service) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         <Link to="/freelance-services" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.work.servicesTitle}
@@ -74,7 +74,7 @@ function ServiceBody({ service }: { service: ServiceDetail }) {
   const total = service.reviews.items.length;
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <nav className="mb-4 text-sm text-text-tertiary">
         <Link to="/freelance-services" className="hover:text-text-primary hover:underline">
           {t.work.servicesTitle}

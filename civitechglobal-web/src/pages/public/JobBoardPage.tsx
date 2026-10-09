@@ -183,7 +183,7 @@ export default function JobBoardPage() {
   const unknownCategory = Boolean(params.category) && Boolean(categories) && !fixedCategory;
   if (unknownPlace || unknownCategory) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         <Link to="/jobs" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.market.backToJobs}
@@ -360,7 +360,7 @@ export default function JobBoardPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-text-primary">{title}</h1>
         <p className="mt-2 text-text-secondary">{subtitle}</p>

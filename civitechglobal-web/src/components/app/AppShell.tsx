@@ -152,7 +152,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
           )}
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <header className="app-faceplate relative z-10 flex h-12 shrink-0 items-center gap-2 px-3 sm:px-4">
+            <header className="relative z-10 flex h-14 shrink-0 items-center gap-2 border-b border-app-border bg-app-panel/90 px-3 backdrop-blur-sm sm:px-4">
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
@@ -227,7 +227,9 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
             </header>
 
             <main id="main-content" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-6">{children}</div>
+              {/* Every dashboard screen gets the same frame: one width, one set of
+                gutters, one top and bottom rhythm. */}
+              <div className="mx-auto w-full max-w-[90rem] px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-7">{children}</div>
             </main>
           </div>
         </div>

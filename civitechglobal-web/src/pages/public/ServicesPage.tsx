@@ -34,7 +34,7 @@ export default function ServicesPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+    <div className="page-frame">
       <AnimatedSection className="mb-10 text-center sm:mb-12">
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.services.title}</h1>
         <p className="mx-auto mt-3 max-w-xl text-text-secondary">{t.services.subtitle}</p>

@@ -85,7 +85,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-10 text-center">
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.contact.title}</h1>
         <p className="mx-auto mt-3 max-w-xl text-text-secondary">{t.contact.subtitle}</p>

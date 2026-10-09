@@ -8,8 +8,9 @@ export function FuturisticFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-24 px-3 pb-6 sm:px-4">
-      <div className="mx-auto max-w-6xl">
+    // Same edges as the page frame and the navbar.
+    <footer className="mt-8 px-4 pb-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[76rem]">
         <hr className="neon-line mb-8" />
         <div className="glass rounded-2xl px-6 py-8 shadow-soft">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">

@@ -84,7 +84,7 @@ export default function RequestDetailPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div>
       <PageHeader
         title={request.fullName}
         titleAdornment={

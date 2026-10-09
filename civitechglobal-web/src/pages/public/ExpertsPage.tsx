@@ -51,7 +51,7 @@ export default function ExpertsPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-text-primary">{t.experts.title}</h1>
         <p className="mt-2 text-text-secondary">{t.experts.subtitle}</p>

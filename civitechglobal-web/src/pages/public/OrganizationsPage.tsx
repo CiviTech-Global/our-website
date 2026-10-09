@@ -61,7 +61,7 @@ export default function OrganizationsPage({ kind }: { kind: OrganizationKind }) 
   const testimonials = all.filter((org) => org.testimonialQuote);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-12 text-center">
         {isCustomer ? (
           <Building2 className="mx-auto mb-3 size-10 text-brand-green-500" aria-hidden="true" />

@@ -49,7 +49,7 @@ export default function ThirdPartyLandingPage() {
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-6">
         <Link
           to="/insurance"

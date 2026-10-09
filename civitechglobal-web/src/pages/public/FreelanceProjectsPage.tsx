@@ -61,7 +61,7 @@ export default function FreelanceProjectsPage() {
   const count = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-text-primary">{t.market.projectsTitle}</h1>
         <p className="mt-2 text-text-secondary">{t.market.projectsSubtitle}</p>

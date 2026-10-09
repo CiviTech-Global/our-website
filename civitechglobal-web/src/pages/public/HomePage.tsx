@@ -70,10 +70,10 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24">
+    <div className="page-frame !pt-0">
       {/* Hero */}
       {/* The garden ground runs edge to edge behind the hero, under the plan. */}
-      <section className="bagh-ground relative -mx-4 grid grid-cols-1 items-center gap-10 rounded-b-[var(--radius-feature)] px-4 py-16 lg:grid-cols-2 lg:py-24">
+      <section className="bagh-ground relative -mx-4 grid grid-cols-1 items-center gap-10 rounded-b-[var(--radius-feature)] px-4 py-14 sm:-mx-6 sm:px-6 lg:-mx-8 lg:grid-cols-[1.05fr_1fr] lg:px-8 lg:py-20">
         <AnimatedSection>
           <p className="bagh-chip mb-5">{t.home.heroEyebrow}</p>
           <KineticWords

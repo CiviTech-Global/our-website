@@ -56,7 +56,7 @@ export default function FreelanceProjectDetailPage() {
 
   if (isError || !project) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         <Link to="/projects" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.market.backToProjects}
@@ -92,7 +92,7 @@ export default function FreelanceProjectDetailPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame page-frame-reading">
       <Link
         to="/projects"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary"

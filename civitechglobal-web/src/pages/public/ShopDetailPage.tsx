@@ -66,7 +66,7 @@ export default function ShopDetailPage() {
 
   if (isError || !shop) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-24">
+      <div className="page-frame page-frame-reading">
         <EmptyState title={t.errors.notFoundTitle} description={t.errors.notFoundBody} />
       </div>
     );
@@ -83,7 +83,7 @@ export default function ShopDetailPage() {
         : t.trademaster.products;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <MarketplaceNav className="mb-8" />
 
       {/* The shop's own photograph across the top, when it has uploaded one.

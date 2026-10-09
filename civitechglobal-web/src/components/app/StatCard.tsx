@@ -21,6 +21,15 @@ export interface StatCardProps {
   loading?: boolean;
 }
 
+/* The icon's tile, in the tone of the figure: turquoise by default, saffron
+   for what is waiting, pomegranate for what has gone wrong. */
+const TILE_TONES: Record<StatTone, string> = {
+  neutral: 'bg-app-primary-soft text-app-primary ring-brand-green-200 dark:ring-brand-green-400/25',
+  attention: 'bg-app-accent-soft text-status-warning ring-brand-amber-200 dark:ring-brand-amber-400/25',
+  positive: 'bg-app-primary-soft text-status-success ring-brand-green-200 dark:ring-brand-green-400/25',
+  critical: 'bg-status-error-bg text-status-error ring-brand-red-200 dark:ring-brand-red-400/25',
+};
+
 const HINT_TONES: Record<StatTone, string> = {
   neutral: 'text-app-text-3',
   attention: 'text-status-warning',
@@ -31,8 +40,9 @@ const HINT_TONES: Record<StatTone, string> = {
 /**
  * One figure, labelled.
  *
- * Label in 11px uppercase above a 24px value, with the icon as a faint
- * watermark rather than a coloured blob — the number is what the card is for.
+ * The public site's feature card at working size: the icon in a small tinted
+ * tile, the label, and the figure large and bold — the number is what the
+ * card is for, so it is the biggest thing on it.
  * A card that summarises a queue is a link to it: seeing that five things are
  * waiting is only useful if opening them is the next click.
  */
@@ -43,32 +53,31 @@ export function StatCard({ label, value, icon: Icon, hint, tone = 'neutral', to,
 
   const body = (
     <>
-      {Icon && (
-        <Icon
-          className="pointer-events-none absolute -bottom-3 end-[-10px] size-16 text-app-text opacity-[0.04] transition-opacity group-hover:opacity-[0.08]"
-          aria-hidden="true"
-        />
-      )}
-      <p className="app-label relative truncate">{label}</p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="app-label truncate pt-1">{label}</p>
+        {Icon && (
+          <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl ring-1', TILE_TONES[tone])}>
+            <Icon className="size-5" aria-hidden="true" />
+          </span>
+        )}
+      </div>
       {loading || value === undefined ? (
-        <span className="app-readout relative mt-2 block h-9 w-20 animate-pulse" aria-hidden="true" />
+        <span className="mt-1 block h-9 w-20 animate-pulse rounded-lg bg-app-fill" aria-hidden="true" />
       ) : (
-        <p className="app-readout relative mt-2 inline-block min-w-14 px-2.5 py-0.5 text-metric font-semibold">
-          {display}
-        </p>
+        <p className="app-tabular mt-1 text-metric font-extrabold text-app-text">{display}</p>
       )}
-      {hint && <p className={cn('relative mt-0.5 truncate text-label font-medium', HINT_TONES[tone])}>{hint}</p>}
+      {hint && <p className={cn('mt-1 truncate text-label font-semibold', HINT_TONES[tone])}>{hint}</p>}
     </>
   );
 
-  const frame = 'app-raised group relative block min-h-[104px] overflow-hidden px-4 py-3.5';
+  const frame = 'app-raised group relative block min-h-[120px] overflow-hidden p-4 sm:p-5';
 
   return to ? (
     <Link
       to={to}
       className={cn(
         frame,
-        'transition-transform duration-150 hover:-translate-y-0.5 hover:border-app-border-strong active:translate-y-0'
+        'transition-[transform,border-color,box-shadow] duration-(--dur-enter) ease-(--ease) hover:-translate-y-0.5 hover:border-app-primary hover:shadow-[0_14px_28px_-18px_oklch(35%_0.064_182/0.5)] active:translate-y-0'
       )}
     >
       {body}

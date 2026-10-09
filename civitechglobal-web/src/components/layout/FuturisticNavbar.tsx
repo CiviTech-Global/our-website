@@ -157,8 +157,10 @@ export function FuturisticNavbar() {
   }, [openMenu]);
 
   return (
-    <header className="sticky top-3 z-40 px-3 sm:top-4 sm:px-4">
-      <nav className="glass mx-auto flex max-w-6xl items-center justify-between gap-2 rounded-2xl px-4 py-2.5 shadow-soft lg:gap-4">
+    // The page frame's gutters, and an inner width of the frame less its
+    // gutters (76rem), so the bar's edges line up with every page's content.
+    <header className="sticky top-3 z-40 px-4 sm:top-4 sm:px-6 lg:px-8">
+      <nav className="glass mx-auto flex max-w-[76rem] items-center justify-between gap-2 rounded-2xl px-4 py-2.5 shadow-soft lg:gap-4">
         <Link to="/" className="flex items-center gap-2 font-semibold text-text-primary">
           <img
             src={logoSrc}
@@ -250,7 +252,7 @@ export function FuturisticNavbar() {
       </nav>
 
       {isOpen && (
-        <div className="ct-drop-in glass mx-auto mt-2 max-w-6xl rounded-2xl p-4 shadow-soft md:hidden">
+        <div className="ct-drop-in glass mx-auto mt-2 max-w-[76rem] rounded-2xl p-4 shadow-soft md:hidden">
           {/* The drawer has room for every link at once, so the menus flatten
               into labelled sections rather than becoming a second thing to open. */}
           <ul className="flex flex-col gap-1">

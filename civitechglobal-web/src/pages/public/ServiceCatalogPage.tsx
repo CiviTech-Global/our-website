@@ -184,7 +184,7 @@ export default function ServiceCatalogPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">{t.work.servicesTitle}</h1>

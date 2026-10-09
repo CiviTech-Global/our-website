@@ -90,7 +90,7 @@ export default function ProjectPage() {
 
   if (!project) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         {/* A members-only brief answers 404 to the public read: offer the sign-in that may open it. */}
         {!signedIn && (
@@ -131,7 +131,7 @@ function ProjectBody({ project }: { project: ProjectDetail }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <nav className="mb-4 text-sm text-text-tertiary" aria-label={t.common.back}>
         <Link to="/projects" className="hover:text-text-primary hover:underline">
           {t.work.boardTitle}

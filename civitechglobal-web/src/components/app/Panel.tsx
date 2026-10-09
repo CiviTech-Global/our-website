@@ -26,9 +26,9 @@ export interface PanelProps {
 export function Panel({ title, description, actions, viewAll, children, flush, className }: PanelProps) {
   return (
     <section className={cn('app-raised flex flex-col overflow-hidden', className)}>
-      <div className="app-faceplate flex min-h-12 flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5">
+      <div className="app-faceplate flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3">
         <div className="min-w-0">
-          <h2 className="text-body-lg font-semibold text-app-text">{title}</h2>
+          <h2 className="text-body-lg font-bold text-app-text">{title}</h2>
           {description && <p className="text-label text-app-text-3">{description}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -44,7 +44,7 @@ export function Panel({ title, description, actions, viewAll, children, flush, c
           )}
         </div>
       </div>
-      <div className={cn('min-w-0 flex-1', !flush && 'p-4')}>{children}</div>
+      <div className={cn('min-w-0 flex-1', !flush && 'p-5')}>{children}</div>
     </section>
   );
 }

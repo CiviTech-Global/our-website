@@ -121,7 +121,7 @@ export default function JobDetailPage() {
 
   if (isError || !job) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         <Link to="/jobs" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.market.backToJobs}
@@ -171,7 +171,7 @@ export default function JobDetailPage() {
   }
 
   return (
-    <div className={v2 ? 'mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8' : 'mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8'}>
+    <div className={v2 ? 'page-frame page-frame-reading' : 'page-frame page-frame-reading'}>
       <Link
         to="/jobs"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary"

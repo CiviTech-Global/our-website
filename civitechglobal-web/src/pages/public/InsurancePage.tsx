@@ -42,7 +42,7 @@ export default function InsurancePage() {
   const totalShown = filtered.reduce((n, c) => n + c.products.length, 0);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+    <div className="page-frame">
       <AnimatedSection className="mb-8 text-center sm:mb-10">
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.insurance.title}</h1>
         <p className="mx-auto mt-3 max-w-2xl text-text-secondary">{t.insurance.subtitle}</p>

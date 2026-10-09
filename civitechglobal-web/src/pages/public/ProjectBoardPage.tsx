@@ -146,7 +146,7 @@ export default function ProjectBoardPage() {
 
   if (landing && categories && !fixedCategory) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         <Link to="/projects" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.work.boardTitle}
@@ -344,7 +344,7 @@ export default function ProjectBoardPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">{title}</h1>

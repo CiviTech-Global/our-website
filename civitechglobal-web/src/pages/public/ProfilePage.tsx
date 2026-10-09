@@ -51,7 +51,7 @@ export default function ProfilePage() {
 
   if (isError || !profile) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.market.profileNotFound}</p>
         <Link to="/" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.errors.goHome}
@@ -61,7 +61,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame page-frame-reading">
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">

@@ -46,7 +46,7 @@ export default function BlogIndexPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
+    <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-10">
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.blog.title}</h1>
         <p className="mt-3 max-w-2xl text-text-secondary">{t.blog.subtitle}</p>

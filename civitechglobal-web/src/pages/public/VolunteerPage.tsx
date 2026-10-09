@@ -217,7 +217,7 @@ export default function VolunteerPage() {
 
   if (result) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16">
+      <div className="page-frame page-frame-reading">
         <AnimatedSection>
           <Card className="text-center">
             <CheckCircle2 className="mx-auto mb-4 size-12 text-brand-green-500" aria-hidden="true" />
@@ -277,7 +277,7 @@ export default function VolunteerPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+    <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-8">
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.volunteer.title}</h1>
         <p className="mt-3 text-text-secondary">{t.volunteer.subtitle}</p>

@@ -77,7 +77,7 @@ export default function BlogPostPage() {
      * be handed the Persian edition rather than a dead end.
      */
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16">
+      <div className="page-frame page-frame-reading">
         <EmptyState
           title={elsewhere.length > 0 ? t.blog.otherLanguageTitle : t.blog.notFoundTitle}
           description={elsewhere.length > 0 ? t.blog.otherLanguageBody : t.blog.notFoundBody}
@@ -99,7 +99,7 @@ export default function BlogPostPage() {
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-6">
         <Link
           to="/blog"

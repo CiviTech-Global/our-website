@@ -155,7 +155,7 @@ export default function VerificationPage() {
   }
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <PageHeader title={t.market.verificationTitle} description={t.market.verificationIntro} className="mb-2" />
 
       <Card>

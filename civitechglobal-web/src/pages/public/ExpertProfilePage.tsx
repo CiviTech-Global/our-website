@@ -66,7 +66,7 @@ export default function ExpertProfilePage() {
 
   if (isError || !expert) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.experts.notFound}</p>
         <Link to="/experts" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.experts.backToClub}
@@ -78,7 +78,7 @@ export default function ExpertProfilePage() {
   const years = expert.yearsExperience;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame page-frame-reading">
       <Link to="/experts" className="mb-6 inline-block text-sm text-text-secondary hover:text-text-primary">
         {t.experts.backToClub}
       </Link>

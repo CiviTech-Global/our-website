@@ -86,7 +86,7 @@ export default function CartPage() {
 
   if (cart.lines.length === 0) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6">
+      <div className="page-frame page-frame-reading">
         <EmptyState
           title={t.trademaster.cartEmpty}
           description={t.trademaster.cartEmptyBody}
@@ -102,7 +102,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <h1 className="text-3xl font-bold text-text-primary">{t.trademaster.cart}</h1>
 
       {cart.byShop.length > 1 && (

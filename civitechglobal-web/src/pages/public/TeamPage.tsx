@@ -24,7 +24,7 @@ export default function TeamPage() {
   const empty = !isLoading && sections.length === 0 && unsectioned.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-10 text-center">
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.team.title}</h1>
         <p className="mx-auto mt-3 max-w-2xl text-text-secondary">{t.team.subtitle}</p>

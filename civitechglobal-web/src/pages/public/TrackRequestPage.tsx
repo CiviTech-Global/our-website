@@ -53,7 +53,7 @@ export default function TrackRequestPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
+    <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-8 text-center">
         <PackageSearch className="mx-auto mb-3 size-10 text-brand-green-500" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.insurance.trackTitle}</h1>

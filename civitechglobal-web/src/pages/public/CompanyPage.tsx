@@ -53,7 +53,7 @@ export default function CompanyPage() {
 
   if (isError || !company) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+      <div className="page-frame page-frame-reading text-center">
         <p className="text-text-secondary">{t.errors.notFoundBody}</p>
         <Link to="/companies" className="mt-4 inline-block text-brand-green-600 hover:underline">
           {t.jobs.companiesTitle}
@@ -70,7 +70,7 @@ export default function CompanyPage() {
   if (where) facts.push([MapPin, t.jobs.location, where]);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <Link
         to="/companies"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary"

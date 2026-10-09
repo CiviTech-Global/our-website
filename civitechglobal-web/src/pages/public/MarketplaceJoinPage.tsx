@@ -36,7 +36,7 @@ export default function MarketplaceJoinPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <MarketplaceNav className="mb-8" />
 
       <header className="mb-10 max-w-3xl">

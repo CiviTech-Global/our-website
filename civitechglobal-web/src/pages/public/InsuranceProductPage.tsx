@@ -127,7 +127,7 @@ export default function InsuranceProductPage() {
 
   if (isError || !product) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16">
+      <div className="page-frame page-frame-reading">
         <EmptyState title={t.insurance.notFoundTitle} description={t.insurance.notFoundBody} />
         <div className="mt-6 text-center">
           <Link to="/insurance">
@@ -143,7 +143,7 @@ export default function InsuranceProductPage() {
   const categoryTitle = locale === 'fa' ? product.category.title : product.category.titleEn;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+    <div className="page-frame">
       <AnimatedSection className="mb-6">
         <Link
           to="/insurance"

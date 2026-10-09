@@ -87,7 +87,7 @@ export default function PortfolioPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="page-frame">
       <header className="mb-8 text-center">
         <FolderKanban className="mx-auto mb-3 size-10 text-brand-green-500" aria-hidden="true" />
         <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.showcase.projectsTitle}</h1>
