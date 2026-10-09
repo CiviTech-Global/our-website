@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
  */
 export default function ConversationThreadPage() {
   const { kind, threadId } = useParams<{ kind: string; threadId: string }>();
-  const threadKind = (kind === 'a' || kind === 'b' ? kind : undefined) as ThreadKind | undefined;
+  const threadKind = (kind === 'a' || kind === 'b' || kind === 'k' ? kind : undefined) as ThreadKind | undefined;
   const { t } = useLocale();
   const { showToast } = useToast();
 

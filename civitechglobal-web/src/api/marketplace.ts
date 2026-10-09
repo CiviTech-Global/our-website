@@ -741,13 +741,19 @@ export function useConversations() {
   });
 }
 
-export type ThreadKind = 'a' | 'b';
+export type ThreadKind = 'a' | 'b' | 'k';
+
+/** Where a thread lives: a job application, a project bid, or a book purchase request. */
+function threadPath(kind: ThreadKind | undefined, threadId: string): string {
+  if (kind === 'k') return `/bookshop/me/requests/${threadId}/messages`;
+  return `/market/me/${kind === 'a' ? 'applications' : 'bids'}/${threadId}/messages`;
+}
 
 export function useThread(kind: ThreadKind | undefined, threadId: string | undefined) {
   return useQuery({
     queryKey: ['market', 'me', 'thread', kind, threadId],
     queryFn: async () => {
-      const res = await api.get<ThreadView>(`/market/me/${kind === 'a' ? 'applications' : 'bids'}/${threadId}/messages`);
+      const res = await api.get<ThreadView>(threadPath(kind, threadId!));
       return res.data;
     },
     enabled: Boolean(kind && threadId),
@@ -759,7 +765,7 @@ export function useSendMessage(kind: ThreadKind | undefined) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { threadId: string; body: string }) => {
-      const res = await api.post(`/market/me/${kind === 'a' ? 'applications' : 'bids'}/${input.threadId}/messages`, {
+      const res = await api.post(threadPath(kind, input.threadId), {
         body: input.body,
       });
       return res.data;

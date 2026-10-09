@@ -70,7 +70,7 @@ function ConversationRow({ thread, locale }: { thread: ConversationSummary; loca
   const { t } = useLocale();
 
   return (
-    <Link to={`/dashboard/messages/${thread.kind === 'application' ? 'a' : 'b'}/${thread.threadId}`}>
+    <Link to={`/dashboard/messages/${thread.kind === 'application' ? 'a' : thread.kind === 'book' ? 'k' : 'b'}/${thread.threadId}`}>
       <Card
         className={
           thread.unreadCount > 0
@@ -86,7 +86,7 @@ function ConversationRow({ thread, locale }: { thread: ConversationSummary; loca
               </span>
               {thread.counterpart?.verified && <VerifiedBadge />}
               <span className="text-label text-app-text-4">
-                {thread.kind === 'application' ? t.market.awardKindJob : t.market.awardKindProject}:{' '}
+                {thread.kind === 'application' ? t.market.awardKindJob : thread.kind === 'book' ? t.bookshop.kindBook : t.market.awardKindProject}:{' '}
                 {thread.listingTitle}
               </span>
             </div>

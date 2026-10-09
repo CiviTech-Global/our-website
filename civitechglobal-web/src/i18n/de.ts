@@ -1,5 +1,6 @@
 import type { PartialTranslations } from './merge';
 import work from './work/de';
+import bookshop from './bookshop/de';
 
 /**
  * Deutsch.
@@ -2590,6 +2591,7 @@ const de: PartialTranslations = {
     depthHint: 'Kategorien gehen höchstens zwei Ebenen tief.',
   },
   work,
+  bookshop,
 };
 
 export default de;

@@ -109,7 +109,7 @@ const AWARD_STATUS_LABEL = { ACTIVE: 'awardActive', COMPLETED: 'awardCompleted',
 function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
   const { t } = useLocale();
   const active = award.award.status === 'ACTIVE';
-  const listPath = award.kind === 'job' ? '/jobs' : award.kind === 'service' ? '/freelance-services' : '/projects';
+  const listPath = award.kind === 'job' ? '/jobs' : award.kind === 'service' ? '/freelance-services' : award.kind === 'book' ? '/books' : '/projects';
 
   return (
     <Card className="flex flex-col gap-4">
@@ -125,7 +125,9 @@ function AwardCard({ award, locale }: { award: AwardView; locale: Locale }) {
             <Badge variant="info">
               {award.kind === 'job'
                 ? t.market.awardKindJob
-                : award.kind === 'service'
+                : award.kind === 'book'
+                  ? t.bookshop.kindBook
+                  : award.kind === 'service'
                   ? t.work.serviceOrderContract
                   : t.market.awardKindProject}
             </Badge>

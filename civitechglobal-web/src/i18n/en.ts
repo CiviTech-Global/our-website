@@ -1,5 +1,6 @@
 import type fa from './fa';
 import work from './work/en';
+import bookshop from './bookshop/en';
 
 const en: typeof fa = {
   common: {
@@ -2773,6 +2774,7 @@ const en: typeof fa = {
     depthHint: 'Categories go two levels deep at most.',
   },
   work,
+  bookshop,
 };
 
 export default en;

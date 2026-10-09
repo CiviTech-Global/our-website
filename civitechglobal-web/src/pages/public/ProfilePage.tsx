@@ -17,6 +17,15 @@ const ROLE_LABEL_KEYS = {
   freelancer: 'reviewRoleFreelancer',
 } as const;
 
+type ReviewRole = keyof typeof ROLE_LABEL_KEYS | 'buyer' | 'seller';
+
+/** Where the listing a review was left on lives. */
+function reviewListPath(role: ReviewRole): string {
+  if (role === 'employer' || role === 'applicant') return '/jobs';
+  if (role === 'buyer' || role === 'seller') return '/books';
+  return '/projects';
+}
+
 /**
  * A marketplace member's public face.
  *
@@ -153,8 +162,8 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <RatingStars avg={review.rating} count={0} />
                   <span className="text-xs text-text-muted">
-                    {t.market[ROLE_LABEL_KEYS[review.role]]}{' '}
-                    <Link to={`/${review.role === 'employer' || review.role === 'applicant' ? 'jobs' : 'projects'}/${review.listingCode}`} className="text-brand-600 hover:underline">
+                    {review.role === 'buyer' ? t.bookshop.reviewRoleBuyer : review.role === 'seller' ? t.bookshop.reviewRoleSeller : t.market[ROLE_LABEL_KEYS[review.role]]}{' '}
+                    <Link to={`${reviewListPath(review.role)}/${review.listingCode}`} className="text-brand-600 hover:underline">
                       {review.listingTitle}
                     </Link>{' '}
                     · {formatDate(review.createdAt, locale)}

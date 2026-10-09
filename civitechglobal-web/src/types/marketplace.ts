@@ -123,7 +123,7 @@ export interface AuditEntry {
 
 export interface ConversationSummary {
   threadId: string;
-  kind: 'application' | 'bid';
+  kind: 'application' | 'bid' | 'book';
   listingTitle: string;
   listingCode: string;
   path: string;
@@ -134,7 +134,7 @@ export interface ConversationSummary {
 }
 
 export interface ThreadView {
-  anchor: { kind: 'application' | 'bid'; listingTitle: string; listingCode: string; path: string };
+  anchor: { kind: 'application' | 'bid' | 'book'; listingTitle: string; listingCode: string; path: string };
   messages: Array<{
     id: string;
     body: string;
@@ -193,7 +193,7 @@ export interface AwardView {
     hourlyRate?: string | null;
     weeklyHourLimit?: number | null;
   };
-  kind: 'job' | 'project' | 'service';
+  kind: 'job' | 'project' | 'service' | 'book';
   listing: { code: string; title: string };
   authorId: string;
   counterpartyId: string | null;
@@ -239,7 +239,7 @@ export interface PublicProfile {
     rating: number;
     text: string | null;
     createdAt: string;
-    role: 'employer' | 'applicant' | 'client' | 'freelancer';
+    role: 'employer' | 'applicant' | 'client' | 'freelancer' | 'buyer' | 'seller';
     listingCode: string;
     listingTitle: string;
   }>;

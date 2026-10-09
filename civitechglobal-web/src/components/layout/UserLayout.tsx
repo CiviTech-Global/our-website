@@ -68,7 +68,8 @@ export function UserLayout() {
         {
           id: 'main',
           items: [
-            { to: '/dashboard/books', label: t.books.myBooks, icon: <BookOpen /> },
+            { to: '/dashboard/books', label: features.booksV2 ? t.bookshop.navMyBooks : t.books.myBooks, icon: <BookOpen /> },
+            ...(features.booksV2 ? [{ to: '/dashboard/book-purchases', label: t.bookshop.navPurchases, icon: <ShoppingBag /> }] : []),
             ...(features.tradeMaster
               ? [
                   { to: '/dashboard/shops', label: t.trademaster.myShops, icon: <ShoppingBag /> },

@@ -30,6 +30,7 @@ import {
   Users,
   UsersRound,
   Layers,
+  Library,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -192,6 +193,7 @@ export function AdminLayout() {
               icon: <Layers />,
             }),
             ...when(can('books'), queue.books),
+            ...when(can('books') && features.booksV2, { to: '/admin/book-catalog', label: t.bookshop.navCatalog, icon: <Library /> }),
             // Both behind one permission: a shop and its catalogue are
             // judged together, and a refused shop whose products nobody on
             // that desk could take down would be a strange arrangement.

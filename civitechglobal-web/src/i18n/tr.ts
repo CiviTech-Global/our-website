@@ -1,5 +1,6 @@
 import type { PartialTranslations } from './merge';
 import work from './work/tr';
+import bookshop from './bookshop/tr';
 
 /**
  * Türkçe.
@@ -2600,6 +2601,7 @@ const tr: PartialTranslations = {
     depthHint: 'Kategoriler en fazla iki düzey derinliğindedir.',
   },
   work,
+  bookshop,
 };
 
 export default tr;

@@ -68,6 +68,14 @@ const ShopDetailPage = lazy(() => import('@/pages/public/ShopDetailPage'));
 const MarketProductsPage = lazy(() => import('@/pages/public/MarketProductsPage'));
 const MarketProductDetailPage = lazy(() => import('@/pages/public/MarketProductDetailPage'));
 const BookDetailPage = lazy(() => import('@/pages/public/BookDetailPage'));
+// The book market's second generation (features.booksV2).
+const BookshopPage = lazy(() => import('@/pages/public/BookshopPage'));
+const BookPage = lazy(() => import('@/pages/public/BookPage'));
+const SellBookPage = lazy(() => import('@/pages/dashboard/SellBookPage'));
+const MyBookOffersPage = lazy(() => import('@/pages/dashboard/MyBookOffersPage'));
+const BookPurchasesPage = lazy(() => import('@/pages/dashboard/BookPurchasesPage'));
+const BookOfferQueuePage = lazy(() => import('@/pages/admin/BookOfferQueuePage'));
+const BookCatalogPage = lazy(() => import('@/pages/admin/BookCatalogPage'));
 const JobsPage = lazy(() => import('@/pages/public/JobsPage'));
 const JobDetailPage = lazy(() => import('@/pages/public/JobDetailPage'));
 const FreelanceProjectsPage = lazy(() => import('@/pages/public/FreelanceProjectsPage'));
@@ -330,15 +338,25 @@ export default function App() {
           path="/books"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <BooksPage />
+              {features.booksV2 ? <BookshopPage /> : <BooksPage />}
             </Suspense>
           }
         />
+        {features.booksV2 && (
+          <Route
+            path="/books/shelf/:shelf"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <BookshopPage />
+              </Suspense>
+            }
+          />
+        )}
         <Route
           path="/books/:code"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <BookDetailPage />
+              {features.booksV2 ? <BookPage /> : <BookDetailPage />}
             </Suspense>
           }
         />
@@ -611,10 +629,38 @@ export default function App() {
           path="books"
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
-              <MyBooksPage />
+              {features.booksV2 ? <MyBookOffersPage /> : <MyBooksPage />}
             </Suspense>
           }
         />
+        {features.booksV2 && (
+          <>
+            <Route
+              path="books/sell"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <SellBookPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="books/:id/edit"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <SellBookPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="book-purchases"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <BookPurchasesPage />
+                </Suspense>
+              }
+            />
+          </>
+        )}
         <Route
           path="jobs"
           element={
@@ -1028,11 +1074,23 @@ export default function App() {
           element={
             <RequirePermission permission="books">
               <Suspense fallback={<RouteLoadingFallback />}>
-                <BookQueuePage />
+                {features.booksV2 ? <BookOfferQueuePage /> : <BookQueuePage />}
               </Suspense>
             </RequirePermission>
           }
         />
+        {features.booksV2 && (
+          <Route
+            path="book-catalog"
+            element={
+              <RequirePermission permission="books">
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <BookCatalogPage />
+                </Suspense>
+              </RequirePermission>
+            }
+          />
+        )}
         <Route
           path="job-postings"
           element={

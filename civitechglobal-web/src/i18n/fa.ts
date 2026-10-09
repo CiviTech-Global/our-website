@@ -1,4 +1,5 @@
 import work from './work/fa';
+import bookshop from './bookshop/fa';
 
 const fa = {
   common: {
@@ -2761,6 +2762,7 @@ const fa = {
     depthHint: 'دسته‌بندی حداکثر در دو سطح تعریف می‌شود.',
   },
   work,
+  bookshop,
 };
 
 export default fa;

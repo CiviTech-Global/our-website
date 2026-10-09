@@ -1,5 +1,6 @@
 import type { PartialTranslations } from './merge';
 import work from './work/fr';
+import bookshop from './bookshop/fr';
 
 /**
  * Français.
@@ -2590,6 +2591,7 @@ const fr: PartialTranslations = {
     depthHint: 'Les catégories vont au plus à deux niveaux.',
   },
   work,
+  bookshop,
 };
 
 export default fr;
