@@ -2,6 +2,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import type { Request } from 'express';
 import { redis } from '../config/redis.js';
+import { env } from '../config/env.js';
 
 // Backed by the shared ioredis client (config/redis.ts) so limits are
 // enforced consistently across every API process/instance, not just
@@ -156,9 +157,15 @@ export const projectRespondRateLimiter = rateLimit({
   passOnStoreError: true,
 });
 
+/**
+ * Every API call. 300 per 15 minutes is ample for a person, but a developer's
+ * browser and a screenshot script share 127.0.0.1, and hot reloads plus
+ * StrictMode's double effects burn through it in minutes — so outside
+ * production the ceiling is high enough never to get in the way.
+ */
 export const generalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: env.isProduction ? 300 : 10_000,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   keyGenerator,
