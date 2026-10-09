@@ -48,6 +48,13 @@ services:
     environment:
       NODE_ENV: "{{ node_env }}"
       PORT: "5000"
+      # Product features (group_vars "Product features"). Set explicitly: unset
+      # means off in production.
+      FEATURE_TRADEMASTER: "{{ feature_trademaster | default(false) | bool | lower }}"
+      FEATURE_TRADEMASTER_ORDERS: "{{ feature_trademaster_orders | default(false) | bool | lower }}"
+      FEATURE_JOBS_V2: "{{ feature_jobs_v2 | default(false) | bool | lower }}"
+      FEATURE_PROJECTS_V2: "{{ feature_projects_v2 | default(false) | bool | lower }}"
+      FEATURE_BOOKS_V2: "{{ feature_books_v2 | default(false) | bool | lower }}"
       # Prisma reads pool settings straight off the connection string. Its
       # default is cores*2+1 PER PROCESS, which stops being safe the moment
       # there is more than one API container.

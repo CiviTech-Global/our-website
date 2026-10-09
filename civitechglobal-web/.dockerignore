@@ -3,6 +3,8 @@ dist
 .env
 .env.*
 !.env.example
+# Build-time feature switches, not secrets: the production build needs them.
+!.env.production
 *.log
 .git
 .gitignore

@@ -343,3 +343,19 @@ semaphore_admin_name: "CiviTech Admin"
 # migrations are forward-only: rollback.yml can put the old image back, but
 # only that dump can put the data back.
 app_pre_deploy_backup: true
+
+# ---- Product features --------------------------------------------------------
+# The API's switches (config/features.ts). Each defaults to off in production
+# when unset, so these are what turns a module on for the live site. The web
+# build's matching switches are in civitechglobal-web/.env.production; keep
+# the two in step — a module on in only one of them is either unreachable or
+# a page whose every request answers 404.
+#
+# Turned on 2026-10-09 at the owner's request: production carries everything
+# development does. Ordering in the market stays off (it is off in development
+# too: there are no orders or payments behind it).
+feature_trademaster: true
+feature_trademaster_orders: false
+feature_jobs_v2: true
+feature_projects_v2: true
+feature_books_v2: true
