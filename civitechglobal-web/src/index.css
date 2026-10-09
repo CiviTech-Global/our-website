@@ -964,3 +964,13 @@ textarea::placeholder {
   outline: 2px solid var(--color-app-accent);
   outline-offset: 2px;
 }
+
+/* The ENAMAD seal follows #root in index.html, so public pages end with it.
+   The dashboard shell is exactly one screen tall and scrolls inside itself:
+   under it the seal only made the whole page scroll by its own height, leaving
+   a strip below the shell. It is not shown there; the seal itself, and its
+   place in the served HTML, are untouched. The seal carries an inline
+   display:flex, which only !important outranks. */
+body:has([data-app-shell]) #enamad-seal {
+  display: none !important;
+}

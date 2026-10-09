@@ -106,7 +106,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
   return (
     <SurfaceContext.Provider value="app">
       <ShellContext.Provider value={shellValue}>
-        <div className="app-canvas app-surface flex h-dvh overflow-hidden text-body text-app-text-2">
+        <div data-app-shell="" className="app-canvas app-surface flex h-dvh overflow-hidden text-body text-app-text-2">
           {/* Desktop frame */}
           <div className="hidden h-full lg:flex">
             {rail}
