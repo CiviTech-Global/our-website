@@ -11,12 +11,28 @@ export interface ModalProps {
   title?: string;
   children: ReactNode;
   className?: string;
+  /**
+   * False for a question that has to be answered: no close button, and
+   * neither Escape nor a press on the backdrop closes it. The first-visit
+   * language choice is the one use — a single press answers it.
+   */
+  dismissible?: boolean;
+  /** The id of a heading inside `children`, when `title` is not a plain string. */
+  labelledBy?: string;
 }
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  className,
+  dismissible = true,
+  labelledBy,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<Element | null>(null);
   // Holds the dialog in the tree while it animates out; `state` picks the
@@ -31,8 +47,10 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
   // back to the dialog's first element. A form inside a modal then accepted
   // exactly one character per click — the rest went to the Close button.
   const onCloseRef = useRef(onClose);
+  const dismissibleRef = useRef(dismissible);
   useEffect(() => {
     onCloseRef.current = onClose;
+    dismissibleRef.current = dismissible;
   });
 
   useEffect(() => {
@@ -45,7 +63,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onCloseRef.current();
+        if (dismissibleRef.current) onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !dialog) return;
@@ -83,14 +101,14 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
           'absolute inset-0 bg-[oklch(18%_0.035_264/0.55)]',
           state === 'entering' ? 'ct-fade-in' : 'ct-fade-out'
         )}
-        onClick={onClose}
+        onClick={dismissible ? onClose : undefined}
         aria-hidden="true"
       />
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title ? 'modal-title' : undefined}
+        aria-labelledby={labelledBy ?? (title ? 'modal-title' : undefined)}
         className={cn(
           app
             ? // A dialog is the one place a dashboard uses a shadow: it floats.
@@ -101,24 +119,26 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
           className
         )}
       >
-            <div
-              className={cn(
-                'flex items-center justify-between',
-                app ? 'app-window-bar shrink-0 gap-3 border-b border-app-border px-3' : 'mb-4'
-              )}
-            >
-              {title && (
-                <h2
-                  id="modal-title"
-                  className={
-                    app
-                      ? 'min-w-0 truncate bg-app-subtle px-2 text-body-lg font-semibold text-app-text'
-                      : 'text-lg font-semibold text-text-primary'
-                  }
-                >
-                  {title}
-                </h2>
-              )}
+        {(title || dismissible) && (
+          <div
+            className={cn(
+              'flex items-center justify-between',
+              app ? 'app-window-bar shrink-0 gap-3 border-b border-app-border px-3' : 'mb-4'
+            )}
+          >
+            {title && (
+              <h2
+                id="modal-title"
+                className={
+                  app
+                    ? 'min-w-0 truncate bg-app-subtle px-2 text-body-lg font-semibold text-app-text'
+                    : 'text-lg font-semibold text-text-primary'
+                }
+              >
+                {title}
+              </h2>
+            )}
+            {dismissible && (
               <button
                 type="button"
                 onClick={onClose}
@@ -131,7 +151,9 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
               >
                 <X className={app ? 'size-4' : 'size-5'} aria-hidden="true" />
               </button>
-            </div>
+            )}
+          </div>
+        )}
         {app ? <div className="min-h-0 overflow-y-auto px-6 py-5">{children}</div> : children}
       </div>
     </div>,

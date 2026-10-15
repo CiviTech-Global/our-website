@@ -18,6 +18,9 @@ import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { PageGuide, guideFaqs } from '@/components/layout/PageGuide';
+import { faqPageSchema } from '@/lib/structuredData';
+import { LOCALE_TAGS } from '@/i18n/locales';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'auth.required'),
@@ -60,8 +63,11 @@ const STATUS_VARIANT: Record<TicketStatus, 'default' | 'success' | 'info'> = {
  * rather than on a page somebody has to find.
  */
 export default function ContactPage() {
-  const { t } = useLocale();
-  useDocumentTitle(t.nav.contact, { description: t.seo.contact });
+  const { t, locale } = useLocale();
+  useDocumentTitle(t.nav.contact, {
+    description: t.seo.contact,
+    jsonLd: faqPageSchema(guideFaqs(t.guides.contact), LOCALE_TAGS[locale]) ?? undefined,
+  });
   const { showToast } = useToast();
 
   const [issuedCode, setIssuedCode] = useState<string | null>(null);
@@ -154,6 +160,10 @@ export default function ContactPage() {
             </Card>
           </div>
         </AnimatedSection>
+      </div>
+
+      <div className="mt-14">
+        <PageGuide copy={t.guides.contact} id="contact" />
       </div>
     </div>
   );

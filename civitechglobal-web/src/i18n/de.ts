@@ -2614,6 +2614,99 @@ const de: PartialTranslations = {
     emptyHint: 'Solange es keine gibt, kann ein Verkäufer sein Produkt nirgends einordnen.',
     depthHint: 'Kategorien gehen höchstens zwei Ebenen tief.',
   },
+  // The written half of the list pages (components/layout/PageGuide).
+  // NOT reviewed by a native speaker.
+  guides: {
+    team: {
+      title: 'Wie unser Team arbeitet',
+      intro:
+        'Hinter jedem Projekt steht eine Gruppe von Softwareingenieurinnen und -ingenieuren, die gegenseitig ihre Arbeit prüfen, Entscheidungen schriftlich festhalten und von der ersten Nachricht bis zur Übergabe für das Ergebnis einstehen. Rayan Tamaddon Jahan Gostar baut auf Open Source, auf die Zusammenarbeit mit einer weltweiten Ingenieursgemeinschaft und auf eine offene Tür für Einsteiger. Was das im Alltag heißt:',
+      points: [
+        ['Geprüfter und getesteter Code', 'Jede Änderung wird vor der Auslieferung von einer zweiten Person gelesen und durch Tests abgesichert. Das Ziel ist Code, der jahrelang funktioniert – nicht nur am Tag der Übergabe.'],
+        ['Entscheidungen auf Papier', 'Umfang, Annahmen, was nicht enthalten ist, Zeitplan und Preisspanne stehen in einem schriftlichen Angebot. Was nicht aufgeschrieben ist, ist nicht vereinbart.'],
+        ['Barrierefrei vom ersten Tag an', 'Was wir bauen, funktioniert mit Tastatur und Screenreader und öffnet sich auch auf einem günstigen Smartphone. Das ist eine Entscheidung, keine Nebensache.'],
+        ['Open Source, offene Tür', 'Ein Teil unserer Arbeit entsteht in Open-Source-Projekten mit einer weltweiten Gemeinschaft, und das Ehrenamts- und Praktikumsprogramm gibt Einsteigern die Möglichkeit, an echten Projekten mitzuarbeiten.'],
+      ],
+      faqTitle: 'Häufige Fragen zum Team',
+      faqs: [
+        ['Wie kann ich dem Team beitreten?', 'Schicken Sie Ihren Lebenslauf über die Seite „Lebenslauf senden“. Wir lesen ihn und melden uns, sobald eine Stelle frei wird, die zu Ihrer Erfahrung passt.'],
+        ['Ich fange gerade erst an. Gibt es Platz für mich?', 'Ja. Genau dafür gibt es das Programm „Ehrenamt & Praktikum“: echte Projekte, an der Seite erfahrener Ingenieure.'],
+        ['Wie hängen CiviTech Global und Rayan Tamaddon Jahan Gostar zusammen?', 'CiviTech Global ist die internationale Marke von Rayan Tamaddon Jahan Gostar: ein Unternehmen, ein Team.'],
+        ['Wie starte ich ein Projekt mit diesem Team?', 'Stellen Sie Ihre Anfrage über die Seite „Projekt starten“. Sie erhalten einen Tracking-Code, und für Sie wird ein schriftliches Angebot erstellt – kostenlos und unverbindlich.'],
+      ],
+    },
+    customers: {
+      title: 'Was es heißt, unser Kunde zu sein',
+      intro:
+        'Der Kundenclub zeigt die Organisationen und Unternehmen, deren Software wir gebaut haben. Wichtiger als die Liste ist die Erfahrung, die jeder Kunde von der ersten Nachricht bis zur fertigen Software macht – das, was wir allen versprechen, bei kleinen wie bei großen Projekten.',
+      points: [
+        ['Ein schriftliches Angebot, kostenlos', 'Die Prüfung Ihrer Anfrage und das Angebot kosten nichts. Es nennt Umfang, Ergebnisse, Annahmen, was nicht enthalten ist, einen Zeitplan und eine Preisspanne.'],
+        ['Ein Tracking-Code, jederzeit verfügbar', 'Mit Ihrer Anfrage erhalten Sie einen Tracking-Code. Zu jeder Stunde, auch um drei Uhr nachts, zeigt er den Stand Ihrer Arbeit und lässt Sie das Angebot annehmen oder ablehnen.'],
+        ['Der Preis vor der Arbeit', 'Sie sehen eine Preisspanne, bevor irgendetwas beginnt. Ist ein Teil der Arbeit das Geld nicht wert, sagen wir das früh.'],
+        ['Klare Antworten', 'Liegt etwas außerhalb dessen, was wir gut können, sagen wir es offen. Die Größe eines Projekts entscheidet nicht – wir übernehmen auch kleine Projekte.'],
+      ],
+      faqTitle: 'Häufige Fragen von Kunden',
+      faqs: [
+        ['Kostet ein Angebot etwas?', 'Nein. Die Prüfung Ihrer Anfrage und das Angebot sind kostenlos.'],
+        ['Was passiert, wenn ich das Angebot ablehne?', 'Nichts. Sie lehnen ab, und das war es. Alles, was Sie geschickt haben, bleibt bei uns und geht an niemanden sonst.'],
+        ['Ich habe meinen Tracking-Code verloren.', 'Melden Sie sich über die Telefonnummer oder E-Mail-Adresse, mit der Sie die Anfrage gestellt haben, und wir geben ihn Ihnen erneut.'],
+        ['Bleiben beendete Zusammenarbeiten auf dieser Liste?', 'Ja. Frühere Kunden bleiben in einem eigenen Abschnitt: „Wir haben das für sie gebaut“ stimmt weiterhin.'],
+      ],
+    },
+    partners: {
+      title: 'Mit uns zusammenarbeiten',
+      intro:
+        'Unsere Partner sind die Organisationen, mit denen wir Software bauen – von Technologieunternehmen bis zu Hochschulen und Open-Source-Gemeinschaften. Jede Partnerschaft hat ihre eigene Form, die Grundlage ist aber dieselbe: Transparenz über die Arbeit, die Entscheidungen und ihre Grenzen, und Qualität, auf die man sich verlassen kann.',
+      points: [
+        ['Technologiepartner', 'Unternehmen, deren Technologie, Infrastruktur oder Werkzeuge wir neben unserer eigenen Arbeit einsetzen, oder die uns für einen Teil ihres Produkts wählen.'],
+        ['Akademische Partner', 'Hochschulen und Ausbildungszentren, mit denen wir die nächste Generation von Ingenieuren fördern – mit einer offenen Tür zu echten Projekten für Studierende.'],
+        ['Community-Partner', 'Gemeinschaften und Open-Source-Projekte, zu denen wir beitragen und die es möglich machen, mit anderen statt isoliert zu bauen.'],
+        ['Strategische Partner und Wiederverkäufer', 'Organisationen, die unsere Lösungen in ihrem Markt vertreten oder verkaufen oder einen längeren Weg mit uns gehen.'],
+      ],
+      faqTitle: 'Häufige Fragen zur Partnerschaft',
+      faqs: [
+        ['Wie schlage ich eine Partnerschaft vor?', 'Schicken Sie über die Seite „Kontakt“ eine Nachricht und beschreiben Sie die Partnerschaft, die Ihnen vorschwebt. Sie erhalten einen Tracking-Code und lesen unsere Antwort damit auf derselben Seite.'],
+        ['Worauf achten Sie bei einem Partner?', 'Auf die Werte, nach denen wir selbst arbeiten: Transparenz, Qualität vor Tempo und gemeinsames Bauen.'],
+        ['Wann erscheint ein Partner auf dieser Seite?', 'Sobald die Partnerschaft besteht. Beendete Partnerschaften bleiben in einem eigenen Abschnitt.'],
+      ],
+    },
+    experts: {
+      title: 'Wie der Expertenclub funktioniert',
+      intro:
+        'Der Expertenclub ist eine Gruppe von Ingenieuren und Fachleuten, die technische und berufliche Beratung geben – die Menschen, an die wir uns selbst wenden und die Sie namentlich anfragen können. Jedes Profil zeigt, ob die Person Beratungen annimmt.',
+      points: [
+        ['Technische Beratung', 'Für Entscheidungen wie die Wahl einer Technologie oder den Entwurf einer Architektur, oder für einen Blick auf ein bestehendes System, das nicht so läuft, wie es sollte.'],
+        ['Berufliche Beratung', 'Für Ingenieure, die gerade anfangen oder die Richtung wechseln – von Menschen, die diesen Weg selbst gegangen sind.'],
+        ['Namentlich wählen', 'Die Seite jedes Experten nennt Fachgebiete, Sprachen und Berufsjahre. Nimmt die Person Beratungen an, fragen Sie direkt auf dieser Seite an.'],
+        ['Eine Beratung vereinbaren', 'Stellen Sie eine Anfrage über die Seite „Beratung anfragen“ und nennen Sie einige passende Zeiten – wir rufen an. Eine Beratung verpflichtet Sie zu nichts.'],
+      ],
+      faqTitle: 'Häufige Fragen zur Beratung',
+      faqs: [
+        ['Wie buche ich eine Beratung?', 'Über die Seite „Beratung anfragen“ oder mit der Beratungsschaltfläche auf der Seite eines Experten. Sie nennen einige passende Zeiten, und wir rufen an.'],
+        ['Kann ich den Experten selbst wählen?', 'Ja. Experten mit dem Hinweis „Nimmt Beratungen an“ können Sie namentlich anfragen.'],
+        ['Verpflichtet mich eine Beratung zu einem Projekt?', 'Nein. Eine Beratung verpflichtet Sie zu nichts.'],
+        ['Wie werde ich Mitglied im Expertenclub?', 'Schreiben Sie uns über die Seite „Kontakt“ zu Ihrer Erfahrung und Ihren Fachgebieten. Die Profile im Club werden von unserem Team angelegt und gepflegt.'],
+      ],
+    },
+    contact: {
+      title: 'Wie Ihre Nachricht weiterverfolgt wird',
+      intro:
+        'Um uns zu schreiben, brauchen Sie kein Konto und müssen auf keine E-Mail warten. Sie senden eine Nachricht, erhalten einen Tracking-Code und lesen die Antwort damit auf genau dieser Seite.',
+      points: [
+        ['Ein Tracking-Code statt E-Mail', 'Ihre E-Mail-Adresse kennzeichnet nur Ihre Nachricht; an sie wird keine Antwort geschickt. Unsere Antwort lesen Sie auf dieser Seite, mit Ihrem Tracking-Code.'],
+        ['Der Code wird einmal angezeigt', 'Notieren oder kopieren Sie den Code direkt nach dem Senden: Er ist der einzige Weg zurück zu Ihrer Nachricht.'],
+        ['Ein klarer Status', 'Jede Nachricht ist „Wartet auf Antwort“, „Beantwortet“ oder „Geschlossen“. Mit Ihrem Code sehen Sie Status und Antwort zusammen.'],
+        ['Die richtige Seite für jedes Anliegen', 'Für ein Softwareprojekt nutzen Sie „Projekt starten“, für ein Gespräch mit einem Experten „Beratung anfragen“. Versicherungsanfragen verfolgen Sie mit ihrem eigenen Code unter „Anfrage verfolgen“.'],
+      ],
+      faqTitle: 'Häufige Fragen zum Kontakt',
+      faqs: [
+        ['Schicken Sie mir die Antwort per E-Mail?', 'Nein. Die Antwort steht auf dieser Seite und wird mit Ihrem Tracking-Code gelesen – deshalb ist es wichtig, den Code aufzubewahren.'],
+        ['Wie lange dauert eine Antwort?', 'Wir sehen uns Nachrichten zeitnah an. Bis zu unserer Antwort steht die Nachricht auf „Wartet auf Antwort“.'],
+        ['Ich habe meinen Tracking-Code verloren.', 'Senden Sie eine neue Nachricht, die auf die frühere verweist; die Antwort lesen Sie mit dem Code der neuen Nachricht.'],
+        ['Welche Seite nutze ich, um ein Projekt zu starten?', '„Projekt starten“. Dort führt Ihre Anfrage zu einem schriftlichen Angebot mit Umfang, Zeitplan und Preisspanne.'],
+      ],
+    },
+  },
   work,
   bookshop,
 };

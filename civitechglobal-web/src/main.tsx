@@ -10,6 +10,7 @@ import { localePrefix, splitLocalePath } from '@/i18n/localePath';
 import { preloadLocale } from '@/i18n/dictionaries';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastViewport } from '@/components/ui/Toast';
+import { LanguageChoiceDialog } from '@/components/layout/LanguageChoiceDialog';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { installErrorReporter } from '@/lib/errorReporter';
 import { installAnalytics } from '@/lib/analytics';
@@ -76,6 +77,8 @@ void preloadLocale(initialLocale).then(() => {
                 </AuthProvider>
               </BrowserRouter>
               <ToastViewport />
+              {/* The first-visit language question; asks once per device. */}
+              <LanguageChoiceDialog />
             </ToastProvider>
           </LocaleProvider>
         </ThemeProvider>

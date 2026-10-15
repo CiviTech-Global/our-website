@@ -2624,6 +2624,99 @@ const tr: PartialTranslations = {
     emptyHint: 'Kategori olmadan satıcı ürününü hiçbir yere yerleştiremez.',
     depthHint: 'Kategoriler en fazla iki düzey derinliğindedir.',
   },
+  // The written half of the list pages (components/layout/PageGuide).
+  // NOT reviewed by a native speaker.
+  guides: {
+    team: {
+      title: 'Ekibimiz nasıl çalışır',
+      intro:
+        'Her projenin arkasında birbirinin işini gözden geçiren, kararları yazıya döken ve ilk mesajdan teslimata kadar işin sorumluluğunu taşıyan bir yazılım mühendisleri ekibi vardır. Rayan Tamaddon Jahan Gostar; açık kaynak, küresel bir mühendis topluluğuyla iş birliği ve yeni başlayanlara açık bir kapı üzerine kuruldu. Bunun günlük işte ne anlama geldiği aşağıda.',
+      points: [
+        ['Gözden geçirilen ve test edilen kod', 'Her değişiklik yayına girmeden önce başka bir mühendis tarafından okunur ve testlerle güvence altına alınır. Amaç yalnızca teslim günü değil, yıllarca çalışan koddur.'],
+        ['Kararlar kâğıt üzerinde', 'Kapsam, varsayımlar, işe dahil olmayanlar, zaman planı ve fiyat aralığı yazılı bir teklifte yer alır. Yazılmamış olan, üzerinde anlaşılmamış demektir.'],
+        ['İlk günden erişilebilir', 'Geliştirdiğimiz her şey klavye ve ekran okuyucuyla çalışır, ucuz bir telefonda da açılır. Bu bir yan özellik değil, bir karardır.'],
+        ['Açık kaynak, açık kapı', 'İşimizin bir kısmı küresel bir toplulukla birlikte açık kaynak projelerde yürür; gönüllülük ve staj programı ise yeni başlayanlara gerçek projelerde çalışma imkânı verir.'],
+      ],
+      faqTitle: 'Ekip hakkında sık sorulan sorular',
+      faqs: [
+        ['Ekibe nasıl katılabilirim?', 'CV’nizi “CV gönderin” sayfasından gönderin. Okuruz ve deneyiminize uygun bir pozisyon açıldığında sizinle iletişime geçeriz.'],
+        ['Yeni başlıyorum. Bana yer var mı?', 'Evet. “Gönüllülük ve staj” programı tam da bunun için var: deneyimli mühendislerle birlikte gerçek projeler.'],
+        ['CiviTech Global ile Rayan Tamaddon Jahan Gostar arasındaki ilişki nedir?', 'CiviTech Global, Rayan Tamaddon Jahan Gostar’ın uluslararası markasıdır: tek şirket, tek ekip.'],
+        ['Bu ekiple nasıl proje başlatırım?', 'Talebinizi “Proje başlatın” sayfasından iletin. Bir takip kodu alırsınız ve size ücretsiz, bağlayıcı olmayan yazılı bir teklif hazırlanır.'],
+      ],
+    },
+    customers: {
+      title: 'Müşterimiz olmak ne demek',
+      intro:
+        'Müşteri kulübü, yazılımını geliştirdiğimiz kurum ve işletmeleri listeler. Listeden daha önemlisi, her müşterinin ilk mesajdan teslim edilen yazılıma kadar yaşadığı deneyimdir; küçük ya da büyük her projede herkese verdiğimiz söz budur.',
+      points: [
+        ['Ücretsiz yazılı teklif', 'Talebinizi incelemek ve teklif yazmak ücretsizdir. Teklif; kapsamı, çıktıları, varsayımları, işe dahil olmayanları, zaman planını ve fiyat aralığını içerir.'],
+        ['Her zaman erişilebilen takip kodu', 'Talep gönderdiğinizde bir takip kodu alırsınız. Gecenin üçü dahil her saatte işinizin durumunu gösterir ve teklifi kabul etmenizi ya da reddetmenizi sağlar.'],
+        ['İşten önce fiyat', 'Hiçbir şey başlamadan fiyat aralığını görürsünüz. İşin bir kısmı parasına değmiyorsa bunu erkenden söyleriz.'],
+        ['Açık yanıtlar', 'Bir iş uzmanlık alanımızın dışındaysa bunu açıkça söyleriz. Kararımızı projenin büyüklüğü belirlemez; küçük projeleri de üstleniriz.'],
+      ],
+      faqTitle: 'Müşterilerden sık gelen sorular',
+      faqs: [
+        ['Fiyat teklifi için ücret ödüyor muyum?', 'Hayır. Talebinizin incelenmesi ve teklifin yazılması ücretsizdir.'],
+        ['Teklifi reddedersem ne olur?', 'Hiçbir şey. Reddedersiniz, o kadar. Gönderdiğiniz her şey bizde kalır ve başka kimseye gitmez.'],
+        ['Takip kodumu kaybettim.', 'Talebi gönderirken kullandığınız telefon numarası ya da e-posta adresinden bize ulaşın, kodu size yeniden verelim.'],
+        ['Biten iş birlikleri bu listede kalıyor mu?', 'Evet. Eski müşteriler ayrı bir bölümde kalır: “bunu onlar için geliştirdik” hâlâ doğrudur.'],
+      ],
+    },
+    partners: {
+      title: 'Bizimle çalışmak',
+      intro:
+        'İş ortaklarımız, teknoloji şirketlerinden üniversitelere ve açık kaynak topluluklarına kadar birlikte yazılım geliştirdiğimiz kurumlardır. Her ortaklığın kendine özgü bir biçimi vardır ama zemini aynıdır: iş, kararlar ve sınırlar konusunda şeffaflık ve güvenilebilir bir kalite.',
+      points: [
+        ['Teknoloji ortakları', 'Teknolojisini, altyapısını veya araçlarını kendi işimizle birlikte kullandığımız ya da ürününün bir parçasını geliştirmek için bizi seçen şirketler.'],
+        ['Akademik ortaklar', 'Yeni nesil mühendisleri yetiştirmek için birlikte çalıştığımız üniversiteler ve eğitim merkezleri; öğrencilere gerçek projelere açılan bir kapı.'],
+        ['Topluluk ortakları', 'Katkıda bulunduğumuz, yalnız değil başkalarıyla birlikte üretmeyi mümkün kılan topluluklar ve açık kaynak projeleri.'],
+        ['Stratejik ortaklar ve bayiler', 'Çözümlerimizi kendi pazarlarında temsil eden ya da satan veya uzun vadede bizimle yol yürüyen kurumlar.'],
+      ],
+      faqTitle: 'Ortaklık hakkında sık sorulan sorular',
+      faqs: [
+        ['Nasıl ortaklık önerebilirim?', '“İletişim” sayfasından aklınızdaki ortaklığı anlatan bir mesaj gönderin. Bir takip kodu alırsınız ve yanıtımızı aynı sayfada bu kodla okursunuz.'],
+        ['Bir ortakta ne arıyorsunuz?', 'Kendimizin de dayandığı değerleri: şeffaflık, hızdan önce kalite ve başkalarıyla birlikte üretmek.'],
+        ['Bir ortak bu sayfada ne zaman yer alır?', 'Ortaklık kurulduğunda. Sona eren ortaklıklar da ayrı bir bölümde kalır.'],
+      ],
+    },
+    experts: {
+      title: 'Uzmanlar kulübü nasıl işler',
+      intro:
+        'Uzmanlar kulübü, teknik ve kariyer danışmanlığı veren mühendis ve uzmanlardan oluşur; bizim de başvurduğumuz ve sizin de adıyla isteyebileceğiniz kişiler. Her profilde o uzmanın danışmanlık kabul edip etmediği yazar.',
+      points: [
+        ['Teknik danışmanlık', 'Teknoloji seçimi ya da mimari tasarım gibi kararlar için veya zaten sahip olduğunuz ama olması gerektiği gibi çalışmayan bir sisteme bakmak için.'],
+        ['Kariyer danışmanlığı', 'Yeni başlayan ya da yön değiştiren mühendisler için, o yolu bizzat yürümüş kişilerden.'],
+        ['Adıyla seçin', 'Her uzmanın sayfasında uzmanlık alanları, dilleri ve deneyim yılları yer alır. Danışmanlık kabul ediyorsa doğrudan o sayfadan talep edebilirsiniz.'],
+        ['Danışmanlığın ayarlanması', '“Danışmanlık talebi” sayfasından talep gönderin ve size uygun birkaç zaman belirtin, biz arayalım. Danışmanlık sizi hiçbir şeye bağlamaz.'],
+      ],
+      faqTitle: 'Danışmanlık hakkında sık sorulan sorular',
+      faqs: [
+        ['Nasıl danışmanlık randevusu alırım?', '“Danışmanlık talebi” sayfasından veya bir uzmanın sayfasındaki danışmanlık düğmesiyle. Size uygun birkaç zaman belirtirsiniz, biz ararız.'],
+        ['Uzmanı kendim seçebilir miyim?', 'Evet. “Danışmanlık kabul eder” etiketli uzmanları adıyla isteyebilirsiniz.'],
+        ['Danışmanlık beni bir projeye bağlar mı?', 'Hayır. Danışmanlık sizi hiçbir şeye bağlamaz.'],
+        ['Uzmanlar kulübüne nasıl katılırım?', '“İletişim” sayfasından deneyiminizi ve uzmanlık alanlarınızı yazın. Kulüp profilleri ekibimiz tarafından eklenir ve güncel tutulur.'],
+      ],
+    },
+    contact: {
+      title: 'Mesajınız nasıl takip edilir',
+      intro:
+        'Bize yazmak için ne hesap gerekir ne de e-posta beklemek. Mesajınızı gönderirsiniz, bir takip kodu alırsınız ve yanıtı bu kodla aynı sayfada okursunuz.',
+      points: [
+        ['E-posta yerine takip kodu', 'E-posta adresiniz yalnızca mesajınızı tanımlar; ona yanıt gönderilmez. Yanıtımızı bu sayfada, takip kodunuzla okursunuz.'],
+        ['Kod yalnızca bir kez gösterilir', 'Mesajınızı gönderir göndermez kodu not edin veya kopyalayın: mesajınıza dönmenin tek yolu budur.'],
+        ['Açık bir durum', 'Her mesaj “Yanıt bekliyor”, “Yanıtlandı” veya “Kapatıldı” durumundadır. Kodunuzu girdiğinizde durumu ve yanıtı birlikte görürsünüz.'],
+        ['Her iş için doğru sayfa', 'Yazılım projesi için “Proje başlatın”, bir uzmanla görüşmek için “Danışmanlık talebi” sayfasını kullanın. Sigorta talepleri kendi kodlarıyla “Talep takibi” sayfasından izlenir.'],
+      ],
+      faqTitle: 'İletişim hakkında sık sorulan sorular',
+      faqs: [
+        ['Yanıtı e-postayla gönderir misiniz?', 'Hayır. Yanıt bu sayfadadır ve takip kodunuzla okunur; kodu saklamanın önemi bu yüzdendir.'],
+        ['Yanıt ne kadar sürer?', 'Mesajlara kısa sürede bakarız. Yanıt verene kadar mesaj “Yanıt bekliyor” olarak görünür.'],
+        ['Takip kodumu kaybettim.', 'Öncekinden söz eden yeni bir mesaj gönderin; yanıtı yeni mesajın koduyla okursunuz.'],
+        ['Proje başlatmak için hangi sayfayı kullanmalıyım?', '“Proje başlatın”. Orada talebiniz kapsam, zaman planı ve fiyat aralığı içeren yazılı bir teklife dönüşür.'],
+      ],
+    },
+  },
   work,
   bookshop,
 };

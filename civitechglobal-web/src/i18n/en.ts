@@ -2797,6 +2797,101 @@ const en: typeof fa = {
     emptyHint: 'Until there is one, a seller cannot file a product anywhere.',
     depthHint: 'Categories go two levels deep at most.',
   },
+  // The written half of the list pages (components/layout/PageGuide): what
+  // each page is about, for readers and for search engines that found only a
+  // short list there. Facts only — nothing here names a customer, a partner
+  // or a person the database does not.
+  guides: {
+    team: {
+      title: 'How our team works',
+      intro:
+        'Behind every project is a group of software engineers who review each other’s work, put decisions in writing, and stay answerable for the work from the first message to delivery. Rayan Tamaddon Jahan Gostar is built on open source, on collaboration with a global community of engineers, and on an open door for people starting out. This is what that means day to day.',
+      points: [
+        ['Code that is reviewed and tested', 'Every change is read by another engineer and covered by tests before it ships. The aim is code that keeps working for years, not just on delivery day.'],
+        ['Decisions on paper', 'Scope, assumptions, what is not included, the timeline and the price range go into a written proposal. If it is not written down, it has not been agreed.'],
+        ['Accessible from day one', 'What we build works with a keyboard and a screen reader, and opens on an inexpensive phone. That is a decision, not a side feature.'],
+        ['Open source, open door', 'Part of our work happens in open-source projects alongside a global community, and the volunteer and internship programme gives people who are starting out a way to work on real projects.'],
+      ],
+      faqTitle: 'Common questions about the team',
+      faqs: [
+        ['How can I join the team?', 'Send your CV from the “Send your CV” page. We read it, and get in touch as soon as something opens up that fits your experience.'],
+        ['I am just starting out. Is there room for me?', 'Yes. The “Volunteer & internship” programme exists for exactly that: real projects, worked on alongside experienced engineers.'],
+        ['How is CiviTech Global related to Rayan Tamaddon Jahan Gostar?', 'CiviTech Global is the international brand of Rayan Tamaddon Jahan Gostar: one company, one team.'],
+        ['How do I start a project with this team?', 'Submit your request from the “Start a project” page. You get a tracking code, and a written proposal is prepared for you, free and without obligation.'],
+      ],
+    },
+    customers: {
+      title: 'What being our customer means',
+      intro:
+        'The customers club lists the organisations and businesses whose software we have built. More important than the list is the experience every customer has from the first message to delivered software — the same thing we promise everyone, on small projects and large ones.',
+      points: [
+        ['A written proposal, free', 'Reviewing your request and writing the proposal costs nothing. It sets out the scope, deliverables, assumptions, what is not included, a timeline and a price range.'],
+        ['A tracking code, always available', 'When you submit a request you get a tracking code. At any hour, three in the morning included, it shows where your work stands, and lets you accept or decline the proposal.'],
+        ['The price before the work', 'You see a price range before anything starts. If part of the work is not worth the money, we say so early.'],
+        ['Plain answers', 'If something falls outside what we are good at, we tell you plainly. Size is not how we decide, and we take small projects too.'],
+      ],
+      faqTitle: 'Common questions from customers',
+      faqs: [
+        ['Do I pay for a quote?', 'No. Reviewing your request and writing the proposal is free.'],
+        ['What if I decline the proposal?', 'Nothing happens. You decline, and that is that. Anything you sent stays with us and goes to no one else.'],
+        ['I lost my tracking code.', 'Contact us from the phone number or email address you used when you submitted, and we will give it to you again.'],
+        ['Do finished collaborations stay on this list?', 'Yes. Former customers stay, in a section of their own: “we built this for them” is still true.'],
+      ],
+    },
+    partners: {
+      title: 'Working with us',
+      intro:
+        'Our partners are the organisations we build software alongside, from technology companies to universities and open-source communities. Each partnership takes its own shape, but the footing is the same: transparency about the work, the decisions and their limits, and quality that can be relied on.',
+      points: [
+        ['Technology partners', 'Companies whose technology, infrastructure or tools we use alongside our own work, or who choose us to build part of their product.'],
+        ['Academic partners', 'Universities and training centres we work with to develop the next generation of engineers, with an open door to real projects for students.'],
+        ['Community partners', 'Communities and open-source projects we contribute to, which make it possible to build with others rather than in isolation.'],
+        ['Strategic partners and resellers', 'Organisations that represent or resell our solutions in their own market, or travel a longer road with us.'],
+      ],
+      faqTitle: 'Common questions about partnership',
+      faqs: [
+        ['How do I propose a partnership?', 'Send a message from the “Contact” page saying what kind of partnership you have in mind. You get a tracking code, and you read our reply with it on the same page.'],
+        ['What do you look for in a partner?', 'The values we work by ourselves: transparency, quality before speed, and building with others.'],
+        ['When does a partner appear on this page?', 'Once the partnership is in place. Finished partnerships stay, in a section of their own.'],
+      ],
+    },
+    experts: {
+      title: 'How the club of experts works',
+      intro:
+        'The club of experts is a group of engineers and specialists who give technical and career consultations — the people we turn to ourselves, and whom you can ask for by name. Each profile says whether that expert takes consultations.',
+      points: [
+        ['Technical consultation', 'For decisions such as choosing a technology or designing an architecture, or for a look at a system you already have that is not working as it should.'],
+        ['Career consultation', 'For engineers who are starting out or changing direction, from people who have travelled that road themselves.'],
+        ['Choose by name', 'Each expert’s page lists their specialities, languages and years of experience. If they take consultations, you can ask for one straight from that page.'],
+        ['Arranging a consultation', 'Submit a request from the “Book a consultation” page and name a few times that suit you, and we call. A consultation commits you to nothing.'],
+      ],
+      faqTitle: 'Common questions about consultations',
+      faqs: [
+        ['How do I book a consultation?', 'From the “Book a consultation” page, or with the consultation button on an expert’s page. You name a few times that suit you, and we call.'],
+        ['Can I choose the expert?', 'Yes. Experts marked “Takes consultations” can be asked for by name.'],
+        ['Does a consultation commit me to a project?', 'No. A consultation commits you to nothing.'],
+        ['How do I join the club of experts?', 'Write to us from the “Contact” page about your experience and specialities. Club profiles are added and kept up to date by our team.'],
+      ],
+    },
+    contact: {
+      title: 'How your message is followed up',
+      intro:
+        'Writing to us needs no account and no waiting for an email. You send a message, you get a tracking code, and you read the reply with that code on this same page.',
+      points: [
+        ['A tracking code instead of email', 'Your email address only identifies your message; no reply is emailed to it. You read our reply on this page, with your tracking code.'],
+        ['The code is shown once', 'Write the code down or copy it as soon as you have sent your message: it is the only way back to it.'],
+        ['A clear status', 'Every message is “Awaiting reply”, “Answered” or “Closed”. Enter your code and you see the status and the reply together.'],
+        ['The right page for each job', 'For a software project use “Start a project”, and to talk to an expert use “Book a consultation”. Insurance requests are followed with their own code on “Track request”.'],
+      ],
+      faqTitle: 'Common questions about contacting us',
+      faqs: [
+        ['Will you email me the reply?', 'No. The reply is on this page, read with your tracking code — which is why keeping the code matters.'],
+        ['How long until I get a reply?', 'We look at messages shortly. Until we reply, the message shows as “Awaiting reply”.'],
+        ['I lost my tracking code.', 'Send a new message that mentions the earlier one; you read the reply with the new message’s code.'],
+        ['Which page should I use to start a project?', '“Start a project”. There your request leads to a written proposal with the scope, a timeline and a price range.'],
+      ],
+    },
+  },
   work,
   bookshop,
 };

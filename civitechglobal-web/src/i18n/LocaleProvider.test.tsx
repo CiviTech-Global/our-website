@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { LocaleProvider, useLocale } from './LocaleProvider';
 import en from './en';
 import { withFallback } from './merge';
@@ -147,52 +147,11 @@ describe('LocaleProvider RTL/i18n', () => {
     expect(assigned).toEqual(['tr']);
   });
 
-  it('sends a first-time visitor to the language their location implies', async () => {
-    detects('de');
-    render(
-      <LocaleProvider>
-        <Probe />
-      </LocaleProvider>
-    );
-
-    await waitFor(() => expect(assigned).toEqual(['de']));
-  });
-
-  it('does not redirect a visitor who has already chosen', async () => {
-    window.localStorage.setItem(STORAGE_KEY, 'fa');
-    detects('de');
-    render(
-      <LocaleProvider>
-        <Probe />
-      </LocaleProvider>
-    );
-
-    // A site that keeps overriding your pick is worse than one that guessed
-    // wrong once.
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(assigned).toEqual([]);
-  });
-
-  it('does not second-guess an address that already names a language', async () => {
-    window.history.replaceState({}, '', '/fr/about');
-    detects('de');
-    render(
-      <LocaleProvider locale="fr">
-        <Probe />
-      </LocaleProvider>
-    );
-
-    // Someone arriving from a search result or a shared link is at an explicit
-    // address; redirecting would make one link mean different things.
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(assigned).toEqual([]);
-  });
-
-  it('leaves a Persian page other than the root where it is', async () => {
-    // The bug Search Console caught: every unprefixed page redirected an
-    // English-speaking first visitor — Googlebot among them — to /en/.
+  it('never redirects by itself, whatever the detector says', async () => {
+    // The first-visit dialog asks instead. The automatic redirect it replaced
+    // sent Googlebot from every Persian page to /en/.
+    detects('en');
     window.history.replaceState({}, '', '/services');
-    detects('en');
     render(
       <LocaleProvider>
         <Probe />
@@ -203,30 +162,17 @@ describe('LocaleProvider RTL/i18n', () => {
     expect(assigned).toEqual([]);
   });
 
-  it('never redirects a crawler, even at the root', async () => {
-    vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(
-      'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
-    );
-    detects('en');
+  it('remembers picking the language already showing, without navigating', () => {
     render(
-      <LocaleProvider>
+      <LocaleProvider locale="en">
         <Probe />
       </LocaleProvider>
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(assigned).toEqual([]);
-  });
+    fireEvent.click(screen.getByRole('button', { name: 'set-en' }));
 
-  it('stays put when the detector agrees with the default', async () => {
-    detects('fa');
-    render(
-      <LocaleProvider>
-        <Probe />
-      </LocaleProvider>
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Choosing it is what stops the first-visit dialog from asking again.
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe('en');
     expect(assigned).toEqual([]);
   });
 });

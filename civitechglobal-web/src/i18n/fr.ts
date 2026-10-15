@@ -2614,6 +2614,99 @@ const fr: PartialTranslations = {
     emptyHint: 'Tant qu’il n’y en a pas, un vendeur ne peut classer son produit nulle part.',
     depthHint: 'Les catégories vont au plus à deux niveaux.',
   },
+  // The written half of the list pages (components/layout/PageGuide).
+  // NOT reviewed by a native speaker.
+  guides: {
+    team: {
+      title: 'Comment notre équipe travaille',
+      intro:
+        'Derrière chaque projet, il y a un groupe d’ingénieurs logiciels qui relisent le travail les uns des autres, consignent les décisions par écrit et répondent du travail du premier message jusqu’à la livraison. Rayan Tamaddon Jahan Gostar repose sur l’open source, sur la collaboration avec une communauté mondiale d’ingénieurs et sur une porte ouverte aux débutants. Voici ce que cela veut dire au quotidien.',
+      points: [
+        ['Un code relu et testé', 'Chaque modification est relue par un autre ingénieur et couverte par des tests avant sa mise en production. L’objectif : un code qui fonctionne pendant des années, pas seulement le jour de la livraison.'],
+        ['Des décisions sur papier', 'Le périmètre, les hypothèses, ce qui n’est pas inclus, le calendrier et la fourchette de prix figurent dans une proposition écrite. Ce qui n’est pas écrit n’est pas convenu.'],
+        ['Accessible dès le premier jour', 'Ce que nous construisons fonctionne au clavier et avec un lecteur d’écran, et s’ouvre sur un téléphone bon marché. C’est une décision, pas une fonction accessoire.'],
+        ['Open source, porte ouverte', 'Une partie de notre travail se fait dans des projets open source avec une communauté mondiale, et le programme de bénévolat et de stage permet aux débutants de travailler sur de vrais projets.'],
+      ],
+      faqTitle: 'Questions fréquentes sur l’équipe',
+      faqs: [
+        ['Comment rejoindre l’équipe ?', 'Envoyez votre CV depuis la page « Envoyer votre CV ». Nous le lisons et vous contactons dès qu’un poste correspondant à votre expérience s’ouvre.'],
+        ['Je débute. Y a-t-il une place pour moi ?', 'Oui. Le programme « Bénévolat et stage » existe précisément pour cela : de vrais projets, aux côtés d’ingénieurs expérimentés.'],
+        ['Quel est le lien entre CiviTech Global et Rayan Tamaddon Jahan Gostar ?', 'CiviTech Global est la marque internationale de Rayan Tamaddon Jahan Gostar : une seule entreprise, une seule équipe.'],
+        ['Comment lancer un projet avec cette équipe ?', 'Déposez votre demande depuis la page « Lancer un projet ». Vous recevez un code de suivi, et une proposition écrite est préparée pour vous, gratuitement et sans engagement.'],
+      ],
+    },
+    customers: {
+      title: 'Ce que signifie être notre client',
+      intro:
+        'Le club clients présente les organisations et entreprises dont nous avons construit les logiciels. Plus important que la liste : l’expérience que vit chaque client, du premier message au logiciel livré — ce que nous promettons à tous, sur les petits comme sur les grands projets.',
+      points: [
+        ['Une proposition écrite, gratuite', 'L’étude de votre demande et la rédaction de la proposition ne coûtent rien. Elle précise le périmètre, les livrables, les hypothèses, ce qui n’est pas inclus, un calendrier et une fourchette de prix.'],
+        ['Un code de suivi, toujours disponible', 'En déposant une demande, vous recevez un code de suivi. À toute heure, trois heures du matin comprises, il montre où en est votre travail et vous permet d’accepter ou de refuser la proposition.'],
+        ['Le prix avant le travail', 'Vous voyez une fourchette de prix avant que quoi que ce soit ne commence. Si une partie du travail ne vaut pas son prix, nous le disons tôt.'],
+        ['Des réponses franches', 'Si quelque chose sort de notre domaine de compétence, nous le disons clairement. La taille n’est pas notre critère : nous acceptons aussi les petits projets.'],
+      ],
+      faqTitle: 'Questions fréquentes des clients',
+      faqs: [
+        ['Le devis est-il payant ?', 'Non. L’étude de votre demande et la rédaction de la proposition sont gratuites.'],
+        ['Et si je refuse la proposition ?', 'Rien ne se passe. Vous refusez, et c’est tout. Ce que vous avez envoyé reste chez nous et n’est transmis à personne.'],
+        ['J’ai perdu mon code de suivi.', 'Contactez-nous depuis le numéro de téléphone ou l’adresse e-mail utilisés lors de votre demande, et nous vous le redonnerons.'],
+        ['Les collaborations terminées restent-elles sur cette liste ?', 'Oui. Les anciens clients restent, dans une section à part : « nous avons construit cela pour eux » reste vrai.'],
+      ],
+    },
+    partners: {
+      title: 'Travailler avec nous',
+      intro:
+        'Nos partenaires sont les organisations aux côtés desquelles nous construisons des logiciels, des entreprises technologiques aux universités et aux communautés open source. Chaque partenariat prend sa propre forme, mais le socle est le même : la transparence sur le travail, les décisions et leurs limites, et une qualité sur laquelle on peut compter.',
+      points: [
+        ['Partenaires technologiques', 'Des entreprises dont nous utilisons la technologie, l’infrastructure ou les outils dans notre travail, ou qui nous choisissent pour construire une partie de leur produit.'],
+        ['Partenaires académiques', 'Des universités et centres de formation avec lesquels nous formons la prochaine génération d’ingénieurs, en ouvrant aux étudiants la porte de vrais projets.'],
+        ['Partenaires communautaires', 'Des communautés et projets open source auxquels nous contribuons, qui permettent de construire avec les autres plutôt que de manière isolée.'],
+        ['Partenaires stratégiques et revendeurs', 'Des organisations qui représentent ou revendent nos solutions sur leur marché, ou qui font un plus long chemin avec nous.'],
+      ],
+      faqTitle: 'Questions fréquentes sur les partenariats',
+      faqs: [
+        ['Comment proposer un partenariat ?', 'Envoyez un message depuis la page « Contact » en décrivant le partenariat envisagé. Vous recevez un code de suivi et lisez notre réponse avec lui sur la même page.'],
+        ['Que recherchez-vous chez un partenaire ?', 'Les valeurs qui guident notre propre travail : la transparence, la qualité avant la vitesse et la construction avec les autres.'],
+        ['Quand un partenaire apparaît-il sur cette page ?', 'Une fois le partenariat en place. Les partenariats terminés restent, dans une section à part.'],
+      ],
+    },
+    experts: {
+      title: 'Comment fonctionne le club d’experts',
+      intro:
+        'Le club d’experts réunit des ingénieurs et spécialistes qui donnent des conseils techniques et de carrière — les personnes vers qui nous nous tournons nous-mêmes, et que vous pouvez demander par leur nom. Chaque profil indique si l’expert accepte les consultations.',
+      points: [
+        ['Conseil technique', 'Pour des décisions comme le choix d’une technologie ou la conception d’une architecture, ou pour examiner un système existant qui ne fonctionne pas comme il le devrait.'],
+        ['Conseil de carrière', 'Pour les ingénieurs qui débutent ou changent de voie, auprès de personnes qui ont elles-mêmes parcouru ce chemin.'],
+        ['Choisir par le nom', 'La page de chaque expert indique ses spécialités, ses langues et ses années d’expérience. S’il accepte les consultations, vous faites la demande directement depuis cette page.'],
+        ['Organiser une consultation', 'Déposez une demande depuis la page « Demander un conseil » en indiquant quelques créneaux qui vous conviennent, et nous vous appelons. Une consultation ne vous engage à rien.'],
+      ],
+      faqTitle: 'Questions fréquentes sur les consultations',
+      faqs: [
+        ['Comment réserver une consultation ?', 'Depuis la page « Demander un conseil », ou avec le bouton de consultation sur la page d’un expert. Vous indiquez quelques créneaux, et nous vous appelons.'],
+        ['Puis-je choisir l’expert ?', 'Oui. Les experts portant la mention « Accepte les consultations » peuvent être demandés par leur nom.'],
+        ['Une consultation m’engage-t-elle sur un projet ?', 'Non. Une consultation ne vous engage à rien.'],
+        ['Comment rejoindre le club d’experts ?', 'Écrivez-nous depuis la page « Contact » en décrivant votre expérience et vos spécialités. Les profils du club sont ajoutés et tenus à jour par notre équipe.'],
+      ],
+    },
+    contact: {
+      title: 'Comment votre message est suivi',
+      intro:
+        'Pour nous écrire, pas besoin de compte ni d’attendre un e-mail. Vous envoyez un message, recevez un code de suivi et lisez la réponse avec ce code sur cette même page.',
+      points: [
+        ['Un code de suivi au lieu d’un e-mail', 'Votre adresse e-mail sert seulement à identifier votre message ; aucune réponse n’y est envoyée. Vous lisez notre réponse sur cette page, avec votre code de suivi.'],
+        ['Le code n’est affiché qu’une fois', 'Notez ou copiez le code dès l’envoi de votre message : c’est le seul moyen d’y revenir.'],
+        ['Un statut clair', 'Chaque message est « En attente de réponse », « Répondu » ou « Clos ». Saisissez votre code pour voir le statut et la réponse ensemble.'],
+        ['La bonne page pour chaque besoin', 'Pour un projet logiciel, utilisez « Lancer un projet », et pour parler à un expert, « Demander un conseil ». Les demandes d’assurance se suivent avec leur propre code sur « Suivre une demande ».'],
+      ],
+      faqTitle: 'Questions fréquentes sur le contact',
+      faqs: [
+        ['M’enverrez-vous la réponse par e-mail ?', 'Non. La réponse se trouve sur cette page et se lit avec votre code de suivi — d’où l’importance de le conserver.'],
+        ['Combien de temps avant une réponse ?', 'Nous examinons les messages rapidement. Tant que nous n’avons pas répondu, le message est « En attente de réponse ».'],
+        ['J’ai perdu mon code de suivi.', 'Envoyez un nouveau message qui mentionne le précédent ; vous lirez la réponse avec le code du nouveau message.'],
+        ['Quelle page utiliser pour lancer un projet ?', '« Lancer un projet ». Votre demande y aboutit à une proposition écrite avec le périmètre, un calendrier et une fourchette de prix.'],
+      ],
+    },
+  },
   work,
   bookshop,
 };

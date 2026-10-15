@@ -18,6 +18,9 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
+import { PageGuide, guideFaqs } from '@/components/layout/PageGuide';
+import { faqPageSchema } from '@/lib/structuredData';
+import { LOCALE_TAGS } from '@/i18n/locales';
 
 /**
  * The customers club (باشگاه مشتریان) and the partners page.
@@ -32,11 +35,15 @@ import { cn } from '@/lib/utils';
  * that only ever grows is not believable.
  */
 export default function OrganizationsPage({ kind }: { kind: OrganizationKind }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const isCustomer = kind === 'CUSTOMER';
 
   const title = isCustomer ? t.showcase.customersTitle : t.showcase.partnersTitle;
-  useDocumentTitle(title, { description: isCustomer ? t.seo.customers : t.seo.partners });
+  const guide = isCustomer ? t.guides.customers : t.guides.partners;
+  useDocumentTitle(title, {
+    description: isCustomer ? t.seo.customers : t.seo.partners,
+    jsonLd: faqPageSchema(guideFaqs(guide), LOCALE_TAGS[locale]) ?? undefined,
+  });
 
   const { data, isLoading } = usePublicOrganizations(kind);
 
@@ -167,6 +174,8 @@ export default function OrganizationsPage({ kind }: { kind: OrganizationKind }) 
           </ul>
         </Group>
       )}
+
+      <PageGuide copy={guide} id={isCustomer ? 'customers' : 'partners'} />
 
       {!isLoading && (
         <AnimatedSection className="mt-4">

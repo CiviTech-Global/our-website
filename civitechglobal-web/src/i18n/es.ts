@@ -2618,6 +2618,99 @@ const es: PartialTranslations = {
     emptyHint: 'Mientras no haya ninguna, un vendedor no puede clasificar su producto.',
     depthHint: 'Las categorías tienen como máximo dos niveles.',
   },
+  // The written half of the list pages (components/layout/PageGuide).
+  // NOT reviewed by a native speaker.
+  guides: {
+    team: {
+      title: 'Cómo trabaja nuestro equipo',
+      intro:
+        'Detrás de cada proyecto hay un grupo de ingenieros de software que revisan el trabajo de los demás, dejan las decisiones por escrito y responden por el trabajo desde el primer mensaje hasta la entrega. Rayan Tamaddon Jahan Gostar se basa en el código abierto, en la colaboración con una comunidad mundial de ingenieros y en una puerta abierta para quienes empiezan. Esto es lo que significa en el día a día.',
+      points: [
+        ['Código revisado y probado', 'Cada cambio lo lee otro ingeniero y queda cubierto por pruebas antes de publicarse. El objetivo es un código que funcione durante años, no solo el día de la entrega.'],
+        ['Decisiones por escrito', 'El alcance, los supuestos, lo que no está incluido, el calendario y el rango de precio figuran en una propuesta escrita. Lo que no está escrito no está acordado.'],
+        ['Accesible desde el primer día', 'Lo que construimos funciona con teclado y lector de pantalla, y se abre en un teléfono económico. Es una decisión, no una función secundaria.'],
+        ['Código abierto, puerta abierta', 'Parte de nuestro trabajo se hace en proyectos de código abierto junto a una comunidad mundial, y el programa de voluntariado y prácticas da a quienes empiezan la posibilidad de trabajar en proyectos reales.'],
+      ],
+      faqTitle: 'Preguntas frecuentes sobre el equipo',
+      faqs: [
+        ['¿Cómo puedo unirme al equipo?', 'Envía tu CV desde la página «Enviar tu CV». Lo leemos y te contactamos en cuanto se abra un puesto acorde con tu experiencia.'],
+        ['Estoy empezando. ¿Hay sitio para mí?', 'Sí. El programa «Voluntariado y prácticas» existe precisamente para eso: proyectos reales, junto a ingenieros con experiencia.'],
+        ['¿Qué relación hay entre CiviTech Global y Rayan Tamaddon Jahan Gostar?', 'CiviTech Global es la marca internacional de Rayan Tamaddon Jahan Gostar: una sola empresa, un solo equipo.'],
+        ['¿Cómo inicio un proyecto con este equipo?', 'Envía tu solicitud desde la página «Iniciar un proyecto». Recibes un código de seguimiento y se prepara para ti una propuesta escrita, gratuita y sin compromiso.'],
+      ],
+    },
+    customers: {
+      title: 'Qué significa ser nuestro cliente',
+      intro:
+        'El club de clientes reúne a las organizaciones y empresas cuyo software hemos construido. Más importante que la lista es la experiencia que vive cada cliente, desde el primer mensaje hasta el software entregado: lo mismo que prometemos a todos, en proyectos pequeños y grandes.',
+      points: [
+        ['Una propuesta escrita, gratuita', 'Revisar tu solicitud y redactar la propuesta no cuesta nada. Recoge el alcance, los entregables, los supuestos, lo que no está incluido, un calendario y un rango de precio.'],
+        ['Un código de seguimiento, siempre disponible', 'Al enviar una solicitud recibes un código de seguimiento. A cualquier hora, incluidas las tres de la madrugada, muestra en qué punto está tu trabajo y te permite aceptar o rechazar la propuesta.'],
+        ['El precio antes del trabajo', 'Ves un rango de precio antes de que empiece nada. Si una parte del trabajo no vale lo que cuesta, lo decimos pronto.'],
+        ['Respuestas claras', 'Si algo queda fuera de lo que hacemos bien, lo decimos con franqueza. El tamaño no es nuestro criterio: también aceptamos proyectos pequeños.'],
+      ],
+      faqTitle: 'Preguntas frecuentes de los clientes',
+      faqs: [
+        ['¿Tengo que pagar por un presupuesto?', 'No. Revisar tu solicitud y redactar la propuesta es gratuito.'],
+        ['¿Qué pasa si rechazo la propuesta?', 'Nada. La rechazas y ya está. Lo que nos enviaste se queda con nosotros y no llega a nadie más.'],
+        ['He perdido mi código de seguimiento.', 'Contáctanos desde el teléfono o la dirección de correo que usaste al enviar la solicitud y te lo daremos de nuevo.'],
+        ['¿Las colaboraciones terminadas siguen en esta lista?', 'Sí. Los antiguos clientes permanecen en una sección propia: «construimos esto para ellos» sigue siendo cierto.'],
+      ],
+    },
+    partners: {
+      title: 'Trabajar con nosotros',
+      intro:
+        'Nuestros socios son las organizaciones junto a las que construimos software, desde empresas tecnológicas hasta universidades y comunidades de código abierto. Cada colaboración tiene su propia forma, pero la base es la misma: transparencia sobre el trabajo, las decisiones y sus límites, y una calidad en la que se puede confiar.',
+      points: [
+        ['Socios tecnológicos', 'Empresas cuya tecnología, infraestructura o herramientas usamos junto a nuestro propio trabajo, o que nos eligen para construir parte de su producto.'],
+        ['Socios académicos', 'Universidades y centros de formación con los que colaboramos para formar a la próxima generación de ingenieros, con una puerta abierta a proyectos reales para estudiantes.'],
+        ['Socios de la comunidad', 'Comunidades y proyectos de código abierto en los que participamos, que hacen posible construir con otros en lugar de en aislamiento.'],
+        ['Socios estratégicos y revendedores', 'Organizaciones que representan o revenden nuestras soluciones en su mercado, o que recorren con nosotros un camino más largo.'],
+      ],
+      faqTitle: 'Preguntas frecuentes sobre colaboración',
+      faqs: [
+        ['¿Cómo propongo una colaboración?', 'Envía un mensaje desde la página «Contacto» contando qué colaboración tienes en mente. Recibes un código de seguimiento y lees nuestra respuesta con él en la misma página.'],
+        ['¿Qué buscáis en un socio?', 'Los valores con los que trabajamos nosotros mismos: transparencia, calidad antes que velocidad y construir junto a otros.'],
+        ['¿Cuándo aparece un socio en esta página?', 'Cuando la colaboración está en marcha. Las colaboraciones terminadas permanecen en una sección propia.'],
+      ],
+    },
+    experts: {
+      title: 'Cómo funciona el club de expertos',
+      intro:
+        'El club de expertos es un grupo de ingenieros y especialistas que ofrecen consultas técnicas y de carrera: las personas a las que acudimos nosotros mismos y a las que puedes pedir por su nombre. Cada perfil indica si esa persona acepta consultas.',
+      points: [
+        ['Consulta técnica', 'Para decisiones como elegir una tecnología o diseñar una arquitectura, o para revisar un sistema que ya tienes y que no funciona como debería.'],
+        ['Consulta de carrera', 'Para ingenieros que empiezan o cambian de rumbo, de la mano de personas que han recorrido ese camino.'],
+        ['Elegir por nombre', 'La página de cada experto muestra sus especialidades, idiomas y años de experiencia. Si acepta consultas, puedes solicitarla directamente desde esa página.'],
+        ['Concertar una consulta', 'Envía una solicitud desde la página «Solicitar una consulta» e indica algunos horarios que te vengan bien, y te llamamos. Una consulta no te compromete a nada.'],
+      ],
+      faqTitle: 'Preguntas frecuentes sobre las consultas',
+      faqs: [
+        ['¿Cómo reservo una consulta?', 'Desde la página «Solicitar una consulta» o con el botón de consulta en la página de un experto. Indicas algunos horarios y te llamamos.'],
+        ['¿Puedo elegir al experto?', 'Sí. A los expertos marcados con «Acepta consultas» puedes pedirlos por su nombre.'],
+        ['¿Una consulta me compromete a un proyecto?', 'No. Una consulta no te compromete a nada.'],
+        ['¿Cómo me uno al club de expertos?', 'Escríbenos desde la página «Contacto» contando tu experiencia y especialidades. Nuestro equipo añade y mantiene al día los perfiles del club.'],
+      ],
+    },
+    contact: {
+      title: 'Cómo se sigue tu mensaje',
+      intro:
+        'Para escribirnos no necesitas una cuenta ni esperar un correo. Envías un mensaje, recibes un código de seguimiento y lees la respuesta con ese código en esta misma página.',
+      points: [
+        ['Un código de seguimiento en lugar de correo', 'Tu dirección de correo solo identifica tu mensaje; no se envía ninguna respuesta a ella. Lees nuestra respuesta en esta página, con tu código de seguimiento.'],
+        ['El código se muestra una sola vez', 'Anota o copia el código en cuanto envíes tu mensaje: es la única forma de volver a él.'],
+        ['Un estado claro', 'Cada mensaje está «Esperando respuesta», «Respondido» o «Cerrado». Introduce tu código y verás el estado y la respuesta juntos.'],
+        ['La página adecuada para cada cosa', 'Para un proyecto de software usa «Iniciar un proyecto», y para hablar con un experto, «Solicitar una consulta». Las solicitudes de seguros se siguen con su propio código en «Seguimiento de solicitud».'],
+      ],
+      faqTitle: 'Preguntas frecuentes sobre el contacto',
+      faqs: [
+        ['¿Me enviaréis la respuesta por correo?', 'No. La respuesta está en esta página y se lee con tu código de seguimiento; por eso es importante guardarlo.'],
+        ['¿Cuánto tarda una respuesta?', 'Revisamos los mensajes en poco tiempo. Hasta que respondamos, el mensaje aparece como «Esperando respuesta».'],
+        ['He perdido mi código de seguimiento.', 'Envía un mensaje nuevo que mencione el anterior; leerás la respuesta con el código del mensaje nuevo.'],
+        ['¿Qué página uso para iniciar un proyecto?', '«Iniciar un proyecto». Allí tu solicitud se convierte en una propuesta escrita con el alcance, un calendario y un rango de precio.'],
+      ],
+    },
+  },
   work,
   bookshop,
 };
