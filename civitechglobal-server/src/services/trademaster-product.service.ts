@@ -166,10 +166,22 @@ export function imageUrl(id: string): string {
  * — so checking the shop once is both simpler and harder to forget than
  * checking the listing and then its shop.
  */
+/**
+ * The seller's identity check, unless the desk opened the shop.
+ *
+ * A shop opened by staff was set up for a person the desk already knows — a
+ * client at the counter, or the company itself — and staff accounts never go
+ * through the member verification flow. Requiring it again here would leave
+ * such a shop unable to list anything.
+ */
+async function assertMaySell(userId: string, openedById: string | null) {
+  if (!openedById) await assertVerified(userId);
+}
+
 async function ownedShop(userId: string, shopId: string) {
   const shop = await prisma.business.findFirst({
     where: { id: shopId, ownerId: userId },
-    select: { id: true, moderationStatus: true, state: true },
+    select: { id: true, moderationStatus: true, state: true, openedById: true },
   });
   if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
   return shop;
@@ -188,7 +200,7 @@ async function ownedProduct(userId: string, productId: string) {
       state: true,
       publishedAt: true,
       reviewNote: true,
-      business: { select: { moderationStatus: true, state: true } },
+      business: { select: { moderationStatus: true, state: true, openedById: true } },
       _count: { select: { images: true, variants: true } },
     },
   });
@@ -245,9 +257,9 @@ async function uniqueProductSlug(shopId: string, title: string, fallback: string
 // ---------------------------------------------------------------------------
 
 export async function createProduct(userId: string, shopId: string, input: ProductInput) {
-  await assertVerified(userId);
   await assertMarketplaceAllowed(userId);
   const shop = await ownedShop(userId, shopId);
+  await assertMaySell(userId, shop.openedById);
   assertSanePrice(input.price);
 
   // A listing cannot be added to a shop that has not been through review.
@@ -369,7 +381,7 @@ export async function submitProduct(userId: string, productId: string) {
     throw new AppError('فروشگاه این کالا فعال نیست.', 409);
   }
 
-  await assertVerified(userId);
+  await assertMaySell(userId, product.business.openedById);
   await assertMarketplaceAllowed(userId);
 
   if (product.moderationStatus === 'CHANGES_REQUESTED') {

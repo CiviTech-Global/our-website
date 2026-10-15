@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { LocateFixed, Package, Plus, Store, X } from 'lucide-react';
+import { Package, Plus, Store } from 'lucide-react';
 import { IDLE, type UploadState } from '@/components/ui/UploadStatus';
 import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import {
@@ -20,41 +20,30 @@ import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
-import { useGeolocation } from '@/lib/useGeolocation';
 import { apiMessage } from '@/lib/apiMessage';
 import { toPersianDigits } from '@/i18n/utils';
 import { moderationVariant, stateVariant } from '@/lib/marketplace';
 import {
   EMPTY_SHOP,
-  parseCoordinate,
   shopPayload,
   validateShop,
   type FieldErrors,
   type ShopDraft,
 } from '@/lib/marketForms';
 import { features } from '@/lib/features';
-import { BusinessCategorySelect } from '@/components/trademaster/MarketplaceUi';
+import { ShopFormFields } from '@/components/trademaster/ShopFormFields';
 import { PageHeader } from '@/components/app/PageHeader';
-import { CoverField } from '@/components/marketplace/CoverField';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { FormField } from '@/components/ui/FormField';
-import { Input } from '@/components/ui/Input';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { StaffImage } from '@/components/ui/StaffImage';
-import { TextArea } from '@/components/ui/TextArea';
 import type { ModerationStatus, OwnShop, OwnShopDetail } from '@/types/trademaster';
 
-// Lazy, like every other use of the map: a seller editing their opening hours
-// should not download Leaflet to do it.
-const LocationPicker = lazy(() =>
-  import('@/components/trademaster/ShopMap').then((m) => ({ default: m.LocationPicker }))
-);
 
 const PAGE_SIZE = 10;
 
@@ -140,17 +129,19 @@ export default function MyShopsPage() {
 
   const editingId = editing && editing !== 'new' ? editing.id : undefined;
   const existing = useOwnShop(editingId);
-  const geo = useGeolocation();
 
   const canPost = verification?.status === 'APPROVED';
   const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
-  const set = (name: keyof ShopDraft) => (value: string) => {
-    setDraft((prev) => ({ ...prev, [name]: value }));
-    // The complaint goes as soon as the field is touched again; it comes back
-    // on the next save if the field is still wrong.
-    setErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
-  };
-  const errorOf = (name: keyof ShopDraft) => (errors[name] ? hub[errors[name]] : undefined);
+  // Stable, because the form's location effect depends on it.
+  const set = useCallback(
+    (name: keyof ShopDraft) => (value: string) => {
+      setDraft((prev) => ({ ...prev, [name]: value }));
+      // The complaint goes as soon as the field is touched again; it comes back
+      // on the next save if the field is still wrong.
+      setErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
+    },
+    []
+  );
 
   // The whole shop, once it arrives — not before, so a slow response cannot
   // land on top of what the seller has started typing.
@@ -170,19 +161,6 @@ export default function MyShopsPage() {
     setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, canPost]);
-
-  // The device's location, into the two boxes, when the seller asks for it.
-  const { state: geoState, clear: clearGeo } = geo;
-  useEffect(() => {
-    if (geoState.status !== 'ready') return;
-    setDraft((prev) => ({
-      ...prev,
-      latitude: geoState.latitude.toFixed(6),
-      longitude: geoState.longitude.toFixed(6),
-    }));
-    setErrors((prev) => ({ ...prev, latitude: undefined, longitude: undefined }));
-    clearGeo();
-  }, [geoState, clearGeo]);
 
   function resetPictures() {
     setLogo(null);
@@ -303,8 +281,6 @@ export default function MyShopsPage() {
   }
 
   const formLoading = editingId !== undefined && loadedId !== editingId;
-  const lat = parseCoordinate(draft.latitude, 90);
-  const lng = parseCoordinate(draft.longitude, 180);
 
   return (
     <div className="flex flex-col gap-4">
@@ -539,262 +515,34 @@ export default function MyShopsPage() {
           )
         ) : (
           <form onSubmit={(event) => void handleSave(event)} className="flex flex-col gap-4" noValidate>
-            <p className="text-caption text-app-text-3">{hub.requiredHint}</p>
-
-            <FormField
-              htmlFor="my-shops-shop-name"
-              label={`${t.trademaster.shopName} *`}
-              error={errorOf('name')}
-            >
-              <Input
-                id="my-shops-shop-name"
-                value={draft.name}
-                onChange={(e) => set('name')(e.target.value)}
-                invalid={Boolean(errors.name)}
-                maxLength={120}
-                required
-              />
-            </FormField>
-
-            <FormField
-              htmlFor="my-shops-shop-summary"
-              label={`${t.trademaster.shopSummary} *`}
-              error={errorOf('summary')}
-              hint={hub.summaryHint}
-            >
-              <TextArea
-                id="my-shops-shop-summary"
-                value={draft.summary}
-                onChange={(e) => set('summary')(e.target.value)}
-                invalid={Boolean(errors.summary)}
-                rows={2}
-                maxLength={300}
-                required
-              />
-            </FormField>
-
-            <FormField
-              htmlFor="my-shops-business-category"
-              label={`${hub.businessCategory} *`}
-              hint={hub.businessCategoryHint}
-              error={errorOf('businessCategoryId')}
-            >
-              <BusinessCategorySelect
-                id="my-shops-business-category"
-                categories={businessCategories}
-                value={draft.businessCategoryId}
-                onChange={(value) => set('businessCategoryId')(value)}
-                emptyLabel={hub.chooseBusinessCategory}
-                showCounts={false}
-                invalid={Boolean(errors.businessCategoryId)}
-              />
-            </FormField>
-
-            <FormField
-              htmlFor="my-shops-shop-description"
-              label={t.trademaster.shopDescription}
-              error={errorOf('description')}
-            >
-              <TextArea
-                id="my-shops-shop-description"
-                value={draft.description}
-                onChange={(e) => set('description')(e.target.value)}
-                invalid={Boolean(errors.description)}
-                rows={4}
-                maxLength={5000}
-              />
-            </FormField>
-
-            <div className="flex flex-col gap-1">
-              <span className="text-label text-app-text-2">{t.trademaster.logo}</span>
-              <CoverField
-                value={logo}
-                previewPath={
-                  editing !== null && editing !== 'new' && editing.logoUrl
-                    ? `/trademaster/me/shops/${editing.id}/logo`
-                    : null
-                }
-                onChange={(file) => {
+            <ShopFormFields
+              idPrefix="my-shops"
+              draft={draft}
+              errors={errors}
+              onField={set}
+              businessCategories={businessCategories}
+              logo={{
+                file: logo,
+                onChange: (file) => {
                   setLogo(file);
                   setUploadState(IDLE);
-                }}
-                uploadState={uploadState}
-                onRetryUpload={() => void handleSave()}
-              />
-              <span className="text-caption text-app-text-3">{t.trademaster.logoHint}</span>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <span className="text-label text-app-text-2">{hub.coverField}</span>
-              <CoverField
-                value={cover}
-                previewPath={
-                  editing !== null && editing !== 'new' && editing.coverUrl
-                    ? `/trademaster/me/shops/${editing.id}/cover`
-                    : null
-                }
-                onChange={(file) => {
+                },
+                uploadState,
+                previewPath:
+                  editing !== null && editing !== 'new' && editing.logoUrl ? `/trademaster/me/shops/${editing.id}/logo` : null,
+              }}
+              cover={{
+                file: cover,
+                onChange: (file) => {
                   setCover(file);
                   setCoverUploadState(IDLE);
-                }}
-                uploadState={coverUploadState}
-                onRetryUpload={() => void handleSave()}
-              />
-              <span className="text-caption text-app-text-3">{hub.coverHint}</span>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField htmlFor="my-shops-industry" label={t.trademaster.industry} error={errorOf('industry')}>
-                <Input
-                  id="my-shops-industry"
-                  value={draft.industry}
-                  onChange={(e) => set('industry')(e.target.value)}
-                  invalid={Boolean(errors.industry)}
-                  maxLength={80}
-                />
-              </FormField>
-              <FormField htmlFor="my-shops-province" label={t.trademaster.province} error={errorOf('province')}>
-                <Input
-                  id="my-shops-province"
-                  value={draft.province}
-                  onChange={(e) => set('province')(e.target.value)}
-                  invalid={Boolean(errors.province)}
-                  maxLength={60}
-                />
-              </FormField>
-              <FormField htmlFor="my-shops-city" label={t.trademaster.city} error={errorOf('city')}>
-                <Input
-                  id="my-shops-city"
-                  value={draft.city}
-                  onChange={(e) => set('city')(e.target.value)}
-                  invalid={Boolean(errors.city)}
-                  maxLength={60}
-                />
-              </FormField>
-              <FormField htmlFor="my-shops-phone" label={t.trademaster.phone} error={errorOf('phone')}>
-                <Input
-                  id="my-shops-phone"
-                  type="tel"
-                  inputMode="tel"
-                  value={draft.phone}
-                  onChange={(e) => set('phone')(e.target.value)}
-                  invalid={Boolean(errors.phone)}
-                  maxLength={30}
-                  dir="ltr"
-                />
-              </FormField>
-              <FormField htmlFor="my-shops-email" label={t.trademaster.email} error={errorOf('email')}>
-                <Input
-                  id="my-shops-email"
-                  type="email"
-                  value={draft.email}
-                  onChange={(e) => set('email')(e.target.value)}
-                  invalid={Boolean(errors.email)}
-                  maxLength={160}
-                  dir="ltr"
-                />
-              </FormField>
-              <FormField htmlFor="my-shops-website" label={t.trademaster.website} error={errorOf('website')}>
-                <Input
-                  id="my-shops-website"
-                  type="url"
-                  value={draft.website}
-                  onChange={(e) => set('website')(e.target.value)}
-                  invalid={Boolean(errors.website)}
-                  maxLength={200}
-                  dir="ltr"
-                  placeholder="https://"
-                />
-              </FormField>
-            </div>
-
-            <FormField htmlFor="my-shops-address" label={t.trademaster.address} error={errorOf('address')}>
-              <Input
-                id="my-shops-address"
-                value={draft.address}
-                onChange={(e) => set('address')(e.target.value)}
-                invalid={Boolean(errors.address)}
-                maxLength={300}
-              />
-            </FormField>
-
-            <fieldset className="grid gap-4 sm:grid-cols-2">
-              <legend className="mb-1 text-label text-app-text-2">{t.trademaster.location}</legend>
-              <p className="col-span-full text-caption text-app-text-3">{hub.shopLocationHint}</p>
-
-              <div className="col-span-full flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={geo.locate}
-                  disabled={geo.state.status === 'locating'}
-                >
-                  <LocateFixed className="size-4" aria-hidden="true" />
-                  {geo.state.status === 'locating' ? t.trademaster.locating : hub.useMyLocationForShop}
-                </Button>
-                {(draft.latitude || draft.longitude) && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      set('latitude')('');
-                      set('longitude')('');
-                    }}
-                  >
-                    <X className="size-4" aria-hidden="true" />
-                    {hub.removeLocation}
-                  </Button>
-                )}
-              </div>
-              {(geo.state.status === 'denied' || geo.state.status === 'unavailable') && (
-                <p className="col-span-full text-caption text-app-text-3" role="status">
-                  {geo.state.status === 'denied' ? hub.locationDenied : hub.locationUnavailable}
-                </p>
-              )}
-
-              <FormField htmlFor="my-shops-latitude" label={t.trademaster.latitude} error={errorOf('latitude')}>
-                <Input
-                  id="my-shops-latitude"
-                  value={draft.latitude}
-                  onChange={(e) => set('latitude')(e.target.value)}
-                  invalid={Boolean(errors.latitude)}
-                  inputMode="decimal"
-                  maxLength={20}
-                  dir="ltr"
-                />
-              </FormField>
-              <FormField htmlFor="my-shops-longitude" label={t.trademaster.longitude} error={errorOf('longitude')}>
-                <Input
-                  id="my-shops-longitude"
-                  value={draft.longitude}
-                  onChange={(e) => set('longitude')(e.target.value)}
-                  invalid={Boolean(errors.longitude)}
-                  inputMode="decimal"
-                  maxLength={20}
-                  dir="ltr"
-                />
-              </FormField>
-
-              {/* The map fills the boxes above; it does not replace them. A map
-                  cannot be used with a keyboard alone, and somebody who already
-                  has their coordinates should not hunt for the right pixel. */}
-              <div className="col-span-full">
-                <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-app-surface-2" />}>
-                  <LocationPicker
-                    latitude={lat ?? undefined}
-                    longitude={lat !== null ? (lng ?? undefined) : undefined}
-                    onPick={(pickedLat, pickedLng) => {
-                      // Six decimals is about 10 cm, which is far past what a
-                      // shop front needs and keeps the field readable.
-                      set('latitude')(pickedLat.toFixed(6));
-                      set('longitude')(pickedLng.toFixed(6));
-                    }}
-                  />
-                </Suspense>
-              </div>
-            </fieldset>
+                },
+                uploadState: coverUploadState,
+                previewPath:
+                  editing !== null && editing !== 'new' && editing.coverUrl ? `/trademaster/me/shops/${editing.id}/cover` : null,
+              }}
+              onRetryUpload={() => void handleSave()}
+            />
 
             <p className="text-caption text-app-text-3">{t.trademaster.submitWarning}</p>
 

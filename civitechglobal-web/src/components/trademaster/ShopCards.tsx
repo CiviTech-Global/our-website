@@ -78,13 +78,27 @@ function Subtitle({ shop }: { shop: PublicShopSummary }) {
  * tall picture card it replaces, with each fact in the same spot on every row
  * so the eye can run down a column of distances.
  */
-export function ShopResultCard({ shop, kindParam }: { shop: PublicShopSummary; kindParam?: string }) {
+export function ShopResultCard({
+  shop,
+  kindParam,
+  onPoint,
+}: {
+  shop: PublicShopSummary;
+  kindParam?: string;
+  /** Told when the card is pointed at or focused, and when it no longer is — to light its pin. */
+  onPoint?: (pointing: boolean) => void;
+}) {
   const { t, locale } = useLocale();
   const to = kindParam ? `/marketplace/shops/${shop.slug}?kind=${kindParam}` : `/marketplace/shops/${shop.slug}`;
   const where = shop.address ?? [shop.city, shop.province].filter(Boolean).join('، ');
 
   return (
-    <li>
+    <li
+      onMouseEnter={onPoint && (() => onPoint(true))}
+      onMouseLeave={onPoint && (() => onPoint(false))}
+      onFocus={onPoint && (() => onPoint(true))}
+      onBlur={onPoint && (() => onPoint(false))}
+    >
       <Link
         to={to}
         className="flex h-full gap-3 rounded-xl border border-border-default bg-surface-default p-2.5 transition hover:border-border-strong hover:shadow-sm"
@@ -150,7 +164,7 @@ export function ShopPopupCard({ shop }: { shop: PublicShopSummary }) {
     'flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-primary transition hover:bg-surface-muted';
 
   return (
-    <div className="w-[280px] text-start" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+    <div className="w-full text-start" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
       <CoverPicture shop={shop} className="h-32" />
       <div className={cn('flex flex-col gap-1.5 px-3 pb-2', shop.logoUrl && shop.hasCover ? 'pt-7' : 'pt-3')}>
         <p className="text-base font-semibold leading-snug text-text-primary">{shop.name}</p>

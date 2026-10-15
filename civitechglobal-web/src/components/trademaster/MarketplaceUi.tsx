@@ -387,17 +387,42 @@ export function LocationBar({
         </p>
       )}
 
-      <Modal isOpen={picking} onClose={() => setPicking(false)} title={hub.pickTitle}>
+      {/* Wide and tall: choosing a point is the whole job of this dialog, and a
+          postage-stamp map makes it a struggle. */}
+      <Modal isOpen={picking} onClose={() => setPicking(false)} title={hub.pickTitle} className="max-w-3xl">
         <div className="flex flex-col gap-3">
           <p className="text-sm text-text-secondary">{hub.pickHint}</p>
-          <Suspense fallback={<div className="h-72 animate-pulse rounded-xl bg-surface-muted" />}>
+          <Suspense fallback={<div className="h-[420px] animate-pulse rounded-xl bg-surface-muted" />}>
             <LocationPicker
               latitude={draft?.latitude}
               longitude={draft?.longitude}
-              height={320}
+              height="min(420px, 55dvh)"
               onPick={(latitude, longitude) => setDraft({ latitude, longitude })}
             />
           </Suspense>
+          <div className="flex flex-wrap items-center gap-2">
+            {location.status !== 'denied' && location.status !== 'insecure' && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // The device's own fix is applied directly; there is no point
+                  // to confirm.
+                  location.locate();
+                  setPicking(false);
+                }}
+              >
+                <LocateFixed className="h-4 w-4" aria-hidden="true" />
+                {hub.useMyLocation}
+              </Button>
+            )}
+            {draft && (
+              <span className="text-xs text-text-tertiary" dir="ltr">
+                {draft.latitude.toFixed(5)}, {draft.longitude.toFixed(5)}
+              </span>
+            )}
+          </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setPicking(false)}>
               {t.common.cancel}

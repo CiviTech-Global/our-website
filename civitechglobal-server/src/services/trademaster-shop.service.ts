@@ -232,13 +232,103 @@ export function logoUrl(id: string, storedName: string | null): string | null {
 export async function createShop(userId: string, input: ShopInput, images: ShopImages) {
   await assertVerified(userId);
   await assertMarketplaceAllowed(userId);
-  const data = normalize(input);
-  if (data.businessCategoryId) await assertBusinessCategoryUsable(data.businessCategoryId);
 
   const existing = await prisma.business.count({ where: { ownerId: userId } });
   if (existing >= MAX_SHOPS_PER_OWNER) {
     throw new AppError(`هر حساب حداکثر می‌تواند ${MAX_SHOPS_PER_OWNER} فروشگاه داشته باشد.`, 409);
   }
+
+  return insertShop(userId, input, images, { moderationStatus: 'DRAFT' });
+}
+
+/**
+ * A shop opened by staff, for a member or for themselves.
+ *
+ * The market desk sets up shops for clients who come to the company rather
+ * than to the site, and for the company's own counters. Two of the seller's
+ * gates do not apply: identity verification — a staff member opening the shop
+ * is the verification, and staff accounts never go through the member flow,
+ * which is why an admin could not open a shop even for themselves — and the
+ * per-account cap, which exists against spam, not against the desk. A member
+ * whose market access is paused stays paused: staff can lift that first if they
+ * mean to.
+ *
+ * Published at once by default, recorded exactly as an approval from the
+ * review desk would be (status, reviewer, time), so nothing downstream can tell
+ * a staff-opened shop from a reviewed one. Unpublished, it is a draft in the
+ * owner's dashboard, to be finished and submitted like any other.
+ */
+export async function createShopAsStaff(
+  staffId: string,
+  ownerId: string | undefined,
+  input: ShopInput,
+  images: ShopImages,
+  options: { publish: boolean }
+) {
+  const owner = await prisma.user.findFirst({
+    where: { id: ownerId ?? staffId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!owner) throw new AppError('این کاربر پیدا نشد.', 404);
+  await assertMarketplaceAllowed(owner.id);
+
+  const status = options.publish
+    ? reviewPatch('APPROVED', { userId: staffId }, {}, null)
+    : { moderationStatus: 'DRAFT' as const };
+  const shop = await insertShop(owner.id, input, images, { ...status, openedById: staffId });
+
+  if (owner.id !== staffId) {
+    notifySafely(owner.id, {
+      type: 'listing.reviewed',
+      title: options.publish ? 'فروشگاه شما ساخته و منتشر شد' : 'فروشگاهی برای شما ساخته شد',
+      body: input.name.trim(),
+      link: '/dashboard/shops',
+    });
+  }
+  return shop;
+}
+
+/**
+ * Members a staff member may open a shop for, by name, email or username.
+ *
+ * Deliberately narrow — no phone, no role, no account state — because the
+ * market desk needs to pick a person, not browse the user table, and the full
+ * user list sits behind a different permission.
+ */
+export async function searchShopOwners(q: string) {
+  const term = q.trim();
+  if (term.length < 2) return [];
+  return prisma.user.findMany({
+    where: {
+      deletedAt: null,
+      OR: [
+        { email: { contains: term, mode: 'insensitive' } },
+        { username: { contains: term, mode: 'insensitive' } },
+        { firstName: { contains: term, mode: 'insensitive' } },
+        { lastName: { contains: term, mode: 'insensitive' } },
+      ],
+    },
+    orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+    take: 10,
+    select: { id: true, firstName: true, lastName: true, email: true, username: true },
+  });
+}
+
+/** The insert itself, shared by the seller's and the desk's paths. */
+async function insertShop(
+  ownerId: string,
+  input: ShopInput,
+  images: ShopImages,
+  status: Pick<Prisma.BusinessUncheckedCreateInput, 'moderationStatus'> &
+    Partial<
+      Pick<
+        Prisma.BusinessUncheckedCreateInput,
+        'reviewedAt' | 'reviewedById' | 'reviewNote' | 'internalNote' | 'publishedAt' | 'openedById'
+      >
+    >
+) {
+  const data = normalize(input);
+  if (data.businessCategoryId) await assertBusinessCategoryUsable(data.businessCategoryId);
 
   const stored = await storeImage(images.logo);
   const storedCover = await storeImage(images.cover);
@@ -260,14 +350,14 @@ export async function createShop(userId: string, input: ShopInput, images: ShopI
             summary: input.summary.trim(),
             code,
             slug: await uniqueSlug(input.name, code),
-            ownerId: userId,
+            ownerId,
             logoStoredName: stored?.storedName,
             logoOriginalName: stored?.originalName,
             logoMimeType: stored?.mimeType,
             coverStoredName: storedCover?.storedName,
             coverOriginalName: storedCover?.originalName,
             coverMimeType: storedCover?.mimeType,
-            moderationStatus: 'DRAFT',
+            ...status,
           },
           select: { id: true, code: true, slug: true, moderationStatus: true },
         });

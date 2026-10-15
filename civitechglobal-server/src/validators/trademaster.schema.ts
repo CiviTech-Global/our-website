@@ -206,6 +206,21 @@ const LOCATION_HALF = {
 export const shopSchema = z.object(shopFields).strict().refine(locationIsWhole, LOCATION_HALF);
 
 /**
+ * A shop opened by the market desk: the seller's fields, plus whose shop it is
+ * (absent: the staff member's own) and whether it goes live at once.
+ */
+export const staffShopSchema = z
+  .object({
+    ...shopFields,
+    ownerId: z.string().trim().min(1).max(40).optional(),
+    publish: z.boolean().default(true),
+  })
+  .strict()
+  .refine(locationIsWhole, LOCATION_HALF);
+
+export const shopOwnerSearchSchema = z.object({ q: z.string().trim().max(80).default('') });
+
+/**
  * Every field optional, but not an empty body.
  *
  * A PATCH with nothing in it is a request that cannot be satisfied and

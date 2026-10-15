@@ -93,6 +93,8 @@ export function AdminLayout() {
     books: { to: '/admin/books', label: t.books.queueTitle, icon: <BookOpen />, count: open('books') },
     tradeMasterShops: {
       to: '/admin/trademaster/shops',
+      // Exact: /shops/new is its own entry, and both lit up as one.
+      end: true,
       label: t.trademaster.queueShops,
       icon: <Store />,
       count: open('tradeMasterShops'),
@@ -124,6 +126,13 @@ export function AdminLayout() {
   };
 
   /** The guild list — what kind of business each shop is. Same desk, same permission. */
+  /** The desk opens shops itself, for members or for the company. */
+  const tradeMasterOpenShop: NavItem = {
+    to: '/admin/trademaster/shops/new',
+    label: t.trademaster.desk.openShop,
+    icon: <Store />,
+  };
+
   const tradeMasterGuilds: NavItem = {
     to: '/admin/trademaster/business-categories',
     label: t.trademaster.hub.guildDeskTitle,
@@ -200,6 +209,7 @@ export function AdminLayout() {
             ...when(
               features.tradeMaster && can('trademaster'),
               queue.tradeMasterShops,
+              tradeMasterOpenShop,
               queue.tradeMasterProducts,
               tradeMasterCategories,
               tradeMasterGuilds

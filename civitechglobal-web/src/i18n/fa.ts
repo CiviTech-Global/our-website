@@ -2353,6 +2353,30 @@ const fa = {
     credit: 'طراحی و پیاده‌سازی توسط محمد خلیل‌زاده از رایان تمدن جهان گستر',
   },
   trademaster: {
+    // The explore page's List/Map switch, on a phone.
+    explore: {
+      showList: 'فهرست',
+      showMap: 'نقشه',
+    },
+    // The market desk opening a shop for a member or for itself.
+    desk: {
+      openShop: 'ساخت فروشگاه',
+      openShopSubtitle: 'برای یک عضو یا برای استفادهٔ خود شرکت فروشگاه بسازید؛ می‌تواند همین حالا منتشر شود.',
+      ownerLegend: 'فروشگاه متعلق به کیست؟',
+      ownerMember: 'یک عضو',
+      ownerSelf: 'خودم (همین حساب)',
+      ownerSearch: 'جست‌وجو با نام، ایمیل یا نام کاربری',
+      ownerNone: 'عضوی با این مشخصات پیدا نشد.',
+      ownerChosen: 'مالک',
+      ownerChange: 'تغییر مالک',
+      ownerRequired: 'عضوی را که فروشگاه به او تعلق دارد انتخاب کنید.',
+      publishNow: 'انتشار',
+      publishHint: 'همین حالا منتشر شود؛ به‌عنوان تأییدشده توسط شما ثبت می‌شود. اگر تیک نخورد، به‌صورت پیش‌نویس در داشبورد مالک می‌ماند.',
+      manageHint: 'محصولات از داشبورد مالک افزوده می‌شوند: بازارگاه ← فروشگاه‌های من.',
+      create: 'ساخت فروشگاه',
+      created: 'فروشگاه ساخته و منتشر شد.',
+      createdDraft: 'پیش‌نویس فروشگاه ساخته شد.',
+    },
     /** The marketplace hub: its pages, filters, location bar and seller forms. */
     hub: {
       navExplore: 'کاوش',

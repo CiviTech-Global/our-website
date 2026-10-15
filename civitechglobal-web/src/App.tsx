@@ -136,6 +136,7 @@ const AdminExpertsPage = lazy(() => import('@/pages/admin/ExpertsPage'));
 const ConsultationQueuePage = lazy(() => import('@/pages/admin/ConsultationQueuePage'));
 const BookQueuePage = lazy(() => import('@/pages/admin/BookQueuePage'));
 const ShopQueuePage = lazy(() => import('@/pages/admin/ShopQueuePage'));
+const StaffShopCreatePage = lazy(() => import('@/pages/admin/StaffShopCreatePage'));
 const ProductQueuePage = lazy(() => import('@/pages/admin/ProductQueuePage'));
 const ProductCategoriesPage = lazy(() => import('@/pages/admin/ProductCategoriesPage'));
 const BusinessCategoriesPage = lazy(() => import('@/pages/admin/BusinessCategoriesPage'));
@@ -1021,6 +1022,16 @@ export default function App() {
                 <RequirePermission permission="trademaster">
                   <Suspense fallback={<RouteLoadingFallback />}>
                     <ShopQueuePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+            <Route
+              path="trademaster/shops/new"
+              element={
+                <RequirePermission permission="trademaster">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <StaffShopCreatePage />
                   </Suspense>
                 </RequirePermission>
               }

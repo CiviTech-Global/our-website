@@ -105,6 +105,21 @@ describe('the TradeMaster feature gate', () => {
       expect((await send(on)).status).toBe(401);
     }
   });
+
+  it('keeps shop opening by the desk behind the gate and behind a token', async () => {
+    // Opening a shop for somebody else, and searching members to pick them,
+    // are staff powers. Neither may answer an anonymous request.
+    const off = await appWith({ NODE_ENV: 'production', FEATURE_TRADEMASTER: undefined });
+    const on = await appWith({ NODE_ENV: 'production', FEATURE_TRADEMASTER: 'true' });
+
+    for (const send of [
+      (app: Parameters<typeof request>[0]) => request(app).post('/api/v1/trademaster/admin/shops').send({}),
+      (app: Parameters<typeof request>[0]) => request(app).get('/api/v1/trademaster/admin/shop-owners?q=ali'),
+    ]) {
+      expect((await send(off)).status).toBe(404);
+      expect((await send(on)).status).toBe(401);
+    }
+  });
 });
 
 /**

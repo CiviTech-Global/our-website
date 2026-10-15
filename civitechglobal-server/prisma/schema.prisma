@@ -148,6 +148,7 @@ model User {
   /// side is staff, and is the same shape as every other moderation queue.
   businesses         Business[] @relation("BusinessOwner")
   businessesReviewed Business[] @relation("BusinessReviewer")
+  businessesOpened   Business[] @relation("BusinessOpener")
   productsReviewed   Product[]  @relation("ProductReviewer")
   orders             Order[]    @relation("OrderBuyer")
 
@@ -2376,6 +2377,12 @@ model Business {
   reviewedAt       DateTime?        @map("reviewed_at")
   reviewedById     String?          @map("reviewed_by_id")
   reviewedBy       User?            @relation("BusinessReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  /// The staff member who opened the shop from the market desk, when it was
+  /// not opened by its owner. Such a shop's owner was vouched for by the desk,
+  /// so the identity-verification gate on listing products does not apply.
+  openedById String? @map("opened_by_id")
+  openedBy   User?   @relation("BusinessOpener", fields: [openedById], references: [id], onDelete: SetNull)
 
   /// What has happened since approval. A shop can be closed by its owner or by
   /// staff without being un-approved, exactly like a job post.

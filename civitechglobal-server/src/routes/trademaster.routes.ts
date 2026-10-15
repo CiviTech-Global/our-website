@@ -23,6 +23,8 @@ import {
   shopMapSchema,
   shopSchema,
   shopUpdateSchema,
+  staffShopSchema,
+  shopOwnerSearchSchema,
   productSchema,
   productUpdateSchema,
   productBoardSchema,
@@ -344,6 +346,30 @@ router.get(
   wrap(async (req, res) => {
     const query = reviewQueueSchema.parse(req.query);
     successResponse(res, serialize(await shops.listShopsForReview(query)));
+  })
+);
+
+/**
+ * Opening a shop from the desk: for a member, or for the staff member's own
+ * use. Declared before /admin/shops/:id so "owners" is never read as an id.
+ */
+router.get(
+  '/admin/shop-owners',
+  ...canReview,
+  wrap(async (req, res) => {
+    const { q } = shopOwnerSearchSchema.parse(req.query);
+    successResponse(res, serialize(await shops.searchShopOwners(q)));
+  })
+);
+
+router.post(
+  '/admin/shops',
+  ...canReview,
+  shopImageFields,
+  wrap(async (req, res) => {
+    const { ownerId, publish, ...input } = staffShopSchema.parse(payloadOf(req));
+    const result = await shops.createShopAsStaff(req.user!.userId, ownerId, input, shopImagesOf(req), { publish });
+    successResponse(res, serialize(result), publish ? 'فروشگاه ساخته و منتشر شد.' : 'پیش‌نویس فروشگاه ساخته شد.', 201);
   })
 );
 

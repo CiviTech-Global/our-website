@@ -2182,6 +2182,30 @@ const de: PartialTranslations = {
     },
   },
   trademaster: {
+    // The explore page's List/Map switch, on a phone.
+    explore: {
+      showList: 'Liste',
+      showMap: 'Karte',
+    },
+    // The market desk opening a shop for a member or for itself. Not reviewed by a native speaker.
+    desk: {
+      openShop: 'Shop eröffnen',
+      openShopSubtitle: 'Richten Sie einen Shop für ein Mitglied oder für das Unternehmen selbst ein. Er kann sofort live gehen.',
+      ownerLegend: 'Wem gehört der Shop?',
+      ownerMember: 'Einem Mitglied',
+      ownerSelf: 'Mir (dieses Konto)',
+      ownerSearch: 'Nach Name, E-Mail oder Benutzername suchen',
+      ownerNone: 'Kein passendes Mitglied.',
+      ownerChosen: 'Inhaber',
+      ownerChange: 'Inhaber ändern',
+      ownerRequired: 'Wählen Sie das Mitglied, dem der Shop gehört.',
+      publishNow: 'Veröffentlichung',
+      publishHint: 'Jetzt veröffentlichen, als von Ihnen freigegeben vermerkt. Ohne Haken wartet er als Entwurf im Dashboard des Inhabers.',
+      manageHint: 'Produkte werden im Dashboard des Inhabers hinzugefügt: Markt → Meine Shops.',
+      create: 'Shop eröffnen',
+      created: 'Shop eröffnet und veröffentlicht.',
+      createdDraft: 'Shop-Entwurf erstellt.',
+    },
     /** The marketplace hub: its pages, filters, location bar and seller forms. */
     hub: {
       navExplore: 'Entdecken',

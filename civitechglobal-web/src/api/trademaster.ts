@@ -543,6 +543,59 @@ export function useShopQueue(query: ReviewQueueQuery) {
   });
 }
 
+/** A member the market desk may open a shop for. */
+export interface ShopOwnerOption {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string | null;
+}
+
+/** Members by name, email or username, for the desk's owner picker. */
+export function useShopOwnerSearch(q: string) {
+  const term = q.trim();
+  return useQuery({
+    queryKey: [...keys.shopQueue, 'owners', term],
+    queryFn: async () => {
+      const res = await api.get<ShopOwnerOption[]>('/trademaster/admin/shop-owners', { params: { q: term } });
+      return res.data;
+    },
+    enabled: term.length >= 2,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * The desk opens a shop: for a member (ownerId) or for the staff member, live
+ * at once (publish) or as a draft in the owner's dashboard.
+ */
+export function useStaffCreateShop() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      payload: ShopPayload & { ownerId?: string; publish: boolean };
+      logo?: File;
+      cover?: File;
+      onProgress?: (percent: number) => void;
+    }) => {
+      const res = await api.upload<{ id: string; code: string; slug: string; moderationStatus: string }>(
+        'POST',
+        '/trademaster/admin/shops',
+        multipart(input.payload, shopFiles(input)),
+        { onProgress: input.onProgress }
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.shopQueue });
+      void qc.invalidateQueries({ queryKey: keys.ownShops });
+      void qc.invalidateQueries({ queryKey: keys.shops });
+      void qc.invalidateQueries({ queryKey: keys.map });
+    },
+  });
+}
+
 export function useShopReview(id: string | undefined) {
   return useQuery({
     queryKey: [...keys.shopQueue, 'detail', id],

@@ -1,4 +1,5 @@
-import { MapPin, Store } from 'lucide-react';
+import { Link } from 'react-router';
+import { MapPin, Plus, Store } from 'lucide-react';
 import { useReviewShop, useShopQueue, useShopReview } from '@/api/trademaster';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
@@ -9,6 +10,7 @@ import { PageHeader } from '@/components/app/PageHeader';
 import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
@@ -60,6 +62,14 @@ export default function ShopQueuePage() {
         title={t.trademaster.queueShops}
         description={t.trademaster.rejectCascadeNote}
         className="mb-2"
+        actions={
+          <Link to="/admin/trademaster/shops/new">
+            <Button>
+              <Plus className="size-4" aria-hidden="true" />
+              {t.trademaster.desk.openShop}
+            </Button>
+          </Link>
+        }
       />
 
       <ListToolbar

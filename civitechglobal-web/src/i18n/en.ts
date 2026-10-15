@@ -2365,6 +2365,30 @@ const en: typeof fa = {
     credit: 'Designed and implemented by Mohammad Khalilzadeh from Rayan Tamaddon Jahan Gostar',
   },
   trademaster: {
+    // The explore page's List/Map switch, on a phone.
+    explore: {
+      showList: 'List',
+      showMap: 'Map',
+    },
+    // The market desk opening a shop for a member or for itself.
+    desk: {
+      openShop: 'Open a shop',
+      openShopSubtitle: 'Set up a shop for a member, or for the company’s own use. It can go live straight away.',
+      ownerLegend: 'Whose shop is it?',
+      ownerMember: 'A member',
+      ownerSelf: 'Mine (this account)',
+      ownerSearch: 'Search by name, email or username',
+      ownerNone: 'No member matches.',
+      ownerChosen: 'Owner',
+      ownerChange: 'Change owner',
+      ownerRequired: 'Choose the member the shop belongs to.',
+      publishNow: 'Publishing',
+      publishHint: 'Publish now, recorded as approved by you. Unticked, it waits as a draft in the owner’s dashboard.',
+      manageHint: 'Products are added from the owner’s dashboard: Market → My shops.',
+      create: 'Open the shop',
+      created: 'Shop opened and published.',
+      createdDraft: 'Draft shop created.',
+    },
     /** The marketplace hub: its pages, filters, location bar and seller forms. */
     hub: {
       navExplore: 'Explore',

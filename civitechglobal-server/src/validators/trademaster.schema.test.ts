@@ -9,12 +9,31 @@ import {
   startPaymentSchema,
   orderMoveSchema,
   shopBoardSchema,
+  staffShopSchema,
 } from './trademaster.schema.js';
 
 const validShop = {
   name: 'Tehran Ceramics',
   summary: 'Hand-thrown tableware made in the workshop since 2014.',
 };
+
+describe('a shop opened by the desk', () => {
+  it('publishes by default and belongs to the staff member when no owner is named', () => {
+    const parsed = staffShopSchema.parse(validShop);
+    expect(parsed.publish).toBe(true);
+    expect(parsed.ownerId).toBeUndefined();
+  });
+
+  it('takes a member as owner and can be left as a draft', () => {
+    expect(staffShopSchema.parse({ ...validShop, ownerId: 'u1', publish: false })).toMatchObject({ ownerId: 'u1', publish: false });
+  });
+
+  it('still refuses a body that sets its own status or badge', () => {
+    for (const extra of [{ featured: true }, { moderationStatus: 'APPROVED' }]) {
+      expect(() => staffShopSchema.parse({ ...validShop, ...extra })).toThrow();
+    }
+  });
+});
 
 describe('shop input', () => {
   it('accepts the minimum a shop needs', () => {

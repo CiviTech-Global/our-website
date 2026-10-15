@@ -2192,6 +2192,30 @@ const tr: PartialTranslations = {
     },
   },
   trademaster: {
+    // The explore page's List/Map switch, on a phone.
+    explore: {
+      showList: 'Liste',
+      showMap: 'Harita',
+    },
+    // The market desk opening a shop for a member or for itself. Not reviewed by a native speaker.
+    desk: {
+      openShop: 'Mağaza aç',
+      openShopSubtitle: 'Bir üye için ya da şirketin kendi kullanımı için mağaza kurun. Hemen yayına alınabilir.',
+      ownerLegend: 'Mağaza kimin?',
+      ownerMember: 'Bir üye',
+      ownerSelf: 'Benim (bu hesap)',
+      ownerSearch: 'Ad, e-posta veya kullanıcı adıyla ara',
+      ownerNone: 'Eşleşen üye yok.',
+      ownerChosen: 'Sahibi',
+      ownerChange: 'Sahibi değiştir',
+      ownerRequired: 'Mağazanın ait olduğu üyeyi seçin.',
+      publishNow: 'Yayın',
+      publishHint: 'Şimdi yayınla; sizin tarafınızdan onaylanmış olarak kaydedilir. İşaretlenmezse sahibinin panelinde taslak olarak bekler.',
+      manageHint: 'Ürünler sahibinin panelinden eklenir: Pazar → Mağazalarım.',
+      create: 'Mağazayı aç',
+      created: 'Mağaza açıldı ve yayınlandı.',
+      createdDraft: 'Taslak mağaza oluşturuldu.',
+    },
     /** The marketplace hub: its pages, filters, location bar and seller forms. */
     hub: {
       navExplore: 'Keşfet',
