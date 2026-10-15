@@ -68,7 +68,7 @@ RUN npm run prerender
 # pinned and decays from then on. The gate is what notices, which is a reason
 # to keep it failing loudly rather than to lower it. 04-local-dev.md in the
 # ops notes has the command.
-FROM alpine:3.23 AS production
+FROM alpine:3.24 AS production
 
 RUN apk add --no-cache nginx && apk upgrade --no-cache
 
