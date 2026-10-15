@@ -34,6 +34,11 @@ export default function ServicePage() {
   const { t } = useLocale();
   const { data: service, isLoading } = useService(code);
   useDocumentTitle(service?.title ?? t.work.servicesTitle, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !service,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: service?.description.slice(0, 160) ?? t.work.servicesSubtitle,
   });
 

@@ -77,6 +77,11 @@ export default function ProjectPage() {
   const project = query.data;
 
   useDocumentTitle(project?.title ?? t.work.boardTitle, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !query.isLoading && !project,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: project ? (project.excerpt ?? project.description.slice(0, 160)) : t.work.boardSubtitle,
   });
 

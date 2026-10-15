@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useInsuranceProduct } from '@/api/insurance';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { localeHref } from '@/i18n/localePath';
 import { CANONICAL_ORIGIN, useDocumentTitle } from '@/lib/documentTitle';
 import { insuranceProductSchema } from '@/lib/structuredData';
 import { useToast } from '@/contexts/ToastContext';
@@ -100,6 +101,17 @@ export default function InsuranceProductPage() {
     : undefined;
 
   useDocumentTitle(productTitle ?? t.nav.insurance, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !product,
+    // Written in Persian and English, nothing else: the other four prefixes
+    // show the English text, so they name the English page as canonical
+    // rather than stand as four more copies of it.
+    contentLocale: locale === 'fa' ? 'fa' : 'en',
+    alternates: [
+      { locale: 'fa', href: localeHref('fa', `/insurance/${slug}`) },
+      { locale: 'en', href: localeHref('en', `/insurance/${slug}`) },
+    ],
     description: productDescription ?? t.seo.insurance,
     // A branded card exists for every catalog product; unknown slugs fall
     // back to the site-wide default automatically.

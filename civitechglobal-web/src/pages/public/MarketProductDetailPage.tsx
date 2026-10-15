@@ -46,7 +46,14 @@ export default function MarketProductDetailPage() {
   const cart = useCart();
   const { showToast } = useToast();
 
-  useDocumentTitle(product?.title ?? t.trademaster.products, { description: product?.summary });
+  useDocumentTitle(product?.title ?? t.trademaster.products, {
+    description: product?.summary,
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !product,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
+  });
 
   if (isLoading) {
     return (

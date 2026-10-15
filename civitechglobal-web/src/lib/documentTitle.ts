@@ -104,6 +104,19 @@ export interface PageMeta {
    * Paths, not URLs — the origin is added here, as it is for the default set.
    */
   alternates?: Array<{ locale: Locale; href: string }>;
+  /**
+   * The one language this page's content is written in, when the address
+   * exists in every language but the substance does not.
+   *
+   * A job posting, a book or a shop is written by its owner, in Persian, and
+   * /en/jobs/X wraps the same Persian text in an English interface. Six
+   * self-canonical copies of one posting is what Search Console reported as
+   * "Duplicate, Google chose different canonical than user": it saw the
+   * duplicates and overruled the tags. Naming the content's own edition as
+   * canonical, and as the only hreflang, says what Google worked out anyway,
+   * and the other prefixes keep working for readers who arrive on them.
+   */
+  contentLocale?: Locale;
 }
 
 function clearOwned(): void {
@@ -153,7 +166,12 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
   const noindex = meta.noindex === true || isPrivatePath(pathname);
   // Every language by default: the interface is translated, so each address
   // is a real page even where a section still falls back to English.
-  const alternates = meta.alternates ?? localeAlternates(pathname);
+  const { contentLocale } = meta;
+  const alternates =
+    meta.alternates ??
+    (contentLocale
+      ? [{ locale: contentLocale, href: localeHref(contentLocale, pathname) }]
+      : localeAlternates(pathname));
   // A fresh array arrives on every render; its contents are what matter.
   const alternatesKey = alternates.map((alternate) => alternate.locale).join(',');
 
@@ -183,7 +201,7 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
     // The query string is deliberately dropped: ?ref= and friends are the same
     // page, and listing each variant as its own URL splits a page's ranking
     // across copies of itself.
-    const canonical = `${CANONICAL_ORIGIN}${localeHref(locale, pathname)}`;
+    const canonical = `${CANONICAL_ORIGIN}${localeHref(contentLocale ?? locale, pathname)}`;
     addLink('canonical', canonical);
 
     if (!noindex) {
@@ -242,5 +260,5 @@ export function useDocumentTitle(title?: string, meta: PageMeta = {}) {
     // Deliberately not restored on unmount: the next page sets its own, and
     // putting the old one back first makes the tab flicker.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, locale, pathname, description, noindex, type, image, jsonLdKey, t, alternatesKey]);
+  }, [title, locale, pathname, description, noindex, type, image, jsonLdKey, t, alternatesKey, contentLocale]);
 }

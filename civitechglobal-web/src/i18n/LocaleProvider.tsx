@@ -16,6 +16,9 @@ export type { Locale, Translations };
 
 const STORAGE_KEY = 'civitech-locale';
 
+/** Search and preview crawlers, which must see each address as it is. */
+const CRAWLER = /bot|crawler|spider|crawling|slurp|mediapartners|lighthouse|headless/i;
+
 interface LocaleContextValue {
   locale: Locale;
   dir: 'rtl' | 'ltr';
@@ -70,6 +73,18 @@ export function LocaleProvider({
    */
   useEffect(() => {
     if (locale !== DEFAULT_LOCALE) return;
+    // The root itself, and nothing else. This used to check only the locale,
+    // which is true of every Persian page — so /services, /insurance/… and
+    // every other unprefixed address redirected an English-speaking first
+    // visitor to its /en/ twin. Googlebot is exactly that visitor: it renders
+    // from the US with an en-US browser and no storage, so every Persian page
+    // it rendered moved itself to English, and Search Console answered with
+    // "Google chose different canonical than user" across the site.
+    if (window.location.pathname !== '/') return;
+    // And never for a crawler, at the root either. Google's own guidance is
+    // not to redirect its crawler by language: the Persian home page has to be
+    // fetchable as the Persian home page for it to be indexed as one.
+    if (CRAWLER.test(navigator.userAgent)) return;
     if (storedLocale() !== null) return;
 
     const controller = new AbortController();

@@ -39,7 +39,13 @@ export default function ProfilePage() {
   const { t, locale } = useLocale();
   const { data: profile, isLoading, isError } = usePublicProfile(username);
 
-  useDocumentTitle(profile ? `@${profile.username}` : t.market.publicProfileTitle);
+  useDocumentTitle(profile ? `@${profile.username}` : t.market.publicProfileTitle, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !profile,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
+  });
 
   if (isLoading) {
     return (

@@ -188,6 +188,36 @@ describe('LocaleProvider RTL/i18n', () => {
     expect(assigned).toEqual([]);
   });
 
+  it('leaves a Persian page other than the root where it is', async () => {
+    // The bug Search Console caught: every unprefixed page redirected an
+    // English-speaking first visitor — Googlebot among them — to /en/.
+    window.history.replaceState({}, '', '/services');
+    detects('en');
+    render(
+      <LocaleProvider>
+        <Probe />
+      </LocaleProvider>
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(assigned).toEqual([]);
+  });
+
+  it('never redirects a crawler, even at the root', async () => {
+    vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    );
+    detects('en');
+    render(
+      <LocaleProvider>
+        <Probe />
+      </LocaleProvider>
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(assigned).toEqual([]);
+  });
+
   it('stays put when the detector agrees with the default', async () => {
     detects('fa');
     render(

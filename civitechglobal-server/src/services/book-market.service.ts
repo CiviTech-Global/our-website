@@ -81,7 +81,8 @@ function gradesAtLeast(floor: BookGrade): BookGrade[] {
   return BOOK_GRADES.filter((grade) => GRADE_RANK[grade] <= GRADE_RANK[floor]);
 }
 
-const PUBLIC_OFFER_WHERE = {
+/** An offer a visitor can see and buy. The sitemap lists books with at least one. */
+export const PUBLIC_OFFER_WHERE = {
   ...PUBLIC_LISTING_WHERE,
   bookId: { not: null },
   quantity: { gt: 0 },

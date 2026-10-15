@@ -37,7 +37,7 @@ export default function BookPage() {
   const { code } = useParams<{ code: string }>();
   const { t } = useLocale();
   const { data: book, isLoading } = useBook(code);
-  useDocumentTitle(book?.title ?? t.bookshop.title, { description: book?.description?.slice(0, 160) ?? t.bookshop.subtitle });
+  useDocumentTitle(book?.title ?? t.bookshop.title, { noindex: !isLoading && !book, contentLocale: 'fa', description: book?.description?.slice(0, 160) ?? t.bookshop.subtitle });
 
   if (isLoading) {
     return (

@@ -5,6 +5,7 @@ import { features } from '../config/features.js';
 import { IRAN_PROVINCES } from '../catalog/iran-provinces.js';
 import { PUBLIC_COMPANY_WHERE } from '../services/company.service.js';
 import { PUBLIC_LISTING_WHERE } from '../services/moderation.js';
+import { PUBLIC_OFFER_WHERE } from '../services/book-market.service.js';
 import { PUBLIC_PRODUCT_WHERE } from '../services/trademaster-common.js';
 
 /**
@@ -81,19 +82,29 @@ async function collectUrls(): Promise<SitemapUrl[]> {
       select: { code: true, updatedAt: true },
     }),
     prisma.freelanceProject.findMany({
-            // The same predicate the public pages use. 'OPEN with a published date'
+      // The same predicate the public pages use. 'OPEN with a published date'
       // is not quite it: a listing pulled after publication keeps both and
-      // would be advertised here while its page answers 404.
-      where: { moderationStatus: 'APPROVED', state: 'OPEN', publishedAt: { not: null } },
+      // would be advertised here while its page answers 404. Visibility too:
+      // getPublicProject answers 404 for an invite-only project, and Search
+      // Console counted those as soft 404s.
+      where: { moderationStatus: 'APPROVED', state: 'OPEN', publishedAt: { not: null }, visibility: 'PUBLIC' },
       select: { code: true, updatedAt: true },
     }),
-    prisma.bookListing.findMany({
-            // The same predicate the public pages use. 'OPEN with a published date'
-      // is not quite it: a listing pulled after publication keeps both and
-      // would be advertised here while its page answers 404.
-      where: { moderationStatus: 'APPROVED', state: 'OPEN', publishedAt: { not: null } },
-      select: { code: true, updatedAt: true },
-    }),
+    // With the second-generation book market on, /books/<code> is a catalogue
+    // book, not a seller's listing: the listing codes this used to send are
+    // not addresses the page knows, so every one of them was an empty "no
+    // longer listed" page served with a 200. A book is worth a URL while
+    // somebody is offering it.
+    features.booksV2
+      ? prisma.book.findMany({
+          where: { listings: { some: PUBLIC_OFFER_WHERE } },
+          select: { code: true, updatedAt: true },
+        })
+      : prisma.bookListing.findMany({
+          // The same predicate the public pages use; see the projects above.
+          where: { moderationStatus: 'APPROVED', state: 'OPEN', publishedAt: { not: null } },
+          select: { code: true, updatedAt: true },
+        }),
   ]);
 
   const catalogSlugs = new Set(CATALOG.map((product) => product.slug));

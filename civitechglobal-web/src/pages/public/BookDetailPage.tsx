@@ -48,6 +48,11 @@ export default function BookDetailPage() {
     : undefined;
 
   useDocumentTitle(book?.title ?? t.books.title, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !book,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: book?.description.replace(/\s+/g, ' ').slice(0, 155) ?? t.books.metaDescription,
     type: 'article',
     jsonLd,

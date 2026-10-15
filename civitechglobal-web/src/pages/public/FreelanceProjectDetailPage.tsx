@@ -42,6 +42,11 @@ export default function FreelanceProjectDetailPage() {
   const [done, setDone] = useState(false);
 
   useDocumentTitle(project?.title ?? t.market.projectsTitle, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !project,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: project?.description.replace(/s+/g, ' ').slice(0, 155) ?? t.seo.freelance,
     type: 'article',
   });

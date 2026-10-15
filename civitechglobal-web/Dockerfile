@@ -77,6 +77,9 @@ RUN apk add --no-cache nginx && apk upgrade --no-cache
 # which the official image arranges and the package does not.
 COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/http.d/default.conf
+# From the build stage, where `npm run build` has just regenerated it: outside
+# http.d, because it holds location blocks that belong inside the server block.
+COPY --from=build --chown=nginx:nginx /app/nginx-blog-redirects.conf /etc/nginx/blog-redirects.conf
 
 RUN rm -f /etc/nginx/http.d/default.conf.apk-new \
     && mkdir -p /var/cache/nginx /var/lib/nginx/tmp /run/nginx /var/log/nginx \

@@ -23,6 +23,11 @@ export default function CompanyPage() {
   const { data: company, isLoading, isError } = useCompany(slug);
 
   useDocumentTitle(company?.name ?? t.jobs.companiesTitle, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !company,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: company?.tagline ?? company?.about?.replace(/\s+/g, ' ').trim().slice(0, 155) ?? t.jobs.companiesSubtitle,
     jsonLd: company
       ? [

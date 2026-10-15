@@ -26,6 +26,8 @@ vi.mock('../config/database.js', () => ({
     jobCategory: { findMany: (...args: unknown[]) => categoryFindMany(...args) },
     freelanceProject: { findMany: (...args: unknown[]) => findMany(...args) },
     bookListing: { findMany: (...args: unknown[]) => findMany(...args) },
+    // The second-generation catalogue, which /books/<code> reads while it is on.
+    book: { findMany: (...args: unknown[]) => findMany(...args) },
     // The catalogue's own two queries, on mocks of their own so the order the
     // four listing queries above are answered in is unchanged.
     business: { findMany: (...args: unknown[]) => shopFindMany(...args) },
@@ -148,7 +150,8 @@ describe('what counts as visible', () => {
       .map(([args]) => (args as { where: Record<string, unknown> }).where)
       .filter((where) => 'state' in where);
 
-    expect(listingQueries).toHaveLength(3);
+    // Jobs and projects; books are the catalogue's, checked below.
+    expect(listingQueries).toHaveLength(2);
     for (const where of listingQueries) {
       expect(where).toMatchObject({
         moderationStatus: 'APPROVED',
@@ -156,5 +159,12 @@ describe('what counts as visible', () => {
         publishedAt: { not: null },
       });
     }
+    // An invite-only project's page answers 404, so it is no sitemap entry.
+    expect(listingQueries[1]).toMatchObject({ visibility: 'PUBLIC' });
+    // Books: catalogue entries somebody is actually offering.
+    const bookQuery = findMany.mock.calls
+      .map(([args]) => (args as { where: Record<string, unknown> }).where)
+      .find((where) => 'listings' in where);
+    expect(bookQuery).toMatchObject({ listings: { some: { moderationStatus: 'APPROVED', state: 'OPEN' } } });
   });
 });

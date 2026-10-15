@@ -53,6 +53,11 @@ export default function ShopDetailPage() {
   });
 
   useDocumentTitle(shop?.name ?? t.trademaster.shops, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !shop,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: shop?.summary,
   });
 

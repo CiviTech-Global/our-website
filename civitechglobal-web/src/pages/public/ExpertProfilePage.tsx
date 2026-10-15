@@ -49,6 +49,11 @@ export default function ExpertProfilePage() {
     : undefined;
 
   useDocumentTitle(expert?.fullName ?? t.experts.title, {
+    // A missing item is a 404, not a page: without this the 'not found'
+    // state is served with a 200 and Search Console files it as a soft 404.
+    noindex: !isLoading && !expert,
+    // Written by its owner, in Persian: see contentLocale in documentTitle.
+    contentLocale: 'fa',
     description: expert ? `${expert.headline} — ${expert.specialities.slice(0, 3).join('، ')}` : t.experts.metaDescription,
     // 'profile' is an og type the head manager does not model; a person's
     // page is an article about them for these purposes.
