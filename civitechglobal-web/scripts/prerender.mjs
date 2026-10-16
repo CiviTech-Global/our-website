@@ -211,9 +211,32 @@ async function main() {
           waitUntil: 'load',
           timeout: 30_000,
         });
-        // useDocumentTitle writes the head tags in a useEffect after the
-        // first paint; give the effect (and fonts) a beat to settle.
-        await new Promise((wait) => setTimeout(wait, 1200));
+        /*
+         * Wait for this route, not for a fixed time.
+         *
+         * A fixed 1.2 s used to stand here, and on the production host it was
+         * not enough for a lazy route's chunk to arrive: the page still showed
+         * the fallback shell — which, by then, is the home page this script had
+         * already prerendered into dist/index.html — and that HTML was saved as
+         * /start-project, /fr/jobs and /projects, home title and all. The
+         * canonical link is written by the route's own useDocumentTitle with
+         * its own path, so once it names this address the route has rendered.
+         * A route that never gets there fails the build rather than shipping
+         * another page's head.
+         */
+        const expected = route.url.replace(/\/+$/, '') || '/';
+        await page.waitForFunction(
+          (path) => {
+            const href = document.querySelector('link[rel="canonical"]')?.getAttribute('href');
+            if (!href) return false;
+            return (new URL(href).pathname.replace(/\/+$/, '') || '/') === path;
+          },
+          { timeout: 30_000, polling: 100 },
+          expected
+        );
+        // Then a beat for what renders after the route itself: the page's
+        // guide, which arrives as its own language chunk, and the fonts.
+        await new Promise((wait) => setTimeout(wait, 1500));
         const html = await page.content();
 
         /*
