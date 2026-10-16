@@ -37,7 +37,9 @@ export default function HomePage() {
     import.meta.env.VITE_SOCIAL_X,
   ].filter((url): url is string => typeof url === 'string' && url.length > 0);
 
-  useDocumentTitle(undefined, {
+  // The tab and the search result lead with what the company does, not only
+  // its name: nobody searches for the name before they know it.
+  useDocumentTitle(t.home.seoTitle, {
     description: t.seo.home,
     // Stated once, on the one page that is unambiguously about the company
     // rather than about something it published. Repeating an Organization
@@ -98,6 +100,22 @@ export default function HomePage() {
         <AnimatedSection delay={0.1}>
           <HeroMotif />
         </AnimatedSection>
+      </section>
+
+      {/* Mission and vision: what the company is for, before what it sells. */}
+      <section className="py-12">
+        <AnimatedSection className="mb-8">
+          <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.home.missionTitle}</h2>
+          <hr className="neon-line mt-5 w-40 [mask-image:none]" />
+        </AnimatedSection>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <AnimatedSection>
+            <p className="text-lg leading-loose text-text-primary">{t.home.missionBody}</p>
+          </AnimatedSection>
+          <AnimatedSection delay={0.08}>
+            <p className="text-lg leading-loose text-text-secondary">{t.home.visionBody}</p>
+          </AnimatedSection>
+        </div>
       </section>
 
       {/* What we do */}

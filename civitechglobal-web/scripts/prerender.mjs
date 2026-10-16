@@ -58,6 +58,12 @@ const PAGES = [
   '/contact',
   // The blog index exists in every locale, like the pages above.
   '/blog',
+  // The help centre's index. The guide pages themselves are not prerendered:
+  // there are over two hundred of them, which would more than double the
+  // build, and each guide's text is already in the prerendered HTML of the
+  // module page it belongs to. They are in the sitemap for crawlers that run
+  // scripts.
+  '/help',
 ];
 
 /**

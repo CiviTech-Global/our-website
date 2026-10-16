@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { LocalePicker } from '@/components/layout/LocalePicker';
+import { HelpButton } from '@/components/help/HelpButton';
 import { useTheme } from '@/contexts/ThemeProvider';
 import { useAuth } from '@/contexts/AuthProvider';
 import { Button } from '@/components/ui/Button';
@@ -202,6 +203,7 @@ export function FuturisticNavbar() {
         </ul>
 
         <div className="hidden items-center gap-1 md:flex lg:gap-1.5">
+          <HelpButton />
           <LocalePicker />
           <IconToggle onClick={toggleTheme} label={theme === 'dark' ? t.theme.light : t.theme.dark}>
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -240,6 +242,7 @@ export function FuturisticNavbar() {
           )}
         </div>
 
+        <HelpButton className="md:hidden" />
         <button
           type="button"
           className="rounded-lg p-2 text-text-primary md:hidden"

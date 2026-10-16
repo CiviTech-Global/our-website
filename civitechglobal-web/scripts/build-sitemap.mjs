@@ -64,7 +64,46 @@ const PAGES = [
   // The blog index is a fixed address and exists in every locale, so it goes
   // through the same per-language expansion as the pages above.
   { path: '/blog', changefreq: 'weekly', priority: '0.8' },
+  // The help centre's index, in every language like the pages above.
+  { path: '/help', changefreq: 'monthly', priority: '0.6' },
 ];
+
+/**
+ * The help centre's guides, read from the same manifest the app uses.
+ *
+ * Public guides exist in all six languages. Member guides are written in
+ * Persian and English only, so they name only those two editions, for the
+ * reason blog posts name only theirs. Staff guides are never listed: they
+ * are shown to staff alone and carry a noindex.
+ */
+function helpGuides() {
+  const manifest = JSON.parse(
+    readFileSync(resolve(HERE, '..', 'src', 'content', 'help', 'manifest.json'), 'utf8')
+  );
+  return manifest
+    .filter((entry) => entry.audience !== 'staff')
+    .map((entry) => ({
+      path: `/help/${entry.id}`,
+      locales: entry.audience === 'public' ? LOCALES : ['fa', 'en'],
+    }));
+}
+
+function guideEntries(guide) {
+  return guide.locales.map((locale) =>
+    [
+      '  <url>',
+      `    <loc>${href(locale, guide.path)}</loc>`,
+      ...guide.locales.map(
+        (other) =>
+          `    <xhtml:link rel="alternate" hreflang="${LOCALE_TAGS[other]}" href="${href(other, guide.path)}"/>`
+      ),
+      `    <xhtml:link rel="alternate" hreflang="x-default" href="${href(DEFAULT_LOCALE, guide.path)}"/>`,
+      '    <changefreq>monthly</changefreq>',
+      '    <priority>0.4</priority>',
+      '  </url>',
+    ].join('\n')
+  );
+}
 
 /**
  * Blog articles. Read from the Markdown files in src/content/blog so the
@@ -213,6 +252,7 @@ const sitemap = [
   ...PAGES.flatMap((page) => LOCALES.map((locale) => urlEntry(locale, page))),
   ...LANDINGS.map(landingEntry),
   ...blogPosts().flatMap(articleEntries),
+  ...helpGuides().flatMap(guideEntries),
   '</urlset>',
   '',
 ].join('\n');
@@ -271,5 +311,5 @@ writeFileSync(resolve(PUBLIC, 'robots.txt'), robots);
 writeFileSync(resolve(HERE, '..', 'nginx-blog-redirects.conf'), redirects);
 
 console.log(
-  `sitemap: ${PAGES.length * LOCALES.length + LANDINGS.length + blogPosts().flatMap(articleEntries).length} urls, robots: ${PRIVATE.length * LOCALES.length} disallow rules (${ORIGIN})`
+  `sitemap: ${PAGES.length * LOCALES.length + LANDINGS.length + blogPosts().flatMap(articleEntries).length + helpGuides().flatMap(guideEntries).length} urls, robots: ${PRIVATE.length * LOCALES.length} disallow rules (${ORIGIN})`
 );

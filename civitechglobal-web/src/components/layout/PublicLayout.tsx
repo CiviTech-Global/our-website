@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import { FuturisticNavbar } from './FuturisticNavbar';
 import { FuturisticFooter } from './FuturisticFooter';
+import { PageHelp } from '@/components/help/PageHelp';
 
 export function PublicLayout() {
   return (
@@ -10,6 +11,9 @@ export function PublicLayout() {
       <FuturisticNavbar />
       <main className="flex-1">
         <Outlet />
+        {/* Every public page ends with its guide: what it is, how to use it,
+            what it connects to, and its questions. */}
+        <PageHelp />
       </main>
       <FuturisticFooter />
     </div>

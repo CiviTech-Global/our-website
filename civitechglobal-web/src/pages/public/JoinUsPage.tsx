@@ -25,7 +25,7 @@ const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/
 
 export default function JoinUsPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.join.title, { description: t.seo.join });
+  useDocumentTitle(t.join.seoTitle, { description: t.seo.join });
   const submit = useSubmitResume();
 
   const [form, setForm] = useState({
@@ -195,7 +195,9 @@ export default function JoinUsPage() {
   return (
     <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.join.title}</h1>
+        {/* The invitation the home page ends with; "send your CV" stays the
+            button and the dashboard shortcut. */}
+        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.join.homeTitle}</h1>
         <p className="mt-3 text-text-secondary">{t.join.subtitle}</p>
       </AnimatedSection>
 
@@ -214,6 +216,16 @@ export default function JoinUsPage() {
             ))}
           </ol>
           <p className="mt-3 text-xs text-text-muted">{t.join.limitNote}</p>
+          {/* Somebody after an internship or a specific opening has a better door. */}
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary">
+            <span>{t.join.moreRoutes}</span>
+            <Link to="/volunteer" className="font-medium text-brand-green-600 hover:underline dark:text-brand-green-400">
+              {t.nav.volunteer}
+            </Link>
+            <Link to="/jobs" className="font-medium text-brand-green-600 hover:underline dark:text-brand-green-400">
+              {t.nav.jobs}
+            </Link>
+          </p>
         </Card>
       </AnimatedSection>
 

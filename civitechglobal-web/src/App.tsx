@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { RequirePermission } from '@/components/layout/RequirePermission';
 import { Spinner } from '@/components/ui/Spinner';
 import { features } from '@/lib/features';
+import { HelpProvider } from '@/components/help/HelpContext';
 
 // HomePage stays eager: it is the landing route, and lazy-loading the first
 // thing a visitor sees would trade bundle size for a blank frame and an extra
@@ -53,6 +54,9 @@ const TeamPage = lazy(() => import('@/pages/public/TeamPage'));
 // The blog: index and posts, both fed by the Markdown files in src/content/blog.
 const BlogIndexPage = lazy(() => import('@/pages/public/BlogIndexPage'));
 const BlogPostPage = lazy(() => import('@/pages/public/BlogPostPage'));
+// The help centre: every guide, grouped and searchable, and one page per guide.
+const HelpCentrePage = lazy(() => import('@/pages/public/HelpCentrePage'));
+const HelpArticlePage = lazy(() => import('@/pages/public/HelpArticlePage'));
 const OrganizationsPage = lazy(() => import('@/pages/public/OrganizationsPage'));
 const PortfolioPage = lazy(() => import('@/pages/public/PortfolioPage'));
 const VolunteerPage = lazy(() => import('@/pages/public/VolunteerPage'));
@@ -176,6 +180,9 @@ export default function App() {
     // One boundary around the whole tree, so a lazy route does not need its own
     // wrapper to be safe. The per-route boundaries below stay because they keep
     // an already-rendered layout on screen while only the panel swaps.
+    // The help system sits above every layout, so the navbar, the dashboard top
+    // bar and the in-page guide all open the same panel on the same guide.
+    <HelpProvider>
     <Suspense fallback={<RouteLoadingFallback />}>
       <Routes>
       <Route
@@ -531,6 +538,22 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <BlogPostPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/help"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <HelpCentrePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/help/:id"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <HelpArticlePage />
             </Suspense>
           }
         />
@@ -1214,5 +1237,6 @@ export default function App() {
       )}
       </Routes>
     </Suspense>
+    </HelpProvider>
   );
 }

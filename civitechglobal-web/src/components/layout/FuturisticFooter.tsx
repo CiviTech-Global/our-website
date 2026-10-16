@@ -58,6 +58,7 @@ export function FuturisticFooter() {
                     ['/partners', t.nav.partners],
                     ['/volunteer', t.nav.volunteer],
                     ['/contact', t.nav.contact],
+                    ['/help', t.help.centreTitle],
                   ] as const
                 ).map(([to, label]) => (
                   <li key={to}>

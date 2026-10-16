@@ -6,9 +6,6 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
-import { PageGuide, guideFaqs } from '@/components/layout/PageGuide';
-import { faqPageSchema } from '@/lib/structuredData';
-import { LOCALE_TAGS } from '@/i18n/locales';
 
 /**
  * The people behind the company.
@@ -18,10 +15,9 @@ import { LOCALE_TAGS } from '@/i18n/locales';
  * gets one clean list, because a heading only appears when there is one.
  */
 export default function TeamPage() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   useDocumentTitle(t.team.title, {
     description: t.seo.team,
-    jsonLd: faqPageSchema(guideFaqs(t.guides.team), LOCALE_TAGS[locale]) ?? undefined,
   });
 
   const { data, isLoading } = useTeam();
@@ -74,9 +70,6 @@ export default function TeamPage() {
         </AnimatedSection>
       )}
 
-      <div className="mt-4">
-        <PageGuide copy={t.guides.team} id="team" />
-      </div>
     </div>
   );
 }

@@ -1,9 +1,10 @@
-import { NavLink } from 'react-router';
-import { PanelLeftClose, X } from 'lucide-react';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router';
+import { ChevronDown, PanelLeftClose, X } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { toPersianDigits } from '@/i18n/utils';
 import { cn } from '@/lib/utils';
-import { formatCount, type NavItem, type NavModule } from './navigation';
+import { formatCount, itemMatches, type NavItem, type NavModule } from './navigation';
 import { UserMenu } from './UserMenu';
 
 /**
@@ -30,7 +31,18 @@ export function AppSidebar({
   /** Present only while the sidebar is the mobile drawer. */
   onCloseDrawer?: () => void;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(() => readCollapsed(panel));
+  const localize = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
+
+  const toggle = (key: string) => {
+    const next = new Set(collapsed);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setCollapsed(next);
+    writeCollapsed(panel, next);
+  };
 
   return (
     <div className="flex h-full w-64 shrink-0 flex-col border-e border-app-border bg-app-panel">
@@ -62,14 +74,39 @@ export function AppSidebar({
       </div>
 
       <nav aria-label={t.app.sectionNavigation} className="min-h-0 flex-1 overflow-y-auto px-2 py-3">
-        {module?.sections.map((section, index) => (
-          <div key={section.id} className={cn(index > 0 && 'mt-5')}>
+        {module?.sections.map((section, index) => {
+          const key = `${module.id}:${section.id}`;
+          // The section holding the page on screen is never folded away: the
+          // reader would lose the one link that says where they are.
+          const holdsCurrent = section.items.some((item) => !item.shortcut && itemMatches(pathname, item));
+          const folded = Boolean(section.label) && collapsed.has(key) && !holdsCurrent;
+          const waiting = section.items.reduce((sum, item) => sum + (item.count ?? 0), 0);
+          const listId = `sidebar-${panel}-${key}`;
+          return (
+          <div key={section.id} className={cn(index > 0 && 'mt-4')}>
             {section.label && (
-              <p className="app-label mb-1.5 px-2">
-                {section.label}
-              </p>
+              <button
+                type="button"
+                onClick={() => toggle(key)}
+                aria-expanded={!folded}
+                aria-controls={listId}
+                title={t.admin.toggleSection}
+                className="app-label mb-1 flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-start hover:bg-app-hover"
+              >
+                <ChevronDown
+                  className={cn('size-3.5 shrink-0 transition-transform duration-(--dur-feedback)', folded && '-rotate-90 rtl:rotate-90')}
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 flex-1 truncate">{section.label}</span>
+                {/* Folded, the section still says something is waiting inside. */}
+                {folded && waiting > 0 && (
+                  <span className="app-readout inline-flex h-[18px] min-w-[20px] items-center justify-center px-1 text-caption font-semibold">
+                    {formatCount(waiting, localize)}
+                  </span>
+                )}
+              </button>
             )}
-            <ul className="flex flex-col gap-0.5">
+            <ul id={listId} hidden={folded} className="flex flex-col gap-0.5">
               {section.items.map((item) => (
                 <li key={item.to}>
                   <SidebarLink item={item} onNavigate={onNavigate} />
@@ -77,7 +114,8 @@ export function AppSidebar({
               ))}
             </ul>
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="shrink-0 border-t border-app-border-light p-2">
@@ -85,6 +123,26 @@ export function AppSidebar({
       </div>
     </div>
   );
+}
+
+const COLLAPSED_KEY = 'ct-sidebar-sections';
+
+/** Which labelled sections the reader has folded, per panel, as "module:section" keys. */
+function readCollapsed(panel: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(`${COLLAPSED_KEY}-${panel}`);
+    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeCollapsed(panel: string, keys: Set<string>): void {
+  try {
+    localStorage.setItem(`${COLLAPSED_KEY}-${panel}`, JSON.stringify([...keys]));
+  } catch {
+    // A browser refusing storage keeps the folding for this visit only.
+  }
 }
 
 function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageTip } from '@/components/help/TipBox';
 import { useSearchParams } from 'react-router';
 import { PackageSearch, Search } from 'lucide-react';
 import { useTracking } from '@/api/tracking';
@@ -80,6 +81,8 @@ export default function TrackRequestPage() {
           </form>
         </Card>
       </AnimatedSection>
+
+      <PageTip guide="track" tip={0} className="mt-6" />
 
       {isFetching && (
         <div className="mt-8 flex justify-center">

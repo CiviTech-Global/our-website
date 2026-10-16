@@ -18,6 +18,7 @@ vi.mock('@/i18n/LocaleProvider', async (importOriginal) => ({
     t: {
       common: { brand: 'Brand' },
       theme: { light: 'Light', dark: 'Dark' },
+      help: { openGuide: 'Guide', openGuideLabel: 'Guide to this page' },
       nav: {
         servicesMenu: 'Services menu',
         companyMenu: 'Company',

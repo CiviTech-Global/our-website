@@ -14,9 +14,6 @@ import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
-import { PageGuide, guideFaqs } from '@/components/layout/PageGuide';
-import { faqPageSchema } from '@/lib/structuredData';
-import { LOCALE_TAGS } from '@/i18n/locales';
 
 const PAGE_SIZE = 12;
 
@@ -28,10 +25,9 @@ const PAGE_SIZE = 12;
  * chosen. A list of impressive people with no next step is a brochure.
  */
 export default function ExpertsPage() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   useDocumentTitle(t.experts.title, {
     description: t.experts.metaDescription,
-    jsonLd: faqPageSchema(guideFaqs(t.guides.experts), LOCALE_TAGS[locale]) ?? undefined,
   });
 
   const { data: experts, isLoading } = usePublicExperts();
@@ -133,9 +129,6 @@ export default function ExpertsPage() {
         </div>
       )}
 
-      <div className="mt-14">
-        <PageGuide copy={t.guides.experts} id="experts" />
-      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { PageTip } from '@/components/help/TipBox';
 import { Link, useLocation, useParams } from 'react-router';
 import { BellPlus, Layers, PlusCircle, Search, SlidersHorizontal, Sparkles, Users, X } from 'lucide-react';
 import type { ProjectBoardSort } from '@/api/marketplace';
@@ -371,6 +372,8 @@ export default function ProjectBoardPage() {
           </Link>
         </div>
       </header>
+
+      <PageTip guide="projects" tip={0} className="mb-6" />
 
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-border-default bg-surface-default p-3 shadow-sm sm:flex-row">
         <div className="relative flex-1">

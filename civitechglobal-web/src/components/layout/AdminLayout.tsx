@@ -24,7 +24,9 @@ import {
   Shield,
   ShieldCheck,
   Sparkles,
+  SquarePlus,
   Store,
+  Tags,
   UserPlus,
   UserRound,
   Users,
@@ -36,7 +38,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useWorkload } from '@/api/admin';
 import { AppShell } from '@/components/app/AppShell';
-import type { NavItem, NavModule } from '@/components/app/navigation';
+import type { NavItem, NavModule, NavSection } from '@/components/app/navigation';
 import type { QueueKey } from '@/types/admin';
 import { features } from '@/lib/features';
 
@@ -130,13 +132,13 @@ export function AdminLayout() {
   const tradeMasterOpenShop: NavItem = {
     to: '/admin/trademaster/shops/new',
     label: t.trademaster.desk.openShop,
-    icon: <Store />,
+    icon: <SquarePlus />,
   };
 
   const tradeMasterGuilds: NavItem = {
     to: '/admin/trademaster/business-categories',
     label: t.trademaster.hub.guildDeskTitle,
-    icon: <Store />,
+    icon: <Tags />,
   };
 
   /** Company pages — not a queue; the jobs desk takes one down when it must. */
@@ -155,6 +157,16 @@ export function AdminLayout() {
     .sort((a, b) => (b.count ?? 0) - (a.count ?? 0))
     .map((item) => ({ ...item, shortcut: true }));
 
+  // A labelled section with nothing the reader may open is left out, so a
+  // partly-granted admin never sees a heading over an empty list.
+  const sections = (...list: NavSection[]) => list.filter((section) => section.items.length > 0);
+
+  /**
+   * Six modules on the rail, each split into a few labelled sections of two to
+   * five screens. The marketplace used to be one unlabelled list of fifteen
+   * screens; it is now one section per board, and the local market's desk —
+   * five screens of its own — has a module of its own.
+   */
   const modules: NavModule[] = [
     {
       id: 'home',
@@ -169,118 +181,136 @@ export function AdminLayout() {
       id: 'intake',
       label: t.admin.groupIntake,
       icon: <Inbox />,
-      sections: [
+      sections: sections(
         {
-          id: 'main',
+          id: 'clients',
+          label: t.admin.navClientRequests,
           items: [
             ...when(can('projects'), queue.projects),
-            ...when(can('resumes'), queue.resumes, queue.programme),
             ...when(can('insurance'), queue.insurance),
-            ...when(can('messages'), queue.messages),
             ...when(can('consultations'), queue.consultations),
           ],
         },
-      ],
+        { id: 'recruitment', label: t.admin.navRecruitment, items: when(can('resumes'), queue.resumes, queue.programme) },
+        { id: 'contact', label: t.admin.navContact, items: when(can('messages'), queue.messages) }
+      ),
     },
     {
       id: 'marketplace',
       label: t.market.groupMarketplace,
-      icon: <Store />,
-      sections: [
+      icon: <Briefcase />,
+      sections: sections(
+        // Verification first: it is the door to every board below.
+        { id: 'trust', label: t.admin.navTrust, items: when(can('verification'), queue.verification) },
         {
-          id: 'moderation',
+          id: 'jobs',
+          label: t.nav.jobs,
+          // Postings and the applications answering them are one desk: whoever
+          // decides a role belongs on the board judges the replies to it.
+          items: [...when(can('jobs'), queue.jobPosts, queue.applications), ...when(can('jobs') && features.jobsV2, companies)],
+        },
+        {
+          id: 'freelance',
+          label: t.nav.freelance,
           items: [
-            ...when(can('verification'), queue.verification),
-            // Postings and the applications answering them are one desk: whoever
-            // decides a role belongs on the board judges the replies to it.
-            ...when(can('jobs'), queue.jobPosts, queue.applications),
-            ...when(can('jobs') && features.jobsV2, companies),
             ...when(can('freelance'), queue.freelanceProjects, queue.bids),
             ...when(can('freelance') && features.projectsV2, {
               to: '/admin/services-queue',
               label: t.work.serviceQueueTitle,
               icon: <Layers />,
             }),
+          ],
+        },
+        {
+          id: 'books',
+          label: t.nav.books,
+          items: [
             ...when(can('books'), queue.books),
             ...when(can('books') && features.booksV2, { to: '/admin/book-catalog', label: t.bookshop.navCatalog, icon: <Library /> }),
-            // Both behind one permission: a shop and its catalogue are
-            // judged together, and a refused shop whose products nobody on
-            // that desk could take down would be a strange arrangement.
-            ...when(
-              features.tradeMaster && can('trademaster'),
-              queue.tradeMasterShops,
-              tradeMasterOpenShop,
-              queue.tradeMasterProducts,
-              tradeMasterCategories,
-              tradeMasterGuilds
-            ),
           ],
         },
         {
           id: 'insights',
           label: t.analytics.title,
-          items: when(can('analytics'), {
-            to: '/admin/marketplace',
-            label: t.analytics.title,
-            icon: <BarChart3 />,
-          }),
+          items: when(can('analytics'), { to: '/admin/marketplace', label: t.analytics.title, icon: <BarChart3 /> }),
+        }
+      ),
+    },
+    {
+      // The local market's desk. Both halves behind one permission: a shop and
+      // its catalogue are judged together, and a refused shop whose products
+      // nobody on that desk could take down would be a strange arrangement.
+      id: 'local-market',
+      label: t.nav.localMarket,
+      icon: <Store />,
+      sections: sections(
+        {
+          id: 'review',
+          label: t.admin.navReview,
+          items: when(features.tradeMaster && can('trademaster'), queue.tradeMasterShops, queue.tradeMasterProducts),
         },
-      ],
+        {
+          id: 'setup',
+          label: t.admin.navSetup,
+          items: when(features.tradeMaster && can('trademaster'), tradeMasterOpenShop, tradeMasterCategories, tradeMasterGuilds),
+        }
+      ),
     },
     {
       id: 'showcase',
       label: t.showcase.groupAdmin,
       icon: <Sparkles />,
-      sections: [
+      sections: sections(
         {
           id: 'main',
+          items: when(
+            can('showcase'),
+            { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 /> },
+            { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake /> },
+            { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 /> }
+          ),
+        },
+        {
+          id: 'people',
+          label: t.admin.navPeople,
           items: [
-            ...when(
-              can('showcase'),
-              { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 /> },
-              { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake /> },
-              { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 /> }
-            ),
             // The club is editorial too, but its own permission: who we vouch
             // for is a different decision from which logos are on the wall.
-            ...when(can('experts'), {
-              to: '/admin/experts',
-              label: t.experts.adminTitle,
-              icon: <UserRound />,
-            }),
+            ...when(can('experts'), { to: '/admin/experts', label: t.experts.adminTitle, icon: <UserRound /> }),
             // Super admin only, and not a grantable permission: who represents
             // the company on its own page is not a module of work to delegate.
             ...when(isSuper, { to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound /> }),
           ],
-        },
-      ],
+        }
+      ),
     },
     {
       id: 'administration',
       label: t.admin.groupAdministration,
       icon: <Settings />,
-      sections: [
+      sections: sections(
         {
-          id: 'main',
+          id: 'access',
+          label: t.admin.navAccess,
+          items: when(
+            can('users'),
+            { to: '/admin/users', label: t.admin.users, icon: <Users /> },
+            { to: '/admin/roles', label: t.admin.roles, icon: <Shield /> }
+          ),
+        },
+        {
+          id: 'system',
+          label: t.admin.navSystem,
           items: [
-            ...when(
-              can('users'),
-              { to: '/admin/users', label: t.admin.users, icon: <Users /> },
-              { to: '/admin/roles', label: t.admin.roles, icon: <Shield /> }
-            ),
             ...when(isSuper, { to: '/admin/audit', label: t.audit.title, icon: <ScrollText /> }),
             // Only in development: features.demoData is false in a production
             // build, so this link cannot appear on the live site even for the
             // owner. Super admin as well, because in development the staff
             // accounts are real accounts.
-            ...when(features.demoData && isSuper, {
-              to: '/admin/demo',
-              label: t.demo.title,
-              icon: <Database />,
-            }),
+            ...when(features.demoData && isSuper, { to: '/admin/demo', label: t.demo.title, icon: <Database /> }),
           ],
-        },
-      ],
+        }
+      ),
     },
   ];
 

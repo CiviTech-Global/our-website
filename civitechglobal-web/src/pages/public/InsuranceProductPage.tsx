@@ -1,4 +1,5 @@
 import { SavedToAccount } from '@/components/account/SavedToAccount';
+import { PageTip } from '@/components/help/TipBox';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import {
@@ -377,6 +378,8 @@ export default function InsuranceProductPage() {
                     </p>
                   </div>
                 )}
+                {/* Before the form, the one thing worth reading first. */}
+                <PageTip guide="insurance-product" tip={0} className="mb-4" />
                 <InsuranceForm product={product} onSubmitted={setResult} />
               </>
             )}

@@ -6,6 +6,8 @@ import { Link } from 'react-router';
 import { CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
 import { useSubmitProjectRequest } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useAuth } from '@/contexts/AuthProvider';
+import { PageTip } from '@/components/help/TipBox';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Button } from '@/components/ui/Button';
@@ -57,8 +59,9 @@ const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/
 
 export default function StartProjectPage() {
   const { t } = useLocale();
-  useDocumentTitle(t.nav.startProject, { description: t.seo.startProject });
+  useDocumentTitle(t.project.seoTitle, { description: t.seo.startProject });
   const submit = useSubmitProjectRequest();
+  const { user } = useAuth();
 
   const [form, setForm] = useState({
     contactName: '',
@@ -668,6 +671,9 @@ export default function StartProjectPage() {
             {errors.submit}
           </p>
         )}
+
+        {/* Signed in, the tracking code is kept on the account; say so before it is too late. */}
+        {!user && <PageTip guide="start-project" tip={2} />}
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" size="lg" isLoading={submit.isPending}>

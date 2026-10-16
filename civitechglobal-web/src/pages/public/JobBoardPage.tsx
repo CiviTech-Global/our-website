@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { PageTip } from '@/components/help/TipBox';
 import { Link, useLocation, useParams } from 'react-router';
 import { BellPlus, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { usePublicJobs, type JobBoardSort } from '@/api/marketplace';
@@ -365,6 +366,8 @@ export default function JobBoardPage() {
         <h1 className="text-3xl font-bold text-text-primary">{title}</h1>
         <p className="mt-2 text-text-secondary">{subtitle}</p>
       </header>
+
+      <PageTip guide="jobs" tip={0} className="mb-6" />
 
       {/* What and where: the two things everybody searches by first. */}
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-border-default bg-surface-default p-3 shadow-sm sm:flex-row">

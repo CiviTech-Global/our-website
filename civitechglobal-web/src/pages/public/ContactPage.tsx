@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,9 +19,6 @@ import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
-import { PageGuide, guideFaqs } from '@/components/layout/PageGuide';
-import { faqPageSchema } from '@/lib/structuredData';
-import { LOCALE_TAGS } from '@/i18n/locales';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'auth.required'),
@@ -63,10 +61,9 @@ const STATUS_VARIANT: Record<TicketStatus, 'default' | 'success' | 'info'> = {
  * rather than on a page somebody has to find.
  */
 export default function ContactPage() {
-  const { t, locale } = useLocale();
-  useDocumentTitle(t.nav.contact, {
+  const { t } = useLocale();
+  useDocumentTitle(t.contact.seoTitle, {
     description: t.seo.contact,
-    jsonLd: faqPageSchema(guideFaqs(t.guides.contact), LOCALE_TAGS[locale]) ?? undefined,
   });
   const { showToast } = useToast();
 
@@ -157,14 +154,25 @@ export default function ContactPage() {
                 {t.contact.infoTitle}
               </h2>
               <p className="text-sm text-text-secondary">{t.contact.infoBody}</p>
+              {/* A project, a consultation or an insurance request each has its
+                  own form, and reaches a better answer there than as a message. */}
+              <h3 className="mt-5 mb-2 text-sm font-semibold text-text-primary">{t.contact.routesTitle}</h3>
+              <div className="flex flex-wrap gap-2">
+                <Link to="/start-project">
+                  <Button size="sm">{t.nav.startProject}</Button>
+                </Link>
+                <Link to="/consult">
+                  <Button size="sm" variant="outline">{t.nav.consult}</Button>
+                </Link>
+                <Link to="/track">
+                  <Button size="sm" variant="outline">{t.nav.track}</Button>
+                </Link>
+              </div>
             </Card>
           </div>
         </AnimatedSection>
       </div>
 
-      <div className="mt-14">
-        <PageGuide copy={t.guides.contact} id="contact" />
-      </div>
     </div>
   );
 }

@@ -9,6 +9,8 @@ import { AppRail } from './AppRail';
 import { AppSidebar } from './AppSidebar';
 import { itemMatches, moduleHome, resolveActive, visibleModules, type NavModule } from './navigation';
 import { ShellContext } from './shell-context';
+import { HelpButton } from '@/components/help/HelpButton';
+import { ScreenTips } from '@/components/help/TipBox';
 
 export interface AppShellProps {
   panel: 'user' | 'admin';
@@ -212,6 +214,7 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
               </nav>
 
               <div className="flex shrink-0 items-center gap-0.5">
+                <HelpButton variant="app" />
                 {notificationsLink && <NotificationBell to={notificationsLink} />}
                 <a
                   href="/"
@@ -229,7 +232,11 @@ export function AppShell({ panel, modules, children, notificationsLink }: AppShe
             <main id="main-content" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               {/* Every dashboard screen gets the same frame: one width, one set of
                 gutters, one top and bottom rhythm. */}
-              <div className="mx-auto w-full max-w-[90rem] px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-7">{children}</div>
+              <div className="mx-auto w-full max-w-[90rem] px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+                {/* The next tip for this screen, until they have all been read. */}
+                <ScreenTips />
+                {children}
+              </div>
             </main>
           </div>
         </div>
