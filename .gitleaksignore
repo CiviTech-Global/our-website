@@ -21,3 +21,12 @@
 6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:generic-api-key:217
 6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:private-key:425
 6e6fc0c3166ce3718fdcf51019eac6887c7dd16e:guides/ansible-semaphore-ui.md:private-key:443
+
+# Reviewed 2026-10-17: Tailwind class names in the hero motif
+# ("dark:fill-brand-lapis-700" and the like), which the generic-api-key rule
+# reads as a key=value secret. No credential appears on these lines.
+dab85b9c687f606b2b0ac844d1a9b502381f14c4:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:58
+dab85b9c687f606b2b0ac844d1a9b502381f14c4:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:59
+e3d6833c627bb302db4cdbe01b57e938e829d48f:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:66
+e3d6833c627bb302db4cdbe01b57e938e829d48f:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:67
+e3d6833c627bb302db4cdbe01b57e938e829d48f:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:83

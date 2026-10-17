@@ -12,6 +12,9 @@ coverage/
 .vscode/*
 !.vscode/extensions.json
 generated/
+# ...except the mobile app's translation accessors, which are generated from
+# the web dictionaries and committed so a checkout (and CI) builds as-is.
+!civitechglobal-mobile/lib/l10n/generated/
 prisma/generated/
 *.tsbuildinfo
 # Scratch profile the prerender script gives its throwaway browser.
