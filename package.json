@@ -10,8 +10,10 @@
     "dev:web": "cd civitechglobal-web && npm run dev",
     "lint:server": "cd civitechglobal-server && npm run lint",
     "lint:web": "cd civitechglobal-web && npm run lint",
+    "lint:mobile": "cd civitechglobal-mobile && dart format --output=none --set-exit-if-changed lib test && flutter analyze --fatal-infos",
     "test:server": "cd civitechglobal-server && npm run test",
     "test:web": "cd civitechglobal-web && npm run test",
+    "test:mobile": "cd civitechglobal-mobile && flutter test",
     "build:server": "cd civitechglobal-server && npm run build",
     "build:web": "cd civitechglobal-web && npm run build"
   },

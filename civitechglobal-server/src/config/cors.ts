@@ -10,5 +10,8 @@ export const corsOptions: CorsOptions = {
   origin: env.CORS_ORIGIN,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  // X-Client is how the mobile app asks for its tokens in the body (see
+  // auth.controller.ts). Listed for completeness: native apps are not subject
+  // to CORS, and a browser page on another origin cannot read the response.
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Client'],
 };

@@ -114,6 +114,41 @@ jobs:
       - name: Build
         run: npm run build:web
 
+  mobile:
+    name: Mobile (format, analyze, test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: civitechglobal-mobile
+    env:
+      # The lockfile is resolved against the pub.flutter-io.cn mirror, which is
+      # what the developers' machines in Iran use. Resolving against the same
+      # host here lets --enforce-lockfile hold; every entry carries a sha256,
+      # so the mirror cannot substitute a package unnoticed.
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.9"
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get --enforce-lockfile
+
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+
+      - name: Test
+        run: flutter test
+
   docker:
     name: Docker (build + scan${{ github.ref == 'refs/heads/main' && ' + push' || '' }})
     needs: [server, web]

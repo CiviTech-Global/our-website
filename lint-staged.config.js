@@ -8,4 +8,11 @@
 module.exports = {
   'civitechglobal-server/**/*.{ts,tsx}': 'node scripts/eslint-subproject.mjs civitechglobal-server',
   'civitechglobal-web/**/*.{ts,tsx}': 'node scripts/eslint-subproject.mjs civitechglobal-web',
+  // Dart: the formatter decides layout, so a commit is refused rather than
+  // reformatted behind the author's back; the analyzer applies
+  // civitechglobal-mobile/analysis_options.yaml to the staged files.
+  'civitechglobal-mobile/**/*.dart': [
+    'dart format --output=none --set-exit-if-changed',
+    'dart analyze --fatal-infos',
+  ],
 };

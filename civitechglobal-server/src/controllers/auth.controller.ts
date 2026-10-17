@@ -17,11 +17,58 @@ const cookieOptions = {
   path: '/',
 };
 
+/*
+ * Where the refresh token travels.
+ *
+ * In a browser it lives only in an httpOnly, SameSite=strict cookie, so no
+ * script on the page can read it. A native app has no cookie jar it can rely
+ * on; it keeps the token in the platform's secure storage instead (Keychain,
+ * Android Keystore) and identifies itself with `X-Client: mobile`.
+ *
+ * The two transports never mix. A mobile request gets the token in the body
+ * and must present it in the body; the cookie is neither set nor read. A
+ * browser request never sees the token in a body. Without that split, a
+ * script injected into the site could call /auth/refresh with the header, let
+ * the cookie authenticate it, and read a fresh long-lived token out of the
+ * response — exactly what the cookie exists to prevent.
+ */
+const MOBILE_CLIENT = 'mobile';
+
+function isMobileClient(req: Request): boolean {
+  return req.get('x-client')?.trim().toLowerCase() === MOBILE_CLIENT;
+}
+
+function presentedRefreshToken(req: Request): string | undefined {
+  const token: unknown = isMobileClient(req) ? req.body?.refreshToken : req.cookies?.[REFRESH_COOKIE_NAME];
+  return typeof token === 'string' && token ? token : undefined;
+}
+
+/** Hands a new session to the caller over the transport it uses. */
+function sendSession(
+  req: Request,
+  res: Response,
+  session: { refreshToken: string },
+  data: Record<string, unknown>,
+  message: string,
+  statusCode = 200,
+): void {
+  if (isMobileClient(req)) {
+    successResponse(res, { ...data, refreshToken: session.refreshToken }, message, statusCode);
+    return;
+  }
+  res.cookie(REFRESH_COOKIE_NAME, session.refreshToken, cookieOptions);
+  successResponse(res, data, message, statusCode);
+}
+
+function clearSessionCookie(req: Request, res: Response): void {
+  if (isMobileClient(req)) return;
+  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', httpOnly: true, secure: env.COOKIE_SECURE, sameSite: 'strict' });
+}
+
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const result = await authService.register(req.body);
-    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
-    successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Registration successful', 201);
+    sendSession(req, res, result, { user: result.user, accessToken: result.accessToken }, 'Registration successful', 201);
   } catch (error) {
     next(error);
   }
@@ -33,7 +80,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
 
     // Password accepted. If the account carries a second factor, no session is
     // issued yet — the caller gets a challenge to exchange, and the refresh
-    // cookie is deliberately not set, so a half-finished sign-in leaves nothing
+    // token is deliberately not issued, so a half-finished sign-in leaves nothing
     // behind that could be used.
     if (await mfaService.isEnabled(result.user.id)) {
       const challengeToken = await authService.issueMfaChallenge(result.user.id);
@@ -41,8 +88,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
       return;
     }
 
-    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
-    successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Login successful');
+    sendSession(req, res, result, { user: result.user, accessToken: result.accessToken }, 'Login successful');
   } catch (error) {
     next(error);
   }
@@ -71,8 +117,7 @@ export async function verifyMfa(req: Request, res: Response, next: NextFunction)
     await authService.spendMfaChallenge(challengeToken);
 
     const result = await authService.issueSessionFor(userId);
-    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
-    successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Login successful');
+    sendSession(req, res, result, { user: result.user, accessToken: result.accessToken }, 'Login successful');
   } catch (error) {
     next(error);
   }
@@ -116,14 +161,13 @@ export async function mfaDisable(req: Request, res: Response, next: NextFunction
 
 export async function refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const token = req.cookies?.[REFRESH_COOKIE_NAME];
+    const token = presentedRefreshToken(req);
     if (!token) {
       res.status(401).json({ success: false, message: 'Refresh token required' });
       return;
     }
     const result = await authService.refreshTokens(token);
-    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
-    successResponse(res, { accessToken: result.accessToken }, 'Token refreshed');
+    sendSession(req, res, result, { accessToken: result.accessToken }, 'Token refreshed');
   } catch (error) {
     next(error);
   }
@@ -131,11 +175,11 @@ export async function refresh(req: Request, res: Response, next: NextFunction): 
 
 export async function logout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const token = req.cookies?.[REFRESH_COOKIE_NAME];
+    const token = presentedRefreshToken(req);
     if (token) {
       await authService.revokeRefreshToken(token);
     }
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', httpOnly: true, secure: env.COOKIE_SECURE, sameSite: 'strict' });
+    clearSessionCookie(req, res);
     successResponse(res, null, 'Logged out successfully');
   } catch (error) {
     next(error);
@@ -144,11 +188,12 @@ export async function logout(req: Request, res: Response, next: NextFunction): P
 
 /** Self-service "log out everywhere": invalidates every refresh token and
  * bumps tokenVersion so all previously issued access tokens for this user
- * stop being trusted too, then clears the current cookie. */
+ * stop being trusted too, then clears the current cookie (a mobile app drops
+ * its stored token itself). */
 export async function logoutAll(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await authService.revokeAllUserRefreshTokens(req.user!.userId);
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/', httpOnly: true, secure: env.COOKIE_SECURE, sameSite: 'strict' });
+    clearSessionCookie(req, res);
     successResponse(res, null, 'Logged out of all sessions');
   } catch (error) {
     next(error);
@@ -163,8 +208,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
       req.body.currentPassword as string,
       req.body.newPassword as string,
     );
-    res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, cookieOptions);
-    successResponse(res, { user: result.user, accessToken: result.accessToken }, 'Password changed');
+    sendSession(req, res, result, { user: result.user, accessToken: result.accessToken }, 'Password changed');
   } catch (error) {
     next(error);
   }
