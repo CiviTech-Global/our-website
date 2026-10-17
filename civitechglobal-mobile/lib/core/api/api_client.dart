@@ -1,0 +1,170 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../l10n/l10n.dart';
+import '../auth/token_store.dart';
+import '../config.dart';
+import 'api_exception.dart';
+
+/// The one way the app talks to the API.
+///
+/// - Says it is the mobile app (`X-Client: mobile`), so the auth endpoints
+///   hand the refresh token over in the body instead of a cookie (see
+///   civitechglobal-server/src/controllers/auth.controller.ts).
+/// - Sends the access token, and the reader's language.
+/// - On a 401 it refreshes once and retries once. Concurrent requests that
+///   all hit an expired token share one refresh: refresh tokens are single
+///   use, and two refreshes racing would look like a replayed token to the
+///   server, which then ends every session on the account.
+/// - Unwraps the `{ success, message, data }` envelope.
+class ApiClient {
+  ApiClient({
+    required this.tokens,
+    required String Function() language,
+    Dio? dio,
+  }) : _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               baseUrl: AppConfig.apiBaseUrl,
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(seconds: 30),
+               headers: {'X-Client': 'mobile'},
+             ),
+           ) {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final token = tokens.accessToken;
+          if (token != null) options.headers['Authorization'] = 'Bearer $token';
+          options.headers['Accept-Language'] = language();
+          handler.next(options);
+        },
+      ),
+    );
+  }
+
+  final Dio _dio;
+  final TokenStore tokens;
+
+  /// Called when the session cannot be renewed, so the app can show itself
+  /// signed out instead of failing request after request.
+  void Function()? onSessionLost;
+
+  Completer<bool>? _refreshing;
+
+  static const _authPaths = {
+    '/auth/login',
+    '/auth/register',
+    '/auth/refresh',
+    '/auth/logout',
+    '/auth/mfa/verify',
+  };
+
+  Future<T> get<T>(
+    String path, {
+    Map<String, Object?>? query,
+    T Function(Object? data)? parse,
+  }) => _send('GET', path, query: query, parse: parse);
+
+  Future<T> post<T>(
+    String path, {
+    Object? body,
+    T Function(Object? data)? parse,
+  }) => _send('POST', path, body: body, parse: parse);
+
+  Future<T> put<T>(
+    String path, {
+    Object? body,
+    T Function(Object? data)? parse,
+  }) => _send('PUT', path, body: body, parse: parse);
+
+  Future<T> delete<T>(String path, {T Function(Object? data)? parse}) =>
+      _send('DELETE', path, parse: parse);
+
+  Future<T> _send<T>(
+    String method,
+    String path, {
+    Object? body,
+    Map<String, Object?>? query,
+    T Function(Object? data)? parse,
+    bool retried = false,
+  }) async {
+    try {
+      final response = await _dio.request<Object?>(
+        path,
+        data: body,
+        queryParameters: query?..removeWhere((_, v) => v == null),
+        options: Options(method: method),
+      );
+      final envelope = response.data;
+      final data = envelope is Map ? envelope['data'] : envelope;
+      return parse != null ? parse(data) : data as T;
+    } on DioException catch (error) {
+      final unauthorized = error.response?.statusCode == 401;
+      if (unauthorized && !retried && !_authPaths.contains(path)) {
+        if (await refresh()) {
+          return _send(
+            method,
+            path,
+            body: body,
+            query: query,
+            parse: parse,
+            retried: true,
+          );
+        }
+        onSessionLost?.call();
+      }
+      throw ApiException.from(error);
+    }
+  }
+
+  /// Renews the access token with the stored refresh token. True on success.
+  /// Shared by every caller that asks while a refresh is already running.
+  Future<bool> refresh() {
+    final running = _refreshing;
+    if (running != null) return running.future;
+    final completer = _refreshing = Completer<bool>();
+    () async {
+      try {
+        final stored = await tokens.readRefreshToken();
+        if (stored == null) {
+          completer.complete(false);
+          return;
+        }
+        final response = await _dio.post<Object?>(
+          '/auth/refresh',
+          data: {'refreshToken': stored},
+        );
+        final data = (response.data as Map)['data'] as Map;
+        await tokens.save(
+          accessToken: data['accessToken'] as String,
+          refreshToken: data['refreshToken'] as String,
+        );
+        completer.complete(true);
+      } on DioException catch (error) {
+        // Only a definite "no" from the server ends the session. Offline, the
+        // stored token is still good for when the connection comes back.
+        final status = error.response?.statusCode;
+        if (status == 401 || status == 404) await tokens.clear();
+        completer.complete(false);
+      } catch (_) {
+        completer.complete(false);
+      } finally {
+        _refreshing = null;
+      }
+    }();
+    return completer.future;
+  }
+}
+
+final tokenStoreProvider = Provider<TokenStore>((ref) => TokenStore());
+
+final apiClientProvider = Provider<ApiClient>(
+  (ref) => ApiClient(
+    tokens: ref.watch(tokenStoreProvider),
+    language: () => ref.read(l10nProvider).language,
+  ),
+);

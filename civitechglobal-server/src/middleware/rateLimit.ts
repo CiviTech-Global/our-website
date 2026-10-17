@@ -3,6 +3,7 @@ import { RedisStore } from 'rate-limit-redis';
 import type { Request } from 'express';
 import { redis } from '../config/redis.js';
 import { env } from '../config/env.js';
+import { verifyRefreshToken } from '../utils/jwt.js';
 
 // Backed by the shared ioredis client (config/redis.ts) so limits are
 // enforced consistently across every API process/instance, not just
@@ -78,13 +79,40 @@ export const clientErrorRateLimiter = rateLimit({
   passOnStoreError: true,
 });
 
+/**
+ * Whose refresh this is: the account, when the token proves it.
+ *
+ * Keyed by address alone, this bucket was shared by everyone behind one
+ * address, and Iranian mobile carriers put thousands of phones behind each
+ * public IPv4 address (carrier-grade NAT). Every app open refreshes a token,
+ * so a busy carrier address would have run through 60 refreshes in minutes
+ * and locked out every customer on it.
+ *
+ * Checking the signature costs one HMAC and no database. A token that fails
+ * it (garbage, expired, forged) falls back to the address, so a flood of junk
+ * from one place is still bounded where it comes from. The token is read from
+ * wherever its client sends it: the cookie for a browser, the body for the
+ * app (see auth.controller.ts).
+ */
+export function refreshKey(req: Request): string {
+  const token: unknown = req.cookies?.refreshToken ?? req.body?.refreshToken;
+  if (typeof token === 'string' && token) {
+    try {
+      return `user:${verifyRefreshToken(token).userId}`;
+    } catch {
+      // Not a token we issued: count it against the address below.
+    }
+  }
+  return ipKeyGenerator(req.ip ?? 'unknown');
+}
+
 /** Token refresh is called on every app load; keep a higher bucket. */
 export const refreshRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 60,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  keyGenerator,
+  keyGenerator: refreshKey,
   message: rateLimitMessage,
   store: createStore('rl:refresh:'),
   passOnStoreError: true,

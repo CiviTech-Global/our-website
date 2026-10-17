@@ -3,6 +3,25 @@ import { publicCache } from '../middleware/cacheControl.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { canSendEmail } from '../services/email/index.js';
 import { canSendSms } from '../services/sms/index.js';
+import { features } from '../config/features.js';
+
+/**
+ * The mobile app's version floor and the current release.
+ *
+ * An installed app cannot be redeployed: the only way to retire a build that
+ * no longer works against the API is to ask its owner to update. Below
+ * `minVersion` the app shows an update screen and nothing else; below
+ * `latestVersion` it suggests an update once. Read from the environment
+ * directly, like config/features.ts, so a release can raise the floor without
+ * a code change.
+ */
+function mobileVersions() {
+  const read = (key: string) => {
+    const value = process.env[key]?.trim();
+    return value && /^[0-9]+[.][0-9]+[.][0-9]+$/.test(value) ? value : '1.0.0';
+  };
+  return { minVersion: read('MOBILE_MIN_VERSION'), latestVersion: read('MOBILE_LATEST_VERSION') };
+}
 
 /**
  * What this deployment can actually do.
@@ -48,6 +67,10 @@ router.get(
     successResponse(res, {
       email: safely(canSendEmail),
       sms: safely(canSendSms),
+      // The module switches, so the app follows production's without a new
+      // release; the web reads the same switches at build time.
+      features: { ...features },
+      mobile: mobileVersions(),
     });
   },
 );

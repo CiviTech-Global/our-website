@@ -111,6 +111,13 @@ jobs:
       - name: Test
         run: npm run test:web
 
+      - name: Mobile translations are in step with the dictionaries
+        # The app reads the web's dictionaries and help guides through an
+        # export; a dictionary change without a re-export would ship the app
+        # yesterday's words.
+        working-directory: civitechglobal-web
+        run: node scripts/export-mobile-l10n.mjs --check
+
       - name: Build
         run: npm run build:web
 

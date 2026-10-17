@@ -1,0 +1,1648 @@
+{
+ "collections": {
+  "company": {
+   "title": "La empresa y sus servicios de software",
+   "description": "Conozca Rayan Tamaddon Jahan Gostar: desarrollo de software, solicitudes de proyecto, contacto y colaboración."
+  },
+  "insurance": {
+   "title": "Seguros",
+   "description": "Solicitudes de seguro en línea, un formulario por producto y seguimiento con código."
+  },
+  "consult": {
+   "title": "Consultoría y expertos",
+   "description": "Solicite consultoría técnica o profesional y conozca el club de expertos."
+  },
+  "jobs": {
+   "title": "Empleo",
+   "description": "Busque empleo y postúlese, consulte las páginas de empresas y publique una oferta."
+  },
+  "freelance": {
+   "title": "Proyectos freelance",
+   "description": "Publique un proyecto, envíe propuestas, servicios listos y el directorio de freelancers."
+  },
+  "books": {
+   "title": "Mercado de libros",
+   "description": "Compra y venta de libros nuevos y de segunda mano entre miembros."
+  },
+  "marketplace": {
+   "title": "Mercado local",
+   "description": "Tiendas y productos locales en el mapa, y alta de su tienda."
+  },
+  "account": {
+   "title": "Su cuenta",
+   "description": "Registro, inicio de sesión, restablecer la contraseña y confirmar el correo."
+  }
+ },
+ "articles": {
+  "home": {
+   "title": "Inicio",
+   "summary": "El punto de partida del sitio: quién es Rayan Tamaddon Jahan Gostar, qué construimos y adónde puede ir desde aquí.",
+   "heading": "Empiece aquí",
+   "intro": "Rayan Tamaddon Jahan Gostar es una empresa de ingeniería de software que crea software a medida, aplicaciones web y móviles, plataformas empresariales y soluciones de análisis de datos. Además de presentar la empresa, este sitio reúne varios servicios: solicitudes de proyectos de software, solicitudes de seguros en línea, consultoría con expertos, ofertas de empleo, proyectos freelance y un mercado de libros. Cada uno tiene su guía, y todas están reunidas en el centro de ayuda.",
+   "steps": [
+    [
+     "Diga qué busca",
+     "Para encargar software, vaya a Servicios o directamente a Iniciar un proyecto; para seguros, a Seguros; para trabajo o un proyecto, al Mercado."
+    ],
+    [
+     "Abra la guía de cada página",
+     "En cada página, el botón Guía de la barra superior (o la tecla ?) abre al lado la explicación de esa página."
+    ],
+    [
+     "Envíe una solicitud y guarde el código",
+     "Cada solicitud tiene un código de seguimiento; con él, Seguimiento de solicitud muestra en qué punto está."
+    ],
+    [
+     "Con una cuenta, todo está en su panel",
+     "Con la sesión iniciada, sus códigos de seguimiento, mensajes y actividad en el mercado quedan juntos en su panel."
+    ]
+   ],
+   "points": [
+    [
+     "Desarrollo de software",
+     "De la idea a la puesta en producción y el mantenimiento, con estimación de costes y propuesta técnica gratuitas y sin compromiso."
+    ],
+    [
+     "Servicios complementarios",
+     "Solicitudes en línea para muchos tipos de seguro, con un formulario por producto, y consultoría técnica y profesional con expertos."
+    ],
+    [
+     "Mercado",
+     "Ofertas de empleo y proyectos freelance, cada uno revisado antes de publicarse, y un mercado de libros entre miembros."
+    ],
+    [
+     "Seis idiomas",
+     "El sitio está en persa, inglés, turco, alemán, francés y español; cambie de idioma desde la barra superior."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Qué hace exactamente Rayan Tamaddon Jahan Gostar?",
+     "Diseño y desarrollo de software a medida, aplicaciones web y móviles, plataformas empresariales y de tecnología cívica, y análisis y visualización de datos. Gran parte de nuestro trabajo es de código abierto."
+    ],
+    [
+     "¿Qué relación hay entre CiviTech Global y Rayan Tamaddon Jahan Gostar?",
+     "CiviTech Global es la marca internacional de Rayan Tamaddon Jahan Gostar: una sola empresa, un solo equipo."
+    ],
+    [
+     "¿Necesito registrarme para usar el sitio?",
+     "No para solicitar un proyecto, un seguro o una consulta, enviar un CV o contactarnos. Necesita una cuenta para publicar un anuncio, ofertar en un proyecto o vender un libro."
+    ],
+    [
+     "¿Cómo sé en qué punto está mi solicitud?",
+     "Con el código de seguimiento que recibió al enviarla, en Seguimiento de solicitud. Si tenía la sesión iniciada, el código también se guarda en Mis solicitudes."
+    ],
+    [
+     "¿Tiene el sitio un sello de confianza?",
+     "Sí. El sello de confianza de comercio electrónico ENAMAD aparece al pie de cada página."
+    ]
+   ],
+   "related": {
+    "services": "La lista completa de servicios de desarrollo y cómo se desarrolla un proyecto.",
+    "start-project": "El camino más corto a una propuesta técnica y una estimación gratuitas.",
+    "about": "La misión, la visión y los valores detrás de nuestro trabajo.",
+    "help-centre": "Todas las guías en un solo lugar, con buscador."
+   }
+  },
+  "services": {
+   "title": "Servicios de diseño y desarrollo de software",
+   "summary": "Qué construimos, las etapas de cada proyecto y nuestros servicios complementarios de un vistazo.",
+   "intro": "Esta página presenta nuestros cuatro servicios principales: desarrollo inteligente de software a medida, desarrollo de aplicaciones web y móviles, plataformas empresariales y de tecnología cívica, y análisis y visualización de datos. Todo proyecto, sea cual sea su tamaño, pasa por cuatro etapas: idea y consultoría, análisis y diseño, desarrollo y pruebas, y puesta en producción y soporte. Los servicios de seguros figuran en la misma página como servicio complementario.",
+   "steps": [
+    [
+     "Encuentre el servicio adecuado",
+     "Lea las tarjetas; si su necesidad abarca varios, no hay problema: lo describe todo en la solicitud de proyecto."
+    ],
+    [
+     "Vea las etapas",
+     "La sección «Cómo se desarrolla un proyecto» muestra qué ocurre desde su solicitud hasta la entrega y el soporte."
+    ],
+    [
+     "Envíe una solicitud de proyecto",
+     "El botón Iniciar un proyecto abre el formulario; la propuesta técnica y la estimación son gratuitas."
+    ]
+   ],
+   "points": [
+    [
+     "Una propuesta escrita antes de cualquier compromiso",
+     "Ve el alcance, los entregables, los supuestos, las exclusiones, el calendario y el rango de precios antes de empezar."
+    ],
+    [
+     "Desarrollo por etapas",
+     "El software se construye en iteraciones cortas y visibles para que vea el avance y opine en cada paso."
+    ],
+    [
+     "Código abierto, sin dependencias",
+     "Construido sobre estándares abiertos y tecnología de código abierto, para que su software siga siendo libre de ampliar."
+    ],
+    [
+     "A su lado tras la entrega",
+     "Mantenimiento, actualizaciones y soporte técnico después del lanzamiento."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Aceptan proyectos pequeños?",
+     "Sí. El tamaño no es nuestro criterio; si algo queda fuera de nuestra especialidad, lo decimos con honestidad desde el principio."
+    ],
+    [
+     "¿Cómo conozco el coste?",
+     "Tras su solicitud recibe una propuesta escrita con un rango de precios. Revisarla y redactar la propuesta no cuesta nada."
+    ],
+    [
+     "¿Cuánto tarda?",
+     "Depende del alcance. El calendario detallado forma parte de la propuesta escrita, y lo ve antes de empezar."
+    ],
+    [
+     "¿Pueden rehacer o mantener un software que ya tengo?",
+     "Sí. «Rehacer o modernizar un software existente» y «Mantenimiento y soporte» son tipos de proyecto del formulario."
+    ],
+    [
+     "¿Puedo hablar con alguien antes de enviar una solicitud?",
+     "Sí. Pida una conversación técnica en la página Asesoría; una consulta no le compromete a nada."
+    ]
+   ],
+   "related": {
+    "start-project": "El formulario: el siguiente paso tras elegir un servicio.",
+    "portfolio": "Ejemplos de lo que hemos construido y la tecnología utilizada.",
+    "consult": "Si aún no sabe qué necesita, hablémoslo primero.",
+    "insurance": "Nuestro servicio complementario: solicitudes de seguros en línea."
+   }
+  },
+  "start-project": {
+   "title": "Solicitud de proyecto de software",
+   "summary": "Describa lo que necesita y reciba una propuesta técnica, un calendario y un rango de precios, gratis y sin compromiso.",
+   "intro": "Este formulario convierte su solicitud en una propuesta formal. Cuanto más claramente describa la necesidad, los objetivos, las limitaciones y el presupuesto, más precisa será la propuesta. Tras enviarla recibe un código de seguimiento; nuestros especialistas revisan la solicitud, preguntan lo que no esté claro y, por último, envían una propuesta escrita que usted lee con el mismo código y acepta o rechaza.",
+   "steps": [
+    [
+     "Preséntese",
+     "Nombre, correo y teléfono son obligatorios. Correo y teléfono juntos son su identidad; indique los mismos en solicitudes posteriores."
+    ],
+    [
+     "Describa el proyecto",
+     "Elija el título, el tipo de proyecto, el modelo de colaboración y las plataformas, y explique con sus palabras qué no funciona hoy y qué espera."
+    ],
+    [
+     "Indique plazos y presupuesto",
+     "Dé un rango de presupuesto, no una cifra exacta. Si no tiene un presupuesto definido, elija esa opción."
+    ],
+    [
+     "Adjunte documentos",
+     "Hasta 8 archivos (10 MB cada uno, 25 MB en total). Si necesita un acuerdo de confidencialidad antes de la revisión, marque la opción NDA."
+    ],
+    [
+     "Guarde el código de seguimiento",
+     "Copie el código tras enviar. Con él lee la propuesta en Seguimiento de solicitud."
+    ]
+   ],
+   "points": [
+    [
+     "Una propuesta formal y gratuita",
+     "Alcance, entregables, supuestos, lo que no se incluye, calendario y rango de precios."
+    ],
+    [
+     "Sin compromiso hasta aceptarla",
+     "Hasta que acepte la propuesta no se compromete a nada; si la rechaza, ahí termina todo."
+    ],
+    [
+     "Confidencialidad",
+     "Lo que envía se queda con nosotros, y si lo necesita se firma un NDA antes de la revisión."
+    ]
+   ],
+   "tips": [
+    [
+     "No deje vacío «Fuera del alcance»",
+     "Saber desde el principio lo que no quiere hace la propuesta más precisa y el precio más realista."
+    ],
+    [
+     "¿Por qué un rango de presupuesto?",
+     "En esta fase, una estimación de software tiene una precisión aproximada de −25 % a +75 %; un rango es más realista que una cifra para ambas partes."
+    ],
+    [
+     "Inicie sesión para no perder el código",
+     "Si inicia sesión antes de enviar, el código se guarda automáticamente en Mis solicitudes."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿La revisión y la propuesta son gratuitas?",
+     "Sí. Ambas son gratuitas."
+    ],
+    [
+     "¿Cuándo estará lista la propuesta?",
+     "Depende de la complejidad. Consulte el estado cuando quiera con su código; si tenemos preguntas, las hacemos antes de redactar la propuesta."
+    ],
+    [
+     "¿Qué pasa si rechazo la propuesta?",
+     "Nada; la rechaza y ya está. Lo que envió se queda con nosotros y no llega a nadie más."
+    ],
+    [
+     "He perdido mi código de seguimiento.",
+     "Si tenía la sesión iniciada, está en Mis solicitudes. Si no, escriba desde Contacto con el mismo correo y teléfono."
+    ],
+    [
+     "No sé qué tipo de proyecto elegir.",
+     "Elija el más parecido, u Otros, y explíquelo en la descripción; lo corregimos durante la revisión."
+    ]
+   ],
+   "related": {
+    "services": "Si aún no sabe qué servicio le conviene.",
+    "track": "Donde lee la propuesta con su código y la acepta o rechaza.",
+    "my-requests": "Para miembros: todos sus códigos en una lista.",
+    "consult": "Una conversación técnica antes de enviar, sin compromiso."
+   }
+  },
+  "about": {
+   "title": "Acerca de",
+   "summary": "Quién es Rayan Tamaddon Jahan Gostar: misión, visión, valores y lo que hacemos.",
+   "intro": "Esta página presenta la empresa: nuestra misión es ayudar a la civilización a sacar cada día más partido de la tecnología, creando software a medida y de código abierto para personas, empresas y organizaciones. Nuestra visión es una civilización plenamente inteligente, y en el camino queremos ser un hogar para la ingeniería de código abierto y para la próxima generación de ingenieros.",
+   "points": [
+    [
+     "Misión y visión",
+     "Por qué hacemos esto y adónde queremos llegar."
+    ],
+    [
+     "Valores",
+     "Innovación, transparencia, comunidad y excelencia, y lo que significan en el día a día."
+    ],
+    [
+     "Conózcanos",
+     "Enlaces al equipo, los proyectos, los clientes, los socios y el blog."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Qué es CiviTech Global?",
+     "La marca internacional de Rayan Tamaddon Jahan Gostar."
+    ],
+    [
+     "¿Por qué código abierto?",
+     "El código es transparente y auditable, no depende de ningún proveedor, una amplia comunidad pone a prueba su seguridad y cuesta menos mantenerlo."
+    ],
+    [
+     "¿Cómo puedo trabajar con ustedes?",
+     "Para un proyecto, Iniciar un proyecto; para un empleo, Enviar tu CV; para unas prácticas, Voluntariado y prácticas."
+    ]
+   ],
+   "related": {
+    "team": "Las personas que hacen el trabajo y cómo trabajan.",
+    "portfolio": "Lo que hemos construido hasta ahora.",
+    "customers": "Las organizaciones cuyo software hemos construido.",
+    "join": "Si quiere formar parte de este equipo."
+   }
+  },
+  "team": {
+   "title": "Nuestro equipo",
+   "summary": "Los ingenieros, diseñadores y colaboradores que construyen esta plataforma y los proyectos de nuestros clientes.",
+   "heading": "Cómo trabaja nuestro equipo",
+   "intro": "Detrás de cada proyecto hay un grupo de ingenieros de software que revisan el trabajo de los demás, dejan las decisiones por escrito y responden por el trabajo desde el primer mensaje hasta la entrega. Rayan Tamaddon Jahan Gostar se basa en el código abierto, en la colaboración con una comunidad mundial de ingenieros y en una puerta abierta para quienes empiezan. Esto es lo que significa en el día a día.",
+   "points": [
+    [
+     "Código revisado y probado",
+     "Cada cambio lo lee otro ingeniero y queda cubierto por pruebas antes de publicarse. El objetivo es un código que funcione durante años, no solo el día de la entrega."
+    ],
+    [
+     "Decisiones por escrito",
+     "El alcance, los supuestos, lo que no está incluido, el calendario y el rango de precio figuran en una propuesta escrita. Lo que no está escrito no está acordado."
+    ],
+    [
+     "Accesible desde el primer día",
+     "Lo que construimos funciona con teclado y lector de pantalla, y se abre en un teléfono económico. Es una decisión, no una función secundaria."
+    ],
+    [
+     "Código abierto, puerta abierta",
+     "Parte de nuestro trabajo se hace en proyectos de código abierto junto a una comunidad mundial, y el programa de voluntariado y prácticas da a quienes empiezan la posibilidad de trabajar en proyectos reales."
+    ]
+   ],
+   "faqTitle": "Preguntas frecuentes sobre el equipo",
+   "faqs": [
+    [
+     "¿Cómo puedo unirme al equipo?",
+     "Envíe su CV desde la página «Enviar tu CV». Lo leemos y le contactamos en cuanto se abra un puesto acorde con su experiencia."
+    ],
+    [
+     "Estoy empezando. ¿Hay sitio para mí?",
+     "Sí. El programa «Voluntariado y prácticas» existe precisamente para eso: proyectos reales, junto a ingenieros con experiencia."
+    ],
+    [
+     "¿Qué relación hay entre CiviTech Global y Rayan Tamaddon Jahan Gostar?",
+     "CiviTech Global es la marca internacional de Rayan Tamaddon Jahan Gostar: una sola empresa, un solo equipo."
+    ],
+    [
+     "¿Cómo inicio un proyecto con este equipo?",
+     "Envíe su solicitud desde la página «Iniciar un proyecto». Recibe un código de seguimiento y se prepara para usted una propuesta escrita, gratuita y sin compromiso."
+    ]
+   ],
+   "related": {
+    "join": "Enviar su CV para un empleo.",
+    "volunteer": "El camino para quienes empiezan: voluntariado y prácticas en proyectos reales.",
+    "experts": "Expertos que ofrecen consultas técnicas y de carrera.",
+    "start-project": "Iniciar un proyecto con este equipo."
+   }
+  },
+  "portfolio": {
+   "title": "Nuestros proyectos",
+   "summary": "Proyectos en curso y entregados: las plataformas, aplicaciones y sistemas que hemos construido.",
+   "intro": "Esta página muestra ejemplos de nuestro trabajo. De cada proyecto ve una breve descripción, su estado (en curso o entregado), la tecnología usada y, si las hay, capturas y un enlace. Si un proyecto se hizo para un cliente concreto, también aparece.",
+   "steps": [
+    [
+     "Recorra la lista",
+     "Filtre los proyectos por estado (en curso o entregado) o por tecnología."
+    ],
+    [
+     "Abra las capturas",
+     "La galería de cada proyecto muestra su aspecto y funcionamiento."
+    ],
+    [
+     "¿Quiere algo parecido?",
+     "Mencione el proyecto en su solicitud para que entendamos exactamente lo que busca."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Están aquí todos sus proyectos?",
+     "No todos. Algunos son confidenciales y solo se publican con permiso del cliente."
+    ],
+    [
+     "¿Puedo ver el código?",
+     "En los proyectos de código abierto, sí; si se ha publicado un enlace al repositorio, figura en el proyecto."
+    ],
+    [
+     "Quiero algo como uno de estos.",
+     "Describa su necesidad en Iniciar un proyecto y mencione ese proyecto."
+    ]
+   ],
+   "related": {
+    "services": "Los servicios de los que salieron estos proyectos.",
+    "customers": "Las organizaciones para las que construimos este software.",
+    "start-project": "Iniciar su propio proyecto."
+   }
+  },
+  "customers": {
+   "title": "Club de clientes",
+   "summary": "Las organizaciones cuyo software hemos construido y lo que dicen de trabajar con nosotros.",
+   "heading": "Qué significa ser nuestro cliente",
+   "intro": "El club de clientes reúne a las organizaciones y empresas cuyo software hemos construido. Más importante que la lista es la experiencia que vive cada cliente, desde el primer mensaje hasta el software entregado: lo mismo que prometemos a todos, en proyectos pequeños y grandes.",
+   "points": [
+    [
+     "Una propuesta escrita, gratuita",
+     "Revisar su solicitud y redactar la propuesta no cuesta nada. Recoge el alcance, los entregables, los supuestos, lo que no está incluido, un calendario y un rango de precio."
+    ],
+    [
+     "Un código de seguimiento, siempre disponible",
+     "Al enviar una solicitud recibe un código de seguimiento. A cualquier hora, incluidas las tres de la madrugada, muestra en qué punto está su trabajo y le permite aceptar o rechazar la propuesta."
+    ],
+    [
+     "El precio antes del trabajo",
+     "Ve un rango de precio antes de que empiece nada. Si una parte del trabajo no vale lo que cuesta, lo decimos pronto."
+    ],
+    [
+     "Respuestas claras",
+     "Si algo queda fuera de lo que hacemos bien, lo decimos con franqueza. El tamaño no es nuestro criterio: también aceptamos proyectos pequeños."
+    ]
+   ],
+   "faqTitle": "Preguntas frecuentes de los clientes",
+   "faqs": [
+    [
+     "¿Tengo que pagar por un presupuesto?",
+     "No. Revisar su solicitud y redactar la propuesta es gratuito."
+    ],
+    [
+     "¿Qué pasa si rechazo la propuesta?",
+     "Nada. La rechaza y ya está. Lo que nos envió se queda con nosotros y no llega a nadie más."
+    ],
+    [
+     "He perdido mi código de seguimiento.",
+     "Contáctenos desde el teléfono o la dirección de correo que usó al enviar la solicitud y se lo daremos de nuevo."
+    ],
+    [
+     "¿Las colaboraciones terminadas siguen en esta lista?",
+     "Sí. Los antiguos clientes permanecen en una sección propia: «construimos esto para ellos» sigue siendo cierto."
+    ]
+   ],
+   "related": {
+    "portfolio": "Los proyectos construidos para estos clientes.",
+    "start-project": "Hágase cliente: envíe una solicitud de proyecto.",
+    "partners": "Las organizaciones junto a las que trabajamos."
+   }
+  },
+  "partners": {
+   "title": "Nuestros socios",
+   "summary": "Los socios tecnológicos, académicos, de la comunidad y estratégicos junto a los que construimos software.",
+   "heading": "Trabajar con nosotros",
+   "intro": "Nuestros socios son las organizaciones junto a las que construimos software, desde empresas tecnológicas hasta universidades y comunidades de código abierto. Cada colaboración tiene su propia forma, pero la base es la misma: transparencia sobre el trabajo, las decisiones y sus límites, y una calidad en la que se puede confiar.",
+   "points": [
+    [
+     "Socios tecnológicos",
+     "Empresas cuya tecnología, infraestructura o herramientas usamos junto a nuestro propio trabajo, o que nos eligen para construir parte de su producto."
+    ],
+    [
+     "Socios académicos",
+     "Universidades y centros de formación con los que colaboramos para formar a la próxima generación de ingenieros, con una puerta abierta a proyectos reales para estudiantes."
+    ],
+    [
+     "Socios de la comunidad",
+     "Comunidades y proyectos de código abierto en los que participamos, que hacen posible construir con otros en lugar de en aislamiento."
+    ],
+    [
+     "Socios estratégicos y revendedores",
+     "Organizaciones que representan o revenden nuestras soluciones en su mercado, o que recorren con nosotros un camino más largo."
+    ]
+   ],
+   "faqTitle": "Preguntas frecuentes sobre colaboración",
+   "faqs": [
+    [
+     "¿Cómo propongo una colaboración?",
+     "Envíe un mensaje desde la página «Contacto» contando qué colaboración tiene en mente. Recibe un código de seguimiento y lee nuestra respuesta con él en la misma página."
+    ],
+    [
+     "¿Qué buscan en un socio?",
+     "Los valores con los que trabajamos nosotros mismos: transparencia, una calidad que nunca se sacrifica por la velocidad y construir junto a otros."
+    ],
+    [
+     "¿Cuándo aparece un socio en esta página?",
+     "Cuando la colaboración está en marcha. Las colaboraciones terminadas permanecen en una sección propia."
+    ]
+   ],
+   "related": {
+    "customers": "Las organizaciones para las que hemos construido software.",
+    "contact": "Envíe aquí su propuesta de colaboración.",
+    "volunteer": "Para universidades: la vía de prácticas para estudiantes."
+   }
+  },
+  "contact": {
+   "title": "Contacto",
+   "summary": "Envíe un mensaje, reciba un código de seguimiento y lea la respuesta con él en esta página, sin correo.",
+   "heading": "Cómo se sigue su mensaje",
+   "intro": "Para escribirnos no necesita una cuenta ni esperar un correo. Envía un mensaje, recibe un código de seguimiento y lee la respuesta con ese código en esta misma página.",
+   "points": [
+    [
+     "Un código de seguimiento en lugar de correo",
+     "Su dirección de correo solo identifica su mensaje; no se envía ninguna respuesta a ella. Lee nuestra respuesta en esta página, con su código de seguimiento."
+    ],
+    [
+     "El código se muestra una sola vez",
+     "Anote o copie el código en cuanto envíe su mensaje: es la única forma de volver a él."
+    ],
+    [
+     "Un estado claro",
+     "Cada mensaje está «Esperando respuesta», «Respondido» o «Cerrado». Introduzca su código y verá el estado y la respuesta juntos."
+    ],
+    [
+     "La página adecuada para cada cosa",
+     "Para un proyecto de software use «Iniciar un proyecto», y para hablar con un experto, «Solicitar una consulta». Las solicitudes de seguros se siguen con su propio código en «Seguimiento de solicitud»."
+    ]
+   ],
+   "tips": [
+    [
+     "Copie el código ahora",
+     "El código de seguimiento del mensaje se muestra una sola vez y no se envía ningún correo; sin él no podrá leer la respuesta."
+    ]
+   ],
+   "faqTitle": "Preguntas frecuentes sobre el contacto",
+   "faqs": [
+    [
+     "¿Me enviarán la respuesta por correo?",
+     "No. La respuesta está en esta página y se lee con su código de seguimiento; por eso es importante guardarlo."
+    ],
+    [
+     "¿Cuánto tarda una respuesta?",
+     "Revisamos los mensajes en poco tiempo. Hasta que respondamos, el mensaje aparece como «Esperando respuesta»."
+    ],
+    [
+     "He perdido mi código de seguimiento.",
+     "Envíe un mensaje nuevo que mencione el anterior; leerá la respuesta con el código del mensaje nuevo."
+    ],
+    [
+     "¿Qué página uso para iniciar un proyecto?",
+     "«Iniciar un proyecto». Allí su solicitud se convierte en una propuesta escrita con el alcance, un calendario y un rango de precio."
+    ]
+   ],
+   "related": {
+    "start-project": "Para un proyecto de software, su propio formulario obtiene una mejor respuesta.",
+    "consult": "Para hablar con un experto, solicite una consulta.",
+    "track": "Seguimiento de solicitudes de proyecto, seguro, CV y consulta."
+   }
+  },
+  "join": {
+   "title": "Enviar su CV",
+   "summary": "Envíenos su CV y le contactaremos en cuanto se abra un puesto acorde con su experiencia.",
+   "heading": "Del CV a la conversación",
+   "intro": "Este formulario es para quienes quieren trabajar en Rayan Tamaddon Jahan Gostar: ingenieros de software, diseñadores o responsables de producto, con o sin experiencia. Leemos su CV y le contactamos cuando se abre un puesto adecuado. Puede ver el estado de su CV en cualquier momento con un código de seguimiento.",
+   "steps": [
+    [
+     "Introduzca sus datos",
+     "Nombre, correo y teléfono son obligatorios; correo y teléfono juntos le identifican en seguimientos posteriores."
+    ],
+    [
+     "Adjunte su CV",
+     "PDF, Word (docx) o LaTeX (tex), hasta 10 MB. Una nota breve es opcional."
+    ],
+    [
+     "Guarde el código de seguimiento",
+     "Tras enviarlo recibe un código; úselo en Seguimiento de solicitud para ver el estado de su CV."
+    ]
+   ],
+   "tips": [
+    [
+     "Límite de envíos",
+     "Cada persona puede enviar un CV como máximo dos veces al día (con una hora de diferencia) y solo en dos días, así que envíe su versión final."
+    ]
+   ],
+   "faqs": [
+    [
+     "Estoy empezando; ¿envío un CV?",
+     "Sí. Si aún no tiene experiencia laboral, el programa Voluntariado y prácticas también está pensado para usted."
+    ],
+    [
+     "¿Responden a todos los CV?",
+     "Lo leemos, y usted ve su estado con su código de seguimiento. Le contactamos cuando se abre un puesto adecuado."
+    ],
+    [
+     "¿Puedo actualizar mi CV?",
+     "Envíe la nueva versión, dentro del límite de dos veces al día en dos días."
+    ],
+    [
+     "¿Puedo postularme a una oferta concreta?",
+     "Sí; para los anuncios de Empleos, postúlese directamente desde la página del anuncio."
+    ]
+   ],
+   "related": {
+    "volunteer": "Si busca prácticas o voluntariado.",
+    "jobs": "Puestos abiertos, nuestros y de otras empresas.",
+    "team": "Conozca el equipo al que se uniría.",
+    "track": "El estado de su CV con el código de seguimiento."
+   }
+  },
+  "volunteer": {
+   "title": "Voluntariado y prácticas",
+   "summary": "Trabaje en proyectos reales como voluntario o en prácticas y crezca junto a ingenieros con experiencia.",
+   "intro": "Este programa es para estudiantes y recién titulados, para quienes se reorientan hacia el software y para desarrolladores que quieren contribuir a proyectos de código abierto y cívicos. Tiene dos formas: el voluntariado, en el que dedica su tiempo libre a los proyectos sin un compromiso horario estricto, y las prácticas, un periodo definido con plan de aprendizaje, mentor y evaluación final.",
+   "steps": [
+    [
+     "Elija el tipo de colaboración",
+     "Voluntario o en prácticas; cada uno tiene su descripción en el formulario."
+    ],
+    [
+     "Diga qué y cuándo",
+     "Su área (front-end, back-end, móvil, datos, diseño, etc.), horas por semana, fecha de inicio y modalidad (presencial, híbrida o remota)."
+    ],
+    [
+     "Describa estudios y habilidades",
+     "Universidad, carrera, habilidades y un enlace a GitHub o portafolio; cuanto más completo, más fácil encontrar el proyecto adecuado."
+    ],
+    [
+     "Envíe y guarde el código",
+     "Siga su solicitud con el código de seguimiento."
+    ]
+   ],
+   "points": [
+    [
+     "Proyectos reales",
+     "Trabajo en software que de verdad se usa, no en ejercicios inventados."
+    ],
+    [
+     "Revisión y mentoría",
+     "Revisión de código y orientación de ingenieros con experiencia."
+    ],
+    [
+     "Un certificado",
+     "Certificado y carta de recomendación para quienes completen la colaboración."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿El voluntariado es remunerado?",
+     "El voluntariado no es remunerado y es flexible en horario. Si busca empleo, use Enviar tu CV."
+    ],
+    [
+     "¿Puedo postularme sin experiencia?",
+     "Sí; para eso existe el programa. Indique las habilidades que tenga, aunque sean pocas."
+    ],
+    [
+     "¿Es posible el trabajo remoto?",
+     "Sí. Elija presencial, híbrida o remota como modalidad en el formulario."
+    ],
+    [
+     "¿Qué diferencia hay entre prácticas y voluntariado?",
+     "Las prácticas son un periodo definido con plan de aprendizaje, mentor y evaluación final; el voluntariado es flexible, sin compromiso horario estricto."
+    ]
+   ],
+   "related": {
+    "join": "Si busca empleo.",
+    "team": "Los ingenieros con los que trabajaría.",
+    "experts": "Para orientación profesional con expertos."
+   }
+  },
+  "blog": {
+   "title": "Blog",
+   "summary": "Guías prácticas sobre seguros y software: precios, consejos de compra y comparativas.",
+   "intro": "En el blog publicamos artículos que ayudan a tomar una decisión real: el precio del seguro de responsabilidad civil y a todo riesgo, consejos para contratar un seguro o cómo definir un proyecto de software. La mayoría de los artículos están en persa y algunos tienen versión en inglés; un artículo que no existe en su idioma no aparece en la lista de ese idioma.",
+   "steps": [
+    [
+     "Encuentre un artículo",
+     "Recorra la lista; cada artículo tiene un resumen, una fecha de publicación y un tiempo de lectura estimado."
+    ],
+    [
+     "Lea y actúe",
+     "Cada artículo termina con un enlace a la solicitud de seguro en línea, para empezar allí si está listo."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Con qué frecuencia publican?",
+     "Cuando tenemos algo nuevo que decir; preferimos la calidad a la cantidad."
+    ],
+    [
+     "¿Los precios de los artículos son definitivos?",
+     "No. Son los de la fecha de publicación y pueden cambiar; el precio final lo recibe al hacer la solicitud."
+    ],
+    [
+     "¿Por qué un artículo no está en otro idioma?",
+     "Cada artículo se publica solo en los idiomas en que se escribió; no publicamos traducciones automáticas."
+    ]
+   ],
+   "related": {
+    "insurance": "Tras leer un artículo de seguros, solicite ese seguro.",
+    "services": "Los servicios de software a los que se refieren los artículos técnicos.",
+    "help-centre": "Guías de uso de cada sección del sitio."
+   }
+  },
+  "track": {
+   "title": "Seguimiento de solicitud",
+   "summary": "Con su código de seguimiento, vea el estado de una solicitud de proyecto, seguro, CV o consulta.",
+   "intro": "Cada solicitud que hace en este sitio tiene un código de seguimiento de diez caracteres. Esta página muestra con él el estado de la solicitud, sea del tipo que sea: una solicitud de proyecto de software (y nuestra propuesta, que acepta o rechaza aquí mismo), una solicitud de seguro (y la hora de llamada acordada), un CV o una solicitud de consulta (que puede cancelar si lo necesita). Los mensajes del formulario de contacto se siguen aparte, en la página Contacto.",
+   "steps": [
+    [
+     "Introduzca el código",
+     "Escríbalo tal como lo recibió; las letras pasan a mayúsculas automáticamente."
+    ],
+    [
+     "Vea el estado",
+     "Se muestran el tipo de solicitud, la fecha de envío, la última actualización y el estado actual."
+    ],
+    [
+     "Si ha llegado una propuesta, decida",
+     "En una solicitud de proyecto, abra la propuesta escrita y acéptela o rechácela."
+    ]
+   ],
+   "points": [
+    [
+     "Una página para todo",
+     "Proyectos, seguros, CV y consultas se siguen con el mismo formulario."
+    ],
+    [
+     "Un enlace para compartir",
+     "El código queda en la dirección de la página: puede guardar el enlace o enviarlo a la persona asegurada."
+    ]
+   ],
+   "tips": [
+    [
+     "Todo en un solo lugar",
+     "Si tiene cuenta, añada sus códigos en Mis solicitudes para no escribirlos cada vez."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Dónde está mi código de seguimiento?",
+     "Se muestra justo después de enviar la solicitud. Si tenía la sesión iniciada, también se guarda en Mis solicitudes."
+    ],
+    [
+     "Dice que no hay ninguna solicitud con este código.",
+     "Revise el código; no confunda el cero con la letra O ni el uno con la I. Si sigue fallando, escriba desde Contacto."
+    ],
+    [
+     "¿Sigo aquí un mensaje del formulario de contacto?",
+     "No; los mensajes de contacto se siguen en la propia página Contacto, con su propio código."
+    ],
+    [
+     "¿Qué ven otros con mi código?",
+     "Quien tenga el código ve el estado; guárdelo como una contraseña y compártalo solo con quien lo necesite."
+    ]
+   ],
+   "related": {
+    "start-project": "Enviar una solicitud de proyecto de software.",
+    "insurance": "Enviar una solicitud de seguro.",
+    "join": "Enviar su CV.",
+    "my-requests": "Para miembros: todos los códigos en una lista."
+   }
+  },
+  "help-centre": {
+   "title": "Centro de ayuda",
+   "summary": "Todas las guías del sitio en un solo lugar, agrupadas y con buscador.",
+   "intro": "Para cada sección del sitio, el centro de ayuda explica qué hace, cómo usarla, con qué otras secciones funciona y las respuestas a las preguntas frecuentes. Las mismas guías están en cada página con el botón Guía o la tecla ?. Las guías del área de miembros puede leerlas cualquiera, para saber qué ofrece una cuenta antes de crearla.",
+   "steps": [
+    [
+     "Busque",
+     "Escriba, por ejemplo, «código de seguimiento», «verificación» o «propuesta»."
+    ],
+    [
+     "O recorra una colección",
+     "Las guías están agrupadas por las secciones del sitio."
+    ],
+    [
+     "De la guía a la sección",
+     "Cada guía tiene un botón Ir a esta sección y enlaces a las secciones relacionadas."
+    ]
+   ],
+   "faqs": [
+    [
+     "No he encontrado la respuesta a mi pregunta.",
+     "Pregúntenos desde la página Contacto; las preguntas frecuentes se añaden a las guías."
+    ],
+    [
+     "La guía no está en mi idioma.",
+     "Las guías de las páginas públicas están en los seis idiomas del sitio; las del área de miembros y de administración, por ahora en persa e inglés."
+    ]
+   ],
+   "related": {
+    "home": "Volver al inicio.",
+    "contact": "Si la respuesta a su pregunta no estaba en las guías.",
+    "dashboard": "La guía del área de miembros."
+   }
+  },
+  "insurance": {
+   "title": "Seguros",
+   "summary": "Todos los tipos de seguro que gestionamos: encuentre el que necesita y solicítelo en línea.",
+   "heading": "De elegir la póliza a la llamada del especialista",
+   "intro": "Las solicitudes de seguros en línea son uno de nuestros servicios complementarios, porque la seguridad financiera, la protección y la tranquilidad de nuestros colaboradores y clientes nos importan. Esta página reúne todos los seguros cuyas solicitudes recibimos: desde la responsabilidad civil y el todo riesgo para coches y motos hasta salud complementaria, vida, accidentes, responsabilidad, transporte de mercancías, todo riesgo de construcción y seguro de móvil. Cada uno tiene su formulario y, tras su solicitud, un especialista le llama para ofrecerle la mejor opción según su necesidad y presupuesto.",
+   "steps": [
+    [
+     "Encuentre el seguro",
+     "Recorra la lista o busque por nombre. Las pólizas para empresas llevan la etiqueta Empresas."
+    ],
+    [
+     "Lea su página",
+     "Cada página indica las coberturas, las exclusiones, los documentos necesarios y lo que influye en la prima."
+    ],
+    [
+     "Rellene el formulario",
+     "Introduzca los datos de la póliza y sus datos de contacto, y confirme su móvil con un código de seis cifras."
+    ],
+    [
+     "Guarde el código de seguimiento",
+     "Tras la solicitud, guarde el código; con él ve el estado y la hora de llamada acordada."
+    ]
+   ],
+   "points": [
+    [
+     "Contratación en línea",
+     "En las pólizas con la etiqueta Contratación en línea, da todo lo necesario en el formulario."
+    ],
+    [
+     "Tarificado por un especialista",
+     "Las pólizas con la etiqueta Tarificado por un especialista se tarifican por teléfono; usted da lo básico y el especialista le llama."
+    ],
+    [
+     "Sin precios en el sitio",
+     "La prima depende de sus datos; el especialista le da las opciones y el precio tras revisarlos."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Puedo comprar y pagar el seguro aquí?",
+     "No. Aquí envía la solicitud; nuestro especialista le llama, revisa las opciones y gestiona la emisión de la póliza."
+    ],
+    [
+     "¿Por qué no veo precios en el sitio?",
+     "La prima depende de factores como el vehículo, su historial y las coberturas elegidas. Esos factores figuran en la página de cada póliza, y el especialista da el precio exacto."
+    ],
+    [
+     "¿Por qué debo confirmar mi número?",
+     "Es la vía por la que le llama el especialista; confirmarlo evita errores de escritura."
+    ],
+    [
+     "¿Necesito cuenta para solicitar un seguro?",
+     "No. Pero si tiene la sesión iniciada, el código se guarda en Mis solicitudes."
+    ],
+    [
+     "El seguro que busco no está en la lista.",
+     "Pregunte desde la página Contacto; le propondremos la opción más cercana."
+    ]
+   ],
+   "related": {
+    "insurance-product": "La página y el formulario de cada póliza.",
+    "track": "Seguir una solicitud de seguro con su código.",
+    "my-requests": "Para miembros: todas las solicitudes en una lista.",
+    "blog": "Guías de precios y consejos para contratar seguros."
+   }
+  },
+  "insurance-product": {
+   "title": "La página y el formulario de una póliza",
+   "summary": "Una póliza en detalle con su formulario: coberturas, exclusiones, documentos, factores de precio y solicitud.",
+   "intro": "Cada póliza tiene su propia página. «De un vistazo» la resume; después vienen las coberturas y coberturas opcionales, lo que no está cubierto, los documentos necesarios, lo que influye en la prima y qué hacer en caso de siniestro. El formulario de solicitud está en la misma página y sus campos son propios de esa póliza.",
+   "steps": [
+    [
+     "Datos de la póliza",
+     "Rellene los campos propios de esta póliza; son necesarios para un precio exacto."
+    ],
+    [
+     "Datos de contacto",
+     "Indique su nombre y cómo localizarle; le llamamos para gestionar y enviar la póliza."
+    ],
+    [
+     "Confirme su número",
+     "Confirme su móvil con el código de seis cifras; sin él no puede enviarse la solicitud."
+    ],
+    [
+     "Envíe y guarde el código",
+     "Envíe la solicitud y guarde el código de seguimiento."
+    ]
+   ],
+   "tips": [
+    [
+     "Lea las exclusiones antes de solicitar",
+     "La lista «No cubierto» importa tanto como las coberturas y evita sorpresas en un siniestro."
+    ],
+    [
+     "Tenga los documentos a mano",
+     "Prepare los documentos necesarios antes de que llame el especialista: la póliza se emitirá antes."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Qué pasa tras la solicitud?",
+     "Un especialista le llama lo antes posible para revisar las opciones; la hora acordada aparece en la página de seguimiento."
+    ],
+    [
+     "¿Qué significa «Tarificado por un especialista»?",
+     "Esta póliza la tarifica un especialista; usted da lo básico para que le llame bien informado."
+    ],
+    [
+     "No me ha llegado el código de confirmación.",
+     "Espere un momento y pulse Reenviar, o revise el número y corríjalo con Cambiar número."
+    ],
+    [
+     "¿Dónde se muestran mis datos?",
+     "La página de seguimiento solo muestra el estado de la solicitud, no sus datos personales."
+    ]
+   ],
+   "related": {
+    "insurance": "Volver a la lista de seguros.",
+    "track": "Seguir la solicitud con su código.",
+    "my-requests": "Para miembros: sus códigos en una lista."
+   }
+  },
+  "consult": {
+   "title": "Solicitar una consulta",
+   "summary": "Pida orientación técnica o profesional; díganos cuándo está disponible y le llamamos.",
+   "intro": "Su trayectoria profesional, un problema técnico o una revisión de código, empezar en el software o preparar entrevistas y su CV: díganos de qué quiere hablar y cuándo está disponible. Le llamamos y fijamos la hora. La sesión puede ser en línea, por teléfono o en persona, y no le compromete a nada.",
+   "steps": [
+    [
+     "Elija un tema",
+     "Trayectoria profesional, un problema técnico, empezar, entrevistas y CV, u otro tema."
+    ],
+    [
+     "Cómo y para qué",
+     "En línea, por teléfono o en persona, y qué espera obtener de la sesión."
+    ],
+    [
+     "Elija un experto o déjelo en nuestras manos",
+     "Si tiene a alguien del club de expertos en mente, elíjalo; si no, «quien mejor encaje»."
+    ],
+    [
+     "Indique cuándo está disponible",
+     "Elija varias franjas (un día y mañana, tarde o noche). Basta con una hora aproximada."
+    ],
+    [
+     "Guarde el código de seguimiento",
+     "Llamamos al número indicado; siga el estado con el código y cancele la solicitud si lo necesita."
+    ]
+   ],
+   "points": [
+    [
+     "Un estado claro",
+     "Recibida, Fijando la hora, Hora confirmada, Realizada; todo con el código de seguimiento."
+    ],
+    [
+     "Cancelación sencilla",
+     "Si cambian sus planes, cancele la solicitud desde la página de seguimiento."
+    ]
+   ],
+   "tips": [
+    [
+     "Concrete el objetivo",
+     "Cuanto más concreta sea su expectativa, más útil será la conversación; por ejemplo, «quiero saber por dónde empezar para pasar al back-end»."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Una consulta me compromete a algo?",
+     "No. No crea ninguna obligación de iniciar un proyecto ni de trabajar juntos."
+    ],
+    [
+     "¿Cuándo llamarán?",
+     "En una de las franjas indicadas, para confirmar la hora. La hora confirmada también aparece en la página de seguimiento."
+    ],
+    [
+     "¿Necesito un correo electrónico?",
+     "No; basta con un teléfono. El correo es opcional."
+    ],
+    [
+     "¿Puedo cancelar la solicitud?",
+     "Sí, con el código de seguimiento en la página Seguimiento de solicitud."
+    ]
+   ],
+   "related": {
+    "experts": "Expertos a los que puede pedir por su nombre.",
+    "start-project": "Si tras la consulta está listo para iniciar un proyecto.",
+    "my-requests": "Para miembros: el código de la consulta en su lista de solicitudes."
+   }
+  },
+  "experts": {
+   "title": "Club de expertos",
+   "summary": "Ingenieros y especialistas que ofrecen orientación técnica y profesional, con sus áreas, idiomas y años de experiencia.",
+   "heading": "Cómo funciona el club de expertos",
+   "intro": "El club de expertos es un grupo de ingenieros y especialistas que ofrecen consultas técnicas y de carrera: las personas a las que acudimos nosotros mismos y a las que usted puede pedir por su nombre. Cada perfil indica si esa persona acepta consultas.",
+   "points": [
+    [
+     "Consulta técnica",
+     "Para decisiones como elegir una tecnología o diseñar una arquitectura, o para revisar un sistema que ya tiene y que no funciona como debería."
+    ],
+    [
+     "Consulta de carrera",
+     "Para ingenieros que empiezan o cambian de rumbo, de la mano de personas que han recorrido ese camino."
+    ],
+    [
+     "Elegir por nombre",
+     "La página de cada experto muestra sus especialidades, idiomas y años de experiencia. Si acepta consultas, puede solicitarla directamente desde esa página."
+    ],
+    [
+     "Concertar una consulta",
+     "Envíe una solicitud desde la página «Solicitar una consulta» e indique algunos horarios que le vengan bien, y le llamamos. Una consulta no le compromete a nada."
+    ]
+   ],
+   "faqTitle": "Preguntas frecuentes sobre las consultas",
+   "faqs": [
+    [
+     "¿Cómo reservo una consulta?",
+     "Desde la página «Solicitar una consulta» o con el botón de consulta en la página de un experto. Indica algunos horarios y le llamamos."
+    ],
+    [
+     "¿Puedo elegir al experto?",
+     "Sí. A los expertos marcados con «Acepta consultas» puede pedirlos por su nombre."
+    ],
+    [
+     "¿Una consulta me compromete a un proyecto?",
+     "No. Una consulta no le compromete a nada."
+    ],
+    [
+     "¿Cómo me uno al club de expertos?",
+     "Escríbanos desde la página «Contacto» contando su experiencia y especialidades. Nuestro equipo añade y mantiene al día los perfiles del club."
+    ]
+   ],
+   "related": {
+    "consult": "El formulario de solicitud de consulta.",
+    "team": "El equipo de ingeniería de Rayan Tamaddon Jahan Gostar.",
+    "freelancers": "Si en lugar de una consulta busca a alguien que haga el trabajo."
+   }
+  },
+  "jobs": {
+   "title": "Empleos",
+   "summary": "Ofertas de empleadores verificados en todo Irán y en remoto, con búsqueda, filtros y alertas.",
+   "intro": "Esta sección reúne ofertas de empleo de Rayan Tamaddon Jahan Gostar y de otras empresas. Solo pueden publicar los empleadores cuya identidad ha verificado nuestro equipo, y cada anuncio se revisa antes de publicarse. Para quienes buscan empleo todo es gratis: buscar, guardar anuncios, alertas y postularse.",
+   "steps": [
+    [
+     "Busque y filtre",
+     "Busque por puesto, habilidad o empresa, y filtre por categoría, provincia, país, remoto o salario mínimo."
+    ],
+    [
+     "Abra un anuncio",
+     "Cada anuncio muestra los requisitos, el salario y los beneficios, las habilidades y los datos de la empresa."
+    ],
+    [
+     "Guárdelo o cree una alerta",
+     "Guarde los anuncios interesantes; «Recibir alertas de esta búsqueda» le avisa de los nuevos."
+    ],
+    [
+     "Postúlese",
+     "Inicie sesión y complete la verificación de identidad para enviar su CV; la candidatura llega directamente al empleador."
+    ]
+   ],
+   "points": [
+    [
+     "Empleadores verificados",
+     "La identidad de cada empleador está comprobada, y cada anuncio se lee antes de publicarse."
+    ],
+    [
+     "Páginas por provincia y categoría",
+     "Las ofertas de una provincia, un país o una categoría tienen su propia dirección, que puede guardar."
+    ],
+    [
+     "Teletrabajo internacional",
+     "Puestos remotos abiertos a candidatos de todos los países o de uno concreto."
+    ],
+    [
+     "Sugerencias según su actividad",
+     "Con la sesión iniciada, ve anuncios afines a sus candidaturas y anuncios guardados."
+    ]
+   ],
+   "tips": [
+    [
+     "Cree una alerta",
+     "En lugar de mirar cada día, guarde su búsqueda con «Recibir alertas de esta búsqueda»; cada anuncio nuevo que encaje le avisa una vez."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Postularse tiene coste?",
+     "No. Buscar, guardar anuncios, las alertas y postularse son gratis para quienes buscan empleo."
+    ],
+    [
+     "¿Quién puede publicar aquí?",
+     "Solo los empleadores cuya identidad ha verificado nuestro equipo, y cada anuncio se revisa antes de publicarse."
+    ],
+    [
+     "¿Cómo publico una oferta?",
+     "Inicie sesión, complete la verificación de identidad, cree un anuncio en Mis anuncios de su panel y envíelo a revisión."
+    ],
+    [
+     "¿Por qué debo verificar mi identidad para postularme?",
+     "Para que el empleador sepa que trata con una persona real; es la misma razón por la que se verifica a los empleadores."
+    ],
+    [
+     "¿En qué se diferencia de «Enviar tu CV»?",
+     "«Enviar tu CV» es para trabajar en Rayan Tamaddon Jahan Gostar; esta sección es para ofertas concretas, nuestras o de otras empresas."
+    ]
+   ],
+   "related": {
+    "job-detail": "La página de cada anuncio y el formulario de candidatura.",
+    "companies": "Las empresas que contratan.",
+    "my-applications": "Para candidatos: candidaturas, anuncios guardados y alertas.",
+    "my-jobs": "Para empleadores: publicar y gestionar ofertas."
+   }
+  },
+  "job-detail": {
+   "title": "Un anuncio de empleo",
+   "summary": "Los detalles de un puesto, cuánto encaja usted y el formulario de candidatura.",
+   "intro": "Cada anuncio muestra la descripción del puesto, los requisitos, el salario y los beneficios, las habilidades necesarias y los datos de la empresa. Si ha añadido sus habilidades al perfil, también indica cuántas de las requeridas tiene. Su candidatura llega directamente al empleador y le informamos en cada etapa.",
+   "steps": [
+    [
+     "Lea el anuncio",
+     "Revise los requisitos, el salario y el tipo de puesto; si el empleador suele responder, se muestra su tasa de respuesta."
+    ],
+    [
+     "Vea cuánto encaja",
+     "La sección «¿Cuánto encajas?» muestra las habilidades que tiene y las que vale la pena aprender."
+    ],
+    [
+     "Inicie sesión y verifíquese",
+     "El formulario de candidatura se abre con la sesión iniciada y la identidad verificada."
+    ],
+    [
+     "Envíe su CV",
+     "Envíe la candidatura y siga su estado en Mis candidaturas."
+    ]
+   ],
+   "tips": [
+    [
+     "Añada sus habilidades al perfil",
+     "Sin habilidades en el perfil no se puede calcular cuánto encaja con un anuncio."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Cómo sé si el empleador ha visto mi CV?",
+     "Cuando el empleador abre su candidatura, pasa a «Vista por el empleador», y le avisamos en cada cambio de etapa."
+    ],
+    [
+     "¿Puedo retirar mi candidatura?",
+     "Sí, desde Mis candidaturas. Mientras el anuncio esté abierto puede volver a postularse."
+    ],
+    [
+     "¿Puedo postularme dos veces al mismo anuncio?",
+     "No; si ya se postuló, la fecha aparece en el anuncio."
+    ],
+    [
+     "No veo el salario.",
+     "Algunos empleadores no lo indican; entonces el anuncio dice «Negociable»."
+    ]
+   ],
+   "related": {
+    "jobs": "Volver a todos los anuncios.",
+    "companies": "La página de la empresa detrás del anuncio.",
+    "my-applications": "Seguir las candidaturas enviadas.",
+    "verification": "La verificación de identidad necesaria antes de postularse."
+   }
+  },
+  "companies": {
+   "title": "Empresas",
+   "summary": "Los empleadores verificados, la página de cada empresa y sus puestos abiertos.",
+   "intro": "Cada empleador verificado puede tener una página de empresa: presentación, tamaño de la organización, imágenes y todos sus puestos abiertos. Aquí busca empresas y pasa de la página de cada una a sus anuncios.",
+   "steps": [
+    [
+     "Encuentre la empresa",
+     "Busque por nombre o recorra por tamaño de organización."
+    ],
+    [
+     "Lea la página",
+     "Vea la presentación de la empresa y sus puestos abiertos."
+    ],
+    [
+     "¿Es usted empleador?",
+     "Una vez verificado, cree la página de su empresa desde su panel; cada oferta que publique enlaza con ella."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Cómo creo una página de empresa?",
+     "Vaya a Página de la empresa en su panel. Antes, su identidad debe estar verificada."
+    ],
+    [
+     "¿Por qué se ha ocultado una página de empresa?",
+     "Si una página incumple las normas del sitio, nuestro equipo la oculta; su titular puede preguntar el motivo al soporte."
+    ]
+   ],
+   "related": {
+    "jobs": "Todas las ofertas.",
+    "my-jobs": "Para empleadores: anuncios y página de la empresa."
+   }
+  },
+  "projects": {
+   "title": "Proyectos freelance",
+   "summary": "Proyectos a precio fijo y por horas de clientes verificados: encuentre uno, envíe una propuesta y lleve el trabajo adelante.",
+   "intro": "Aquí los clientes publican proyectos y los freelancers les envían propuestas. Cada proyecto se revisa antes de publicarse y puede ser a precio fijo o por horas. Cualquiera puede ver los proyectos, pero para publicar uno o enviar una propuesta debe iniciar sesión y completar la verificación de identidad. El pago no pasa por el sitio; cliente y freelancer lo acuerdan directamente.",
+   "steps": [
+    [
+     "Encuentre un proyecto",
+     "Busque en títulos, descripciones o habilidades; ordene y filtre por categoría, tipo de precio, nivel de experiencia o menos propuestas."
+    ],
+    [
+     "Lea el proyecto",
+     "Vea el presupuesto, la duración, las habilidades y el historial del cliente (verificado, tasa de contratación y valoración)."
+    ],
+    [
+     "Envíe una propuesta",
+     "Indique su precio o tarifa por hora, el plazo y un plan por hitos, y responda a las preguntas del cliente."
+    ],
+    [
+     "Lleve el trabajo adelante",
+     "Si le contratan, la colaboración se abre en Mis colaboraciones; la conversación y los hitos siguen en su panel."
+    ]
+   ],
+   "points": [
+    [
+     "Precio fijo o por horas",
+     "En los proyectos por horas registra sus horas y el cliente las aprueba."
+    ],
+    [
+     "Pagos por hitos",
+     "Divida el trabajo en hitos con importe y plazo; su suma debe igualar su propuesta."
+    ],
+    [
+     "NDA",
+     "Algunos proyectos exigen firmar un acuerdo de confidencialidad antes de leer la descripción y los adjuntos."
+    ],
+    [
+     "Visibilidad del proyecto",
+     "Un proyecto puede ser visible para todos, solo para miembros o solo para freelancers invitados."
+    ]
+   ],
+   "tips": [
+    [
+     "Cree una alerta de proyectos",
+     "Cree una alerta para su búsqueda y no se pierda los proyectos nuevos que encajen."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿El sitio guarda el dinero o gestiona el pago?",
+     "No. El pago no pasa por el sitio; cliente y freelancer acuerdan el importe y el medio directamente. El plan por hitos ayuda a que el acuerdo quede claro."
+    ],
+    [
+     "¿Por qué se exige verificación?",
+     "Para publicar un proyecto, enviar una propuesta o firmar un NDA. Ambas partes saben que tratan con una persona real."
+    ],
+    [
+     "¿Cuándo se publicará mi proyecto?",
+     "Tras enviarlo a revisión, normalmente en pocas horas."
+    ],
+    [
+     "¿Cuántas propuestas puedo enviar?",
+     "Una por proyecto; puede retirarla antes de que el cliente decida."
+    ]
+   ],
+   "related": {
+    "project-detail": "La página de cada proyecto y el formulario de propuesta.",
+    "client-projects": "Para clientes: publicar y gestionar proyectos.",
+    "my-proposals": "Para freelancers: propuestas, invitaciones y colaboraciones.",
+    "freelancers": "Freelancers a los que puede invitar a su proyecto."
+   }
+  },
+  "project-detail": {
+   "title": "La página de un proyecto",
+   "summary": "Los detalles de un proyecto, el historial del cliente y el formulario de propuesta.",
+   "intro": "Cada página de proyecto muestra la descripción, el presupuesto o rango de tarifa por hora, la duración, el nivel de experiencia buscado, las habilidades y el historial del cliente. Si el proyecto exige un NDA, la descripción completa y los adjuntos se abren al firmarlo. Si el cliente le ha invitado, aparece la etiqueta Invitado.",
+   "steps": [
+    [
+     "Lea y decida",
+     "Mire el presupuesto, la duración y las preguntas del cliente antes de escribir una propuesta."
+    ],
+    [
+     "Firme el NDA si hace falta",
+     "Escriba su nombre como firma para abrir la descripción y los archivos."
+    ],
+    [
+     "Redacte su propuesta",
+     "Su precio o tarifa por hora, un plan por hitos, el plazo y las respuestas a las preguntas."
+    ],
+    [
+     "Espere la respuesta",
+     "Vea el estado de la propuesta en Mis propuestas; los mensajes del cliente llegan a Mensajes."
+    ]
+   ],
+   "tips": [
+    [
+     "Una propuesta para este proyecto",
+     "Trate el problema de este proyecto y responda con precisión a las preguntas del cliente; las propuestas genéricas se eligen menos."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿A qué me compromete firmar el NDA?",
+     "A mantener en confidencialidad la descripción del proyecto, los adjuntos y todo lo que el cliente le cuente sobre él."
+    ],
+    [
+     "¿Puedo rechazar una invitación?",
+     "Sí, con Rechazar invitación. Se informa al cliente."
+    ],
+    [
+     "¿Qué pasa si se cierra el proyecto?",
+     "Un proyecto cerrado no admite propuestas nuevas; las anteriores siguen en su lista."
+    ]
+   ],
+   "related": {
+    "projects": "Volver a todos los proyectos.",
+    "my-proposals": "Las propuestas que ha enviado.",
+    "verification": "Necesaria antes de enviar una propuesta.",
+    "messages": "Hablar con el cliente."
+   }
+  },
+  "freelance-services": {
+   "title": "Servicios freelance",
+   "summary": "Trabajo listo a precio fijo: elija un paquete y haga el pedido.",
+   "intro": "Los servicios freelance funcionan al revés que los proyectos: un freelancer ofrece lo que hace con precio y plazo fijos, y usted hace el pedido. Cada servicio puede tener hasta tres paquetes: Básico, Estándar y Premium. Cada servicio se revisa antes de publicarse.",
+   "steps": [
+    [
+     "Encuentre un servicio",
+     "Busque y ordene por categoría, precio o valoración."
+    ],
+    [
+     "Elija un paquete",
+     "Compare qué incluye cada paquete y cuánto tarda la entrega."
+    ],
+    [
+     "Haga el pedido",
+     "Con la sesión iniciada y verificado, envíe el pedido describiendo lo que necesita."
+    ],
+    [
+     "Espere al vendedor",
+     "El vendedor acepta o rechaza el pedido; siga su estado en Pedidos de su panel."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Cómo se paga?",
+     "No a través del sitio; una vez aceptado el pedido, comprador y vendedor lo acuerdan directamente."
+    ],
+    [
+     "¿En qué se diferencia un servicio de un proyecto?",
+     "En un proyecto usted describe el trabajo y recibe propuestas; en un servicio, el freelancer ofrece un trabajo listo a precio fijo."
+    ],
+    [
+     "¿Cómo ofrezco mi propio servicio?",
+     "Créelo en Mis servicios de su panel y envíelo a revisión."
+    ]
+   ],
+   "related": {
+    "my-services": "Para vendedores: crear servicios y gestionar pedidos.",
+    "freelancers": "Los perfiles de los vendedores.",
+    "projects": "Si lo que necesita no existe ya hecho y hay que describirlo, publique un proyecto."
+   }
+  },
+  "freelancers": {
+   "title": "Freelancers y perfiles",
+   "summary": "Encuentre freelancers por habilidad, idioma y disponibilidad, lea sus perfiles e invítelos.",
+   "intro": "El directorio de freelancers muestra los perfiles públicos de los miembros con nombre de usuario que indican habilidades en su perfil u ofrecen un servicio activo y aprobado: habilidades, idiomas, país, disponibilidad, valoraciones y muestras de trabajo. Los datos de contacto nunca aparecen en el directorio.",
+   "steps": [
+    [
+     "Busque",
+     "Filtre por habilidad, categoría, idioma, país, disponibilidad o verificación, y ordene por valoración."
+    ],
+    [
+     "Lea un perfil",
+     "Insignia de verificación, valoraciones, muestras de trabajo y servicios que ofrece."
+    ],
+    [
+     "Invite",
+     "Los clientes pueden invitar a un freelancer por su nombre de usuario a enviar una propuesta para su proyecto."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Cómo aparezco en este directorio?",
+     "Elija un nombre de usuario y añada sus habilidades en su panel, u ofrezca un servicio que se apruebe. Las muestras de trabajo hacen más probable una invitación."
+    ],
+    [
+     "¿Qué significa la insignia de verificación?",
+     "Que nuestro equipo ha verificado la identidad de este miembro."
+    ],
+    [
+     "¿De dónde salen las valoraciones?",
+     "De las personas que valoraron a este miembro al terminar una colaboración."
+    ]
+   ],
+   "related": {
+    "profile": "Crear y editar su propio perfil público.",
+    "freelance-services": "Los servicios que ofrecen los freelancers.",
+    "projects": "Proyectos a los que puede enviar propuestas."
+   }
+  },
+  "books": {
+   "title": "Mercado de libros",
+   "summary": "Libros nuevos y de segunda mano de lectores y librerías: todos los ejemplares de un libro en una página.",
+   "intro": "En el mercado de libros cada libro tiene una página, y todos los ejemplares a la venta aparecen juntos en ella, el más barato primero. Cada ejemplar pertenece a un vendedor; ve su estado (de Nuevo a Aceptable), fotos, precio, gastos de envío y forma de entrega. La compra empieza con una solicitud de compra; no se paga nada a través del sitio, comprador y vendedor acuerdan pago y entrega directamente.",
+   "steps": [
+    [
+     "Encuentre el libro",
+     "Busque o recorra las estanterías; filtre por estado, precio, envío gratuito o por debajo del precio de portada."
+    ],
+    [
+     "Elija un ejemplar",
+     "En la página del libro, compare los ejemplares por estado, fotos, precio y forma de entrega."
+    ],
+    [
+     "Envíe una solicitud de compra",
+     "Elija la forma de entrega y, si quiere, proponga un precio; debe tener la sesión iniciada y estar verificado."
+    ],
+    [
+     "Acuerde la entrega",
+     "Cuando el vendedor acepte, acuerden pago y entrega en la conversación de esa solicitud."
+    ]
+   ],
+   "points": [
+    [
+     "Estado graduado",
+     "Cada ejemplar tiene uno de cinco grados —Nuevo, Como nuevo, Muy bueno, Bueno o Aceptable— con fotos."
+    ],
+    [
+     "Vender libros",
+     "Ponga su ejemplar a la venta desde su panel con fotos, estado y precio; se revisa antes de publicarse."
+    ],
+    [
+     "Valoraciones mutuas",
+     "Tras una venta, comprador y vendedor se valoran mutuamente."
+    ]
+   ],
+   "tips": [
+    [
+     "Proponer un precio",
+     "Si el precio de un ejemplar es negociable, puede proponer el suyo; deje el campo vacío para aceptar el precio del vendedor."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Pago al sitio?",
+     "No. No se paga nada a través del sitio; cuando aceptan su solicitud, acuerda el pago y la entrega directamente con el vendedor."
+    ],
+    [
+     "¿Por qué debo verificar mi identidad para comprar?",
+     "Para que el vendedor sepa que trata con una persona real; la misma norma rige para los vendedores."
+    ],
+    [
+     "¿Cómo vendo un libro?",
+     "En Mis libros en venta de su panel, ponga su ejemplar a la venta con fotos, estado y precio, y envíelo a revisión."
+    ],
+    [
+     "El vendedor ha rechazado mi solicitud.",
+     "Puede pedir otro ejemplar del mismo libro a otro vendedor."
+    ]
+   ],
+   "related": {
+    "my-books": "Vender libros y seguir sus compras desde el panel.",
+    "messages": "Hablar con el comprador o el vendedor.",
+    "verification": "Necesaria para comprar y vender."
+   }
+  },
+  "marketplace": {
+   "title": "Mercado local",
+   "summary": "Encuentre en el mapa tiendas, productos y servicios cerca de usted y contacte directamente con la tienda.",
+   "intro": "El mercado local muestra en un mapa las tiendas y negocios a su alrededor: sus productos, servicios, imágenes y vías de contacto. Por ahora es un escaparate, no una tienda en línea; la compra, la reserva y los acuerdos se hacen directamente con la tienda.",
+   "steps": [
+    [
+     "Fije su punto",
+     "Permita el acceso a su ubicación o haga clic en el mapa para centrar la búsqueda en ese punto."
+    ],
+    [
+     "Busque",
+     "Busque el nombre de una tienda, un oficio, o el producto o servicio que quiere; ajuste el radio de búsqueda y elija «Más cercano» para ordenar."
+    ],
+    [
+     "Abra una tienda o un producto",
+     "Vea la presentación, las imágenes, los productos y servicios, y la ubicación en el mapa."
+    ],
+    [
+     "Póngase en contacto",
+     "Para comprar o reservar, use los datos de contacto de esa tienda."
+    ]
+   ],
+   "tips": [
+    [
+     "¿Ubicación no disponible?",
+     "Los navegadores solo comparten la ubicación en una conexión segura, y quizá no lo haya permitido; en ese caso elija un punto en el mapa."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Puedo comprar y pagar aquí?",
+     "Todavía no. La cesta y el pago en línea no están activados; contacte con la tienda."
+    ],
+    [
+     "¿Se revisan las tiendas?",
+     "Sí. Cada propietario ha verificado su identidad y cada tienda se revisa antes de aparecer."
+    ],
+    [
+     "Mi tienda no está aquí.",
+     "Dé de alta su tienda en cuatro pasos desde la página Registra tu tienda."
+    ]
+   ],
+   "related": {
+    "marketplace-join": "Dar de alta su propia tienda.",
+    "my-shops": "Para vendedores: gestionar su tienda y sus productos."
+   }
+  },
+  "marketplace-join": {
+   "title": "Registrar su tienda",
+   "summary": "Registre su tienda en cuatro pasos para que los clientes cercanos la encuentren en el mapa.",
+   "intro": "Cualquier negocio que ofrezca productos o servicios a clientes cercanos puede registrar su tienda. Como una tienda es una identidad comercial y los compradores deben saber quién está detrás, se exige la verificación de identidad y la tienda se revisa antes de aparecer. Una vez aprobada, usted publica y edita sus productos y servicios.",
+   "steps": [
+    [
+     "Cree una cuenta",
+     "Regístrese o inicie sesión."
+    ],
+    [
+     "Verifique su identidad",
+     "Confirme su identidad en su panel."
+    ],
+    [
+     "Cree la tienda",
+     "Indique el nombre, la presentación, el oficio, el logotipo, una imagen, los datos de contacto y la ubicación, y envíela a revisión."
+    ],
+    [
+     "Añada productos y servicios",
+     "Una vez aprobada la tienda, publique, edite y retire sus productos y servicios."
+    ]
+   ],
+   "tips": [
+    [
+     "Sitúese en el mapa",
+     "Sin ubicación, su tienda no aparece en las búsquedas «cerca de mí»."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Cuánto tarda la revisión?",
+     "Depende de la cola de revisión. Si el revisor pide cambios, se le avisa en su panel y la reenvía tras corregir."
+    ],
+    [
+     "¿También se revisan los productos?",
+     "Una vez aprobada la tienda, los productos se publican al momento, pero el equipo puede devolver cualquier producto para corregirlo."
+    ]
+   ],
+   "related": {
+    "marketplace": "El mercado visto por un comprador.",
+    "my-shops": "Gestionar su tienda una vez registrada.",
+    "verification": "Paso dos: la verificación de identidad."
+   }
+  },
+  "login": {
+   "title": "Iniciar sesión",
+   "summary": "Inicie sesión con su correo y contraseña; si el inicio en dos pasos está activo, también se pide el código de su aplicación de autenticación.",
+   "intro": "Al iniciar sesión accede a su panel: perfil, verificación de identidad, códigos de seguimiento, mensajes y su actividad en el mercado. Si ha activado el inicio de sesión en dos pasos, tras la contraseña se pide el código de seis cifras de su aplicación de autenticación (o uno de sus códigos de recuperación).",
+   "steps": [
+    [
+     "Correo y contraseña",
+     "Use el correo con el que se registró."
+    ],
+    [
+     "Código en dos pasos, si está activo",
+     "Introduzca el código de seis cifras de su aplicación o un código de recuperación."
+    ],
+    [
+     "Siga donde estaba",
+     "Si llegó a iniciar sesión desde una página como un anuncio, vuelve a ella después."
+    ]
+   ],
+   "faqs": [
+    [
+     "He olvidado mi contraseña.",
+     "Use «¿Ha olvidado su contraseña?». Si no se puede enviar correo, la página le dirige al formulario de contacto."
+    ],
+    [
+     "No tengo acceso a mi aplicación de autenticación.",
+     "Introduzca uno de los códigos de recuperación que guardó al activarlo. Cada código sirve una sola vez."
+    ],
+    [
+     "¿Cómo cierro sesión en todos los dispositivos?",
+     "En la sección de seguridad de su perfil, elija «Cerrar sesión en todas partes»."
+    ]
+   ],
+   "related": {
+    "register": "¿Aún no tiene cuenta?",
+    "password-reset": "Restablecer su contraseña.",
+    "dashboard": "Lo que le espera tras iniciar sesión."
+   }
+  },
+  "register": {
+   "title": "Registrarse",
+   "summary": "Cree una cuenta para publicar anuncios y proyectos, enviar propuestas, vender libros y reunir sus códigos de seguimiento.",
+   "intro": "No necesita cuenta para solicitar un proyecto, un seguro o una consulta, enviar un CV o contactarnos. La cuenta sirve para lo que implica su identidad: publicar una oferta o un proyecto, enviar propuestas, postularse, comprar y vender libros y registrar una tienda. Además, sus códigos de seguimiento quedan juntos en Mis solicitudes.",
+   "steps": [
+    [
+     "Lo básico",
+     "Introduzca nombre, apellidos, correo y una contraseña."
+    ],
+    [
+     "A su panel",
+     "Tras registrarse, su sesión queda iniciada de inmediato."
+    ],
+    [
+     "Complete la verificación",
+     "Para la actividad en el mercado, confirme su identidad desde su panel."
+    ]
+   ],
+   "faqs": [
+    [
+     "¿Registrarse tiene coste?",
+     "No."
+    ],
+    [
+     "¿Por qué también debo verificar mi identidad tras registrarme?",
+     "El registro crea una cuenta; la verificación confirma que detrás hay una persona real. Es necesaria para comprar y vender, contratar y los proyectos."
+    ],
+    [
+     "¿Qué reglas tiene la contraseña?",
+     "Se indican bajo el campo de contraseña; elija una larga y única."
+    ]
+   ],
+   "related": {
+    "login": "Si ya tiene cuenta.",
+    "verify-email": "Confirmar su correo.",
+    "verification": "La verificación de identidad tras el registro."
+   }
+  },
+  "password-reset": {
+   "title": "Restablecer la contraseña",
+   "summary": "¿Ha olvidado su contraseña? Pida un enlace para restablecerla y elija una nueva.",
+   "intro": "En la página de restablecimiento introduce el correo de su cuenta y recibe un enlace; al abrirlo, elige una contraseña nueva. Si en ese momento el sitio no puede enviar correos, la página lo dice claramente y le dirige al formulario de contacto para recibir ayuda.",
+   "steps": [
+    [
+     "Introduzca su correo",
+     "El de su registro."
+    ],
+    [
+     "Abra el enlace",
+     "El enlace le lleva a la página para elegir una contraseña nueva."
+    ],
+    [
+     "Elija una contraseña nueva",
+     "Escríbala dos veces e inicie sesión con ella."
+    ]
+   ],
+   "faqs": [
+    [
+     "No me ha llegado el enlace.",
+     "Revise la carpeta de spam. Si la página indicó que por ahora no se puede enviar correo, escriba desde Contacto."
+    ],
+    [
+     "El enlace no funciona.",
+     "Puede haber caducado; pida un nuevo restablecimiento."
+    ]
+   ],
+   "related": {
+    "login": "Volver a iniciar sesión.",
+    "profile": "Cambiar la contraseña con la sesión iniciada."
+   }
+  },
+  "verify-email": {
+   "title": "Confirmar su correo",
+   "summary": "Abra el enlace de confirmación para confirmar la dirección de correo de su cuenta.",
+   "intro": "Esta página se abre desde el enlace enviado para confirmar su dirección de correo. Al abrirse, se comprueba el enlace y se muestra el resultado. Confirmar el correo es distinto de verificar la identidad: lo primero prueba que la dirección es suya; lo segundo, quién es usted.",
+   "faqs": [
+    [
+     "El enlace ha caducado.",
+     "Inicie sesión y pida un enlace nuevo desde su panel, o pida ayuda desde Contacto."
+    ],
+    [
+     "¿Confirmar el correo equivale a verificar la identidad?",
+     "No. Su identidad la verifica aparte, desde su panel."
+    ]
+   ],
+   "related": {
+    "register": "Crear una cuenta.",
+    "login": "Iniciar sesión.",
+    "verification": "La verificación de identidad para el mercado."
+   }
+  }
+ }
+}

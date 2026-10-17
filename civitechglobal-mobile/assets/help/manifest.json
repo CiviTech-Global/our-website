@@ -1,0 +1,644 @@
+[
+ {
+  "id": "home",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/"
+  ],
+  "related": [
+   "services",
+   "start-project",
+   "about",
+   "help-centre"
+  ]
+ },
+ {
+  "id": "services",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/services"
+  ],
+  "related": [
+   "start-project",
+   "portfolio",
+   "consult",
+   "insurance"
+  ]
+ },
+ {
+  "id": "start-project",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/start-project"
+  ],
+  "related": [
+   "services",
+   "track",
+   "my-requests",
+   "consult"
+  ]
+ },
+ {
+  "id": "about",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/about"
+  ],
+  "related": [
+   "team",
+   "portfolio",
+   "customers",
+   "join"
+  ]
+ },
+ {
+  "id": "team",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/team"
+  ],
+  "related": [
+   "join",
+   "volunteer",
+   "experts",
+   "start-project"
+  ]
+ },
+ {
+  "id": "portfolio",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/portfolio"
+  ],
+  "related": [
+   "services",
+   "customers",
+   "start-project"
+  ]
+ },
+ {
+  "id": "customers",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/customers"
+  ],
+  "related": [
+   "portfolio",
+   "start-project",
+   "partners"
+  ]
+ },
+ {
+  "id": "partners",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/partners"
+  ],
+  "related": [
+   "customers",
+   "contact",
+   "volunteer"
+  ]
+ },
+ {
+  "id": "contact",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/contact"
+  ],
+  "related": [
+   "start-project",
+   "consult",
+   "track"
+  ]
+ },
+ {
+  "id": "join",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/join"
+  ],
+  "related": [
+   "volunteer",
+   "jobs",
+   "team",
+   "track"
+  ]
+ },
+ {
+  "id": "volunteer",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/volunteer"
+  ],
+  "related": [
+   "join",
+   "team",
+   "experts"
+  ]
+ },
+ {
+  "id": "blog",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/blog",
+   "/blog/:slug"
+  ],
+  "related": [
+   "insurance",
+   "services",
+   "help-centre"
+  ]
+ },
+ {
+  "id": "track",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/track"
+  ],
+  "related": [
+   "start-project",
+   "insurance",
+   "join",
+   "my-requests"
+  ]
+ },
+ {
+  "id": "help-centre",
+  "collection": "company",
+  "audience": "public",
+  "routes": [
+   "/help",
+   "/help/:id"
+  ],
+  "related": [
+   "home",
+   "contact",
+   "dashboard"
+  ]
+ },
+ {
+  "id": "insurance",
+  "collection": "insurance",
+  "audience": "public",
+  "routes": [
+   "/insurance"
+  ],
+  "related": [
+   "insurance-product",
+   "track",
+   "my-requests",
+   "blog"
+  ]
+ },
+ {
+  "id": "insurance-product",
+  "collection": "insurance",
+  "audience": "public",
+  "routes": [
+   "/insurance/:slug",
+   "/insurance/third-party"
+  ],
+  "related": [
+   "insurance",
+   "track",
+   "my-requests"
+  ]
+ },
+ {
+  "id": "consult",
+  "collection": "consult",
+  "audience": "public",
+  "routes": [
+   "/consult"
+  ],
+  "related": [
+   "experts",
+   "start-project",
+   "my-requests"
+  ]
+ },
+ {
+  "id": "experts",
+  "collection": "consult",
+  "audience": "public",
+  "routes": [
+   "/experts",
+   "/experts/:slug"
+  ],
+  "related": [
+   "consult",
+   "team",
+   "freelancers"
+  ]
+ },
+ {
+  "id": "jobs",
+  "collection": "jobs",
+  "audience": "public",
+  "routes": [
+   "/jobs",
+   "/jobs/in/:province",
+   "/jobs/category/:category",
+   "/jobs/country/:country"
+  ],
+  "related": [
+   "job-detail",
+   "companies",
+   "my-applications",
+   "my-jobs"
+  ]
+ },
+ {
+  "id": "job-detail",
+  "collection": "jobs",
+  "audience": "public",
+  "routes": [
+   "/jobs/:code"
+  ],
+  "related": [
+   "jobs",
+   "companies",
+   "my-applications",
+   "verification"
+  ]
+ },
+ {
+  "id": "companies",
+  "collection": "jobs",
+  "audience": "public",
+  "feature": "jobsV2",
+  "routes": [
+   "/companies",
+   "/companies/:slug"
+  ],
+  "related": [
+   "jobs",
+   "my-jobs"
+  ]
+ },
+ {
+  "id": "projects",
+  "collection": "freelance",
+  "audience": "public",
+  "routes": [
+   "/projects",
+   "/projects/category/:category"
+  ],
+  "related": [
+   "project-detail",
+   "client-projects",
+   "my-proposals",
+   "freelancers"
+  ]
+ },
+ {
+  "id": "project-detail",
+  "collection": "freelance",
+  "audience": "public",
+  "routes": [
+   "/projects/:code"
+  ],
+  "related": [
+   "projects",
+   "my-proposals",
+   "verification",
+   "messages"
+  ]
+ },
+ {
+  "id": "freelance-services",
+  "collection": "freelance",
+  "audience": "public",
+  "feature": "projectsV2",
+  "routes": [
+   "/freelance-services",
+   "/freelance-services/:code"
+  ],
+  "related": [
+   "my-services",
+   "freelancers",
+   "projects"
+  ]
+ },
+ {
+  "id": "freelancers",
+  "collection": "freelance",
+  "audience": "public",
+  "routes": [
+   "/freelancers",
+   "/profiles/:username"
+  ],
+  "related": [
+   "profile",
+   "freelance-services",
+   "projects"
+  ]
+ },
+ {
+  "id": "books",
+  "collection": "books",
+  "audience": "public",
+  "routes": [
+   "/books",
+   "/books/shelf/:shelf",
+   "/books/:code"
+  ],
+  "related": [
+   "my-books",
+   "messages",
+   "verification"
+  ]
+ },
+ {
+  "id": "marketplace",
+  "collection": "marketplace",
+  "audience": "public",
+  "feature": "tradeMaster",
+  "routes": [
+   "/marketplace",
+   "/marketplace/shops",
+   "/marketplace/shops/:slug",
+   "/marketplace/products",
+   "/marketplace/products/:shopSlug/:productSlug"
+  ],
+  "related": [
+   "marketplace-join",
+   "my-shops"
+  ]
+ },
+ {
+  "id": "marketplace-join",
+  "collection": "marketplace",
+  "audience": "public",
+  "feature": "tradeMaster",
+  "routes": [
+   "/marketplace/join"
+  ],
+  "related": [
+   "marketplace",
+   "my-shops",
+   "verification"
+  ]
+ },
+ {
+  "id": "login",
+  "collection": "account",
+  "audience": "public",
+  "routes": [
+   "/login"
+  ],
+  "related": [
+   "register",
+   "password-reset",
+   "dashboard"
+  ]
+ },
+ {
+  "id": "register",
+  "collection": "account",
+  "audience": "public",
+  "routes": [
+   "/register"
+  ],
+  "related": [
+   "login",
+   "verify-email",
+   "verification"
+  ]
+ },
+ {
+  "id": "password-reset",
+  "collection": "account",
+  "audience": "public",
+  "routes": [
+   "/forgot-password",
+   "/reset-password"
+  ],
+  "related": [
+   "login",
+   "profile"
+  ]
+ },
+ {
+  "id": "verify-email",
+  "collection": "account",
+  "audience": "public",
+  "routes": [
+   "/verify-email"
+  ],
+  "related": [
+   "register",
+   "login",
+   "verification"
+  ]
+ },
+ {
+  "id": "dashboard",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard"
+  ],
+  "related": [
+   "profile",
+   "verification",
+   "my-requests",
+   "notifications"
+  ]
+ },
+ {
+  "id": "profile",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/profile"
+  ],
+  "related": [
+   "verification",
+   "freelancers",
+   "dashboard"
+  ]
+ },
+ {
+  "id": "verification",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/verification"
+  ],
+  "related": [
+   "profile",
+   "my-jobs",
+   "client-projects",
+   "my-books"
+  ]
+ },
+ {
+  "id": "my-requests",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/requests"
+  ],
+  "related": [
+   "insurance",
+   "start-project",
+   "consult",
+   "track"
+  ]
+ },
+ {
+  "id": "messages",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/messages",
+   "/dashboard/messages/:kind/:threadId"
+  ],
+  "related": [
+   "notifications",
+   "my-proposals",
+   "my-books",
+   "my-applications"
+  ]
+ },
+ {
+  "id": "notifications",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/notifications"
+  ],
+  "related": [
+   "messages",
+   "dashboard"
+  ]
+ },
+ {
+  "id": "my-jobs",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/jobs",
+   "/dashboard/company"
+  ],
+  "related": [
+   "jobs",
+   "companies",
+   "verification",
+   "messages"
+  ]
+ },
+ {
+  "id": "my-applications",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/applications",
+   "/dashboard/saved-jobs",
+   "/dashboard/job-alerts"
+  ],
+  "related": [
+   "jobs",
+   "job-detail",
+   "profile",
+   "messages"
+  ]
+ },
+ {
+  "id": "client-projects",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/projects",
+   "/dashboard/projects/new",
+   "/dashboard/projects/:id/edit"
+  ],
+  "related": [
+   "projects",
+   "freelancers",
+   "verification",
+   "messages"
+  ]
+ },
+ {
+  "id": "my-proposals",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/bids",
+   "/dashboard/awards",
+   "/dashboard/invites",
+   "/dashboard/saved-projects",
+   "/dashboard/project-alerts"
+  ],
+  "related": [
+   "projects",
+   "project-detail",
+   "profile",
+   "messages"
+  ]
+ },
+ {
+  "id": "my-services",
+  "collection": "member",
+  "audience": "member",
+  "feature": "projectsV2",
+  "routes": [
+   "/dashboard/services",
+   "/dashboard/services/new",
+   "/dashboard/services/:id/edit",
+   "/dashboard/service-orders"
+  ],
+  "related": [
+   "freelance-services",
+   "profile",
+   "freelancers"
+  ]
+ },
+ {
+  "id": "my-books",
+  "collection": "member",
+  "audience": "member",
+  "routes": [
+   "/dashboard/books",
+   "/dashboard/books/sell",
+   "/dashboard/books/:id/edit",
+   "/dashboard/book-purchases"
+  ],
+  "related": [
+   "books",
+   "messages",
+   "verification"
+  ]
+ },
+ {
+  "id": "my-shops",
+  "collection": "member",
+  "audience": "member",
+  "feature": "tradeMaster",
+  "routes": [
+   "/dashboard/shops",
+   "/dashboard/shops/:shopId/products"
+  ],
+  "related": [
+   "marketplace",
+   "marketplace-join",
+   "verification"
+  ]
+ }
+]

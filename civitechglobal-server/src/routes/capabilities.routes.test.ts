@@ -41,7 +41,7 @@ describe('capabilities', () => {
     mocks.canSendEmail.mockReturnValue(true);
     mocks.canSendSms.mockReturnValue(false);
 
-    await expect(get()).resolves.toEqual({ email: true, sms: false });
+    await expect(get()).resolves.toMatchObject({ email: true, sms: false });
   });
 
   it('answers "no" rather than failing when a provider cannot be built', async () => {
@@ -53,6 +53,23 @@ describe('capabilities', () => {
     });
     mocks.canSendSms.mockReturnValue(false);
 
-    await expect(get()).resolves.toEqual({ email: false, sms: false });
+    await expect(get()).resolves.toMatchObject({ email: false, sms: false });
+  });
+
+  it('publishes the module switches and the app version floor', async () => {
+    mocks.canSendEmail.mockReturnValue(true);
+    mocks.canSendSms.mockReturnValue(true);
+    process.env.MOBILE_MIN_VERSION = '1.2.0';
+    process.env.MOBILE_LATEST_VERSION = 'not-a-version';
+
+    const body = (await get()) as { features: Record<string, boolean>; mobile: Record<string, string> };
+
+    expect(Object.keys(body.features)).toEqual(
+      expect.arrayContaining(['tradeMaster', 'tradeMasterOrders', 'jobsV2', 'projectsV2', 'booksV2']),
+    );
+    // A malformed value must not reach the app as a version to compare.
+    expect(body.mobile).toEqual({ minVersion: '1.2.0', latestVersion: '1.0.0' });
+    delete process.env.MOBILE_MIN_VERSION;
+    delete process.env.MOBILE_LATEST_VERSION;
   });
 });

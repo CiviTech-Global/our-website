@@ -20,6 +20,42 @@ npm run test:mobile   # flutter test
 
 Or inside this folder: `flutter pub get`, `flutter run`, `flutter test`.
 
+Against a local server instead of production:
+`flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000/api/v1`
+(10.0.2.2 is the host machine, seen from the Android emulator).
+
+## Layout
+
+```
+lib/
+  app/        the app root, router (go_router) and the five-tab shell
+  core/       API client and session, settings, capabilities, formats, telemetry
+  design/     Bagh Ravan: palettes, tokens, theme, springs, haptics, widgets
+  l10n/       translations (generated accessors in l10n/generated/)
+  features/   one folder per area: account, home, explore, inbox, me, help, ...
+```
+
+Design rules, palettes and the phase plan: the plan of record (Bagh Ravan
+Mobile Plan artifact). The palettes' contrast is checked by
+`test/design/palette_test.dart`; change a colour only with that test green.
+
+## Generated files
+
+All three are committed, so a checkout builds without running anything.
+
+- **Translations and help guides** come from the web's dictionaries, the one
+  source of truth. After changing a dictionary or a guide:
+  `node civitechglobal-web/scripts/export-mobile-l10n.mjs`. CI fails when the
+  export is stale. App-only text lives in the `mobile` section of the web
+  dictionaries, in all six languages.
+- **Models** (`*.freezed.dart`, `*.g.dart`):
+  `dart run build_runner build --delete-conflicting-outputs --force-jit`.
+  `--force-jit` is needed while a dependency ships build hooks, which the
+  ahead-of-time build script cannot compile.
+- **Icons and splash screen** come from `assets/brand/logo.svg`, the vector
+  trace of the company logo: `node civitechglobal-mobile/tool/brand_assets.mjs`
+  (needs `npm ci` in civitechglobal-web for its headless browser).
+
 ## Package mirror
 
 `pubspec.lock` is resolved against `https://pub.flutter-io.cn`, the mirror

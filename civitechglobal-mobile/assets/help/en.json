@@ -1,0 +1,2209 @@
+{
+ "collections": {
+  "company": {
+   "title": "The company and software services",
+   "description": "Meet Rayan Tamaddon Jahan Gostar: software development services, project requests, contacting us and working with us."
+  },
+  "insurance": {
+   "title": "Insurance",
+   "description": "Online insurance applications, a form for each product, and tracking with a code."
+  },
+  "consult": {
+   "title": "Consulting and experts",
+   "description": "Request technical or career consulting, and meet the experts club."
+  },
+  "jobs": {
+   "title": "Jobs",
+   "description": "Find and apply for jobs, browse company pages, and post a vacancy."
+  },
+  "freelance": {
+   "title": "Freelance projects",
+   "description": "Post a project, send proposals, ready-made services and the freelancer directory."
+  },
+  "books": {
+   "title": "Book market",
+   "description": "Buy and sell new and second-hand books between members."
+  },
+  "marketplace": {
+   "title": "Local market",
+   "description": "Local shops and products on the map, and listing your shop."
+  },
+  "account": {
+   "title": "Your account",
+   "description": "Signing up, signing in, resetting your password and confirming your email."
+  },
+  "member": {
+   "title": "Member dashboard",
+   "description": "Your dashboard: profile, verification, requests, messages and your marketplace activity."
+  }
+ },
+ "articles": {
+  "home": {
+   "title": "Home page",
+   "summary": "Where the site starts: who Rayan Tamaddon Jahan Gostar is, what we build, and where you can go from here.",
+   "heading": "Start here",
+   "intro": "Rayan Tamaddon Jahan Gostar is a software engineering company that builds custom software, web and mobile apps, enterprise platforms and data analytics solutions. Alongside introducing the company, this site brings several services together in one place: software project requests, online insurance applications, consulting with experts, jobs, freelance projects and a book market. Each has its own guide, and all of them are collected in the help centre.",
+   "steps": [
+    [
+     "Say what you are looking for",
+     "To order software, go to Services or straight to Start a project; for insurance, to Insurance; for work or a project, to the marketplace."
+    ],
+    [
+     "Open the guide on any page",
+     "On every page, the Guide button in the top bar (or the ? key) opens an explanation of that page beside it."
+    ],
+    [
+     "Submit a request and keep the code",
+     "Every request you make has a tracking code; use it on Track a request to see where it stands."
+    ],
+    [
+     "With an account, it is all in your dashboard",
+     "Signed in, your tracking codes, messages and marketplace activity sit together in your dashboard."
+    ]
+   ],
+   "points": [
+    [
+     "Software development",
+     "From idea to deployment and maintenance, with a free, no-obligation cost estimate and technical proposal."
+    ],
+    [
+     "Secondary services",
+     "Online applications for many kinds of insurance, with a form per product, and technical and career consulting with experts."
+    ],
+    [
+     "Marketplace",
+     "Jobs and freelance projects, each reviewed before publication, and a book market between members."
+    ],
+    [
+     "Six languages",
+     "The site is available in Persian, English, Turkish, German, French and Spanish; switch language from the top bar."
+    ]
+   ],
+   "faqs": [
+    [
+     "What exactly does Rayan Tamaddon Jahan Gostar do?",
+     "Design and development of custom software, web and mobile apps, enterprise and civic-tech platforms, and data analytics and visualisation. Much of our work is open source."
+    ],
+    [
+     "How is CiviTech Global related to Rayan Tamaddon Jahan Gostar?",
+     "CiviTech Global is the international brand of Rayan Tamaddon Jahan Gostar: one company, one team."
+    ],
+    [
+     "Do I need to sign up to use the site?",
+     "Not to request a project, insurance or a consultation, send a CV or contact us. You need an account to post a listing, bid on a project or sell a book."
+    ],
+    [
+     "How do I find out where my request has got to?",
+     "With the tracking code you received when you submitted it, on Track a request. If you were signed in, the code is also saved under My requests."
+    ],
+    [
+     "Does the site have a trust seal?",
+     "Yes. The ENAMAD e-commerce trust seal appears at the bottom of every page."
+    ]
+   ],
+   "related": {
+    "services": "The full list of software development services and how a project runs.",
+    "start-project": "The shortest route to a free technical proposal and cost estimate.",
+    "about": "The mission, vision and values behind our work.",
+    "help-centre": "Every guide in one place, with search."
+   }
+  },
+  "services": {
+   "title": "Software design and development services",
+   "summary": "What we build, the stages every project goes through, and our secondary services at a glance.",
+   "intro": "This page introduces our four main services: intelligent custom software development, web and mobile app development, enterprise and civic-tech platforms, and data analytics and visualisation. Every project, whatever its size, goes through four stages: ideation and consulting, analysis and design, development and testing, and deployment and support. Insurance services are listed on the same page as a secondary service.",
+   "steps": [
+    [
+     "Find the right service",
+     "Read the cards; if your need spans several, that is fine — you describe all of it in the project request."
+    ],
+    [
+     "See the stages",
+     "The How a project runs section shows what happens from your request to delivery and support."
+    ],
+    [
+     "Submit a project request",
+     "The Start a project button opens the brief; the technical proposal and cost estimate are free."
+    ]
+   ],
+   "points": [
+    [
+     "A written proposal before any commitment",
+     "You see the scope, deliverables, assumptions, exclusions, timeline and price range before work starts."
+    ],
+    [
+     "Stage-by-stage development",
+     "The software is built in short, visible iterations so you see progress and give feedback at every step."
+    ],
+    [
+     "Open source, no lock-in",
+     "Built on open standards and open-source technology, so your software stays free to extend."
+    ],
+    [
+     "With you after delivery",
+     "Maintenance, updates and technical support after launch."
+    ]
+   ],
+   "faqs": [
+    [
+     "Do you take small projects?",
+     "Yes. Size is not how we decide; if something is outside our expertise, we say so honestly at the start."
+    ],
+    [
+     "How do I find out the cost?",
+     "After you submit a request you receive a written proposal with a price range. Reviewing the request and writing the proposal costs nothing."
+    ],
+    [
+     "How long will it take?",
+     "It depends on the scope. The detailed timeline is part of the written proposal, and you see it before work starts."
+    ],
+    [
+     "Can you rebuild or maintain software I already have?",
+     "Yes. \"Rebuild or modernise existing software\" and \"Maintenance and support\" are both project types in the request form."
+    ],
+    [
+     "Can I talk to someone before submitting a request?",
+     "Yes. Ask for a technical conversation on the Consulting page; a consultation creates no obligation."
+    ]
+   ],
+   "related": {
+    "start-project": "The brief: the next step once you have chosen a service.",
+    "portfolio": "Examples of what we have built and the technology behind them.",
+    "consult": "If you are not yet sure what you need, talk it through first.",
+    "insurance": "Our secondary service: online applications for many kinds of insurance."
+   }
+  },
+  "start-project": {
+   "title": "Software project request",
+   "summary": "Describe what you need and get a technical proposal, timeline and price range, free and without obligation.",
+   "intro": "This form turns your request into a formal proposal. The more clearly you describe the need, goals, constraints and budget, the more precise the proposal. After you submit it you get a tracking code; our specialists review the request, ask about anything unclear, and finally send a written proposal that you read under the same code and accept or decline.",
+   "steps": [
+    [
+     "Introduce yourself",
+     "Name, email and phone are required. Email and phone together are your identity; enter the same two in later requests."
+    ],
+    [
+     "Describe the project",
+     "Choose the title, project type, engagement model and platforms, and in the brief say in your own words what does not work today and what you expect."
+    ],
+    [
+     "Give timing and budget",
+     "Give a budget range, not an exact figure. If you have no set budget, choose that option."
+    ],
+    [
+     "Attach documents",
+     "Up to 8 files (each up to 10 MB, 25 MB in total). If you need a non-disclosure agreement before review, tick the NDA option."
+    ],
+    [
+     "Keep the tracking code",
+     "Copy the code after submitting. You read the proposal under it on Track a request."
+    ]
+   ],
+   "points": [
+    [
+     "A formal, free proposal",
+     "Scope, deliverables, assumptions, what is not included, timeline and a price range."
+    ],
+    [
+     "No commitment until you accept",
+     "Until you accept the proposal you are not committed to anything; if you decline it, that is the end of it."
+    ],
+    [
+     "Confidentiality",
+     "What you send stays with us, and an NDA is signed before review if you need one."
+    ]
+   ],
+   "tips": [
+    [
+     "Do not leave \"Out of scope\" empty",
+     "Knowing from the start what you do not want makes the proposal more precise and the price more realistic."
+    ],
+    [
+     "Why a budget range?",
+     "At this stage a software estimate is accurate to roughly −25% to +75%; a range is more realistic for both sides than a single number."
+    ],
+    [
+     "Sign in so the code is not lost",
+     "If you are signed in before submitting, the tracking code is saved automatically under My requests."
+    ]
+   ],
+   "faqs": [
+    [
+     "Is reviewing the request and writing a proposal free?",
+     "Yes. Both are free."
+    ],
+    [
+     "When will the proposal be ready?",
+     "It depends on how complex the request is. Check the status any time with your tracking code; if we have questions, we ask them before writing the proposal."
+    ],
+    [
+     "What happens if I decline the proposal?",
+     "Nothing; you decline and that is it. What you sent stays with us and reaches nobody else."
+    ],
+    [
+     "I have lost my tracking code.",
+     "If you were signed in, it is under My requests. Otherwise send a message from Contact us using the same email and phone number."
+    ],
+    [
+     "I do not know which project type to choose.",
+     "Choose the closest one, or Other, and explain in the brief; we correct it during review."
+    ]
+   ],
+   "related": {
+    "services": "If you are not yet sure which service fits.",
+    "track": "Where you read the proposal under your tracking code and accept or decline it.",
+    "my-requests": "For members: all your tracking codes in one list.",
+    "consult": "A technical conversation before you submit, without obligation."
+   }
+  },
+  "about": {
+   "title": "About us",
+   "summary": "Who Rayan Tamaddon Jahan Gostar is: mission, vision, values and what we do.",
+   "intro": "This page introduces the company: our mission is to help civilisation get more out of technology every day, by building custom and open-source software for individuals, businesses and organisations. Our vision is a fully intelligent civilisation, and on the way there we want to be a home for open-source engineering and for the next generation of engineers.",
+   "points": [
+    [
+     "Mission and vision",
+     "Why we do this and where we want to get to."
+    ],
+    [
+     "Values",
+     "Innovation, transparency, community and excellence, and what each means day to day."
+    ],
+    [
+     "Get to know us",
+     "Links to the team, projects, customers, partners and the blog."
+    ]
+   ],
+   "faqs": [
+    [
+     "What is CiviTech Global?",
+     "The international brand of Rayan Tamaddon Jahan Gostar."
+    ],
+    [
+     "Why open source?",
+     "The code is transparent and auditable, tied to no vendor, its security is tested by a wide community, and it costs less to own."
+    ],
+    [
+     "How can I work with you?",
+     "For a project, use Start a project; for a job, Send your CV; for an internship, Volunteering and internships."
+    ]
+   ],
+   "related": {
+    "team": "The people who do the work, and how they work.",
+    "portfolio": "What we have built so far.",
+    "customers": "The organisations whose software we built.",
+    "join": "If you want to be part of this team."
+   }
+  },
+  "team": {
+   "title": "Our team",
+   "summary": "The engineers, designers and collaborators who build this platform and our clients’ projects.",
+   "heading": "How our team works",
+   "intro": "Behind every project stands a group of software engineers who review each other’s work, write decisions down, and answer for the work from the first message to delivery. Rayan Tamaddon Jahan Gostar is built on open source, collaboration with the global engineering community, and an open door for people starting out; this section explains what that means day to day.",
+   "points": [
+    [
+     "Code that is reviewed and tested",
+     "Every change is read by another engineer and covered by tests before delivery. The aim is code that works for years, not just on delivery day."
+    ],
+    [
+     "Decisions on paper",
+     "Scope, assumptions, what is not included, timeline and price range all go into a written proposal. What is not written down has not been agreed."
+    ],
+    [
+     "Accessible from day one",
+     "What we build works with a keyboard and a screen reader and opens on an inexpensive phone. That is a decision, not an extra feature."
+    ],
+    [
+     "Open source and an open door",
+     "Part of our work happens as open-source projects alongside the global engineering community, and the volunteering and internship programme gives people starting out a way to work on real projects."
+    ]
+   ],
+   "faqTitle": "Common questions about the team",
+   "faqs": [
+    [
+     "How can I join the team?",
+     "Send your CV from the Send your CV page. We read it and get in touch whenever a role opens that fits your experience."
+    ],
+    [
+     "I am just starting out; is there room for me?",
+     "Yes. The volunteering and internship programme exists for exactly that: real projects alongside experienced engineers."
+    ],
+    [
+     "How is CiviTech Global related to Rayan Tamaddon Jahan Gostar?",
+     "CiviTech Global is the international brand of Rayan Tamaddon Jahan Gostar: one company, one team."
+    ],
+    [
+     "How do I start a project with this team?",
+     "Submit your request on the Start a project page. You get a tracking code, and a written proposal is prepared for you, free and without obligation."
+    ]
+   ],
+   "related": {
+    "join": "Send your CV for a job.",
+    "volunteer": "The route for people starting out: volunteering and internships on real projects.",
+    "experts": "Experts who give technical and career advice.",
+    "start-project": "Start a project with this team."
+   }
+  },
+  "portfolio": {
+   "title": "Our projects",
+   "summary": "Projects in progress and delivered: the platforms, apps and systems we have built.",
+   "intro": "This page shows examples of our work. For each project you see a short description, its status (in progress or delivered), the technology used and, where available, screenshots and a link. If a project was built for a named client, the client is shown too.",
+   "steps": [
+    [
+     "Browse the list",
+     "Filter projects by status (in progress or delivered) or by the technology used."
+    ],
+    [
+     "Open the screenshots",
+     "Each project’s gallery shows how it looks and works."
+    ],
+    [
+     "Want something similar?",
+     "Mention the project in your request so we understand exactly what you mean."
+    ]
+   ],
+   "faqs": [
+    [
+     "Are all your projects here?",
+     "Not all of them. Some projects are confidential and are published only with the client’s permission."
+    ],
+    [
+     "Can I see the code?",
+     "For open-source projects, yes; if a repository link has been published, it is on the project."
+    ],
+    [
+     "I want something like one of these.",
+     "Describe your need on Start a project and mention the project."
+    ]
+   ],
+   "related": {
+    "services": "The services these projects came out of.",
+    "customers": "The organisations we built this software for.",
+    "start-project": "Start your own project."
+   }
+  },
+  "customers": {
+   "title": "Customers club",
+   "summary": "The organisations whose software we built, and what they say about working with us.",
+   "heading": "What being our customer means",
+   "intro": "The customers club lists the organisations and businesses whose software we have built. More important than the list is the experience every customer has from the first message to delivery — the same thing we promise everyone, from small projects to large ones.",
+   "points": [
+    [
+     "A free written proposal",
+     "Reviewing your request and writing the proposal costs nothing. It covers scope, deliverables, assumptions, exclusions, timeline and a price range."
+    ],
+    [
+     "A tracking code, always available",
+     "Submitting a request gives you a tracking code. At any time, even at three in the morning, you can see where the work stands and accept or decline the proposal."
+    ],
+    [
+     "The price before the work",
+     "You see the price range before anything starts. If part of the work is not worth what it would cost, we say so at the outset."
+    ],
+    [
+     "A straight answer",
+     "If something is outside our expertise, we say so honestly. Size does not decide what we take on; small projects are welcome."
+    ]
+   ],
+   "faqTitle": "Common questions from customers",
+   "faqs": [
+    [
+     "Do I have to pay to get a quote?",
+     "No. Reviewing the request and writing the proposal are free."
+    ],
+    [
+     "What happens if I decline the proposal?",
+     "Nothing happens; you decline and that is the end of it. Whatever you sent stays with us and reaches nobody else."
+    ],
+    [
+     "I have lost my tracking code.",
+     "Contact us from the same phone number or email address you used for the request, and we will give it to you again."
+    ],
+    [
+     "Do finished engagements stay on this list?",
+     "Yes. Past customers stay in a separate section; \"we built this software for them\" is still true."
+    ]
+   ],
+   "related": {
+    "portfolio": "The projects we built for these customers.",
+    "start-project": "Become a customer: submit a project request.",
+    "partners": "The organisations we work alongside."
+   }
+  },
+  "partners": {
+   "title": "Our partners",
+   "summary": "The technology, academic, community and strategic partners we build software alongside.",
+   "heading": "Working with us",
+   "intro": "Our partners are the organisations we build software alongside: from technology companies to universities and open-source communities. Each partnership has its own shape, but the foundation is the same: transparency about the work, the decisions and the limits, and quality you can rely on.",
+   "points": [
+    [
+     "Technology partner",
+     "Companies whose technology, infrastructure or tools we use alongside our work, or who choose us to build part of their product."
+    ],
+    [
+     "Academic partner",
+     "Universities and training centres we work with to grow the next generation of engineers — an open door to real projects for students."
+    ],
+    [
+     "Community partner",
+     "Open-source communities and projects we contribute to, which make building alongside others, not in isolation, possible."
+    ],
+    [
+     "Strategic and sales partner",
+     "Organisations that represent or resell our solutions in their market, or walk a long-term path with us."
+    ]
+   ],
+   "faqTitle": "Common questions about partnering",
+   "faqs": [
+    [
+     "How do I propose a partnership?",
+     "Send a message from Contact us and say what kind of partnership you have in mind. You get a tracking code and read our reply under it on the same page."
+    ],
+    [
+     "What do we look for in a partner?",
+     "The values we work by ourselves: transparency, quality never traded for speed, and building with others."
+    ],
+    [
+     "When does a partner’s name appear on this page?",
+     "Once the partnership is in place. Finished partnerships stay in a separate section."
+    ]
+   ],
+   "related": {
+    "customers": "The organisations we have built software for.",
+    "contact": "Send your partnership proposal from here.",
+    "volunteer": "For universities: the internship route for students."
+   }
+  },
+  "contact": {
+   "title": "Contact us",
+   "summary": "Send a message, get a tracking code and read the reply with it on this page — no email needed.",
+   "heading": "How your message is followed up",
+   "intro": "To message us you need neither an account nor to wait for an email. You send the message, get a tracking code, and read the reply with that code on this same page.",
+   "points": [
+    [
+     "A tracking code instead of email",
+     "Your email only identifies your message; no reply is sent to it. You read our reply on this page with the tracking code."
+    ],
+    [
+     "The code is shown only once",
+     "Note or copy the code straight after sending; it is the only way back to your message."
+    ],
+    [
+     "A clear status",
+     "Each message is Awaiting reply, Answered or Closed. Entering the code shows the status and the reply together."
+    ],
+    [
+     "The right route for each job",
+     "For a software project use Start a project, and to talk to an expert use Request a consultation. Follow insurance requests with their own code on Track a request."
+    ]
+   ],
+   "tips": [
+    [
+     "Copy the code now",
+     "The message’s tracking code is shown only once and no email is sent; without it you cannot reach the reply."
+    ]
+   ],
+   "faqTitle": "Common questions about contacting us",
+   "faqs": [
+    [
+     "Will you email me the reply?",
+     "No. The reply is read on this page with the tracking code, which is why keeping the code matters."
+    ],
+    [
+     "How long until I get a reply?",
+     "We review messages soon. Until we reply, the message shows Awaiting reply."
+    ],
+    [
+     "I have lost my tracking code.",
+     "Send a new message mentioning the earlier one; you read the reply under the new message’s code."
+    ],
+    [
+     "Which page should I use to start a project?",
+     "Start a project. There, your request leads to a written proposal with scope, timeline and a price range."
+    ]
+   ],
+   "related": {
+    "start-project": "For a software project, its own form gets a better answer.",
+    "consult": "To talk to an expert, ask for a consultation.",
+    "track": "Follow project, insurance, CV and consultation requests."
+   }
+  },
+  "join": {
+   "title": "Send your CV",
+   "summary": "Send us your CV and we get in touch as soon as a role opens that fits your experience.",
+   "heading": "From CV to conversation",
+   "intro": "This form is for people who want to work at Rayan Tamaddon Jahan Gostar: software engineers, designers or product managers, junior or experienced. We read your CV and get in touch whenever a matching role opens. You can see your CV’s status at any time with a tracking code.",
+   "steps": [
+    [
+     "Enter your details",
+     "Name, email and phone are required; email and phone together identify you in later follow-ups."
+    ],
+    [
+     "Attach your CV",
+     "PDF, Word (docx) or LaTeX (tex), up to 10 MB. A short note is optional."
+    ],
+    [
+     "Keep the tracking code",
+     "After sending you get a code; use it on Track a request to see your CV’s status."
+    ]
+   ],
+   "tips": [
+    [
+     "Sending limit",
+     "Each person can send a CV at most twice a day (an hour apart) and on only two days, so send your final version."
+    ]
+   ],
+   "faqs": [
+    [
+     "I am just starting out; should I send a CV?",
+     "Yes. If you have no work experience yet, the volunteering and internship programme is built for you too."
+    ],
+    [
+     "Do you reply to every CV?",
+     "We read it, and you can see its status with your tracking code. We get in touch when a matching role opens."
+    ],
+    [
+     "Can I update my CV?",
+     "Send the new version again, within the limit of twice a day on two days."
+    ],
+    [
+     "Can I apply for a specific vacancy?",
+     "Yes; for listings on Jobs, apply directly from the listing’s page."
+    ]
+   ],
+   "related": {
+    "volunteer": "If you are looking for an internship or volunteer work.",
+    "jobs": "Open vacancies, from us and from other companies.",
+    "team": "Meet the team you would be joining.",
+    "track": "Your CV’s status with the tracking code."
+   }
+  },
+  "volunteer": {
+   "title": "Volunteering and internships",
+   "summary": "Work on real projects as a volunteer or intern, and grow alongside experienced engineers.",
+   "intro": "This programme is for students and recent graduates, people changing career into software, and developers who want to contribute to open-source and civic projects. It has two forms: volunteering, where you give your free time to projects without a strict time commitment, and an internship, which is a fixed period with a learning plan, a mentor and a final assessment.",
+   "steps": [
+    [
+     "Choose the kind of placement",
+     "Volunteer or intern; each has its own description in the form."
+    ],
+    [
+     "Say what and when",
+     "Your field (front end, back end, mobile, data, design and so on), hours per week, start date and working arrangement (on site, hybrid or remote)."
+    ],
+    [
+     "Describe your studies and skills",
+     "University, field of study, skills and a GitHub or portfolio link; the fuller it is, the easier it is to find the right project."
+    ],
+    [
+     "Send it and keep the code",
+     "Follow your application with the tracking code."
+    ]
+   ],
+   "points": [
+    [
+     "Real projects",
+     "Work on software that is actually used, not made-up exercises."
+    ],
+    [
+     "Review and mentoring",
+     "Code review and guidance from experienced engineers."
+    ],
+    [
+     "A certificate",
+     "A certificate and reference letter for those who complete the placement."
+    ]
+   ],
+   "faqs": [
+    [
+     "Is volunteering paid?",
+     "Volunteering is unpaid and flexible in time. If you are looking for a job, use Send your CV."
+    ],
+    [
+     "Can I apply without experience?",
+     "Yes; that is what the programme is for. List whatever skills you have, however few."
+    ],
+    [
+     "Is remote work possible?",
+     "Yes. Choose on site, hybrid or remote as the working arrangement in the form."
+    ],
+    [
+     "What is the difference between an internship and volunteering?",
+     "An internship is a fixed period with a learning plan, a mentor and a final assessment; volunteering is flexible with no strict time commitment."
+    ]
+   ],
+   "related": {
+    "join": "If you are looking for a job.",
+    "team": "The engineers you would work alongside.",
+    "experts": "For career advice from experts."
+   }
+  },
+  "blog": {
+   "title": "Blog",
+   "summary": "Practical guides to insurance and software: prices, buying tips and comparisons, written for better decisions.",
+   "intro": "The blog publishes articles that help with a real decision: the price of third-party and car body insurance, tips for buying insurance, or how to define a software project. Most articles are in Persian and some have an English edition; an article that does not exist in your language does not appear in that language’s list.",
+   "steps": [
+    [
+     "Find an article",
+     "Browse the list; each article has a summary, a publication date and an estimated reading time."
+    ],
+    [
+     "Read, then act",
+     "Every article ends with a link to the online insurance application, so you can start a request there if you are ready."
+    ]
+   ],
+   "faqs": [
+    [
+     "How often are articles published?",
+     "Whenever we have something new to say; we prefer quality to quantity."
+    ],
+    [
+     "Are the prices in the articles final?",
+     "No. Prices are as of the article’s publication date and can change; you get the final price when you apply."
+    ],
+    [
+     "Why is an article I saw not in another language?",
+     "Each article is published only in the languages it was written in; we do not publish machine translations."
+    ]
+   ],
+   "related": {
+    "insurance": "After reading an insurance article, apply for that insurance.",
+    "services": "The software services the technical articles relate to.",
+    "help-centre": "For guides to using each part of the site."
+   }
+  },
+  "track": {
+   "title": "Track a request",
+   "summary": "Use your tracking code to see the status of a project, insurance, CV or consultation request.",
+   "intro": "Every request you make on this site has a ten-character tracking code. This page shows the request’s status from that code, whatever kind it is: a software project request (and our proposal, which you accept or decline right here), an insurance request (and the agreed callback time), a CV, or a consultation request (which you can cancel if needed). Messages from the contact form are followed separately on the Contact us page.",
+   "steps": [
+    [
+     "Enter the code",
+     "Type the code as you received it; letters are capitalised automatically."
+    ],
+    [
+     "See the status",
+     "The request type, submission date, last update and current status are shown."
+    ],
+    [
+     "If a proposal has arrived, decide",
+     "For a project request, open the written proposal and accept or decline it."
+    ]
+   ],
+   "points": [
+    [
+     "One page for everything",
+     "Projects, insurance, CVs and consultations are all followed with the same form."
+    ],
+    [
+     "A shareable link",
+     "The code stays in the page address, so you can bookmark the link or send it to the person the insurance is for."
+    ]
+   ],
+   "tips": [
+    [
+     "Keep them all in one place",
+     "If you have an account, add your codes under My requests so you do not have to type them each time."
+    ]
+   ],
+   "faqs": [
+    [
+     "Where is my tracking code?",
+     "It is shown straight after you submit a request. If you were signed in, it is also saved under My requests."
+    ],
+    [
+     "It says no request was found with this code.",
+     "Check the code again; do not confuse zero with the letter O, or one with the letter I. If it still fails, send a message from Contact us."
+    ],
+    [
+     "Do I follow a contact form message here?",
+     "No; contact messages are followed on the Contact us page itself, with their own code."
+    ],
+    [
+     "What can others see with my code?",
+     "Anyone with the code can see the status; keep it like a password and share it only with whoever needs it."
+    ]
+   ],
+   "related": {
+    "start-project": "Submit a software project request.",
+    "insurance": "Submit an insurance request.",
+    "join": "Send your CV.",
+    "my-requests": "For members: every code in one list."
+   }
+  },
+  "help-centre": {
+   "title": "Help centre",
+   "summary": "Every guide on the site in one place, grouped and searchable.",
+   "intro": "For each part of the site, the help centre explains what it does, how to use it, which other sections it works with, and the answers to common questions. The same guides are available on every page through the Guide button or the ? key. Guides to the member dashboard can be read by anyone, so you know what an account offers before you create one.",
+   "steps": [
+    [
+     "Search",
+     "Type something like \"tracking code\", \"verification\" or \"proposal\"."
+    ],
+    [
+     "Or browse a collection",
+     "Guides are grouped by the parts of the site."
+    ],
+    [
+     "Go from the guide to the section",
+     "Each guide has a Go to this section button and links to related sections."
+    ]
+   ],
+   "faqs": [
+    [
+     "I could not find the answer to my question.",
+     "Ask from the Contact us page; questions that come up often are added to the guides."
+    ],
+    [
+     "The guide is not in my language.",
+     "Guides to the public pages are written in all six of the site’s languages; guides to the member and admin panels are in Persian and English for now."
+    ]
+   ],
+   "related": {
+    "home": "Back to the home page.",
+    "contact": "If the answer to your question was not in the guides.",
+    "dashboard": "The member dashboard guide."
+   }
+  },
+  "insurance": {
+   "title": "Insurance",
+   "summary": "Every kind of insurance we handle: find the one you need and apply for it online.",
+   "heading": "From choosing a policy to a specialist’s call",
+   "intro": "Online insurance applications are one of our secondary services, because the financial security, safety and peace of mind of our colleagues and clients matter to us. This page lists every insurance we take requests for: from third-party and car body cover for cars and motorcycles to supplementary health, life, accident, liability, cargo, engineering all-risk and mobile phone insurance. Each has its own form, and after you apply, a specialist calls to offer the best option for your needs and budget.",
+   "steps": [
+    [
+     "Find the insurance",
+     "Browse the list or search by name. Corporate policies carry a Corporate label."
+    ],
+    [
+     "Read its page",
+     "Each insurance page lists the coverages, what is not covered, the documents needed and what affects the premium."
+    ],
+    [
+     "Fill in the form",
+     "Enter the policy details and your contact details, and confirm your mobile number with a six-digit code."
+    ],
+    [
+     "Keep the tracking code",
+     "After applying, keep the tracking code; use it to see the request’s status and the agreed callback time."
+    ]
+   ],
+   "points": [
+    [
+     "Apply online",
+     "For policies labelled Apply online, you give everything needed in the form."
+    ],
+    [
+     "Priced by a specialist",
+     "Policies labelled Priced by a specialist are priced over the phone; you give the basics and the specialist calls you."
+    ],
+    [
+     "No prices on the site",
+     "The premium depends on your details; the specialist gives you the options and the price after review."
+    ]
+   ],
+   "faqs": [
+    [
+     "Can I buy and pay for the insurance here?",
+     "No. Here you submit the request; our specialist calls you, goes through the options and arranges issuing the policy."
+    ],
+    [
+     "Why can I not see a price on the site?",
+     "The premium depends on things like the vehicle, your history and the coverages you choose. Those factors are listed on each policy’s page, and the specialist gives the exact price."
+    ],
+    [
+     "Why do I have to confirm my number?",
+     "The number is how the specialist reaches you; confirming it prevents typos."
+    ],
+    [
+     "Do I need an account to apply for insurance?",
+     "No. But if you are signed in, the tracking code is saved under My requests."
+    ],
+    [
+     "The insurance I want is not on the list.",
+     "Ask from the Contact us page; we will suggest the closest option."
+    ]
+   ],
+   "related": {
+    "insurance-product": "Each policy’s own page and form.",
+    "track": "Follow an insurance request with its code.",
+    "my-requests": "For members: every request in one list.",
+    "blog": "Guides to insurance prices and buying tips."
+   }
+  },
+  "insurance-product": {
+   "title": "An insurance policy’s page and form",
+   "summary": "One policy in detail, with its own form: coverages, exclusions, documents, price factors and applying.",
+   "intro": "Every policy has its own page. At a glance gives the summary; then come the coverages and optional coverages, what is not covered, the documents needed, what affects the premium, and what to do if you need to claim. The application form is on the same page, and its fields are specific to that policy.",
+   "steps": [
+    [
+     "Policy details",
+     "Fill in the fields specific to this policy; they are needed for an accurate price."
+    ],
+    [
+     "Contact details",
+     "Enter your name and how to reach you; we call to arrange and send the policy."
+    ],
+    [
+     "Confirm your number",
+     "Confirm your mobile number with the six-digit code; the request cannot be submitted without it."
+    ],
+    [
+     "Submit and keep the code",
+     "Submit the request and keep the tracking code."
+    ]
+   ],
+   "tips": [
+    [
+     "Read the exclusions before applying",
+     "The Not covered list matters as much as the coverages, and saves disappointment when you claim."
+    ],
+    [
+     "Have the documents ready",
+     "Prepare the required documents before the specialist calls, so the policy is issued faster."
+    ]
+   ],
+   "faqs": [
+    [
+     "What happens after I apply?",
+     "A specialist calls you as soon as possible to go through the options, and the agreed call time appears on the tracking page."
+    ],
+    [
+     "What does \"Priced by a specialist\" mean?",
+     "This policy is priced by a specialist; you give the basics so they can call you well informed."
+    ],
+    [
+     "I did not receive the confirmation code.",
+     "Wait a moment and press Resend, or check the number and correct it with Change number."
+    ],
+    [
+     "Where are my details shown?",
+     "The tracking page shows only the request’s status, not your personal details."
+    ]
+   ],
+   "related": {
+    "insurance": "Back to the list of all insurance.",
+    "track": "Follow the request with its code.",
+    "my-requests": "For members: your codes in one list."
+   }
+  },
+  "consult": {
+   "title": "Request a consultation",
+   "summary": "Ask for technical or career advice; tell us when you are free and we call you.",
+   "intro": "Your career path, a technical problem or a code review, getting started in software, or preparing for interviews and your CV: say what you want to talk about and when you are available. We call you and settle the time. The session can be online, by phone or in person, and it commits you to nothing.",
+   "steps": [
+    [
+     "Choose a topic",
+     "Career path, a technical problem, getting started, interviews and CV, or something else."
+    ],
+    [
+     "Say how and why",
+     "Online, by phone or in person, and what you hope the session will achieve."
+    ],
+    [
+     "Choose an expert, or leave it to us",
+     "If you have someone from the experts club in mind, choose them; otherwise, Whoever fits best."
+    ],
+    [
+     "Give the times you are free",
+     "Pick a few windows (a day and morning, afternoon or evening). Rough times are enough."
+    ],
+    [
+     "Keep the tracking code",
+     "We call the number you gave; follow the status with the code, and cancel the request if you need to."
+    ]
+   ],
+   "points": [
+    [
+     "A clear status",
+     "Received, Arranging a time, Time confirmed, Held — all under the tracking code."
+    ],
+    [
+     "Easy to cancel",
+     "If your plans change, cancel the request from the tracking page."
+    ]
+   ],
+   "tips": [
+    [
+     "Be specific about the goal",
+     "The more precise your expectation, the more useful the conversation — for example, \"I want to know where to start to move into back-end work\"."
+    ]
+   ],
+   "faqs": [
+    [
+     "Does a consultation commit me to anything?",
+     "No. A consultation creates no obligation to start a project or work together."
+    ],
+    [
+     "When will you call?",
+     "Within one of the windows you gave, to confirm the session time. The confirmed time also appears on the tracking page."
+    ],
+    [
+     "Do I need an email address?",
+     "No; a phone number is enough. Email is optional."
+    ],
+    [
+     "Can I cancel the request?",
+     "Yes, with the tracking code on the Track a request page."
+    ]
+   ],
+   "related": {
+    "experts": "Experts you can ask for by name.",
+    "start-project": "If the consultation leaves you ready to start a project.",
+    "my-requests": "For members: the consultation code in your request list."
+   }
+  },
+  "experts": {
+   "title": "Experts club",
+   "summary": "Engineers and specialists who give technical and career advice, with their fields, languages and years of experience.",
+   "heading": "How the experts club works",
+   "intro": "The experts club is a group of engineers and specialists who give technical and career advice — the people we turn to ourselves, whom you can also ask for by name. Each expert shows whether they are taking consultations.",
+   "points": [
+    [
+     "Technical advice",
+     "For decisions such as choosing technology and designing an architecture, or reviewing a system you have that is not working as it should."
+    ],
+    [
+     "Career advice",
+     "For engineers who are just starting or changing direction, from people who have walked that road themselves."
+    ],
+    [
+     "Choose by name",
+     "Each expert’s page lists their fields, languages and years of experience. If they are taking consultations, you can ask for one directly from that page."
+    ],
+    [
+     "Arranging a consultation",
+     "Submit a request on the Request a consultation page with a few suitable times, and we call you. A consultation commits you to nothing."
+    ]
+   ],
+   "faqTitle": "Common questions about consultations",
+   "faqs": [
+    [
+     "How do I book a consultation?",
+     "From the Request a consultation page, or with the consultation button on an expert’s page. Give a few suitable times and we call you."
+    ],
+    [
+     "Can I choose the expert myself?",
+     "Yes. Experts labelled Taking consultations can be requested by name."
+    ],
+    [
+     "Does a consultation commit me to starting a project?",
+     "No. A consultation creates no obligation."
+    ],
+    [
+     "How do I join the experts club?",
+     "Write about your experience and expertise from the Contact us page. Club profiles are added and maintained by our team."
+    ]
+   ],
+   "related": {
+    "consult": "The consultation request form.",
+    "team": "The Rayan Tamaddon Jahan Gostar engineering team.",
+    "freelancers": "If you want someone to do the work rather than advise on it."
+   }
+  },
+  "jobs": {
+   "title": "Jobs",
+   "summary": "Vacancies from verified employers across Iran and remote, with search, filters and alerts.",
+   "intro": "This section lists job vacancies, from Rayan Tamaddon Jahan Gostar and from other companies. Only employers whose identity our team has verified can post, and every listing is reviewed before it is published. Everything is free for job seekers: searching, saving listings, alerts and applying.",
+   "steps": [
+    [
+     "Search and filter",
+     "Search by job title, skill or company, and filter by category, province, country, remote or minimum salary."
+    ],
+    [
+     "Open a listing",
+     "Each listing shows the requirements, pay and benefits, skills and information about the company."
+    ],
+    [
+     "Save it or set an alert",
+     "Save interesting listings; press Get alerts for this search to hear about new ones."
+    ],
+    [
+     "Apply",
+     "Sign in and complete identity verification to send your CV; the application goes straight to the employer."
+    ]
+   ],
+   "points": [
+    [
+     "Verified employers",
+     "Every employer’s identity has been checked, and every listing is read before it goes live."
+    ],
+    [
+     "Province and category pages",
+     "The vacancies for a province, a country or a category each have their own address you can bookmark."
+    ],
+    [
+     "International remote work",
+     "Remote roles open to applicants from every country, or from one particular country."
+    ],
+    [
+     "Suggestions from your activity",
+     "Once signed in, you see listings that fit what you have applied for or saved."
+    ]
+   ],
+   "tips": [
+    [
+     "Set an alert",
+     "Instead of checking every day, save your search with Get alerts for this search; each matching new listing notifies you once."
+    ]
+   ],
+   "faqs": [
+    [
+     "Does applying cost anything?",
+     "No. Searching, saving listings, alerts and applying are free for job seekers."
+    ],
+    [
+     "Who can post here?",
+     "Only employers whose identity our team has verified, and every listing is reviewed before publication."
+    ],
+    [
+     "How do I post a vacancy?",
+     "Sign in, complete identity verification, and create a listing under My postings in your dashboard, then send it for review."
+    ],
+    [
+     "Why do I need to verify my identity to apply?",
+     "So the employer knows they are dealing with a real person — the same reason employers are verified."
+    ],
+    [
+     "How is this different from Send your CV?",
+     "Send your CV is for working with Rayan Tamaddon Jahan Gostar itself; this section is for specific vacancies, from us or from other companies."
+    ]
+   ],
+   "related": {
+    "job-detail": "Each listing’s page and the application form.",
+    "companies": "The companies that are hiring.",
+    "my-applications": "For job seekers: applications, saved jobs and alerts.",
+    "my-jobs": "For employers: posting and managing vacancies."
+   }
+  },
+  "job-detail": {
+   "title": "A job listing",
+   "summary": "The details of one vacancy, how well you match it, and the application form.",
+   "intro": "Each listing shows the role description, requirements, pay and benefits, the skills needed and information about the company. If you have added your skills to your profile, it also shows how many of the required skills you have. Your application goes straight to the employer, and we let you know at every stage.",
+   "steps": [
+    [
+     "Read the listing",
+     "Check the requirements, pay and type of work; if the employer usually replies, their response rate is shown too."
+    ],
+    [
+     "See your fit",
+     "The \"How well do you fit?\" section shows the skills you have and those worth learning."
+    ],
+    [
+     "Sign in and verify",
+     "The application form opens once you are signed in and your identity is verified."
+    ],
+    [
+     "Send your CV",
+     "Send the application and follow its status under My applications."
+    ]
+   ],
+   "tips": [
+    [
+     "Add your skills to your profile",
+     "Without skills on your profile, your fit with a listing cannot be worked out."
+    ]
+   ],
+   "faqs": [
+    [
+     "How do I know the employer has seen my CV?",
+     "When the employer opens your application its status becomes Seen by the employer, and we let you know whenever the stage changes."
+    ],
+    [
+     "Can I withdraw my application?",
+     "Yes, from My applications. While the listing is open you can apply again."
+    ],
+    [
+     "Can I apply twice to the same listing?",
+     "No; if you have already applied, the date is shown on the listing."
+    ],
+    [
+     "I cannot see the salary.",
+     "Some employers do not state it; the listing then says Negotiable."
+    ]
+   ],
+   "related": {
+    "jobs": "Back to all listings.",
+    "companies": "The page of the company behind the listing.",
+    "my-applications": "Follow the applications you have sent.",
+    "verification": "Identity verification, which you need before applying."
+   }
+  },
+  "companies": {
+   "title": "Companies",
+   "summary": "Verified employers, each company’s page and its open vacancies.",
+   "intro": "Every verified employer can have a company page: an introduction, the size of the organisation, images and all its open vacancies. Here you search companies and go from each company’s page to its listings.",
+   "steps": [
+    [
+     "Find the company",
+     "Search by name or browse by organisation size."
+    ],
+    [
+     "Read the page",
+     "See the company’s introduction and its open vacancies."
+    ],
+    [
+     "Are you an employer?",
+     "Once verified, create your company page from your dashboard; every vacancy you post links to it."
+    ]
+   ],
+   "faqs": [
+    [
+     "How do I create a company page?",
+     "Go to Company page in your dashboard. Your identity must be verified first."
+    ],
+    [
+     "Why has a company page been hidden?",
+     "If a page breaks the site’s rules, our staff hide it; the owner can ask support for the reason."
+    ]
+   ],
+   "related": {
+    "jobs": "Every vacancy.",
+    "my-jobs": "For employers: listings and the company page."
+   }
+  },
+  "projects": {
+   "title": "Freelance projects",
+   "summary": "Fixed-price and hourly projects from verified clients: find one, send a proposal and carry the work through.",
+   "intro": "Clients post projects here and freelancers send proposals for them. Every project is reviewed before it is published, and can be fixed-price or hourly. Anyone can browse the projects, but to post a project or send a proposal you need to sign in and complete identity verification. Payment does not go through the site; client and freelancer arrange it directly with each other.",
+   "steps": [
+    [
+     "Find a project",
+     "Search titles, descriptions or skills; sort and filter by category, pricing type, experience level or fewest proposals."
+    ],
+    [
+     "Read the project",
+     "See the budget, duration, skills and the client’s record (verified, hire rate and rating)."
+    ],
+    [
+     "Send a proposal",
+     "Give your price or hourly rate, delivery time and a milestone plan, and answer the client’s questions."
+    ],
+    [
+     "Carry the work through",
+     "If you are hired, the engagement opens under My collaborations, and the conversation and milestones continue in your dashboard."
+    ]
+   ],
+   "points": [
+    [
+     "Fixed price or hourly",
+     "On hourly projects you log your hours and the client approves them."
+    ],
+    [
+     "Milestone payments",
+     "Split the work into milestones with an amount and a time each; the milestones must add up to your proposal."
+    ],
+    [
+     "NDA",
+     "Some projects require you to sign a non-disclosure agreement before reading the description and attachments."
+    ],
+    [
+     "Project visibility",
+     "A project can be visible to everyone, to members only, or only to invited freelancers."
+    ]
+   ],
+   "tips": [
+    [
+     "Set a project alert",
+     "Create an alert for your search so you do not miss new projects that match it."
+    ]
+   ],
+   "faqs": [
+    [
+     "Does the site hold the money or handle payment?",
+     "No. Payment does not go through the site; client and freelancer agree the amount and method directly. The milestone plan helps keep that agreement clear."
+    ],
+    [
+     "Why is verification required?",
+     "To post a project, send a proposal or sign an NDA. Both sides know they are dealing with a real person."
+    ],
+    [
+     "When will my project be published?",
+     "After you send it for review, usually within a few hours."
+    ],
+    [
+     "How many proposals can I send?",
+     "One per project; you can withdraw it before the client decides."
+    ]
+   ],
+   "related": {
+    "project-detail": "Each project’s page and the proposal form.",
+    "client-projects": "For clients: posting and managing projects.",
+    "my-proposals": "For freelancers: proposals, invitations and collaborations.",
+    "freelancers": "Freelancers you can invite to your project."
+   }
+  },
+  "project-detail": {
+   "title": "A project page",
+   "summary": "The details of one project, the client’s record and the proposal form.",
+   "intro": "Each project page shows the description, the budget or hourly rate range, the duration, the experience level wanted, the skills and the client’s record. If the project requires an NDA, the full description and attachments open once you sign it. If the client invited you, an Invited label is shown.",
+   "steps": [
+    [
+     "Read, then decide",
+     "Look at the budget, duration and the client’s questions before writing a proposal."
+    ],
+    [
+     "Sign the NDA if needed",
+     "Enter your name as your signature to open the description and files."
+    ],
+    [
+     "Write your proposal",
+     "Your price or hourly rate, a milestone plan, delivery time and answers to the questions."
+    ],
+    [
+     "Wait for the reply",
+     "See the proposal’s status under My proposals; messages from the client arrive under Messages."
+    ]
+   ],
+   "tips": [
+    [
+     "Write a proposal for this project",
+     "Address this project’s problem and answer the client’s questions precisely; generic proposals are chosen less often."
+    ]
+   ],
+   "faqs": [
+    [
+     "What does signing the NDA commit me to?",
+     "To keeping the project description, attachments and anything the client tells you about it confidential."
+    ],
+    [
+     "Can I decline an invitation?",
+     "Yes, with Decline invitation. The client is told."
+    ],
+    [
+     "What happens if the project is closed?",
+     "A closed project accepts no new proposals; earlier proposals stay in your list."
+    ]
+   ],
+   "related": {
+    "projects": "Back to all projects.",
+    "my-proposals": "The proposals you have sent.",
+    "verification": "Required before sending a proposal.",
+    "messages": "Talking to the client."
+   }
+  },
+  "freelance-services": {
+   "title": "Freelance services",
+   "summary": "Ready-made work at a set price: choose a package and order it.",
+   "intro": "Freelance services work the other way round from projects: a freelancer offers what they do at a set price and delivery time, and you order it. Each service can have up to three packages: Basic, Standard and Premium. Every service is reviewed before it is published.",
+   "steps": [
+    [
+     "Find a service",
+     "Search and sort by category, price or rating."
+    ],
+    [
+     "Choose a package",
+     "Compare what each package includes and how long delivery takes."
+    ],
+    [
+     "Place an order",
+     "Once signed in and verified, send the order with a description of what you need."
+    ],
+    [
+     "Wait for the seller",
+     "The seller accepts or declines the order; follow its status under Orders in your dashboard."
+    ]
+   ],
+   "faqs": [
+    [
+     "How is payment made?",
+     "Not through the site; once the order is accepted, buyer and seller arrange it directly."
+    ],
+    [
+     "How is a service different from a project?",
+     "With a project you describe the work and receive proposals; with a service, the freelancer offers ready-made work at a set price."
+    ],
+    [
+     "How do I offer my own service?",
+     "Create a service under My services in your dashboard and send it for review."
+    ]
+   ],
+   "related": {
+    "my-services": "For sellers: creating services and managing orders.",
+    "freelancers": "Sellers’ profiles.",
+    "projects": "If what you need is not ready-made and has to be described, post a project."
+   }
+  },
+  "freelancers": {
+   "title": "Freelancers and profiles",
+   "summary": "Find freelancers by skill, language and availability, read their profiles and invite them.",
+   "intro": "The freelancer directory shows the public profiles of members who have a username and either list skills on their profile or offer an active, approved service: their skills, languages, country, availability, ratings and work samples. Contact details are never shown in the directory.",
+   "steps": [
+    [
+     "Search",
+     "Filter by skill, category, language, country, availability or verification, and sort by rating."
+    ],
+    [
+     "Read a profile",
+     "Verification badge, ratings, work samples and the services they offer."
+    ],
+    [
+     "Invite",
+     "Clients can invite a freelancer by username to send a proposal for their project."
+    ]
+   ],
+   "faqs": [
+    [
+     "How do I appear in this directory?",
+     "Choose a username and add your skills in your dashboard, or offer a service that gets approved. Work samples make an invitation more likely."
+    ],
+    [
+     "What does the verified badge on a profile mean?",
+     "That our team has verified this member’s identity."
+    ],
+    [
+     "Where do ratings come from?",
+     "From the people who rated this member at the end of working together."
+    ]
+   ],
+   "related": {
+    "profile": "Creating and editing your own public profile.",
+    "freelance-services": "The services freelancers offer.",
+    "projects": "Projects you can send proposals for."
+   }
+  },
+  "books": {
+   "title": "Book market",
+   "summary": "New and second-hand books from readers and bookshops: every copy of a book on one page.",
+   "intro": "In the book market each book has one page, and every copy offered for sale appears together on it, cheapest first. Each copy belongs to a seller, and you see its condition (from New to Acceptable), photos, price, shipping cost and delivery method. Buying starts with a request to buy; no payment goes through the site, and buyer and seller arrange payment and delivery directly.",
+   "steps": [
+    [
+     "Find the book",
+     "Search or browse the shelves; filter by condition, price, free shipping or below the cover price."
+    ],
+    [
+     "Choose a copy",
+     "On the book’s page, compare copies by condition, photos, price and delivery method."
+    ],
+    [
+     "Send a request to buy",
+     "Choose how to receive it and, if you like, offer a price; you need to be signed in and verified."
+    ],
+    [
+     "Arrange delivery",
+     "When the seller accepts, arrange payment and delivery in that request’s conversation."
+    ]
+   ],
+   "points": [
+    [
+     "Graded condition",
+     "Each copy has one of five grades — New, Like new, Very good, Good or Acceptable — with photos."
+    ],
+    [
+     "Selling books",
+     "List your copy with photos, condition and price from your dashboard; it is reviewed before it is published."
+    ],
+    [
+     "Two-way reviews",
+     "After a sale, buyer and seller review each other."
+    ]
+   ],
+   "tips": [
+    [
+     "Offering a price",
+     "If a copy’s price is negotiable you can offer your own; leave it empty to accept the seller’s price."
+    ]
+   ],
+   "faqs": [
+    [
+     "Do I pay the site?",
+     "No. No payment goes through the site; once your request is accepted, you arrange payment and delivery directly with the seller."
+    ],
+    [
+     "Why do I need to verify my identity to buy?",
+     "So the seller knows they are dealing with a real person; the same rule applies to sellers."
+    ],
+    [
+     "How do I sell a book?",
+     "Under My books for sale in your dashboard, list your copy with its ISBN, photos, condition and price, and send it for review."
+    ],
+    [
+     "The seller declined my request.",
+     "You can request another copy of the same book from a different seller."
+    ]
+   ],
+   "related": {
+    "my-books": "Selling books and following purchases from your dashboard.",
+    "messages": "Talking to the buyer or seller.",
+    "verification": "Required for buying and selling."
+   }
+  },
+  "marketplace": {
+   "title": "Local market",
+   "summary": "Find shops, products and services near you on the map, and contact the shop directly.",
+   "intro": "The local market shows shops and businesses around you on a map: their products, services, pictures and how to contact them. For now it is a shop window, not an online store; buying, booking and arranging happen directly with the shop itself.",
+   "steps": [
+    [
+     "Set your point",
+     "Allow access to your location, or click on the map so the search centres on that point."
+    ],
+    [
+     "Search",
+     "Search for a shop name, a trade, or the product or service you want; set the search radius and choose Nearest to sort."
+    ],
+    [
+     "Open a shop or product",
+     "See the introduction, pictures, products and services, and the location on the map."
+    ],
+    [
+     "Get in touch",
+     "To buy or book, use that shop’s own contact details."
+    ]
+   ],
+   "tips": [
+    [
+     "Location not available?",
+     "Browsers only share location over a secure connection, and you may not have allowed it; in that case choose a point on the map."
+    ]
+   ],
+   "faqs": [
+    [
+     "Can I buy and pay here?",
+     "Not yet. The basket and online payment are not switched on; contact the shop."
+    ],
+    [
+     "Are shops checked?",
+     "Yes. Each shop owner has verified their identity and every shop is reviewed before it appears."
+    ],
+    [
+     "My shop is not here.",
+     "Add it in four steps from the List your shop page."
+    ]
+   ],
+   "related": {
+    "marketplace-join": "Listing your own shop.",
+    "my-shops": "For sellers: managing your shop and products."
+   }
+  },
+  "marketplace-join": {
+   "title": "List your shop",
+   "summary": "List your shop in four steps so customers nearby can find it on the map.",
+   "intro": "Any business that offers products or services to customers nearby can list its shop. Because a shop is a business identity and buyers should know who is behind it, identity verification is required and the shop is reviewed before it appears. Once approved, you publish and edit your products and services yourself.",
+   "steps": [
+    [
+     "Create an account",
+     "Sign up, or sign in."
+    ],
+    [
+     "Verify your identity",
+     "Confirm your identity in your dashboard."
+    ],
+    [
+     "Create the shop",
+     "Enter the name, introduction, trade, logo, picture, contact details and location, and send it for review."
+    ],
+    [
+     "Add products and services",
+     "Once the shop is approved, publish, edit and remove your products and services."
+    ]
+   ],
+   "tips": [
+    [
+     "Put your location on the map",
+     "Without a location, your shop does not show up in \"near me\" searches."
+    ]
+   ],
+   "faqs": [
+    [
+     "How long does review take?",
+     "It depends on the review queue. If the reviewer asks for changes, you are told in your dashboard and send it again after fixing them."
+    ],
+    [
+     "Are products reviewed too?",
+     "Once the shop is approved, products are published straight away, but staff can send any product back for correction."
+    ]
+   ],
+   "related": {
+    "marketplace": "The market as a buyer sees it.",
+    "my-shops": "Managing your shop once listed.",
+    "verification": "Step two: identity verification."
+   }
+  },
+  "login": {
+   "title": "Sign in",
+   "summary": "Sign in with your email and password; if two-step sign-in is on, your authenticator code is asked for too.",
+   "intro": "Signing in gives you your dashboard: profile, identity verification, tracking codes, messages and your marketplace activity. If you have turned on two-step sign-in, after your password you are asked for the six-digit code from your authenticator app (or one of your recovery codes).",
+   "steps": [
+    [
+     "Email and password",
+     "Use the email address you signed up with."
+    ],
+    [
+     "Two-step code, if it is on",
+     "Enter the six-digit code from your authenticator app, or a recovery code."
+    ],
+    [
+     "Carry on where you were",
+     "If you came to sign in from a page such as a listing, you return to it afterwards."
+    ]
+   ],
+   "faqs": [
+    [
+     "I have forgotten my password.",
+     "Use \"Forgot your password?\". If an email cannot be sent, the page directs you to the contact form."
+    ],
+    [
+     "I cannot get to my authenticator app.",
+     "Enter one of the recovery codes you saved when you turned two-step sign-in on. Each code works once."
+    ],
+    [
+     "How do I sign out on every device?",
+     "In the security section of your profile, choose Sign out everywhere."
+    ]
+   ],
+   "related": {
+    "register": "No account yet?",
+    "password-reset": "Resetting your password.",
+    "dashboard": "What is waiting once you are signed in."
+   }
+  },
+  "register": {
+   "title": "Sign up",
+   "summary": "Create an account to post listings and projects, send proposals, sell books and keep your tracking codes in one place.",
+   "intro": "You do not need an account to request a project, insurance or a consultation, send a CV or contact us. An account is for things where your identity matters: posting a vacancy or a project, sending proposals, applying for jobs, buying and selling books and listing a shop. Your tracking codes also stay together under My requests.",
+   "steps": [
+    [
+     "The basics",
+     "Enter your first name, last name, email and a password."
+    ],
+    [
+     "Into your dashboard",
+     "After signing up you are signed in straight away."
+    ],
+    [
+     "Complete verification",
+     "For marketplace activity, confirm your identity from your dashboard."
+    ]
+   ],
+   "faqs": [
+    [
+     "Does signing up cost anything?",
+     "No."
+    ],
+    [
+     "Why do I also need to verify my identity after signing up?",
+     "Signing up creates an account; verification confirms there is a real person behind it. It is needed for buying and selling, hiring and projects."
+    ],
+    [
+     "What are the password rules?",
+     "They are shown under the password field; choose a long, unique password."
+    ]
+   ],
+   "related": {
+    "login": "If you already have an account.",
+    "verify-email": "Confirming your email.",
+    "verification": "Identity verification after signing up."
+   }
+  },
+  "password-reset": {
+   "title": "Reset your password",
+   "summary": "If you have forgotten your password, ask for a reset link and set a new one.",
+   "intro": "On the Reset your password page you enter your account’s email to be sent a reset link; opening the link lets you set a new password. If the site cannot send email at that moment, the page says so plainly and sends you to the contact form for help instead.",
+   "steps": [
+    [
+     "Enter your email",
+     "The one you signed up with."
+    ],
+    [
+     "Open the link",
+     "The reset link takes you to the page for choosing a new password."
+    ],
+    [
+     "Set a new password",
+     "Enter it twice and sign in with it."
+    ]
+   ],
+   "faqs": [
+    [
+     "The link has not arrived.",
+     "Check your spam folder. If the page said email cannot be sent for now, send a message from Contact us."
+    ],
+    [
+     "The link does not work.",
+     "It may have expired; ask for a new reset."
+    ]
+   ],
+   "related": {
+    "login": "Back to sign in.",
+    "profile": "Changing your password while signed in."
+   }
+  },
+  "verify-email": {
+   "title": "Confirm your email",
+   "summary": "Open the email confirmation link to confirm your account’s email address.",
+   "intro": "This page opens from the link sent to confirm your email address. When it opens, the link is checked and the result is shown. Confirming your email is different from identity verification: the first proves you own the address, the second confirms who you are.",
+   "faqs": [
+    [
+     "The link has expired.",
+     "Sign in and ask for a fresh link from your dashboard, or get help from Contact us."
+    ],
+    [
+     "Is confirming my email the same as identity verification?",
+     "No. You verify your identity separately, from your dashboard."
+    ]
+   ],
+   "related": {
+    "register": "Creating an account.",
+    "login": "Signing in.",
+    "verification": "Identity verification for marketplace activity."
+   }
+  },
+  "dashboard": {
+   "title": "Dashboard overview",
+   "summary": "Your marketplace activity and what is left to complete your account, at a glance.",
+   "intro": "The dashboard is home to everything you do on this site. On the overview, the Complete your account bar shows what remains (adding a phone number, confirming your email, verifying your identity), alongside a summary of your activity in listings, projects and collaborations and shortcuts to the sections you use most. The side menu groups every section into three: your account, the marketplace and messages.",
+   "steps": [
+    [
+     "Complete your account",
+     "Work through the Complete your account bar; identity verification is required for most marketplace activity."
+    ],
+    [
+     "Pick a section from the side menu",
+     "Listings, projects, books, shops, messages and notifications each have their own page."
+    ],
+    [
+     "Open the guide on any page",
+     "The Guide button in each page’s top bar, or the ? key, explains that page."
+    ]
+   ],
+   "tips": [
+    [
+     "Keep an eye on notifications",
+     "The bell at the top shows how many notifications are unread, so you do not miss a reply from a client or buyer."
+    ],
+    [
+     "Tips come one at a time",
+     "Each page has a few short tips shown one after another at the top; dismiss one and you see the next on your next visit."
+    ]
+   ],
+   "faqs": [
+    [
+     "Why can I not see some sections in the menu?",
+     "Some sections appear only when that feature is switched on for the site."
+    ],
+    [
+     "Where do I edit my account details?",
+     "Under Profile: name, contact details, public profile and account security."
+    ],
+    [
+     "How do I get back to the public site?",
+     "The View site icon in the top bar opens the site in a new tab."
+    ]
+   ],
+   "related": {
+    "profile": "Name, contact details, public profile and security.",
+    "verification": "Required for posting listings, sending proposals and buying and selling.",
+    "my-requests": "All your tracking codes in one list.",
+    "notifications": "What has happened to your listings, proposals and collaborations."
+   }
+  },
+  "profile": {
+   "title": "Profile",
+   "summary": "Name, contact details, public profile and account security.",
+   "intro": "Your profile holds your account details in three parts: personal and contact details, seen only by you and staff; the public profile with your username, headline, bio and skills, shown in the freelancer directory and on your public page; and security, covering your password, two-step sign-in and signing out everywhere.",
+   "steps": [
+    [
+     "Complete your contact details",
+     "A phone number is one of the Complete your account tasks."
+    ],
+    [
+     "Choose a username",
+     "Without a username you have no public page and do not appear in the freelancer directory."
+    ],
+    [
+     "Add your skills",
+     "Skills are used to show how well you fit job listings and to help clients find you."
+    ],
+    [
+     "Turn on two-step sign-in",
+     "Add the key to an authenticator app and keep the recovery codes somewhere safe."
+    ]
+   ],
+   "tips": [
+    [
+     "Save your recovery codes",
+     "If you lose your phone, recovery codes are the only way in while two-step sign-in is on. Each code works once."
+    ],
+    [
+     "A short, precise headline",
+     "Your headline is the first thing a client sees in the directory — for example, \"React developer with 3 years’ experience\"."
+    ]
+   ],
+   "faqs": [
+    [
+     "Are my contact details public?",
+     "No. Your email and phone number are never shown on your public profile or in the freelancer directory."
+    ],
+    [
+     "What is two-step sign-in?",
+     "Once on, signing in asks for a one-time code from an authenticator app (such as Google Authenticator or Aegis) as well as your password."
+    ],
+    [
+     "What does Sign out everywhere do?",
+     "It ends every active session on every device; you need your password to sign in again."
+    ]
+   ],
+   "related": {
+    "verification": "Verifying your identity, which adds the verified badge to your public profile.",
+    "freelancers": "Where your public profile is shown.",
+    "dashboard": "Back to the overview."
+   }
+  },
+  "verification": {
+   "title": "Identity verification",
+   "summary": "Verify yourself or your company to post listings, send proposals and buy and sell.",
+   "intro": "Verification shows there is a real person or company behind the account. It is needed to post a vacancy or apply for a job, post a project or send a proposal, offer or order a service, buy or sell books, create a company page and list a shop. You can verify as an individual (with your national ID number and a picture of your national ID card) or as a company (with its registration details, your role, and pictures of your national ID card and the company registration notice). Our specialists review the documents.",
+   "steps": [
+    [
+     "Choose the type",
+     "Individual or company."
+    ],
+    [
+     "Enter the details",
+     "For an individual, the national ID number; for a company, its name, registration number, economic code, your role and website."
+    ],
+    [
+     "Attach the documents",
+     "The national ID card is required; for a company, the registration notice is required too."
+    ],
+    [
+     "Wait for review",
+     "The status reads Under review; once approved, a Verified badge appears next to your name."
+    ]
+   ],
+   "tips": [
+    [
+     "Send readable pictures",
+     "Most rejected requests come down to a blurred or cropped picture; every corner of the document must be visible."
+    ]
+   ],
+   "faqs": [
+    [
+     "Who sees my documents?",
+     "Only the reviewing specialists. Documents are never made public."
+    ],
+    [
+     "My request was not approved.",
+     "The reviewer’s note is shown under the status; correct what it says and send it again."
+    ],
+    [
+     "What can I do without verification?",
+     "View and search every listing, project, book and shop, save listings, set alerts, and use every service that does not need an account."
+    ]
+   ],
+   "related": {
+    "profile": "Account details and public profile.",
+    "my-jobs": "Posting vacancies once verified.",
+    "client-projects": "Posting projects once verified.",
+    "my-books": "Selling books once verified."
+   }
+  },
+  "my-requests": {
+   "title": "My requests",
+   "summary": "All your tracking codes — projects, insurance, CVs and consultations — in one list with the status of each.",
+   "intro": "Every request you submit while signed in has its tracking code saved to this list automatically. You can also add codes you received earlier without signing in. For each request you see its type and current status, and one click takes you to its tracking page.",
+   "steps": [
+    [
+     "Add older codes",
+     "Enter a tracking code to add it to the list."
+    ],
+    [
+     "See the status",
+     "Each request shows its type (project, insurance, CV, consultation) and status."
+    ],
+    [
+     "Open the details",
+     "Each row takes you to that request’s tracking page — for example, to read and accept a project proposal."
+    ]
+   ],
+   "faqs": [
+    [
+     "Does removing a request from the list cancel it?",
+     "No. It only removes the code from your list; the request stays as it is and can still be tracked with the code."
+    ],
+    [
+     "How is this different from My applications?",
+     "This lists requests made with a tracking code; My applications lists the CVs you have sent to job listings."
+    ]
+   ],
+   "related": {
+    "insurance": "Applying for insurance.",
+    "start-project": "Submitting a project request.",
+    "consult": "Requesting a consultation.",
+    "track": "Tracking with a code, without signing in."
+   }
+  },
+  "messages": {
+   "title": "Messages",
+   "summary": "Your conversations with clients, freelancers, applicants, and book buyers and sellers.",
+   "intro": "Every job application, project proposal and book purchase request has its own conversation thread. This page lists every thread with the other person’s name, the listing or project title and the last message; threads with unread messages are highlighted.",
+   "steps": [
+    [
+     "Open a thread",
+     "Tap any conversation to see its messages and the reply form."
+    ],
+    [
+     "Reply",
+     "Keep messages short and clear; the other side is notified."
+    ]
+   ],
+   "tips": [
+    [
+     "Put promises in writing",
+     "Write the amount, delivery time and payment method in the thread, so there is a clear record if a disagreement arises."
+    ]
+   ],
+   "faqs": [
+    [
+     "Should I share my contact details?",
+     "Not unless you need to. Keep the conversation here as far as you can."
+    ],
+    [
+     "Where do I talk to a service seller?",
+     "Service orders are followed under Orders."
+    ],
+    [
+     "What if we run into a problem with the other side?",
+     "Under My collaborations, choose Open a dispute on that engagement so our specialists can review it."
+    ]
+   ],
+   "related": {
+    "notifications": "Notice of new messages.",
+    "my-proposals": "Project proposals and collaborations.",
+    "my-books": "Book purchase and sale requests.",
+    "my-applications": "Job applications."
+   }
+  },
+  "notifications": {
+   "title": "Notifications",
+   "summary": "What has happened to your listings, proposals, requests and collaborations.",
+   "intro": "Whenever something happens to your work, a notification appears here: a listing or project approved or sent back, a new proposal or request, a job application moving stage, a new message, a milestone delivered or approved, and an alert for a matching listing or project. The bell in the top bar shows how many are unread.",
+   "faqs": [
+    [
+     "Are notifications also sent by email or SMS?",
+     "No; notifications appear on this page and on the bell in the top bar."
+    ],
+    [
+     "How do I get fewer notifications?",
+     "Pause or delete the job and project alerts you no longer need."
+    ]
+   ],
+   "related": {
+    "messages": "Replying to messages.",
+    "dashboard": "Back to the overview."
+   }
+  },
+  "my-jobs": {
+   "title": "My postings and company page",
+   "summary": "For employers: posting vacancies, reviewing applications and building your company page.",
+   "intro": "If you are hiring, you create and manage your vacancies here. Each listing is reviewed after you send it, then published. You move applications through stages — shortlist, interview, accept or decline — and keep private notes on each applicant. Your company page is your public introduction, and every vacancy you post links to it.",
+   "steps": [
+    [
+     "Verify your identity",
+     "Posting vacancies and a company page need verification."
+    ],
+    [
+     "Build your company page",
+     "Name, introduction, organisation size and pictures; applicants read it before applying."
+    ],
+    [
+     "Create a listing and send it",
+     "Enter the role, requirements, pay and benefits, skills, and location or remote work, and send it for review."
+    ],
+    [
+     "Move applications forward",
+     "Read CVs, see how well skills match and update each application’s stage; the applicant is told."
+    ]
+   ],
+   "tips": [
+    [
+     "State the salary",
+     "Listings with a salary also appear under the minimum salary filter and get more applications."
+    ],
+    [
+     "Reply to everyone",
+     "Your response rate is shown on your listings; declining is a reply too."
+    ]
+   ],
+   "faqs": [
+    [
+     "When will my listing be published?",
+     "After our specialists review it. If anything needs changing, we let you know."
+    ],
+    [
+     "Can applicants see my notes?",
+     "No; notes are private."
+    ],
+    [
+     "Why has my company page been hidden?",
+     "If it breaks the site’s rules, staff hide it; ask support for the reason."
+    ]
+   ],
+   "related": {
+    "jobs": "Your listing as job seekers see it.",
+    "companies": "The public list of companies.",
+    "verification": "Required before posting.",
+    "messages": "Talking to applicants."
+   }
+  },
+  "my-applications": {
+   "title": "My applications, saved jobs and alerts",
+   "summary": "For job seekers: the CVs you have sent, the listings you saved and your job alerts.",
+   "intro": "Three pages for finding work: My applications shows every application and its stage (seen by the employer, shortlisted, interview, accepted or declined); Saved jobs holds the listings you put aside for later; and Job alerts lists the searches you are notified about when new listings match.",
+   "steps": [
+    [
+     "Follow each application",
+     "You are notified whenever its stage changes."
+    ],
+    [
+     "Withdraw if you need to",
+     "While the listing is open you can apply again after withdrawing."
+    ],
+    [
+     "Manage your alerts",
+     "Pause, resume or delete each alert."
+    ]
+   ],
+   "faqs": [
+    [
+     "How often does an alert notify me?",
+     "Once for each new listing that matches it."
+    ],
+    [
+     "Why has my application not been seen yet?",
+     "The employer has not opened it yet. You may prefer employers with a higher response rate."
+    ]
+   ],
+   "related": {
+    "jobs": "Searching the listings.",
+    "job-detail": "Each listing’s page.",
+    "profile": "Your skills, used to show your fit.",
+    "messages": "Talking to the employer."
+   }
+  },
+  "client-projects": {
+   "title": "My projects (client)",
+   "summary": "Posting a freelance project, reviewing proposals, inviting freelancers and hiring.",
+   "intro": "As a client, you build a project in a few steps: the description, category and skills (up to 20), pricing type (fixed or hourly) and budget, duration, experience level, visibility (everyone, members or invited only), questions freelancers must answer (up to 5) and, if needed, an NDA. Once reviewed and published, proposals arrive; you compare up to three side by side and hire one. Rayan Tamaddon Jahan Gostar itself may also send an official company offer.",
+   "steps": [
+    [
+     "Build the project",
+     "Fill in the steps and review everything before sending."
+    ],
+    [
+     "Send it for review",
+     "It is usually published within a few hours."
+    ],
+    [
+     "Invite freelancers",
+     "Invite suitable freelancers by username to send a proposal."
+    ],
+    [
+     "Compare and hire",
+     "Compare proposals and choose one with Hire; the engagement opens under My collaborations."
+    ],
+    [
+     "Carry the work through",
+     "Approve each milestone’s delivery, approve hours on hourly projects, and leave a rating at the end."
+    ]
+   ],
+   "tips": [
+    [
+     "Ask a pointed question",
+     "One or two questions about similar past work separate generic proposals from serious ones."
+    ],
+    [
+     "Close the project",
+     "Once you have hired someone or changed your mind, close the project so no new proposals arrive."
+    ]
+   ],
+   "faqs": [
+    [
+     "Does payment go through the site?",
+     "No. You agree the amount and method directly with the freelancer; the proposal’s milestone plan gives that a clear basis."
+    ],
+    [
+     "What if the work does not go as agreed?",
+     "Under My collaborations, choose Open a dispute; the engagement is paused until our specialists review it."
+    ],
+    [
+     "What is an official company offer?",
+     "A proposal sent by Rayan Tamaddon Jahan Gostar itself for your project, if you are open to one."
+    ]
+   ],
+   "related": {
+    "projects": "Your project as freelancers see it.",
+    "freelancers": "Finding and inviting freelancers.",
+    "verification": "Required before posting a project.",
+    "messages": "Talking to freelancers."
+   }
+  },
+  "my-proposals": {
+   "title": "My proposals, invitations and collaborations (freelancer)",
+   "summary": "For freelancers: proposals sent, invitations, saved projects, alerts and work in progress.",
+   "intro": "The freelancer side has several pages: My proposals shows each proposal’s status; Invitations lists clients who have asked you to send a proposal; Saved projects and Project alerts help you find work; and My collaborations holds work in progress, with milestones, delivery, approval and ratings.",
+   "steps": [
+    [
+     "Answer invitations",
+     "Send a proposal or decline the invitation; the client is told."
+    ],
+    [
+     "Follow your proposals",
+     "You can withdraw a proposal before the client decides."
+    ],
+    [
+     "Deliver milestones",
+     "Under My collaborations, deliver each milestone with a note and a file for the client to approve."
+    ],
+    [
+     "Log your hours",
+     "On hourly projects, log your hours for the client to approve or query."
+    ],
+    [
+     "Finish and rate",
+     "When the engagement ends, rate the other side."
+    ]
+   ],
+   "tips": [
+    [
+     "A complete profile gets more invitations",
+     "A profile with skills and work samples is invited more often."
+    ]
+   ],
+   "faqs": [
+    [
+     "Where are ratings shown?",
+     "On your public profile and in the freelancer directory."
+    ],
+    [
+     "What if the client does not approve a delivery?",
+     "Clear it up in the conversation; if it is not resolved, choose Open a dispute."
+    ]
+   ],
+   "related": {
+    "projects": "Finding projects.",
+    "project-detail": "Writing a proposal.",
+    "profile": "Your public profile.",
+    "messages": "Talking to the client."
+   }
+  },
+  "my-services": {
+   "title": "My services and orders",
+   "summary": "For service sellers: building a service with price packages and handling orders.",
+   "intro": "Under My services you offer ready-made work: a title, description, category, pictures and up to three packages (Basic, Standard and Premium), each with a price and delivery time. Every service is reviewed before it is published. Orders arrive under Orders, where you accept or decline them.",
+   "steps": [
+    [
+     "Build a service",
+     "Write a clear description, add pictures and set the packages."
+    ],
+    [
+     "Send it for review",
+     "It is published once approved; edits to a published service show straight away."
+    ],
+    [
+     "Handle orders",
+     "Accept or decline new orders."
+    ]
+   ],
+   "tips": [
+    [
+     "Make the packages distinct",
+     "The difference between packages should be clear in what is delivered, not only in the price."
+    ]
+   ],
+   "faqs": [
+    [
+     "How are orders paid?",
+     "Not through the site; once you accept an order, you arrange it with the buyer."
+    ],
+    [
+     "Why has my service not been published?",
+     "It is still in the review queue, or changes were requested; its status is shown under My services."
+    ]
+   ],
+   "related": {
+    "freelance-services": "Your service as buyers see it.",
+    "profile": "The seller’s public profile.",
+    "freelancers": "An approved service also lists you in the freelancer directory."
+   }
+  },
+  "my-books": {
+   "title": "My books for sale and purchases",
+   "summary": "Selling books, editing your copies, answering purchase requests and following your own purchases.",
+   "intro": "To sell, you find the book in the catalogue and list your copy with its condition (New to Acceptable), photos, price and delivery method; it is reviewed before it is published. You accept or decline purchase requests and arrange delivery in that request’s conversation. Purchases lists the requests you have sent to buy.",
+   "steps": [
+    [
+     "Choose the book",
+     "Search the catalogue by title, ISBN or author and pick the book; if it is not there, add it as a new book."
+    ],
+    [
+     "List your copy",
+     "Choose the condition honestly, add real photos and set the price and delivery method."
+    ],
+    [
+     "Answer requests",
+     "Accept or decline; after accepting, arrange payment and delivery with the buyer."
+    ],
+    [
+     "Rate after the sale",
+     "Buyer and seller review each other."
+    ]
+   ],
+   "tips": [
+    [
+     "Honest condition",
+     "An accurate grade and real photos prevent declined requests and poor reviews."
+    ]
+   ],
+   "faqs": [
+    [
+     "My book is not in the catalogue.",
+     "Add it as a new book with its title, author and, if it has one, ISBN; the ISBN check digit is validated and a 10-digit ISBN is converted to 13 digits."
+    ],
+    [
+     "Does the site take the money?",
+     "No; payment is directly between you and the buyer."
+    ]
+   ],
+   "related": {
+    "books": "Your copy as buyers see it.",
+    "messages": "Conversations about purchase requests.",
+    "verification": "Required for buying and selling."
+   }
+  },
+  "my-shops": {
+   "title": "My shops",
+   "summary": "Managing your shop in the local market and its products and services.",
+   "intro": "The shops you have created are here, each with its status: in the review queue, needing changes, or published. Once a shop is approved, you publish, edit and remove its products and services from its products page; changes show straight away.",
+   "steps": [
+    [
+     "Create the shop",
+     "Name, introduction, trade, logo, picture, contact details and location on the map."
+    ],
+    [
+     "Send corrections",
+     "If the reviewer asks for changes, make them and choose Send for review again."
+    ],
+    [
+     "Add products",
+     "Once approved, add products and services with prices and pictures."
+    ]
+   ],
+   "faqs": [
+    [
+     "Why can I not add products?",
+     "The shop has not been approved yet."
+    ],
+    [
+     "Will I receive online orders?",
+     "Not for now; buyers reach you through the shop’s contact details."
+    ]
+   ],
+   "related": {
+    "marketplace": "Your shop on the map.",
+    "marketplace-join": "The steps for listing a shop.",
+    "verification": "Required before creating a shop."
+   }
+  }
+ }
+}

@@ -1,0 +1,1648 @@
+{
+ "collections": {
+  "company": {
+   "title": "Unternehmen und Softwareleistungen",
+   "description": "Lernen Sie Rayan Tamaddon Jahan Gostar kennen: Softwareentwicklung, Projektanfragen, Kontakt und Zusammenarbeit."
+  },
+  "insurance": {
+   "title": "Versicherungen",
+   "description": "Online-Versicherungsanträge, ein Formular je Produkt und Verfolgung per Vorgangsnummer."
+  },
+  "consult": {
+   "title": "Beratung und Fachleute",
+   "description": "Technische oder berufliche Beratung anfragen und den Expertenkreis kennenlernen."
+  },
+  "jobs": {
+   "title": "Jobs",
+   "description": "Stellen finden und sich bewerben, Unternehmensseiten ansehen und Stellen ausschreiben."
+  },
+  "freelance": {
+   "title": "Freelance-Projekte",
+   "description": "Projekte ausschreiben, Angebote senden, fertige Leistungen und das Freelancer-Verzeichnis."
+  },
+  "books": {
+   "title": "Büchermarkt",
+   "description": "Neue und gebrauchte Bücher zwischen Mitgliedern kaufen und verkaufen."
+  },
+  "marketplace": {
+   "title": "Lokaler Markt",
+   "description": "Lokale Geschäfte und Produkte auf der Karte – und Ihr Geschäft eintragen."
+  },
+  "account": {
+   "title": "Ihr Konto",
+   "description": "Registrierung, Anmeldung, Passwort zurücksetzen und E-Mail bestätigen."
+  }
+ },
+ "articles": {
+  "home": {
+   "title": "Startseite",
+   "summary": "Der Ausgangspunkt der Website: wer Rayan Tamaddon Jahan Gostar ist, was wir bauen und wohin Sie von hier aus gehen können.",
+   "heading": "Hier beginnen",
+   "intro": "Rayan Tamaddon Jahan Gostar ist ein Software-Engineering-Unternehmen, das Individualsoftware, Web- und Mobile-Apps, Unternehmensplattformen und Lösungen für Datenanalyse baut. Neben der Vorstellung des Unternehmens bündelt diese Website mehrere Leistungen an einem Ort: Softwareprojektanfragen, Online-Versicherungsanträge, Beratung durch Fachleute, Stellenangebote, Freelance-Projekte und einen Büchermarkt. Jeder Bereich hat seine eigene Anleitung, und alle sind im Hilfe-Center gesammelt.",
+   "steps": [
+    [
+     "Sagen Sie, was Sie suchen",
+     "Für Software gehen Sie zu Leistungen oder direkt zu Projekt starten; für Versicherungen zu Versicherung; für Arbeit oder ein Projekt zum Marktplatz."
+    ],
+    [
+     "Öffnen Sie die Hilfe jeder Seite",
+     "Auf jeder Seite öffnet die Schaltfläche Hilfe in der oberen Leiste (oder die Taste ?) die Erklärung zu dieser Seite daneben."
+    ],
+    [
+     "Anfrage stellen und Code aufbewahren",
+     "Jede Anfrage hat einen Vorgangscode; unter Anfrage verfolgen sehen Sie damit ihren Stand."
+    ],
+    [
+     "Mit Konto ist alles in Ihrem Dashboard",
+     "Angemeldet liegen Ihre Vorgangscodes, Nachrichten und Ihre Marktplatz-Aktivität zusammen in Ihrem Dashboard."
+    ]
+   ],
+   "points": [
+    [
+     "Softwareentwicklung",
+     "Von der Idee über den Rollout bis zur Wartung – mit kostenloser, unverbindlicher Kostenschätzung und technischem Angebot."
+    ],
+    [
+     "Nebenleistungen",
+     "Online-Anträge für viele Versicherungsarten mit eigenem Formular je Produkt sowie technische und berufliche Beratung durch Fachleute."
+    ],
+    [
+     "Marktplatz",
+     "Stellenangebote und Freelance-Projekte, jeweils vor der Veröffentlichung geprüft, und ein Büchermarkt zwischen Mitgliedern."
+    ],
+    [
+     "Sechs Sprachen",
+     "Die Website gibt es auf Persisch, Englisch, Türkisch, Deutsch, Französisch und Spanisch; wechseln Sie die Sprache in der oberen Leiste."
+    ]
+   ],
+   "faqs": [
+    [
+     "Was genau macht Rayan Tamaddon Jahan Gostar?",
+     "Konzeption und Entwicklung von Individualsoftware, Web- und Mobile-Apps, Unternehmens- und Civic-Tech-Plattformen sowie Datenanalyse und Visualisierung. Ein großer Teil unserer Arbeit ist Open Source."
+    ],
+    [
+     "Wie hängen CiviTech Global und Rayan Tamaddon Jahan Gostar zusammen?",
+     "CiviTech Global ist die internationale Marke von Rayan Tamaddon Jahan Gostar: ein Unternehmen, ein Team."
+    ],
+    [
+     "Muss ich mich registrieren, um die Website zu nutzen?",
+     "Nicht, um ein Projekt, eine Versicherung oder eine Beratung anzufragen, einen Lebenslauf zu senden oder uns zu kontaktieren. Ein Konto brauchen Sie, um Anzeigen aufzugeben, auf Projekte zu bieten oder Bücher zu verkaufen."
+    ],
+    [
+     "Wie erfahre ich, wo meine Anfrage steht?",
+     "Mit dem Vorgangscode, den Sie beim Absenden erhalten haben, unter Anfrage verfolgen. Waren Sie angemeldet, ist der Code auch unter Meine Anfragen gespeichert."
+    ],
+    [
+     "Hat die Website ein Vertrauenssiegel?",
+     "Ja. Das ENAMAD-Vertrauenssiegel für den elektronischen Handel steht am Ende jeder Seite."
+    ]
+   ],
+   "related": {
+    "services": "Alle Leistungen der Softwareentwicklung und wie ein Projekt abläuft.",
+    "start-project": "Der kürzeste Weg zu einem kostenlosen technischen Angebot und einer Kostenschätzung.",
+    "about": "Mission, Vision und Werte hinter unserer Arbeit.",
+    "help-centre": "Alle Anleitungen an einem Ort, mit Suche."
+   }
+  },
+  "services": {
+   "title": "Leistungen in Softwaredesign und -entwicklung",
+   "summary": "Was wir bauen, welche Phasen jedes Projekt durchläuft und unsere Nebenleistungen auf einen Blick.",
+   "intro": "Diese Seite stellt unsere vier Hauptleistungen vor: intelligente Individualsoftware, Web- und App-Entwicklung, Unternehmens- und Civic-Tech-Plattformen sowie Datenanalyse und Visualisierung. Jedes Projekt durchläuft unabhängig von seiner Größe vier Phasen: Idee und Beratung, Analyse und Design, Entwicklung und Tests, Rollout und Support. Versicherungsleistungen stehen als Nebenleistung auf derselben Seite.",
+   "steps": [
+    [
+     "Die passende Leistung finden",
+     "Lesen Sie die Karten; betrifft Ihr Bedarf mehrere Leistungen, ist das kein Problem – Sie beschreiben alles in der Projektanfrage."
+    ],
+    [
+     "Die Phasen ansehen",
+     "Der Abschnitt „So läuft ein Projekt ab“ zeigt, was von Ihrer Anfrage bis zu Übergabe und Support geschieht."
+    ],
+    [
+     "Projektanfrage stellen",
+     "Die Schaltfläche Projekt starten öffnet das Formular; technisches Angebot und Kostenschätzung sind kostenlos."
+    ]
+   ],
+   "points": [
+    [
+     "Ein schriftliches Angebot vor jeder Verpflichtung",
+     "Sie sehen Umfang, Lieferumfang, Annahmen, Ausschlüsse, Zeitplan und Preisspanne, bevor die Arbeit beginnt."
+    ],
+    [
+     "Entwicklung in Etappen",
+     "Die Software entsteht in kurzen, sichtbaren Iterationen, sodass Sie bei jedem Schritt Fortschritte sehen und Feedback geben."
+    ],
+    [
+     "Open Source, keine Herstellerbindung",
+     "Gebaut auf offenen Standards und Open-Source-Technologie, damit Ihre Software frei erweiterbar bleibt."
+    ],
+    [
+     "Auch nach der Übergabe an Ihrer Seite",
+     "Wartung, Updates und technischer Support nach dem Start."
+    ]
+   ],
+   "faqs": [
+    [
+     "Übernehmen Sie auch kleine Projekte?",
+     "Ja. Die Größe entscheidet nicht; liegt etwas außerhalb unserer Expertise, sagen wir das von Anfang an ehrlich."
+    ],
+    [
+     "Wie erfahre ich die Kosten?",
+     "Nach Ihrer Anfrage erhalten Sie ein schriftliches Angebot mit Preisspanne. Die Prüfung und das Angebot kosten nichts."
+    ],
+    [
+     "Wie lange dauert es?",
+     "Das hängt vom Umfang ab. Der genaue Zeitplan ist Teil des schriftlichen Angebots, und Sie sehen ihn vor Beginn der Arbeit."
+    ],
+    [
+     "Können Sie bestehende Software neu bauen oder warten?",
+     "Ja. „Bestehende Software neu aufbauen oder modernisieren“ und „Wartung und Support“ sind Projekttypen im Anfrageformular."
+    ],
+    [
+     "Kann ich vor der Anfrage mit jemandem sprechen?",
+     "Ja. Fragen Sie auf der Seite Beratung ein technisches Gespräch an; eine Beratung verpflichtet Sie zu nichts."
+    ]
+   ],
+   "related": {
+    "start-project": "Das Anfrageformular: der nächste Schritt nach der Wahl einer Leistung.",
+    "portfolio": "Beispiele unserer Arbeit und die Technik dahinter.",
+    "consult": "Wenn Sie noch nicht sicher sind, was Sie brauchen, sprechen Sie zuerst darüber.",
+    "insurance": "Unsere Nebenleistung: Online-Anträge für viele Versicherungsarten."
+   }
+  },
+  "start-project": {
+   "title": "Softwareprojekt anfragen",
+   "summary": "Beschreiben Sie Ihren Bedarf und erhalten Sie technisches Angebot, Zeitplan und Preisspanne – kostenlos und unverbindlich.",
+   "intro": "Dieses Formular macht aus Ihrer Anfrage ein schriftliches Angebot. Je klarer Sie Bedarf, Ziele, Rahmenbedingungen und Budget beschreiben, desto genauer das Angebot. Nach dem Absenden erhalten Sie einen Vorgangscode; unsere Fachleute prüfen die Anfrage, fragen bei Unklarheiten nach und senden schließlich ein schriftliches Angebot, das Sie unter demselben Code lesen und annehmen oder ablehnen.",
+   "steps": [
+    [
+     "Stellen Sie sich vor",
+     "Name, E-Mail und Telefon sind Pflicht. E-Mail und Telefon zusammen sind Ihre Kennung; geben Sie bei späteren Anfragen dieselben an."
+    ],
+    [
+     "Beschreiben Sie das Projekt",
+     "Wählen Sie Titel, Projekttyp, Zusammenarbeitsmodell und Plattformen, und schreiben Sie im Bedarfsfeld mit eigenen Worten, was heute nicht funktioniert und was Sie erwarten."
+    ],
+    [
+     "Nennen Sie Zeit und Budget",
+     "Geben Sie eine Budgetspanne an, keinen festen Betrag. Haben Sie kein festes Budget, wählen Sie diese Option."
+    ],
+    [
+     "Unterlagen anhängen",
+     "Bis zu 8 Dateien (je bis 10 MB, insgesamt 25 MB). Brauchen Sie vor der Prüfung eine Vertraulichkeitsvereinbarung, kreuzen Sie NDA an."
+    ],
+    [
+     "Vorgangscode aufbewahren",
+     "Kopieren Sie den Code nach dem Absenden. Das Angebot lesen Sie damit unter Anfrage verfolgen."
+    ]
+   ],
+   "points": [
+    [
+     "Ein formelles, kostenloses Angebot",
+     "Umfang, Lieferumfang, Annahmen, was nicht enthalten ist, Zeitplan und Preisspanne."
+    ],
+    [
+     "Unverbindlich bis zur Annahme",
+     "Bis Sie das Angebot annehmen, sind Sie zu nichts verpflichtet; lehnen Sie ab, ist die Sache erledigt."
+    ],
+    [
+     "Vertraulichkeit",
+     "Was Sie senden, bleibt bei uns, und bei Bedarf wird vor der Prüfung ein NDA unterzeichnet."
+    ]
+   ],
+   "tips": [
+    [
+     "Lassen Sie „Nicht Teil des Projekts“ nicht leer",
+     "Wissen wir von Anfang an, was Sie nicht wollen, wird das Angebot genauer und der Preis realistischer."
+    ],
+    [
+     "Warum eine Budgetspanne?",
+     "In dieser Phase ist eine Softwareschätzung auf etwa −25 % bis +75 % genau; eine Spanne ist für beide Seiten realistischer als eine Zahl."
+    ],
+    [
+     "Melden Sie sich an, damit der Code nicht verloren geht",
+     "Sind Sie vor dem Absenden angemeldet, wird der Vorgangscode automatisch unter Meine Anfragen gespeichert."
+    ]
+   ],
+   "faqs": [
+    [
+     "Sind Prüfung und Angebot kostenlos?",
+     "Ja. Beides ist kostenlos."
+    ],
+    [
+     "Wann ist das Angebot fertig?",
+     "Das hängt von der Komplexität ab. Sehen Sie den Stand jederzeit mit Ihrem Vorgangscode; haben wir Fragen, stellen wir sie vor dem Schreiben des Angebots."
+    ],
+    [
+     "Was passiert, wenn ich das Angebot ablehne?",
+     "Nichts; Sie lehnen ab, und das war es. Was Sie gesendet haben, bleibt bei uns und erreicht niemanden sonst."
+    ],
+    [
+     "Ich habe meinen Vorgangscode verloren.",
+     "Waren Sie angemeldet, steht er unter Meine Anfragen. Andernfalls schreiben Sie über Kontakt mit derselben E-Mail und Telefonnummer."
+    ],
+    [
+     "Ich weiß nicht, welchen Projekttyp ich wählen soll.",
+     "Wählen Sie den nächstliegenden oder „Sonstiges“ und erklären Sie es im Bedarfsfeld; wir korrigieren es bei der Prüfung."
+    ]
+   ],
+   "related": {
+    "services": "Wenn Sie noch nicht sicher sind, welche Leistung passt.",
+    "track": "Wo Sie das Angebot unter Ihrem Vorgangscode lesen und annehmen oder ablehnen.",
+    "my-requests": "Für Mitglieder: alle Vorgangscodes in einer Liste.",
+    "consult": "Ein technisches Gespräch vor der Anfrage, unverbindlich."
+   }
+  },
+  "about": {
+   "title": "Über uns",
+   "summary": "Wer Rayan Tamaddon Jahan Gostar ist: Mission, Vision, Werte und was wir tun.",
+   "intro": "Diese Seite stellt das Unternehmen vor: Unsere Mission ist es, der Zivilisation zu helfen, jeden Tag mehr aus Technologie zu machen – indem wir Individual- und Open-Source-Software für Privatpersonen, Unternehmen und Organisationen bauen. Unsere Vision ist eine durch und durch intelligente Zivilisation, und auf dem Weg dorthin wollen wir ein Zuhause für Open-Source-Engineering und die nächste Generation von Engineers sein.",
+   "points": [
+    [
+     "Mission und Vision",
+     "Warum wir das tun und wohin wir wollen."
+    ],
+    [
+     "Werte",
+     "Innovation, Transparenz, Community und Exzellenz – und was sie im Alltag bedeuten."
+    ],
+    [
+     "Lernen Sie uns kennen",
+     "Links zu Team, Projekten, Kunden, Partnern und Blog."
+    ]
+   ],
+   "faqs": [
+    [
+     "Was ist CiviTech Global?",
+     "Die internationale Marke von Rayan Tamaddon Jahan Gostar."
+    ],
+    [
+     "Warum Open Source?",
+     "Der Code ist transparent und prüfbar, an keinen Hersteller gebunden, eine große Community prüft seine Sicherheit, und er kostet weniger im Betrieb."
+    ],
+    [
+     "Wie kann ich mit Ihnen arbeiten?",
+     "Für ein Projekt über Projekt starten, für eine Stelle über Lebenslauf senden, für ein Praktikum über Ehrenamt & Praktikum."
+    ]
+   ],
+   "related": {
+    "team": "Die Menschen, die die Arbeit machen, und wie sie arbeiten.",
+    "portfolio": "Was wir bisher gebaut haben.",
+    "customers": "Die Organisationen, für die wir Software gebaut haben.",
+    "join": "Wenn Sie Teil dieses Teams werden möchten."
+   }
+  },
+  "team": {
+   "title": "Unser Team",
+   "summary": "Die Engineers, Designer und Mitwirkenden, die diese Plattform und die Projekte unserer Kunden bauen.",
+   "heading": "Wie unser Team arbeitet",
+   "intro": "Hinter jedem Projekt steht eine Gruppe von Softwareingenieurinnen und -ingenieuren, die gegenseitig ihre Arbeit prüfen, Entscheidungen schriftlich festhalten und von der ersten Nachricht bis zur Übergabe für das Ergebnis einstehen. Rayan Tamaddon Jahan Gostar baut auf Open Source, auf die Zusammenarbeit mit einer weltweiten Ingenieursgemeinschaft und auf eine offene Tür für Einsteiger. Was das im Alltag heißt:",
+   "points": [
+    [
+     "Geprüfter und getesteter Code",
+     "Jede Änderung wird vor der Auslieferung von einer zweiten Person gelesen und durch Tests abgesichert. Das Ziel ist Code, der jahrelang funktioniert – nicht nur am Tag der Übergabe."
+    ],
+    [
+     "Entscheidungen auf Papier",
+     "Umfang, Annahmen, was nicht enthalten ist, Zeitplan und Preisspanne stehen in einem schriftlichen Angebot. Was nicht aufgeschrieben ist, ist nicht vereinbart."
+    ],
+    [
+     "Barrierefrei vom ersten Tag an",
+     "Was wir bauen, funktioniert mit Tastatur und Screenreader und öffnet sich auch auf einem günstigen Smartphone. Das ist eine Entscheidung, keine Nebensache."
+    ],
+    [
+     "Open Source, offene Tür",
+     "Ein Teil unserer Arbeit entsteht in Open-Source-Projekten mit einer weltweiten Gemeinschaft, und das Ehrenamts- und Praktikumsprogramm gibt Einsteigern die Möglichkeit, an echten Projekten mitzuarbeiten."
+    ]
+   ],
+   "faqTitle": "Häufige Fragen zum Team",
+   "faqs": [
+    [
+     "Wie kann ich dem Team beitreten?",
+     "Schicken Sie Ihren Lebenslauf über die Seite „Lebenslauf senden“. Wir lesen ihn und melden uns, sobald eine Stelle frei wird, die zu Ihrer Erfahrung passt."
+    ],
+    [
+     "Ich fange gerade erst an. Gibt es Platz für mich?",
+     "Ja. Genau dafür gibt es das Programm „Ehrenamt & Praktikum“: echte Projekte, an der Seite erfahrener Ingenieure."
+    ],
+    [
+     "Wie hängen CiviTech Global und Rayan Tamaddon Jahan Gostar zusammen?",
+     "CiviTech Global ist die internationale Marke von Rayan Tamaddon Jahan Gostar: ein Unternehmen, ein Team."
+    ],
+    [
+     "Wie starte ich ein Projekt mit diesem Team?",
+     "Stellen Sie Ihre Anfrage über die Seite „Projekt starten“. Sie erhalten einen Vorgangscode, und für Sie wird ein schriftliches Angebot erstellt – kostenlos und unverbindlich."
+    ]
+   ],
+   "related": {
+    "join": "Lebenslauf für eine Stelle senden.",
+    "volunteer": "Der Weg für Einsteiger: Ehrenamt und Praktikum an echten Projekten.",
+    "experts": "Fachleute für technische und berufliche Beratung.",
+    "start-project": "Ein Projekt mit diesem Team starten."
+   }
+  },
+  "portfolio": {
+   "title": "Unsere Projekte",
+   "summary": "Laufende und abgeschlossene Projekte: die Plattformen, Apps und Systeme, die wir gebaut haben.",
+   "intro": "Diese Seite zeigt Beispiele unserer Arbeit. Zu jedem Projekt sehen Sie eine kurze Beschreibung, den Status (laufend oder ausgeliefert), die verwendete Technologie und, falls vorhanden, Screenshots und einen Link. Wurde ein Projekt für einen namentlich genannten Kunden gebaut, steht auch dieser dabei.",
+   "steps": [
+    [
+     "Liste durchsehen",
+     "Filtern Sie Projekte nach Status (laufend oder ausgeliefert) oder nach der verwendeten Technologie."
+    ],
+    [
+     "Screenshots öffnen",
+     "Die Galerie jedes Projekts zeigt, wie es aussieht und funktioniert."
+    ],
+    [
+     "Etwas Ähnliches gewünscht?",
+     "Nennen Sie das Projekt in Ihrer Anfrage, damit wir genau verstehen, was Sie meinen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Sind alle Ihre Projekte hier?",
+     "Nicht alle. Manche Projekte sind vertraulich und werden nur mit Erlaubnis des Kunden veröffentlicht."
+    ],
+    [
+     "Kann ich den Code sehen?",
+     "Bei Open-Source-Projekten ja; ist ein Repository-Link veröffentlicht, steht er beim Projekt."
+    ],
+    [
+     "Ich möchte etwas wie eines davon.",
+     "Beschreiben Sie Ihren Bedarf unter Projekt starten und nennen Sie das Projekt."
+    ]
+   ],
+   "related": {
+    "services": "Die Leistungen, aus denen diese Projekte hervorgingen.",
+    "customers": "Die Organisationen, für die wir diese Software gebaut haben.",
+    "start-project": "Ihr eigenes Projekt starten."
+   }
+  },
+  "customers": {
+   "title": "Kundenclub",
+   "summary": "Die Organisationen, deren Software wir gebaut haben, und was sie über die Zusammenarbeit sagen.",
+   "heading": "Was es heißt, unser Kunde zu sein",
+   "intro": "Der Kundenclub zeigt die Organisationen und Unternehmen, deren Software wir gebaut haben. Wichtiger als die Liste ist die Erfahrung, die jeder Kunde von der ersten Nachricht bis zur fertigen Software macht – das, was wir allen versprechen, bei kleinen wie bei großen Projekten.",
+   "points": [
+    [
+     "Ein schriftliches Angebot, kostenlos",
+     "Die Prüfung Ihrer Anfrage und das Angebot kosten nichts. Es nennt Umfang, Ergebnisse, Annahmen, was nicht enthalten ist, einen Zeitplan und eine Preisspanne."
+    ],
+    [
+     "Ein Vorgangscode, jederzeit verfügbar",
+     "Mit Ihrer Anfrage erhalten Sie einen Vorgangscode. Zu jeder Stunde, auch um drei Uhr nachts, zeigt er den Stand Ihrer Arbeit und lässt Sie das Angebot annehmen oder ablehnen."
+    ],
+    [
+     "Der Preis vor der Arbeit",
+     "Sie sehen eine Preisspanne, bevor irgendetwas beginnt. Ist ein Teil der Arbeit das Geld nicht wert, sagen wir das früh."
+    ],
+    [
+     "Klare Antworten",
+     "Liegt etwas außerhalb dessen, was wir gut können, sagen wir es offen. Die Größe eines Projekts entscheidet nicht – wir übernehmen auch kleine Projekte."
+    ]
+   ],
+   "faqTitle": "Häufige Fragen von Kunden",
+   "faqs": [
+    [
+     "Kostet ein Angebot etwas?",
+     "Nein. Die Prüfung Ihrer Anfrage und das Angebot sind kostenlos."
+    ],
+    [
+     "Was passiert, wenn ich das Angebot ablehne?",
+     "Nichts. Sie lehnen ab, und das war es. Alles, was Sie geschickt haben, bleibt bei uns und geht an niemanden sonst."
+    ],
+    [
+     "Ich habe meinen Vorgangscode verloren.",
+     "Melden Sie sich über die Telefonnummer oder E-Mail-Adresse, mit der Sie die Anfrage gestellt haben, und wir geben ihn Ihnen erneut."
+    ],
+    [
+     "Bleiben beendete Zusammenarbeiten auf dieser Liste?",
+     "Ja. Frühere Kunden bleiben in einem eigenen Abschnitt: „Wir haben das für sie gebaut“ stimmt weiterhin."
+    ]
+   ],
+   "related": {
+    "portfolio": "Die Projekte, die wir für diese Kunden gebaut haben.",
+    "start-project": "Werden Sie Kunde: Projektanfrage stellen.",
+    "partners": "Die Organisationen, mit denen wir zusammenarbeiten."
+   }
+  },
+  "partners": {
+   "title": "Unsere Partner",
+   "summary": "Die Technologie-, Hochschul-, Community- und strategischen Partner, mit denen wir Software bauen.",
+   "heading": "Mit uns zusammenarbeiten",
+   "intro": "Unsere Partner sind die Organisationen, mit denen wir Software bauen – von Technologieunternehmen bis zu Hochschulen und Open-Source-Gemeinschaften. Jede Partnerschaft hat ihre eigene Form, die Grundlage ist aber dieselbe: Transparenz über die Arbeit, die Entscheidungen und ihre Grenzen, und Qualität, auf die man sich verlassen kann.",
+   "points": [
+    [
+     "Technologiepartner",
+     "Unternehmen, deren Technologie, Infrastruktur oder Werkzeuge wir neben unserer eigenen Arbeit einsetzen, oder die uns für einen Teil ihres Produkts wählen."
+    ],
+    [
+     "Akademische Partner",
+     "Hochschulen und Ausbildungszentren, mit denen wir die nächste Generation von Ingenieuren fördern – mit einer offenen Tür zu echten Projekten für Studierende."
+    ],
+    [
+     "Community-Partner",
+     "Gemeinschaften und Open-Source-Projekte, zu denen wir beitragen und die es möglich machen, mit anderen statt isoliert zu bauen."
+    ],
+    [
+     "Strategische Partner und Wiederverkäufer",
+     "Organisationen, die unsere Lösungen in ihrem Markt vertreten oder verkaufen oder einen längeren Weg mit uns gehen."
+    ]
+   ],
+   "faqTitle": "Häufige Fragen zur Partnerschaft",
+   "faqs": [
+    [
+     "Wie schlage ich eine Partnerschaft vor?",
+     "Schicken Sie über die Seite „Kontakt“ eine Nachricht und beschreiben Sie die Partnerschaft, die Ihnen vorschwebt. Sie erhalten einen Vorgangscode und lesen unsere Antwort damit auf derselben Seite."
+    ],
+    [
+     "Worauf achten Sie bei einem Partner?",
+     "Auf die Werte, nach denen wir selbst arbeiten: Transparenz, Qualität, die nie dem Tempo geopfert wird, und gemeinsames Bauen."
+    ],
+    [
+     "Wann erscheint ein Partner auf dieser Seite?",
+     "Sobald die Partnerschaft besteht. Beendete Partnerschaften bleiben in einem eigenen Abschnitt."
+    ]
+   ],
+   "related": {
+    "customers": "Die Organisationen, für die wir Software gebaut haben.",
+    "contact": "Senden Sie Ihren Partnerschaftsvorschlag von hier.",
+    "volunteer": "Für Hochschulen: der Praktikumsweg für Studierende."
+   }
+  },
+  "contact": {
+   "title": "Kontakt",
+   "summary": "Nachricht senden, Vorgangscode erhalten und die Antwort damit auf dieser Seite lesen – ohne E-Mail.",
+   "heading": "Wie Ihre Nachricht weiterverfolgt wird",
+   "intro": "Um uns zu schreiben, brauchen Sie kein Konto und müssen auf keine E-Mail warten. Sie senden eine Nachricht, erhalten einen Vorgangscode und lesen die Antwort damit auf genau dieser Seite.",
+   "points": [
+    [
+     "Ein Vorgangscode statt E-Mail",
+     "Ihre E-Mail-Adresse kennzeichnet nur Ihre Nachricht; an sie wird keine Antwort geschickt. Unsere Antwort lesen Sie auf dieser Seite, mit Ihrem Vorgangscode."
+    ],
+    [
+     "Der Code wird einmal angezeigt",
+     "Notieren oder kopieren Sie den Code direkt nach dem Senden: Er ist der einzige Weg zurück zu Ihrer Nachricht."
+    ],
+    [
+     "Ein klarer Status",
+     "Jede Nachricht ist „Wartet auf Antwort“, „Beantwortet“ oder „Geschlossen“. Mit Ihrem Code sehen Sie Status und Antwort zusammen."
+    ],
+    [
+     "Die richtige Seite für jedes Anliegen",
+     "Für ein Softwareprojekt nutzen Sie „Projekt starten“, für ein Gespräch mit einem Experten „Beratung anfragen“. Versicherungsanfragen verfolgen Sie mit ihrem eigenen Code unter „Anfrage verfolgen“."
+    ]
+   ],
+   "tips": [
+    [
+     "Kopieren Sie den Code jetzt",
+     "Der Vorgangscode der Nachricht wird nur einmal angezeigt, und es wird keine E-Mail gesendet; ohne ihn erreichen Sie die Antwort nicht."
+    ]
+   ],
+   "faqTitle": "Häufige Fragen zum Kontakt",
+   "faqs": [
+    [
+     "Schicken Sie mir die Antwort per E-Mail?",
+     "Nein. Die Antwort steht auf dieser Seite und wird mit Ihrem Vorgangscode gelesen – deshalb ist es wichtig, den Code aufzubewahren."
+    ],
+    [
+     "Wie lange dauert eine Antwort?",
+     "Wir sehen uns Nachrichten zeitnah an. Bis zu unserer Antwort steht die Nachricht auf „Wartet auf Antwort“."
+    ],
+    [
+     "Ich habe meinen Vorgangscode verloren.",
+     "Senden Sie eine neue Nachricht, die auf die frühere verweist; die Antwort lesen Sie mit dem Code der neuen Nachricht."
+    ],
+    [
+     "Welche Seite nutze ich, um ein Projekt zu starten?",
+     "„Projekt starten“. Dort führt Ihre Anfrage zu einem schriftlichen Angebot mit Umfang, Zeitplan und Preisspanne."
+    ]
+   ],
+   "related": {
+    "start-project": "Für ein Softwareprojekt bekommt das eigene Formular eine bessere Antwort.",
+    "consult": "Für ein Gespräch mit Fachleuten fragen Sie eine Beratung an.",
+    "track": "Projekt-, Versicherungs-, Lebenslauf- und Beratungsanfragen verfolgen."
+   }
+  },
+  "join": {
+   "title": "Lebenslauf senden",
+   "summary": "Senden Sie uns Ihren Lebenslauf; wir melden uns, sobald eine passende Stelle frei wird.",
+   "heading": "Vom Lebenslauf zum Gespräch",
+   "intro": "Dieses Formular ist für alle, die bei Rayan Tamaddon Jahan Gostar arbeiten möchten: Software-Engineers, Designerinnen und Designer oder Produktmanager, ob Einsteiger oder erfahren. Wir lesen Ihren Lebenslauf und melden uns, sobald eine passende Stelle frei wird. Den Stand sehen Sie jederzeit mit einem Vorgangscode.",
+   "steps": [
+    [
+     "Angaben eintragen",
+     "Name, E-Mail und Telefon sind Pflicht; E-Mail und Telefon zusammen kennzeichnen Sie bei späteren Nachfragen."
+    ],
+    [
+     "Lebenslauf anhängen",
+     "PDF, Word (docx) oder LaTeX (tex), bis 10 MB. Eine kurze Notiz ist optional."
+    ],
+    [
+     "Vorgangscode aufbewahren",
+     "Nach dem Senden erhalten Sie einen Code; damit sehen Sie unter Anfrage verfolgen den Stand."
+    ]
+   ],
+   "tips": [
+    [
+     "Sendebeschränkung",
+     "Jede Person kann höchstens zweimal am Tag (im Abstand von einer Stunde) und nur an zwei Tagen einen Lebenslauf senden – senden Sie also Ihre endgültige Fassung."
+    ]
+   ],
+   "faqs": [
+    [
+     "Ich bin Einsteiger; soll ich einen Lebenslauf senden?",
+     "Ja. Haben Sie noch keine Berufserfahrung, ist auch das Programm Ehrenamt & Praktikum für Sie gedacht."
+    ],
+    [
+     "Antworten Sie auf jeden Lebenslauf?",
+     "Wir lesen ihn, und Sie sehen seinen Stand mit Ihrem Vorgangscode. Wir melden uns, sobald eine passende Stelle frei wird."
+    ],
+    [
+     "Kann ich meinen Lebenslauf aktualisieren?",
+     "Senden Sie die neue Fassung erneut, innerhalb der Grenze von zweimal am Tag an zwei Tagen."
+    ],
+    [
+     "Kann ich mich auf eine bestimmte Stelle bewerben?",
+     "Ja; für Anzeigen unter Stellenangebote bewerben Sie sich direkt auf der Seite der Anzeige."
+    ]
+   ],
+   "related": {
+    "volunteer": "Wenn Sie ein Praktikum oder ehrenamtliche Mitarbeit suchen.",
+    "jobs": "Offene Stellen, von uns und von anderen Unternehmen.",
+    "team": "Lernen Sie das Team kennen, dem Sie beitreten würden.",
+    "track": "Der Stand Ihres Lebenslaufs mit dem Vorgangscode."
+   }
+  },
+  "volunteer": {
+   "title": "Ehrenamt & Praktikum",
+   "summary": "Arbeiten Sie als Ehrenamtliche oder Praktikant an echten Projekten und wachsen Sie an der Seite erfahrener Engineers.",
+   "intro": "Dieses Programm richtet sich an Studierende und Absolventen, an Quereinsteiger in die Softwareentwicklung und an Entwickler, die zu Open-Source- und Civic-Projekten beitragen möchten. Es gibt zwei Formen: das Ehrenamt, bei dem Sie Ihre freie Zeit ohne feste Zeitverpflichtung einbringen, und das Praktikum, einen festen Zeitraum mit Lernplan, Mentor und Abschlussbewertung.",
+   "steps": [
+    [
+     "Art der Mitarbeit wählen",
+     "Ehrenamt oder Praktikum; beide haben im Formular ihre eigene Beschreibung."
+    ],
+    [
+     "Was und wann",
+     "Ihr Fachgebiet (Frontend, Backend, Mobile, Daten, Design usw.), Stunden pro Woche, Startdatum und Arbeitsform (vor Ort, hybrid oder remote)."
+    ],
+    [
+     "Studium und Fähigkeiten beschreiben",
+     "Hochschule, Studienfach, Fähigkeiten und ein GitHub- oder Portfolio-Link; je vollständiger, desto leichter findet sich das passende Projekt."
+    ],
+    [
+     "Absenden und Code aufbewahren",
+     "Verfolgen Sie Ihre Bewerbung mit dem Vorgangscode."
+    ]
+   ],
+   "points": [
+    [
+     "Echte Projekte",
+     "Arbeit an Software, die tatsächlich genutzt wird, nicht an erfundenen Übungen."
+    ],
+    [
+     "Reviews und Mentoring",
+     "Code-Reviews und Anleitung von erfahrenen Engineers."
+    ],
+    [
+     "Ein Zertifikat",
+     "Zertifikat und Empfehlungsschreiben für alle, die die Mitarbeit abschließen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Ist das Ehrenamt bezahlt?",
+     "Das Ehrenamt ist unbezahlt und zeitlich flexibel. Suchen Sie eine Stelle, nutzen Sie Lebenslauf senden."
+    ],
+    [
+     "Kann ich mich ohne Erfahrung bewerben?",
+     "Ja; genau dafür ist das Programm da. Nennen Sie alle Fähigkeiten, die Sie haben, auch wenige."
+    ],
+    [
+     "Ist Remote-Arbeit möglich?",
+     "Ja. Wählen Sie im Formular vor Ort, hybrid oder remote als Arbeitsform."
+    ],
+    [
+     "Was unterscheidet Praktikum und Ehrenamt?",
+     "Ein Praktikum ist ein fester Zeitraum mit Lernplan, Mentor und Abschlussbewertung; das Ehrenamt ist flexibel ohne feste Zeitverpflichtung."
+    ]
+   ],
+   "related": {
+    "join": "Wenn Sie eine Stelle suchen.",
+    "team": "Die Engineers, mit denen Sie arbeiten würden.",
+    "experts": "Für berufliche Beratung durch Fachleute."
+   }
+  },
+  "blog": {
+   "title": "Blog",
+   "summary": "Praktische Anleitungen zu Versicherung und Software: Preise, Kauftipps und Vergleiche.",
+   "intro": "Im Blog veröffentlichen wir Artikel, die bei einer echten Entscheidung helfen: Preise für Kfz-Haftpflicht und Kasko, Tipps zum Versicherungskauf oder wie man ein Softwareprojekt definiert. Die meisten Artikel sind auf Persisch, einige haben eine englische Fassung; ein Artikel, den es in Ihrer Sprache nicht gibt, erscheint nicht in der Liste dieser Sprache.",
+   "steps": [
+    [
+     "Einen Artikel finden",
+     "Durchsuchen Sie die Liste; jeder Artikel hat eine Zusammenfassung, ein Veröffentlichungsdatum und eine geschätzte Lesezeit."
+    ],
+    [
+     "Lesen, dann handeln",
+     "Jeder Artikel endet mit einem Link zum Online-Versicherungsantrag, sodass Sie dort beginnen können, wenn Sie so weit sind."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wie oft erscheinen Artikel?",
+     "Wenn wir etwas Neues zu sagen haben; Qualität geht uns vor Menge."
+    ],
+    [
+     "Sind die Preise in den Artikeln verbindlich?",
+     "Nein. Preise gelten zum Veröffentlichungsdatum und können sich ändern; den endgültigen Preis erhalten Sie bei der Anfrage."
+    ],
+    [
+     "Warum gibt es einen Artikel nicht in einer anderen Sprache?",
+     "Jeder Artikel erscheint nur in den Sprachen, in denen er geschrieben wurde; maschinelle Übersetzungen veröffentlichen wir nicht."
+    ]
+   ],
+   "related": {
+    "insurance": "Nach einem Versicherungsartikel diese Versicherung beantragen.",
+    "services": "Die Softwareleistungen, auf die sich technische Artikel beziehen.",
+    "help-centre": "Anleitungen zu jedem Bereich der Website."
+   }
+  },
+  "track": {
+   "title": "Anfrage verfolgen",
+   "summary": "Sehen Sie mit Ihrem Vorgangscode den Stand einer Projekt-, Versicherungs-, Lebenslauf- oder Beratungsanfrage.",
+   "intro": "Jede Anfrage auf dieser Website hat einen zehnstelligen Vorgangscode. Diese Seite zeigt damit den Stand, gleich welcher Art: eine Softwareprojektanfrage (mit unserem Angebot, das Sie hier annehmen oder ablehnen), eine Versicherungsanfrage (mit vereinbartem Rückrufzeitpunkt), ein Lebenslauf oder eine Beratungsanfrage (die Sie bei Bedarf stornieren können). Nachrichten über das Kontaktformular verfolgen Sie gesondert auf der Seite Kontakt.",
+   "steps": [
+    [
+     "Code eingeben",
+     "Geben Sie den Code ein, wie Sie ihn erhalten haben; Buchstaben werden automatisch großgeschrieben."
+    ],
+    [
+     "Stand ansehen",
+     "Art der Anfrage, Datum, letzte Aktualisierung und aktueller Status werden angezeigt."
+    ],
+    [
+     "Ist ein Angebot da, entscheiden Sie",
+     "Bei einer Projektanfrage öffnen Sie das schriftliche Angebot und nehmen es an oder lehnen ab."
+    ]
+   ],
+   "points": [
+    [
+     "Eine Seite für alles",
+     "Projekte, Versicherungen, Lebensläufe und Beratungen werden mit demselben Formular verfolgt."
+    ],
+    [
+     "Ein teilbarer Link",
+     "Der Code bleibt in der Adresse, sodass Sie den Link speichern oder an die versicherte Person senden können."
+    ]
+   ],
+   "tips": [
+    [
+     "Alles an einem Ort",
+     "Haben Sie ein Konto, fügen Sie Ihre Codes unter Meine Anfragen hinzu, damit Sie sie nicht jedes Mal eingeben müssen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wo ist mein Vorgangscode?",
+     "Er wird direkt nach dem Absenden angezeigt. Waren Sie angemeldet, ist er auch unter Meine Anfragen gespeichert."
+    ],
+    [
+     "Es heißt, zu diesem Code wurde keine Anfrage gefunden.",
+     "Prüfen Sie den Code; verwechseln Sie nicht die Null mit dem Buchstaben O oder die Eins mit dem I. Bleibt es dabei, schreiben Sie über Kontakt."
+    ],
+    [
+     "Verfolge ich hier eine Nachricht aus dem Kontaktformular?",
+     "Nein; Kontaktnachrichten werden auf der Seite Kontakt selbst mit ihrem eigenen Code verfolgt."
+    ],
+    [
+     "Was sehen andere mit meinem Code?",
+     "Wer den Code hat, sieht den Stand; bewahren Sie ihn wie ein Passwort auf und teilen Sie ihn nur mit Personen, die ihn brauchen."
+    ]
+   ],
+   "related": {
+    "start-project": "Eine Softwareprojektanfrage stellen.",
+    "insurance": "Eine Versicherungsanfrage stellen.",
+    "join": "Lebenslauf senden.",
+    "my-requests": "Für Mitglieder: alle Codes in einer Liste."
+   }
+  },
+  "help-centre": {
+   "title": "Hilfe-Center",
+   "summary": "Alle Anleitungen der Website an einem Ort, gruppiert und durchsuchbar.",
+   "intro": "Für jeden Bereich der Website erklärt das Hilfe-Center, was er tut, wie Sie ihn nutzen, mit welchen anderen Bereichen er zusammenarbeitet und was die Antworten auf häufige Fragen sind. Dieselben Anleitungen erreichen Sie auf jeder Seite über die Schaltfläche Hilfe oder die Taste ?. Die Anleitungen zum Mitgliederbereich kann jeder lesen, damit Sie wissen, was ein Konto bietet, bevor Sie eines anlegen.",
+   "steps": [
+    [
+     "Suchen",
+     "Geben Sie etwa „Vorgangscode“, „Verifizierung“ oder „Angebot“ ein."
+    ],
+    [
+     "Oder eine Sammlung durchsehen",
+     "Die Anleitungen sind nach den Bereichen der Website gruppiert."
+    ],
+    [
+     "Von der Anleitung zum Bereich",
+     "Jede Anleitung hat die Schaltfläche Zu diesem Bereich und Links zu verwandten Bereichen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Ich habe keine Antwort auf meine Frage gefunden.",
+     "Fragen Sie über Kontakt; häufige Fragen nehmen wir in die Anleitungen auf."
+    ],
+    [
+     "Die Anleitung ist nicht in meiner Sprache.",
+     "Anleitungen zu den öffentlichen Seiten gibt es in allen sechs Sprachen der Website; die zum Mitglieder- und Adminbereich vorerst auf Persisch und Englisch."
+    ]
+   ],
+   "related": {
+    "home": "Zurück zur Startseite.",
+    "contact": "Wenn die Antwort nicht in den Anleitungen stand.",
+    "dashboard": "Die Anleitung zum Mitgliederbereich."
+   }
+  },
+  "insurance": {
+   "title": "Versicherung",
+   "summary": "Alle Versicherungsarten, die wir bearbeiten: finden Sie die passende und beantragen Sie sie online.",
+   "heading": "Von der Wahl der Police bis zum Anruf der Fachleute",
+   "intro": "Online-Versicherungsanträge sind eine unserer Nebenleistungen, denn die finanzielle Sicherheit, die Gesundheit und der Seelenfrieden unserer Kollegen und Kunden liegen uns am Herzen. Diese Seite listet alle Versicherungen, für die wir Anträge annehmen: von Kfz-Haftpflicht und Kasko für Autos und Motorräder bis zu Krankenzusatz-, Lebens-, Unfall-, Haftpflicht-, Transport-, Bauleistungs- und Handyversicherung. Jede hat ihr eigenes Formular, und nach Ihrem Antrag ruft eine Fachperson an, um Ihnen die beste Option für Bedarf und Budget anzubieten.",
+   "steps": [
+    [
+     "Versicherung finden",
+     "Durchsuchen Sie die Liste oder suchen Sie nach Namen. Firmenpolicen tragen das Label Firmenkunden."
+    ],
+    [
+     "Ihre Seite lesen",
+     "Jede Versicherungsseite nennt Leistungen, Ausschlüsse, benötigte Unterlagen und was den Beitrag beeinflusst."
+    ],
+    [
+     "Formular ausfüllen",
+     "Geben Sie die Angaben zur Police und Ihre Kontaktdaten ein und bestätigen Sie Ihre Mobilnummer mit einem sechsstelligen Code."
+    ],
+    [
+     "Vorgangscode aufbewahren",
+     "Bewahren Sie den Vorgangscode nach dem Antrag auf; damit sehen Sie Stand und vereinbarten Rückrufzeitpunkt."
+    ]
+   ],
+   "points": [
+    [
+     "Online beantragen",
+     "Bei Policen mit dem Label Online beantragen geben Sie alles Nötige im Formular an."
+    ],
+    [
+     "Von Fachleuten kalkuliert",
+     "Policen mit dem Label Von Fachleuten kalkuliert werden telefonisch berechnet; Sie geben die Grunddaten an, und die Fachperson ruft Sie an."
+    ],
+    [
+     "Keine Preise auf der Website",
+     "Der Beitrag hängt von Ihren Angaben ab; die Fachperson nennt Optionen und Preis nach der Prüfung."
+    ]
+   ],
+   "faqs": [
+    [
+     "Kann ich die Versicherung hier kaufen und bezahlen?",
+     "Nein. Hier stellen Sie die Anfrage; unsere Fachperson ruft Sie an, bespricht die Optionen und veranlasst die Ausstellung der Police."
+    ],
+    [
+     "Warum sehe ich keinen Preis auf der Website?",
+     "Der Beitrag hängt etwa vom Fahrzeug, Ihrer Vorgeschichte und den gewählten Leistungen ab. Diese Faktoren stehen auf der Seite jeder Police, den genauen Preis nennt die Fachperson."
+    ],
+    [
+     "Warum muss ich meine Nummer bestätigen?",
+     "Über die Nummer erreicht Sie die Fachperson; die Bestätigung verhindert Tippfehler."
+    ],
+    [
+     "Brauche ich für einen Versicherungsantrag ein Konto?",
+     "Nein. Sind Sie aber angemeldet, wird der Vorgangscode unter Meine Anfragen gespeichert."
+    ],
+    [
+     "Die gewünschte Versicherung steht nicht auf der Liste.",
+     "Fragen Sie über die Seite Kontakt; wir schlagen die nächstliegende Option vor."
+    ]
+   ],
+   "related": {
+    "insurance-product": "Die eigene Seite und das Formular jeder Police.",
+    "track": "Eine Versicherungsanfrage mit ihrem Code verfolgen.",
+    "my-requests": "Für Mitglieder: alle Anfragen in einer Liste.",
+    "blog": "Anleitungen zu Versicherungspreisen und Kauftipps."
+   }
+  },
+  "insurance-product": {
+   "title": "Seite und Formular einer Police",
+   "summary": "Eine Police im Detail mit eigenem Formular: Leistungen, Ausschlüsse, Unterlagen, Preisfaktoren und Antrag.",
+   "intro": "Jede Police hat ihre eigene Seite. „Auf einen Blick“ fasst sie zusammen; danach folgen Leistungen und optionale Leistungen, Ausschlüsse, benötigte Unterlagen, was den Beitrag beeinflusst und was im Schadensfall zu tun ist. Das Antragsformular steht auf derselben Seite, und seine Felder gehören genau zu dieser Police.",
+   "steps": [
+    [
+     "Angaben zur Police",
+     "Füllen Sie die Felder dieser Police aus; sie werden für einen genauen Preis benötigt."
+    ],
+    [
+     "Kontaktdaten",
+     "Geben Sie Ihren Namen und Ihre Erreichbarkeit an; wir rufen an, um die Police abzustimmen und zu senden."
+    ],
+    [
+     "Nummer bestätigen",
+     "Bestätigen Sie Ihre Mobilnummer mit dem sechsstelligen Code; ohne sie kann die Anfrage nicht gesendet werden."
+    ],
+    [
+     "Absenden und Code aufbewahren",
+     "Senden Sie die Anfrage ab und bewahren Sie den Vorgangscode auf."
+    ]
+   ],
+   "tips": [
+    [
+     "Ausschlüsse vor dem Antrag lesen",
+     "Die Liste „Nicht versichert“ ist so wichtig wie die Leistungen und erspart Enttäuschungen im Schadensfall."
+    ],
+    [
+     "Unterlagen bereithalten",
+     "Halten Sie die benötigten Unterlagen bereit, bevor die Fachperson anruft, dann wird die Police schneller ausgestellt."
+    ]
+   ],
+   "faqs": [
+    [
+     "Was passiert nach dem Antrag?",
+     "Eine Fachperson ruft Sie so bald wie möglich an, um die Optionen zu besprechen; der vereinbarte Zeitpunkt erscheint auf der Verfolgungsseite."
+    ],
+    [
+     "Was bedeutet „Von Fachleuten kalkuliert“?",
+     "Diese Police wird von einer Fachperson berechnet; Sie geben die Grunddaten an, damit sie gut informiert anrufen kann."
+    ],
+    [
+     "Der Bestätigungscode ist nicht angekommen.",
+     "Warten Sie einen Moment und tippen Sie auf Erneut senden, oder prüfen Sie die Nummer und korrigieren Sie sie mit Nummer ändern."
+    ],
+    [
+     "Wo werden meine Angaben angezeigt?",
+     "Die Verfolgungsseite zeigt nur den Stand der Anfrage, keine persönlichen Daten."
+    ]
+   ],
+   "related": {
+    "insurance": "Zurück zur Liste aller Versicherungen.",
+    "track": "Die Anfrage mit ihrem Code verfolgen.",
+    "my-requests": "Für Mitglieder: Ihre Codes in einer Liste."
+   }
+  },
+  "consult": {
+   "title": "Beratung anfragen",
+   "summary": "Fragen Sie technische oder berufliche Beratung an; sagen Sie, wann Sie Zeit haben, und wir rufen an.",
+   "intro": "Ihr Berufsweg, ein technisches Problem oder ein Code-Review, der Einstieg in die Softwareentwicklung oder die Vorbereitung auf Vorstellungsgespräche und den Lebenslauf: Sagen Sie, worüber Sie sprechen möchten und wann Sie Zeit haben. Wir rufen an und legen den Termin fest. Das Gespräch kann online, telefonisch oder vor Ort stattfinden und verpflichtet Sie zu nichts.",
+   "steps": [
+    [
+     "Thema wählen",
+     "Berufsweg, ein technisches Problem, Einstieg, Vorstellungsgespräch und Lebenslauf oder etwas anderes."
+    ],
+    [
+     "Wie und wozu",
+     "Online, telefonisch oder vor Ort – und was das Gespräch Ihnen bringen soll."
+    ],
+    [
+     "Experten wählen oder uns überlassen",
+     "Haben Sie jemanden aus dem Expertenclub im Sinn, wählen Sie ihn; sonst „wer am besten passt“."
+    ],
+    [
+     "Freie Zeiten angeben",
+     "Wählen Sie einige Zeitfenster (Tag und Vormittag, Nachmittag oder Abend). Ungefähre Zeiten genügen."
+    ],
+    [
+     "Vorgangscode aufbewahren",
+     "Wir rufen die angegebene Nummer an; den Stand verfolgen Sie mit dem Code und können die Anfrage bei Bedarf stornieren."
+    ]
+   ],
+   "points": [
+    [
+     "Ein klarer Status",
+     "Eingegangen, Termin wird abgestimmt, Termin bestätigt, Stattgefunden – alles unter dem Vorgangscode."
+    ],
+    [
+     "Einfach stornieren",
+     "Ändern sich Ihre Pläne, stornieren Sie die Anfrage auf der Verfolgungsseite."
+    ]
+   ],
+   "tips": [
+    [
+     "Beschreiben Sie das Ziel genau",
+     "Je genauer Ihre Erwartung, desto nützlicher das Gespräch – etwa: „Ich möchte wissen, wo ich für den Einstieg ins Backend anfange“."
+    ]
+   ],
+   "faqs": [
+    [
+     "Verpflichtet mich eine Beratung zu etwas?",
+     "Nein. Eine Beratung begründet keine Pflicht, ein Projekt zu starten oder zusammenzuarbeiten."
+    ],
+    [
+     "Wann rufen Sie an?",
+     "In einem der angegebenen Zeitfenster, um den Termin zu bestätigen. Der bestätigte Termin steht auch auf der Verfolgungsseite."
+    ],
+    [
+     "Brauche ich eine E-Mail-Adresse?",
+     "Nein; eine Telefonnummer genügt. Die E-Mail ist optional."
+    ],
+    [
+     "Kann ich die Anfrage stornieren?",
+     "Ja, mit dem Vorgangscode auf der Seite Anfrage verfolgen."
+    ]
+   ],
+   "related": {
+    "experts": "Fachleute, die Sie namentlich anfragen können.",
+    "start-project": "Wenn Sie nach der Beratung ein Projekt starten möchten.",
+    "my-requests": "Für Mitglieder: der Beratungscode in Ihrer Anfrageliste."
+   }
+  },
+  "experts": {
+   "title": "Expertenclub",
+   "summary": "Engineers und Fachleute für technische und berufliche Beratung, mit Fachgebieten, Sprachen und Berufsjahren.",
+   "heading": "Wie der Expertenclub funktioniert",
+   "intro": "Der Expertenclub ist eine Gruppe von Ingenieuren und Fachleuten, die technische und berufliche Beratung geben – die Menschen, an die wir uns selbst wenden und die Sie namentlich anfragen können. Jedes Profil zeigt, ob die Person Beratungen annimmt.",
+   "points": [
+    [
+     "Technische Beratung",
+     "Für Entscheidungen wie die Wahl einer Technologie oder den Entwurf einer Architektur, oder für einen Blick auf ein bestehendes System, das nicht so läuft, wie es sollte."
+    ],
+    [
+     "Berufliche Beratung",
+     "Für Ingenieure, die gerade anfangen oder die Richtung wechseln – von Menschen, die diesen Weg selbst gegangen sind."
+    ],
+    [
+     "Namentlich wählen",
+     "Die Seite jedes Experten nennt Fachgebiete, Sprachen und Berufsjahre. Nimmt die Person Beratungen an, fragen Sie direkt auf dieser Seite an."
+    ],
+    [
+     "Eine Beratung vereinbaren",
+     "Stellen Sie eine Anfrage über die Seite „Beratung anfragen“ und nennen Sie einige passende Zeiten – wir rufen an. Eine Beratung verpflichtet Sie zu nichts."
+    ]
+   ],
+   "faqTitle": "Häufige Fragen zur Beratung",
+   "faqs": [
+    [
+     "Wie buche ich eine Beratung?",
+     "Über die Seite „Beratung anfragen“ oder mit der Beratungsschaltfläche auf der Seite eines Experten. Sie nennen einige passende Zeiten, und wir rufen an."
+    ],
+    [
+     "Kann ich den Experten selbst wählen?",
+     "Ja. Experten mit dem Hinweis „Nimmt Beratungen an“ können Sie namentlich anfragen."
+    ],
+    [
+     "Verpflichtet mich eine Beratung zu einem Projekt?",
+     "Nein. Eine Beratung verpflichtet Sie zu nichts."
+    ],
+    [
+     "Wie werde ich Mitglied im Expertenclub?",
+     "Schreiben Sie uns über die Seite „Kontakt“ zu Ihrer Erfahrung und Ihren Fachgebieten. Die Profile im Club werden von unserem Team angelegt und gepflegt."
+    ]
+   ],
+   "related": {
+    "consult": "Das Formular für Beratungsanfragen.",
+    "team": "Das Engineering-Team von Rayan Tamaddon Jahan Gostar.",
+    "freelancers": "Wenn Sie statt Beratung jemanden suchen, der die Arbeit erledigt."
+   }
+  },
+  "jobs": {
+   "title": "Stellenangebote",
+   "summary": "Stellen verifizierter Arbeitgeber im ganzen Iran und remote – mit Suche, Filtern und Benachrichtigungen.",
+   "intro": "Dieser Bereich listet Stellenangebote von Rayan Tamaddon Jahan Gostar und von anderen Unternehmen. Nur Arbeitgeber, deren Identität unser Team verifiziert hat, können Anzeigen aufgeben, und jede Anzeige wird vor der Veröffentlichung geprüft. Für Jobsuchende ist alles kostenlos: Suchen, Merken, Benachrichtigungen und Bewerben.",
+   "steps": [
+    [
+     "Suchen und filtern",
+     "Suchen Sie nach Jobtitel, Fähigkeit oder Unternehmen und filtern Sie nach Kategorie, Provinz, Land, Remote oder Mindestgehalt."
+    ],
+    [
+     "Eine Anzeige öffnen",
+     "Jede Anzeige zeigt Anforderungen, Gehalt und Leistungen, Fähigkeiten und Angaben zum Unternehmen."
+    ],
+    [
+     "Merken oder benachrichtigen lassen",
+     "Merken Sie interessante Anzeigen; mit „Benachrichtigung für diese Suche“ erfahren Sie von neuen."
+    ],
+    [
+     "Bewerben",
+     "Melden Sie sich an und schließen Sie die Identitätsprüfung ab, um Ihren Lebenslauf zu senden; die Bewerbung geht direkt an den Arbeitgeber."
+    ]
+   ],
+   "points": [
+    [
+     "Verifizierte Arbeitgeber",
+     "Die Identität jedes Arbeitgebers ist geprüft, und jede Anzeige wird gelesen, bevor sie online geht."
+    ],
+    [
+     "Provinz- und Kategorieseiten",
+     "Die Stellen einer Provinz, eines Landes oder einer Kategorie haben jeweils eine eigene Adresse, die Sie speichern können."
+    ],
+    [
+     "Internationale Remote-Arbeit",
+     "Remote-Stellen für Bewerber aus allen Ländern oder aus einem bestimmten Land."
+    ],
+    [
+     "Vorschläge aus Ihrer Aktivität",
+     "Angemeldet sehen Sie Anzeigen, die zu Ihren Bewerbungen und gemerkten Stellen passen."
+    ]
+   ],
+   "tips": [
+    [
+     "Benachrichtigung einrichten",
+     "Statt täglich nachzusehen, speichern Sie Ihre Suche mit „Benachrichtigung für diese Suche“; jede passende neue Anzeige meldet sich einmal."
+    ]
+   ],
+   "faqs": [
+    [
+     "Kostet eine Bewerbung etwas?",
+     "Nein. Suchen, Merken, Benachrichtigungen und Bewerben sind für Jobsuchende kostenlos."
+    ],
+    [
+     "Wer kann hier Anzeigen aufgeben?",
+     "Nur Arbeitgeber, deren Identität unser Team verifiziert hat, und jede Anzeige wird vor der Veröffentlichung geprüft."
+    ],
+    [
+     "Wie gebe ich eine Stellenanzeige auf?",
+     "Melden Sie sich an, schließen Sie die Identitätsprüfung ab, legen Sie unter Meine Anzeigen in Ihrem Dashboard eine Anzeige an und senden Sie sie zur Prüfung."
+    ],
+    [
+     "Warum muss ich mich für eine Bewerbung verifizieren?",
+     "Damit der Arbeitgeber weiß, dass er es mit einer echten Person zu tun hat – aus demselben Grund werden Arbeitgeber verifiziert."
+    ],
+    [
+     "Was unterscheidet das von „Lebenslauf senden“?",
+     "„Lebenslauf senden“ ist für die Arbeit bei Rayan Tamaddon Jahan Gostar selbst; dieser Bereich ist für konkrete Stellen, von uns oder anderen Unternehmen."
+    ]
+   ],
+   "related": {
+    "job-detail": "Die Seite jeder Anzeige und das Bewerbungsformular.",
+    "companies": "Die Unternehmen, die einstellen.",
+    "my-applications": "Für Jobsuchende: Bewerbungen, gemerkte Stellen und Benachrichtigungen.",
+    "my-jobs": "Für Arbeitgeber: Stellen ausschreiben und verwalten."
+   }
+  },
+  "job-detail": {
+   "title": "Eine Stellenanzeige",
+   "summary": "Die Details einer Stelle, wie gut Sie passen, und das Bewerbungsformular.",
+   "intro": "Jede Anzeige zeigt die Stellenbeschreibung, Anforderungen, Gehalt und Leistungen, die nötigen Fähigkeiten und Angaben zum Unternehmen. Haben Sie Ihre Fähigkeiten im Profil eingetragen, sehen Sie auch, wie viele der geforderten Fähigkeiten Sie mitbringen. Ihre Bewerbung geht direkt an den Arbeitgeber, und wir informieren Sie bei jedem Schritt.",
+   "steps": [
+    [
+     "Anzeige lesen",
+     "Prüfen Sie Anforderungen, Gehalt und Art der Stelle; antwortet der Arbeitgeber in der Regel, wird auch seine Antwortquote angezeigt."
+    ],
+    [
+     "Ihre Passung sehen",
+     "Der Abschnitt „Wie gut passen Sie?“ zeigt die Fähigkeiten, die Sie haben, und die, die sich zu lernen lohnen."
+    ],
+    [
+     "Anmelden und verifizieren",
+     "Das Bewerbungsformular öffnet sich, sobald Sie angemeldet und verifiziert sind."
+    ],
+    [
+     "Lebenslauf senden",
+     "Senden Sie die Bewerbung und verfolgen Sie den Stand unter Meine Bewerbungen."
+    ]
+   ],
+   "tips": [
+    [
+     "Fähigkeiten ins Profil eintragen",
+     "Ohne Fähigkeiten im Profil lässt sich Ihre Passung nicht berechnen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Woher weiß ich, dass der Arbeitgeber meinen Lebenslauf gesehen hat?",
+     "Öffnet der Arbeitgeber Ihre Bewerbung, steht sie auf „Vom Arbeitgeber gesehen“, und wir informieren Sie bei jeder Statusänderung."
+    ],
+    [
+     "Kann ich meine Bewerbung zurückziehen?",
+     "Ja, unter Meine Bewerbungen. Solange die Anzeige offen ist, können Sie sich erneut bewerben."
+    ],
+    [
+     "Kann ich mich zweimal auf dieselbe Anzeige bewerben?",
+     "Nein; haben Sie sich bereits beworben, wird das Datum in der Anzeige angezeigt."
+    ],
+    [
+     "Ich sehe kein Gehalt.",
+     "Manche Arbeitgeber nennen es nicht; dann steht dort „Verhandelbar“."
+    ]
+   ],
+   "related": {
+    "jobs": "Zurück zu allen Anzeigen.",
+    "companies": "Die Seite des Unternehmens hinter der Anzeige.",
+    "my-applications": "Ihre gesendeten Bewerbungen verfolgen.",
+    "verification": "Die Identitätsprüfung, die vor einer Bewerbung nötig ist."
+   }
+  },
+  "companies": {
+   "title": "Unternehmen",
+   "summary": "Verifizierte Arbeitgeber, die Seite jedes Unternehmens und seine offenen Stellen.",
+   "intro": "Jeder verifizierte Arbeitgeber kann eine Unternehmensseite haben: Vorstellung, Unternehmensgröße, Bilder und alle offenen Stellen. Hier suchen Sie Unternehmen und gelangen von jeder Seite zu den Anzeigen.",
+   "steps": [
+    [
+     "Unternehmen finden",
+     "Suchen Sie nach Namen oder stöbern Sie nach Unternehmensgröße."
+    ],
+    [
+     "Seite lesen",
+     "Sehen Sie die Vorstellung des Unternehmens und seine offenen Stellen."
+    ],
+    [
+     "Sie sind Arbeitgeber?",
+     "Nach der Verifizierung legen Sie Ihre Unternehmensseite im Dashboard an; jede Ihrer Anzeigen verlinkt darauf."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wie lege ich eine Unternehmensseite an?",
+     "Gehen Sie in Ihrem Dashboard zu Unternehmensseite. Zuvor muss Ihre Identität verifiziert sein."
+    ],
+    [
+     "Warum wurde eine Unternehmensseite ausgeblendet?",
+     "Verstößt eine Seite gegen die Regeln der Website, blenden unsere Mitarbeitenden sie aus; die Inhaber können beim Support nach dem Grund fragen."
+    ]
+   ],
+   "related": {
+    "jobs": "Alle Stellenangebote.",
+    "my-jobs": "Für Arbeitgeber: Anzeigen und Unternehmensseite."
+   }
+  },
+  "projects": {
+   "title": "Freelance-Projekte",
+   "summary": "Festpreis- und Stundenprojekte verifizierter Auftraggeber: ein Projekt finden, ein Angebot senden und die Arbeit durchführen.",
+   "intro": "Auftraggeber schreiben hier Projekte aus, und Freelancer senden Angebote dafür. Jedes Projekt wird vor der Veröffentlichung geprüft und kann Festpreis oder stundenbasiert sein. Jeder kann die Projekte ansehen, aber um ein Projekt auszuschreiben oder ein Angebot zu senden, müssen Sie angemeldet und verifiziert sein. Die Bezahlung läuft nicht über die Website; Auftraggeber und Freelancer vereinbaren sie direkt miteinander.",
+   "steps": [
+    [
+     "Ein Projekt finden",
+     "Durchsuchen Sie Titel, Beschreibungen oder Fähigkeiten; sortieren und filtern Sie nach Kategorie, Preisart, Erfahrungsstufe oder wenigsten Angeboten."
+    ],
+    [
+     "Das Projekt lesen",
+     "Sehen Sie Budget, Dauer, Fähigkeiten und die Bilanz des Auftraggebers (verifiziert, Einstellungsquote und Bewertung)."
+    ],
+    [
+     "Ein Angebot senden",
+     "Nennen Sie Preis oder Stundensatz, Lieferzeit und einen Meilensteinplan und beantworten Sie die Fragen des Auftraggebers."
+    ],
+    [
+     "Die Arbeit durchführen",
+     "Werden Sie beauftragt, öffnet sich die Zusammenarbeit unter Meine Zusammenarbeiten; Gespräch und Meilensteine laufen in Ihrem Dashboard weiter."
+    ]
+   ],
+   "points": [
+    [
+     "Festpreis oder Stunden",
+     "Bei Stundenprojekten erfassen Sie Ihre Stunden, und der Auftraggeber bestätigt sie."
+    ],
+    [
+     "Zahlung in Meilensteinen",
+     "Teilen Sie die Arbeit in Meilensteine mit Betrag und Zeitraum; deren Summe muss Ihrem Angebot entsprechen."
+    ],
+    [
+     "NDA",
+     "Manche Projekte verlangen vor dem Lesen von Beschreibung und Anhängen eine Vertraulichkeitsvereinbarung."
+    ],
+    [
+     "Sichtbarkeit",
+     "Ein Projekt kann für alle, nur für Mitglieder oder nur für eingeladene Freelancer sichtbar sein."
+    ]
+   ],
+   "tips": [
+    [
+     "Projektbenachrichtigung einrichten",
+     "Legen Sie für Ihre Suche eine Benachrichtigung an, um passende neue Projekte nicht zu verpassen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Verwahrt die Website Geld oder wickelt sie die Zahlung ab?",
+     "Nein. Die Bezahlung läuft nicht über die Website; Auftraggeber und Freelancer vereinbaren Betrag und Weg direkt. Der Meilensteinplan hilft, diese Vereinbarung klar zu halten."
+    ],
+    [
+     "Warum ist eine Verifizierung nötig?",
+     "Um ein Projekt auszuschreiben, ein Angebot zu senden oder ein NDA zu unterzeichnen. Beide Seiten wissen, dass sie es mit einer echten Person zu tun haben."
+    ],
+    [
+     "Wann wird mein Projekt veröffentlicht?",
+     "Nach dem Senden zur Prüfung meist innerhalb weniger Stunden."
+    ],
+    [
+     "Wie viele Angebote kann ich senden?",
+     "Eines pro Projekt; Sie können es zurückziehen, bevor der Auftraggeber entscheidet."
+    ]
+   ],
+   "related": {
+    "project-detail": "Die Seite jedes Projekts und das Angebotsformular.",
+    "client-projects": "Für Auftraggeber: Projekte ausschreiben und verwalten.",
+    "my-proposals": "Für Freelancer: Angebote, Einladungen und Zusammenarbeiten.",
+    "freelancers": "Freelancer, die Sie zu Ihrem Projekt einladen können."
+   }
+  },
+  "project-detail": {
+   "title": "Eine Projektseite",
+   "summary": "Die Details eines Projekts, die Bilanz des Auftraggebers und das Angebotsformular.",
+   "intro": "Jede Projektseite zeigt Beschreibung, Budget oder Stundensatzspanne, Dauer, gewünschte Erfahrungsstufe, Fähigkeiten und die Bilanz des Auftraggebers. Verlangt das Projekt ein NDA, öffnen sich vollständige Beschreibung und Anhänge nach der Unterzeichnung. Hat der Auftraggeber Sie eingeladen, wird der Hinweis Eingeladen angezeigt.",
+   "steps": [
+    [
+     "Lesen, dann entscheiden",
+     "Sehen Sie sich Budget, Dauer und die Fragen des Auftraggebers an, bevor Sie ein Angebot schreiben."
+    ],
+    [
+     "Bei Bedarf das NDA unterzeichnen",
+     "Geben Sie Ihren Namen als Unterschrift ein, um Beschreibung und Dateien zu öffnen."
+    ],
+    [
+     "Angebot schreiben",
+     "Preis oder Stundensatz, Meilensteinplan, Lieferzeit und Antworten auf die Fragen."
+    ],
+    [
+     "Auf Antwort warten",
+     "Den Stand sehen Sie unter Meine Angebote; Nachrichten des Auftraggebers kommen unter Nachrichten an."
+    ]
+   ],
+   "tips": [
+    [
+     "Ein Angebot für genau dieses Projekt",
+     "Gehen Sie auf das Problem dieses Projekts ein und beantworten Sie die Fragen genau; allgemeine Angebote werden seltener gewählt."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wozu verpflichtet mich das NDA?",
+     "Projektbeschreibung, Anhänge und alles, was der Auftraggeber Ihnen dazu sagt, vertraulich zu behandeln."
+    ],
+    [
+     "Kann ich eine Einladung ablehnen?",
+     "Ja, mit Einladung ablehnen. Der Auftraggeber wird informiert."
+    ],
+    [
+     "Was passiert, wenn das Projekt geschlossen wird?",
+     "Ein geschlossenes Projekt nimmt keine neuen Angebote an; frühere Angebote bleiben in Ihrer Liste."
+    ]
+   ],
+   "related": {
+    "projects": "Zurück zu allen Projekten.",
+    "my-proposals": "Ihre gesendeten Angebote.",
+    "verification": "Vor dem Senden eines Angebots nötig.",
+    "messages": "Gespräch mit dem Auftraggeber."
+   }
+  },
+  "freelance-services": {
+   "title": "Freelance-Dienstleistungen",
+   "summary": "Fertige Leistungen zum festen Preis: Paket wählen und bestellen.",
+   "intro": "Freelance-Dienstleistungen funktionieren umgekehrt wie Projekte: Ein Freelancer bietet seine Leistung zu festem Preis und fester Lieferzeit an, und Sie bestellen. Jede Dienstleistung kann bis zu drei Pakete haben: Basis, Standard und Premium. Jede Dienstleistung wird vor der Veröffentlichung geprüft.",
+   "steps": [
+    [
+     "Eine Dienstleistung finden",
+     "Suchen und sortieren Sie nach Kategorie, Preis oder Bewertung."
+    ],
+    [
+     "Ein Paket wählen",
+     "Vergleichen Sie, was jedes Paket enthält und wie lange die Lieferung dauert."
+    ],
+    [
+     "Bestellen",
+     "Angemeldet und verifiziert senden Sie die Bestellung mit einer Beschreibung Ihres Bedarfs."
+    ],
+    [
+     "Auf den Anbieter warten",
+     "Der Anbieter nimmt die Bestellung an oder lehnt ab; den Stand sehen Sie unter Bestellungen in Ihrem Dashboard."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wie wird bezahlt?",
+     "Nicht über die Website; nach Annahme der Bestellung vereinbaren Käufer und Anbieter das direkt."
+    ],
+    [
+     "Was unterscheidet eine Dienstleistung von einem Projekt?",
+     "Beim Projekt beschreiben Sie die Arbeit und erhalten Angebote; bei einer Dienstleistung bietet der Freelancer fertige Arbeit zu festem Preis an."
+    ],
+    [
+     "Wie biete ich meine eigene Dienstleistung an?",
+     "Legen Sie unter Meine Dienstleistungen in Ihrem Dashboard eine an und senden Sie sie zur Prüfung."
+    ]
+   ],
+   "related": {
+    "my-services": "Für Anbieter: Dienstleistungen anlegen und Bestellungen verwalten.",
+    "freelancers": "Die Profile der Anbieter.",
+    "projects": "Ist Ihr Bedarf nicht fertig verfügbar und muss beschrieben werden, schreiben Sie ein Projekt aus."
+   }
+  },
+  "freelancers": {
+   "title": "Freelancer und Profile",
+   "summary": "Freelancer nach Fähigkeit, Sprache und Verfügbarkeit finden, Profile lesen und einladen.",
+   "intro": "Das Freelancer-Verzeichnis zeigt die öffentlichen Profile von Mitgliedern mit Benutzernamen, die entweder Fähigkeiten im Profil angeben oder eine aktive, freigegebene Dienstleistung anbieten: Fähigkeiten, Sprachen, Land, Verfügbarkeit, Bewertungen und Arbeitsproben. Kontaktdaten werden im Verzeichnis nie angezeigt.",
+   "steps": [
+    [
+     "Suchen",
+     "Filtern Sie nach Fähigkeit, Kategorie, Sprache, Land, Verfügbarkeit oder Verifizierung und sortieren Sie nach Bewertung."
+    ],
+    [
+     "Ein Profil lesen",
+     "Verifizierungsabzeichen, Bewertungen, Arbeitsproben und angebotene Dienstleistungen."
+    ],
+    [
+     "Einladen",
+     "Auftraggeber können einen Freelancer per Benutzername einladen, ein Angebot für ihr Projekt zu senden."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wie erscheine ich in diesem Verzeichnis?",
+     "Wählen Sie in Ihrem Dashboard einen Benutzernamen und tragen Sie Ihre Fähigkeiten ein, oder bieten Sie eine Dienstleistung an, die freigegeben wird. Arbeitsproben machen eine Einladung wahrscheinlicher."
+    ],
+    [
+     "Was bedeutet das Verifizierungsabzeichen?",
+     "Dass unser Team die Identität dieses Mitglieds verifiziert hat."
+    ],
+    [
+     "Woher stammen die Bewertungen?",
+     "Von den Personen, die dieses Mitglied am Ende einer Zusammenarbeit bewertet haben."
+    ]
+   ],
+   "related": {
+    "profile": "Ihr eigenes öffentliches Profil anlegen und bearbeiten.",
+    "freelance-services": "Die Dienstleistungen, die Freelancer anbieten.",
+    "projects": "Projekte, für die Sie Angebote senden können."
+   }
+  },
+  "books": {
+   "title": "Büchermarkt",
+   "summary": "Neue und gebrauchte Bücher von Lesern und Buchhandlungen: alle Exemplare eines Buches auf einer Seite.",
+   "intro": "Im Büchermarkt hat jedes Buch eine Seite, und alle angebotenen Exemplare stehen dort zusammen, das günstigste zuerst. Jedes Exemplar gehört einem Verkäufer; Sie sehen seinen Zustand (von Neu bis Akzeptabel), Fotos, Preis, Versandkosten und Lieferart. Ein Kauf beginnt mit einer Kaufanfrage; über die Website wird nichts bezahlt, Käufer und Verkäufer vereinbaren Bezahlung und Lieferung direkt.",
+   "steps": [
+    [
+     "Buch finden",
+     "Suchen Sie oder stöbern Sie in den Regalen; filtern Sie nach Zustand, Preis, kostenlosem Versand oder unter Listenpreis."
+    ],
+    [
+     "Ein Exemplar wählen",
+     "Vergleichen Sie auf der Buchseite die Exemplare nach Zustand, Fotos, Preis und Lieferart."
+    ],
+    [
+     "Kaufanfrage senden",
+     "Wählen Sie die Lieferart und schlagen Sie bei Wunsch einen Preis vor; Sie müssen angemeldet und verifiziert sein."
+    ],
+    [
+     "Lieferung abstimmen",
+     "Nimmt der Verkäufer an, vereinbaren Sie Bezahlung und Lieferung im Gespräch zu dieser Anfrage."
+    ]
+   ],
+   "points": [
+    [
+     "Bewerteter Zustand",
+     "Jedes Exemplar hat eine von fünf Stufen – Neu, Wie neu, Sehr gut, Gut oder Akzeptabel – mit Fotos."
+    ],
+    [
+     "Bücher verkaufen",
+     "Bieten Sie Ihr Exemplar mit Fotos, Zustand und Preis aus Ihrem Dashboard an; es wird vor der Veröffentlichung geprüft."
+    ],
+    [
+     "Gegenseitige Bewertungen",
+     "Nach einem Verkauf bewerten sich Käufer und Verkäufer gegenseitig."
+    ]
+   ],
+   "tips": [
+    [
+     "Einen Preis vorschlagen",
+     "Ist der Preis eines Exemplars verhandelbar, können Sie Ihren eigenen vorschlagen; lassen Sie das Feld leer, um den Preis des Verkäufers anzunehmen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Bezahle ich an die Website?",
+     "Nein. Über die Website wird nichts bezahlt; nach Annahme Ihrer Anfrage vereinbaren Sie Bezahlung und Lieferung direkt mit dem Verkäufer."
+    ],
+    [
+     "Warum muss ich mich zum Kaufen verifizieren?",
+     "Damit der Verkäufer weiß, dass er es mit einer echten Person zu tun hat; dieselbe Regel gilt für Verkäufer."
+    ],
+    [
+     "Wie verkaufe ich ein Buch?",
+     "Bieten Sie Ihr Exemplar unter Meine Bücher im Verkauf in Ihrem Dashboard mit Fotos, Zustand und Preis an und senden Sie es zur Prüfung."
+    ],
+    [
+     "Der Verkäufer hat meine Anfrage abgelehnt.",
+     "Sie können ein anderes Exemplar desselben Buches bei einem anderen Verkäufer anfragen."
+    ]
+   ],
+   "related": {
+    "my-books": "Bücher verkaufen und Käufe verfolgen im Dashboard.",
+    "messages": "Gespräch mit Käufer oder Verkäufer.",
+    "verification": "Für Kauf und Verkauf nötig."
+   }
+  },
+  "marketplace": {
+   "title": "Lokaler Markt",
+   "summary": "Geschäfte, Produkte und Dienstleistungen in Ihrer Nähe auf der Karte finden und das Geschäft direkt kontaktieren.",
+   "intro": "Der lokale Markt zeigt Geschäfte und Betriebe in Ihrer Umgebung auf einer Karte: ihre Produkte, Dienstleistungen, Bilder und Kontaktwege. Vorerst ist er ein Schaufenster, kein Onlineshop; Kauf, Buchung und Absprache laufen direkt mit dem Geschäft.",
+   "steps": [
+    [
+     "Ihren Punkt festlegen",
+     "Erlauben Sie den Zugriff auf Ihren Standort oder klicken Sie auf die Karte, damit die Suche um diesen Punkt läuft."
+    ],
+    [
+     "Suchen",
+     "Suchen Sie nach Geschäftsnamen, Branche oder dem gewünschten Produkt oder der Dienstleistung; legen Sie den Suchradius fest und sortieren Sie nach „Am nächsten“."
+    ],
+    [
+     "Geschäft oder Produkt öffnen",
+     "Sehen Sie Vorstellung, Bilder, Produkte und Dienstleistungen sowie den Standort auf der Karte."
+    ],
+    [
+     "Kontakt aufnehmen",
+     "Zum Kaufen oder Buchen nutzen Sie die Kontaktdaten dieses Geschäfts."
+    ]
+   ],
+   "tips": [
+    [
+     "Standort nicht verfügbar?",
+     "Browser geben den Standort nur über eine sichere Verbindung weiter, und vielleicht haben Sie es nicht erlaubt; wählen Sie dann einen Punkt auf der Karte."
+    ]
+   ],
+   "faqs": [
+    [
+     "Kann ich hier kaufen und bezahlen?",
+     "Noch nicht. Warenkorb und Onlinezahlung sind nicht freigeschaltet; kontaktieren Sie das Geschäft."
+    ],
+    [
+     "Werden Geschäfte geprüft?",
+     "Ja. Jeder Inhaber hat seine Identität verifiziert, und jedes Geschäft wird geprüft, bevor es erscheint."
+    ],
+    [
+     "Mein Geschäft ist nicht hier.",
+     "Tragen Sie es über die Seite Geschäft eintragen in vier Schritten ein."
+    ]
+   ],
+   "related": {
+    "marketplace-join": "Das eigene Geschäft eintragen.",
+    "my-shops": "Für Anbieter: Geschäft und Produkte verwalten."
+   }
+  },
+  "marketplace-join": {
+   "title": "Geschäft eintragen",
+   "summary": "Tragen Sie Ihr Geschäft in vier Schritten ein, damit Kunden in der Nähe es auf der Karte finden.",
+   "intro": "Jeder Betrieb, der Kunden in der Nähe Produkte oder Dienstleistungen anbietet, kann sein Geschäft eintragen. Weil ein Geschäft eine geschäftliche Identität ist und Käufer wissen sollen, wer dahintersteht, ist eine Identitätsprüfung nötig, und das Geschäft wird geprüft, bevor es erscheint. Nach der Freigabe veröffentlichen und bearbeiten Sie Ihre Produkte und Dienstleistungen selbst.",
+   "steps": [
+    [
+     "Konto anlegen",
+     "Registrieren Sie sich oder melden Sie sich an."
+    ],
+    [
+     "Identität verifizieren",
+     "Bestätigen Sie Ihre Identität im Dashboard."
+    ],
+    [
+     "Geschäft anlegen",
+     "Geben Sie Name, Vorstellung, Branche, Logo, Bild, Kontaktdaten und Standort ein und senden Sie es zur Prüfung."
+    ],
+    [
+     "Produkte und Dienstleistungen hinzufügen",
+     "Nach der Freigabe veröffentlichen, bearbeiten und entfernen Sie Ihre Produkte und Dienstleistungen."
+    ]
+   ],
+   "tips": [
+    [
+     "Standort auf der Karte eintragen",
+     "Ohne Standort erscheint Ihr Geschäft nicht in „In meiner Nähe“-Suchen."
+    ]
+   ],
+   "faqs": [
+    [
+     "Wie lange dauert die Prüfung?",
+     "Das hängt von der Prüfwarteschlange ab. Bittet die prüfende Person um Änderungen, sehen Sie das im Dashboard und senden es nach der Korrektur erneut."
+    ],
+    [
+     "Werden auch Produkte geprüft?",
+     "Nach der Freigabe des Geschäfts erscheinen Produkte sofort, doch Mitarbeitende können jedes Produkt zur Korrektur zurückschicken."
+    ]
+   ],
+   "related": {
+    "marketplace": "Der Markt aus Sicht der Käufer.",
+    "my-shops": "Ihr Geschäft nach dem Eintrag verwalten.",
+    "verification": "Schritt zwei: Identitätsprüfung."
+   }
+  },
+  "login": {
+   "title": "Anmelden",
+   "summary": "Melden Sie sich mit E-Mail und Passwort an; ist die Zwei-Schritt-Anmeldung aktiv, wird auch der Code Ihrer Authenticator-App abgefragt.",
+   "intro": "Mit der Anmeldung erreichen Sie Ihr Dashboard: Profil, Identitätsprüfung, Vorgangscodes, Nachrichten und Ihre Marktplatz-Aktivität. Haben Sie die Zwei-Schritt-Anmeldung aktiviert, wird nach dem Passwort der sechsstellige Code aus Ihrer Authenticator-App (oder einer Ihrer Wiederherstellungscodes) abgefragt.",
+   "steps": [
+    [
+     "E-Mail und Passwort",
+     "Verwenden Sie die E-Mail-Adresse, mit der Sie sich registriert haben."
+    ],
+    [
+     "Zwei-Schritt-Code, falls aktiv",
+     "Geben Sie den sechsstelligen Code aus Ihrer Authenticator-App oder einen Wiederherstellungscode ein."
+    ],
+    [
+     "Dort weitermachen, wo Sie waren",
+     "Kamen Sie von einer Seite wie einer Anzeige zur Anmeldung, kehren Sie danach dorthin zurück."
+    ]
+   ],
+   "faqs": [
+    [
+     "Ich habe mein Passwort vergessen.",
+     "Nutzen Sie „Passwort vergessen?“. Kann keine E-Mail gesendet werden, verweist die Seite auf das Kontaktformular."
+    ],
+    [
+     "Ich komme nicht an meine Authenticator-App.",
+     "Geben Sie einen der Wiederherstellungscodes ein, die Sie beim Aktivieren gespeichert haben. Jeder Code funktioniert einmal."
+    ],
+    [
+     "Wie melde ich mich auf allen Geräten ab?",
+     "Wählen Sie im Sicherheitsbereich Ihres Profils „Überall abmelden“."
+    ]
+   ],
+   "related": {
+    "register": "Noch kein Konto?",
+    "password-reset": "Passwort zurücksetzen.",
+    "dashboard": "Was Sie nach der Anmeldung erwartet."
+   }
+  },
+  "register": {
+   "title": "Registrieren",
+   "summary": "Legen Sie ein Konto an, um Anzeigen und Projekte auszuschreiben, Angebote zu senden, Bücher zu verkaufen und Ihre Vorgangscodes zu bündeln.",
+   "intro": "Für eine Projekt-, Versicherungs- oder Beratungsanfrage, einen Lebenslauf oder eine Nachricht an uns brauchen Sie kein Konto. Ein Konto ist für alles, wobei Ihre Identität zählt: eine Stelle oder ein Projekt ausschreiben, Angebote senden, sich bewerben, Bücher kaufen und verkaufen und ein Geschäft eintragen. Außerdem bleiben Ihre Vorgangscodes unter Meine Anfragen zusammen.",
+   "steps": [
+    [
+     "Grunddaten",
+     "Geben Sie Vorname, Nachname, E-Mail und ein Passwort ein."
+    ],
+    [
+     "Ins Dashboard",
+     "Nach der Registrierung sind Sie sofort angemeldet."
+    ],
+    [
+     "Verifizierung abschließen",
+     "Für Marktplatz-Aktivitäten bestätigen Sie Ihre Identität im Dashboard."
+    ]
+   ],
+   "faqs": [
+    [
+     "Kostet die Registrierung etwas?",
+     "Nein."
+    ],
+    [
+     "Warum muss ich nach der Registrierung auch meine Identität verifizieren?",
+     "Die Registrierung legt ein Konto an; die Verifizierung bestätigt, dass eine echte Person dahintersteht. Sie ist für Kauf und Verkauf, Einstellungen und Projekte nötig."
+    ],
+    [
+     "Welche Regeln gelten für das Passwort?",
+     "Sie stehen unter dem Passwortfeld; wählen Sie ein langes, einzigartiges Passwort."
+    ]
+   ],
+   "related": {
+    "login": "Wenn Sie schon ein Konto haben.",
+    "verify-email": "Ihre E-Mail bestätigen.",
+    "verification": "Identitätsprüfung nach der Registrierung."
+   }
+  },
+  "password-reset": {
+   "title": "Passwort zurücksetzen",
+   "summary": "Passwort vergessen? Fordern Sie einen Link zum Zurücksetzen an und legen Sie ein neues fest.",
+   "intro": "Auf der Seite zum Zurücksetzen geben Sie die E-Mail Ihres Kontos ein und erhalten einen Link; damit legen Sie ein neues Passwort fest. Kann die Website gerade keine E-Mail senden, sagt die Seite das offen und verweist Sie für Hilfe an das Kontaktformular.",
+   "steps": [
+    [
+     "E-Mail eingeben",
+     "Die Adresse, mit der Sie sich registriert haben."
+    ],
+    [
+     "Link öffnen",
+     "Der Link führt zur Seite, auf der Sie ein neues Passwort wählen."
+    ],
+    [
+     "Neues Passwort festlegen",
+     "Geben Sie es zweimal ein und melden Sie sich damit an."
+    ]
+   ],
+   "faqs": [
+    [
+     "Der Link ist nicht angekommen.",
+     "Sehen Sie im Spam-Ordner nach. Hat die Seite gemeldet, dass vorerst keine E-Mail gesendet werden kann, schreiben Sie über Kontakt."
+    ],
+    [
+     "Der Link funktioniert nicht.",
+     "Er ist vielleicht abgelaufen; fordern Sie einen neuen an."
+    ]
+   ],
+   "related": {
+    "login": "Zurück zur Anmeldung.",
+    "profile": "Passwort ändern, während Sie angemeldet sind."
+   }
+  },
+  "verify-email": {
+   "title": "E-Mail bestätigen",
+   "summary": "Öffnen Sie den Bestätigungslink, um die E-Mail-Adresse Ihres Kontos zu bestätigen.",
+   "intro": "Diese Seite öffnet sich über den Link, der zur Bestätigung Ihrer E-Mail-Adresse gesendet wurde. Beim Öffnen wird der Link geprüft und das Ergebnis angezeigt. Die E-Mail-Bestätigung ist etwas anderes als die Identitätsprüfung: Erstere belegt, dass Ihnen die Adresse gehört, Letztere, wer Sie sind.",
+   "faqs": [
+    [
+     "Der Link ist abgelaufen.",
+     "Melden Sie sich an und fordern Sie im Dashboard einen neuen Link an, oder holen Sie sich Hilfe über Kontakt."
+    ],
+    [
+     "Ist die E-Mail-Bestätigung dasselbe wie die Identitätsprüfung?",
+     "Nein. Ihre Identität verifizieren Sie gesondert im Dashboard."
+    ]
+   ],
+   "related": {
+    "register": "Ein Konto anlegen.",
+    "login": "Anmelden.",
+    "verification": "Identitätsprüfung für Marktplatz-Aktivitäten."
+   }
+  }
+ }
+}
