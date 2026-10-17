@@ -8,6 +8,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
+import '../../design/widgets/sheet.dart';
 import '../../l10n/l10n.dart';
 
 /// One part of the platform as the app shows it: its name, its icon, the
@@ -147,8 +148,8 @@ List<AppModule> visibleModules(List<AppModule> modules, Capabilities caps) => [
 /// Until a module's screens arrive in the app, it opens here: a short note
 /// and the way to the same page on the website.
 Future<void> showModuleSoon(BuildContext context, AppModule module) =>
-    showModalBottomSheet<void>(
-      context: context,
+    showBaghSheet<void>(
+      context,
       builder: (context) => Consumer(
         builder: (context, ref, _) {
           final s = ref.watch(stringsProvider);
@@ -157,12 +158,10 @@ Future<void> showModuleSoon(BuildContext context, AppModule module) =>
           final tint = moduleTint(c, module.tint);
           final text = Theme.of(context).textTheme;
           return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                BaghSpace.gutter,
-                0,
-                BaghSpace.gutter,
-                BaghSpace.gutter,
+            child: SingleChildScrollView(
+              padding: BaghLayout.readablePadding(
+                context,
+                bottom: BaghSpace.gutter,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

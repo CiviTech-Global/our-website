@@ -3,5 +3,4 @@
      its day colours: launchers do not switch icons with the theme. -->
 <resources>
     <color name="brand_ground">#060D07</color>
-    <color name="brand_logo">#73C881</color>
 </resources>

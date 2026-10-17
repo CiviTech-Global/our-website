@@ -44,6 +44,23 @@ void main() {
           expect(contrast(c.onError, c.error), greaterThanOrEqualTo(4.5));
         });
 
+        if (c.glass) {
+          test('text reads on glass over every colour of the aurora', () {
+            // A pane is translucent, so what text sits on depends on what
+            // drifts behind it. The worst case is the pane over the aurora's
+            // brightest (or, at night, darkest) field.
+            expect(c.aurora, isNotEmpty);
+            for (final behind in [c.ground, ...c.aurora]) {
+              final pane = Color.alphaBlend(c.pane, behind);
+              expect(contrast(c.ink, pane), greaterThanOrEqualTo(4.5));
+              expect(contrast(c.ink2, pane), greaterThanOrEqualTo(4.5));
+              expect(contrast(c.edge, pane), greaterThanOrEqualTo(3));
+              expect(contrast(c.ink, behind), greaterThanOrEqualTo(4.5));
+              expect(contrast(c.primary, behind), greaterThanOrEqualTo(3));
+            }
+          });
+        }
+
         test('every garden tint carries its ink', () {
           expect(c.tints, hasLength(5));
           for (final tint in c.tints) {

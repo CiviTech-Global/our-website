@@ -24,7 +24,11 @@ class LanguageChoiceScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(BaghSpace.section),
+          padding: BaghLayout.readablePadding(
+            context,
+            top: BaghSpace.section,
+            bottom: BaghSpace.section,
+          ),
           children: [
             const Center(child: GardenMotif(size: 180)),
             const SizedBox(height: BaghSpace.section),

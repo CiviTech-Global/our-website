@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -45,9 +46,25 @@ class CiviTechApp extends ConsumerWidget {
       ),
       // Palette and theme changes cross-fade through the colour tokens.
       themeAnimationDuration: const Duration(milliseconds: 320),
-      builder: (context, child) => _UpdateGate(child: child!),
+      builder: (context, child) =>
+          _SystemBars(child: _UpdateGate(child: child!)),
     );
   }
+}
+
+/// The app draws edge to edge, under transparent system bars, as Android 15
+/// and later require. The bars' icons follow the app's own theme rather than
+/// the phone's, so light pages get dark icons even on a phone set to dark.
+class _SystemBars extends StatelessWidget {
+  const _SystemBars({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    value: systemBarsFor(Theme.of(context).brightness),
+    child: child,
+  );
 }
 
 /// Below the server's version floor nothing else is shown; below the latest

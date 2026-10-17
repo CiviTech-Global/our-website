@@ -4,8 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config.dart';
 import '../../design/palette.dart';
-import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/centered_scroll.dart';
 import '../../design/widgets/girih.dart';
 import '../../l10n/l10n.dart';
 
@@ -25,10 +25,9 @@ class UpdateRequiredScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(BaghSpace.section),
+        child: CenteredScroll(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 16,
             children: [

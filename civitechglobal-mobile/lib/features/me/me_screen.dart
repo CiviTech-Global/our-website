@@ -49,12 +49,7 @@ class MeScreen extends ConsumerWidget {
         actions: const [HelpAction('dashboard')],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          BaghSpace.gutter,
-          0,
-          BaghSpace.gutter,
-          120,
-        ),
+        padding: BaghLayout.readablePadding(context, bottom: 120),
         children: [
           if (session.isLoading && user == null)
             const Padding(

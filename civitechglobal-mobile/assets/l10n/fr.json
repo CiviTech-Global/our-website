@@ -2782,7 +2782,8 @@
   "comingInUpdate": "Cette section arrive avec la prochaine mise à jour. En attendant, vous pouvez utiliser le site.",
   "showPassword": "Afficher le mot de passe",
   "hidePassword": "Masquer le mot de passe",
-  "welcomeName": "Bon retour, {name}"
+  "welcomeName": "Bon retour, {name}",
+  "paletteGlass": "Verre"
  },
  "work": {
   "findWork": "Trouver une mission",

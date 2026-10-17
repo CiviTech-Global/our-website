@@ -38,6 +38,28 @@ class SoftSurface extends StatelessWidget {
     final highContrast = MediaQuery.highContrastOf(context);
 
     Widget surface(double depth) {
+      final pressed = depth.clamp(0.0, 1.0);
+      if (c.glass && !highContrast) {
+        // Glass: a translucent pane with light on its top edge, lifted on
+        // layered shadows that sink as it is pressed. Tints stay solid, so
+        // their ink keeps its contrast whatever drifts behind.
+        final fill = tint?.fill ?? c.pane;
+        return DecoratedBox(
+          decoration: ShapeDecoration(
+            color: tint == null
+                ? fill
+                : Color.lerp(fill, c.ink, 0.05 * pressed),
+            shape: RoundedSuperellipseBorder(
+              borderRadius: BorderRadius.circular(radius),
+              side: BorderSide(color: tint == null ? c.rim : fill),
+            ),
+            shadows: elevated
+                ? BaghDepth.lift(c, (tint == null ? 1.0 : 0.6) * (1 - pressed))
+                : const [],
+          ),
+          child: Padding(padding: padding, child: _inked(child)),
+        );
+      }
       final fill = tint?.fill ?? c.surface;
       return DecoratedBox(
         decoration: ShapeDecoration(
@@ -52,18 +74,7 @@ class SoftSurface extends StatelessWidget {
               ? BaghDepth.rest(c)
               : const [],
         ),
-        child: Padding(
-          padding: padding,
-          child: tint == null
-              ? child
-              : DefaultTextStyle.merge(
-                  style: TextStyle(color: tint!.ink),
-                  child: IconTheme.merge(
-                    data: IconThemeData(color: tint!.ink),
-                    child: child,
-                  ),
-                ),
-        ),
+        child: Padding(padding: padding, child: _inked(child)),
       );
     }
 
@@ -75,4 +86,15 @@ class SoftSurface extends StatelessWidget {
       builder: (context, depth) => surface(depth),
     );
   }
+
+  /// A tinted surface's text and icons take the tint's own ink.
+  Widget _inked(Widget child) => tint == null
+      ? child
+      : DefaultTextStyle.merge(
+          style: TextStyle(color: tint!.ink),
+          child: IconTheme.merge(
+            data: IconThemeData(color: tint!.ink),
+            child: child,
+          ),
+        );
 }

@@ -12,6 +12,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
+import '../../design/widgets/sheet.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../help/help_sheet.dart';
@@ -50,82 +51,93 @@ class SecurityScreen extends ConsumerWidget {
         title: Text(s.dashboard.securityTitle),
         actions: const [HelpAction('profile')],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(BaghSpace.gutter),
-        children: [
-          SoftSurface(
-            child: mfa.when(
-              loading: () => const Center(child: GirihSpinner()),
-              error: (e, _) => Text(describeError(s, e)),
-              data: (status) => Column(
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: BaghLayout.readablePadding(
+            context,
+            top: BaghSpace.gutter,
+            bottom: BaghSpace.gutter,
+          ),
+          children: [
+            SoftSurface(
+              child: mfa.when(
+                loading: () => const Center(child: GirihSpinner()),
+                error: (e, _) => Text(describeError(s, e)),
+                data: (status) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 12,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(s.auth.mfaTitle, style: text.titleMedium),
+                        ),
+                        if (status.enabled)
+                          Chip(
+                            label: Text(s.auth.mfaOn),
+                            backgroundColor: c.primarySoft.fill,
+                            labelStyle: TextStyle(color: c.primarySoft.ink),
+                            side: BorderSide.none,
+                          ),
+                      ],
+                    ),
+                    Text(status.enabled ? s.auth.mfaOnBody : s.auth.mfaOffBody),
+                    if (status.enabled && status.codesLeft < 4)
+                      FormMessage(
+                        s.auth.mfaRecoveryLow.fill({
+                          'count': localDigits(
+                            status.codesLeft,
+                            ref.watch(l10nProvider).language,
+                          ),
+                        }),
+                      ),
+                    BaghKey(
+                      label: status.enabled
+                          ? s.auth.mfaDisable
+                          : s.auth.mfaEnable,
+                      kind: status.enabled
+                          ? BaghKeyKind.outline
+                          : BaghKeyKind.primary,
+                      expand: true,
+                      onPressed: () => status.enabled
+                          ? _disable(context, ref)
+                          : context.push('/me/security/two-factor'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: BaghSpace.gutter),
+            SoftSurface(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 12,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(s.auth.mfaTitle, style: text.titleMedium),
-                      ),
-                      if (status.enabled)
-                        Chip(
-                          label: Text(s.auth.mfaOn),
-                          backgroundColor: c.primarySoft.fill,
-                          labelStyle: TextStyle(color: c.primarySoft.ink),
-                          side: BorderSide.none,
-                        ),
-                    ],
-                  ),
-                  Text(status.enabled ? s.auth.mfaOnBody : s.auth.mfaOffBody),
-                  if (status.enabled && status.codesLeft < 4)
-                    FormMessage(
-                      s.auth.mfaRecoveryLow.fill({
-                        'count': localDigits(
-                          status.codesLeft,
-                          ref.watch(l10nProvider).language,
-                        ),
-                      }),
-                    ),
+                  Text(s.dashboard.signOutEverywhere, style: text.titleMedium),
+                  Text(s.dashboard.signOutEverywhereHint),
                   BaghKey(
-                    label: status.enabled
-                        ? s.auth.mfaDisable
-                        : s.auth.mfaEnable,
-                    kind: status.enabled
-                        ? BaghKeyKind.outline
-                        : BaghKeyKind.primary,
+                    label: s.dashboard.signOutEverywhere,
+                    kind: BaghKeyKind.outline,
                     expand: true,
-                    onPressed: () => status.enabled
-                        ? _disable(context, ref)
-                        : context.push('/me/security/two-factor'),
+                    onPressed: () async {
+                      await ref
+                          .read(sessionProvider.notifier)
+                          .logoutEverywhere();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(s.dashboard.signedOutEverywhere),
+                        ),
+                      );
+                      context.go('/me');
+                    },
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: BaghSpace.gutter),
-          SoftSurface(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 12,
-              children: [
-                Text(s.dashboard.signOutEverywhere, style: text.titleMedium),
-                Text(s.dashboard.signOutEverywhereHint),
-                BaghKey(
-                  label: s.dashboard.signOutEverywhere,
-                  kind: BaghKeyKind.outline,
-                  expand: true,
-                  onPressed: () async {
-                    await ref.read(sessionProvider.notifier).logoutEverywhere();
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(s.dashboard.signedOutEverywhere)),
-                    );
-                    context.go('/me');
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -133,15 +145,15 @@ class SecurityScreen extends ConsumerWidget {
   Future<void> _disable(BuildContext context, WidgetRef ref) async {
     final s = ref.read(stringsProvider);
     final code = TextEditingController();
-    final done = await showModalBottomSheet<bool>(
-      context: context,
+    final done = await showBaghSheet<bool>(
+      context,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          BaghSpace.gutter,
-          0,
-          BaghSpace.gutter,
-          MediaQuery.viewInsetsOf(context).bottom + BaghSpace.section,
+      // Scrolls, so the keyboard and a short screen never push the key
+      // out of reach.
+      builder: (context) => SingleChildScrollView(
+        padding: BaghLayout.readablePadding(
+          context,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + BaghSpace.section,
         ),
         child: _CodeForm(
           controller: code,

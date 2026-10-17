@@ -2904,6 +2904,7 @@ const fa = {
     showPassword: 'نمایش رمز عبور',
     hidePassword: 'پنهان کردن رمز عبور',
     welcomeName: '{name}، خوش آمدید',
+    paletteGlass: 'آبگینه',
   },
   work,
   bookshop,

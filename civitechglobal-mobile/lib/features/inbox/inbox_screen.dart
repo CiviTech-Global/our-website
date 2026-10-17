@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/auth/session.dart';
 import '../../design/palette.dart';
-import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/centered_scroll.dart';
 import '../../design/widgets/girih.dart';
 import '../../l10n/l10n.dart';
 import '../help/help_sheet.dart';
@@ -27,9 +27,9 @@ class InboxScreen extends ConsumerWidget {
         title: Text(s.mobile.inboxTitle),
         actions: const [HelpAction('messages')],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(BaghSpace.section),
+      body: CenteredScroll(
+        child: SizedBox(
+          width: double.infinity,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             spacing: 16,

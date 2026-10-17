@@ -78,9 +78,17 @@ class BaghKey extends StatelessWidget {
         onPressed: enabled ? onPressed : null,
         semanticLabel: loading ? null : label,
         builder: (context, depth) {
-          final travel = 3 * depth.clamp(0.0, 1.0);
+          final pressed = depth.clamp(0.0, 1.0);
+          if (c.glass && !MediaQuery.highContrastOf(context)) {
+            return _glassKey(context, c, fill, ink, side, pressed, text);
+          }
+          final travel = 3 * pressed;
+          // Room for the lip is reserved below the key and handed to the top
+          // as it sinks, so the key's overall height never changes: nothing
+          // around it moves when it is pressed, and the lip stays inside
+          // its own box.
           return Padding(
-            padding: EdgeInsets.only(top: travel),
+            padding: EdgeInsets.only(top: travel, bottom: 3 - travel),
             child: Container(
               constraints: BoxConstraints(
                 minHeight: 52,
@@ -97,31 +105,71 @@ class BaghKey extends StatelessWidget {
                     ...BaghDepth.rest(c),
                 ],
               ),
-              child: Center(
-                widthFactor: expand ? null : 1,
-                child: loading
-                    ? GirihSpinner(color: ink, size: 24)
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (icon != null) ...[
-                            Icon(icon, color: ink, size: 20),
-                            const SizedBox(width: 8),
-                          ],
-                          Flexible(
-                            child: Text(
-                              label,
-                              style: text.copyWith(color: ink),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
+              child: _content(ink, text),
             ),
           );
         },
       ),
     );
   }
+
+  /// The glass style's key: no lip; it rises on soft layered shadows and
+  /// settles towards the ground as it is pressed. The primary carries a
+  /// gentle top-lit gradient; the others sit on glass with a real edge.
+  Widget _glassKey(
+    BuildContext context,
+    BaghColors c,
+    Color fill,
+    Color ink,
+    BorderSide? side,
+    double pressed,
+    TextStyle text,
+  ) {
+    final solid = kind == BaghKeyKind.primary;
+    final face = Color.lerp(fill, c.ink, 0.08 * pressed)!;
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: 52,
+        minWidth: expand ? double.infinity : 88,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      decoration: ShapeDecoration(
+        color: solid ? null : (kind == BaghKeyKind.outline ? c.pane : face),
+        gradient: solid
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color.lerp(face, Colors.white, 0.16)!, face],
+              )
+            : null,
+        shape: StadiumBorder(
+          side: side ?? BorderSide(color: solid ? c.rim : face),
+        ),
+        shadows: BaghDepth.lift(c, (solid ? 1.1 : 0.6) * (1 - pressed)),
+      ),
+      child: _content(ink, text),
+    );
+  }
+
+  Widget _content(Color ink, TextStyle text) => Center(
+    widthFactor: expand ? null : 1,
+    child: loading
+        ? GirihSpinner(color: ink, size: 24)
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: ink, size: 20),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  style: text.copyWith(color: ink),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+  );
 }

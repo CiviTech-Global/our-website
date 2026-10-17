@@ -2747,6 +2747,7 @@ const es: PartialTranslations = {
     showPassword: 'Mostrar contraseña',
     hidePassword: 'Ocultar contraseña',
     welcomeName: 'Hola de nuevo, {name}',
+    paletteGlass: 'Cristal',
   },
   work,
   bookshop,

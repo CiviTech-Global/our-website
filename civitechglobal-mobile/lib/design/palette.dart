@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// The three garden palettes. B opens the app; A and C are chosen in settings.
+/// The garden palettes. B opens the app; A, C and Glass are chosen in
+/// settings.
 ///
 /// Every value was calculated from OKLCH and checked against WCAG 2.2 AA in
 /// both themes: text 4.5:1 or better, control edges and the primary against
@@ -15,7 +16,11 @@ enum GardenPalette {
   firouzeh,
 
   /// C: Lapis & Apricot, the calmest.
-  lapis;
+  lapis,
+
+  /// Abgineh (glass): frosted surfaces over a slowly drifting aurora, with
+  /// layered elevation. A style as well as a palette; see [BaghColors.glass].
+  abgineh;
 
   static GardenPalette parse(String? name) =>
       values.firstWhere((p) => p.name == name, orElse: () => pistachio);
@@ -55,6 +60,9 @@ class BaghColors extends ThemeExtension<BaghColors> {
     required this.onError,
     required this.tints,
     required this.isDark,
+    this.glass = false,
+    this.aurora = const [],
+    this.glassFill,
   });
 
   /// The ground every screen stands on.
@@ -76,6 +84,22 @@ class BaghColors extends ThemeExtension<BaghColors> {
   final List<GardenTint> tints;
   final bool isDark;
 
+  /// The glass style: surfaces are translucent over an aurora instead of
+  /// opaque plaster over a flat ground. [surface] is then the glass as it
+  /// looks over the plain ground, the colour the contrast checks use.
+  final bool glass;
+
+  /// The aurora's colour fields, drawn behind every page in the glass style.
+  final List<Color> aurora;
+
+  /// The translucent fill of a glass surface; the opaque surface otherwise.
+  final Color? glassFill;
+
+  Color get pane => glassFill ?? surface;
+
+  /// The light catching the top edge of a pane: brighter by day.
+  Color get rim => isDark ? const Color(0x24FFFFFF) : const Color(0x99FFFFFF);
+
   /// A fill between ground and surface, for wells and pressed states.
   Color get fill => Color.lerp(ground, edge, isDark ? 0.10 : 0.07)!;
 
@@ -86,8 +110,11 @@ class BaghColors extends ThemeExtension<BaghColors> {
   GardenTint get accentSoft => tints[1];
 
   /// The shadow colour: warm-tinted by day, plain black at night.
-  Color get shadow =>
-      isDark ? const Color(0xFF000000) : const Color(0xFF3C2814);
+  Color get shadow => isDark
+      ? const Color(0xFF000000)
+      : glass
+      ? const Color(0xFF1B2250)
+      : const Color(0xFF3C2814);
 
   static BaghColors of(BuildContext context) =>
       Theme.of(context).extension<BaghColors>()!;
@@ -110,6 +137,9 @@ class BaghColors extends ThemeExtension<BaghColors> {
     onError: onError,
     tints: tints,
     isDark: isDark,
+    glass: glass,
+    aurora: aurora,
+    glassFill: glassFill,
   );
 
   /// Interpolated, so switching palette in settings is a cross-fade, not a cut.
@@ -134,6 +164,9 @@ class BaghColors extends ThemeExtension<BaghColors> {
           GardenTint.lerp(tints[i], other.tints[i], t),
       ],
       isDark: t < 0.5 ? isDark : other.isDark,
+      glass: t < 0.5 ? glass : other.glass,
+      aurora: t < 0.5 ? aurora : other.aurora,
+      glassFill: Color.lerp(pane, other.pane, t),
     );
   }
 }
@@ -141,6 +174,30 @@ class BaghColors extends ThemeExtension<BaghColors> {
 const _white = Color(0xFFFFFFFF);
 
 final Map<GardenPalette, BaghColors> _light = {
+  GardenPalette.abgineh: const BaghColors(
+    ground: Color(0xFFEFF4FC),
+    surface: Color(0xFFFAFBFE),
+    glass: true,
+    glassFill: Color(0xA8FFFFFF),
+    aurora: [Color(0xFFC8D6FF), Color(0xFFB4EFEA), Color(0xFFF7DAF3)],
+    ink: Color(0xFF0E1321),
+    ink2: Color(0xFF494F61),
+    edge: Color(0xFF737A8D),
+    primary: Color(0xFF3F4FBB),
+    onPrimary: _white,
+    accent: Color(0xFF029393),
+    onAccent: Color(0xFF001617),
+    error: Color(0xFFC2272D),
+    onError: _white,
+    isDark: false,
+    tints: [
+      GardenTint(Color(0xFFDBE4FF), Color(0xFF20287B)), // lajvard
+      GardenTint(Color(0xFFC6F2F1), Color(0xFF004141)), // firouzeh
+      GardenTint(Color(0xFFFAE0F7), Color(0xFF692256)), // golab
+      GardenTint(Color(0xFFFFE7C8), Color(0xFF5F3808)), // saffron
+      GardenTint(Color(0xFFD9F2D3), Color(0xFF1B451E)), // pistachio
+    ],
+  ),
   GardenPalette.pistachio: const BaghColors(
     ground: Color(0xFFF1F7F0),
     surface: Color(0xFFFCFEFC),
@@ -207,6 +264,30 @@ final Map<GardenPalette, BaghColors> _light = {
 };
 
 final Map<GardenPalette, BaghColors> _dark = {
+  GardenPalette.abgineh: const BaghColors(
+    ground: Color(0xFF040613),
+    surface: Color(0xFF161724),
+    glass: true,
+    glassFill: Color(0x12FFFFFF),
+    aurora: [Color(0xFF191D4E), Color(0xFF012828), Color(0xFF2F0F36)],
+    ink: Color(0xFFEEF2FA),
+    ink2: Color(0xFFB8BECB),
+    edge: Color(0xFF788093),
+    primary: Color(0xFF96ACFE),
+    onPrimary: Color(0xFF06091C),
+    accent: Color(0xFF65D2D2),
+    onAccent: Color(0xFF001112),
+    error: Color(0xFFFD736D),
+    onError: Color(0xFF06091C),
+    isDark: true,
+    tints: [
+      GardenTint(Color(0xFF1F285A), Color(0xFFD8E0FD)),
+      GardenTint(Color(0xFF003636), Color(0xFFBCECEB)),
+      GardenTint(Color(0xFF411F3E), Color(0xFFF1D8EE)),
+      GardenTint(Color(0xFF432A08), Color(0xFFF9DCB6)),
+      GardenTint(Color(0xFF1C3517), Color(0xFFCDECC6)),
+    ],
+  ),
   GardenPalette.pistachio: const BaghColors(
     ground: Color(0xFF060D07),
     surface: Color(0xFF101812),

@@ -2782,7 +2782,8 @@
   "comingInUpdate": "This section arrives in the next update. Until then you can use the website.",
   "showPassword": "Show password",
   "hidePassword": "Hide password",
-  "welcomeName": "Welcome back, {name}"
+  "welcomeName": "Welcome back, {name}",
+  "paletteGlass": "Glass"
  },
  "work": {
   "findWork": "Find work",

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'palette.dart';
 import 'tokens.dart';
+import 'widgets/aurora.dart';
 
 /// Material 3 wired to Bagh Ravan's tokens.
 ///
@@ -60,12 +62,17 @@ ThemeData buildTheme(
     colorScheme: scheme,
     fontFamily: BaghType.family,
     textTheme: text,
-    scaffoldBackgroundColor: c.ground,
+    // In the glass style every page stands on the aurora instead (see
+    // _AuroraPages), so the scaffold itself is clear.
+    scaffoldBackgroundColor: c.glass ? Colors.transparent : c.ground,
     canvasColor: c.ground,
     splashFactory: NoSplash.splashFactory,
     extensions: [c],
     appBarTheme: AppBarTheme(
-      backgroundColor: c.ground,
+      // Stated, not estimated: with a clear app bar Flutter guesses the
+      // icon colour from "transparent" and picks white on a light page.
+      systemOverlayStyle: systemBarsFor(brightness),
+      backgroundColor: c.glass ? Colors.transparent : c.ground,
       foregroundColor: c.ink,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
@@ -159,9 +166,11 @@ ThemeData buildTheme(
       ),
     ),
     bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: c.surface,
+      // Glass sheets draw their own frosted pane (showBaghSheet).
+      backgroundColor: c.glass ? Colors.transparent : c.surface,
+      elevation: 0,
       surfaceTintColor: Colors.transparent,
-      showDragHandle: true,
+      showDragHandle: !c.glass,
       dragHandleColor: c.edge,
       shape: const RoundedSuperellipseBorder(
         borderRadius: BorderRadius.vertical(
@@ -170,11 +179,65 @@ ThemeData buildTheme(
       ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(color: c.primary),
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {
-        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-      },
-    ),
+    pageTransitionsTheme: c.glass
+        ? const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: _AuroraPages(
+                FadeForwardsPageTransitionsBuilder(),
+              ),
+              TargetPlatform.iOS: _AuroraPages(
+                CupertinoPageTransitionsBuilder(),
+              ),
+            },
+          )
+        : const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            },
+          ),
+  );
+}
+
+/// Puts the aurora under each page, inside its transition.
+///
+/// With clear scaffolds, a page entering over another would otherwise show
+/// the old page through itself for the length of the transition. Giving each
+/// page its own aurora keeps every page opaque; only the top one is painted,
+/// so there is still just one aurora drawing at a time.
+class _AuroraPages extends PageTransitionsBuilder {
+  const _AuroraPages(this.inner);
+
+  final PageTransitionsBuilder inner;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => inner.buildTransitions(
+    route,
+    context,
+    animation,
+    secondaryAnimation,
+    AuroraBackground(child: child),
+  );
+}
+
+/// Transparent system bars with icons that read on [brightness]: the app
+/// draws edge to edge, under both bars.
+SystemUiOverlayStyle systemBarsFor(Brightness brightness) {
+  final dark = brightness == Brightness.dark;
+  final icons = dark ? Brightness.light : Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: icons,
+    statusBarBrightness: brightness,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: icons,
+    systemNavigationBarContrastEnforced: false,
   );
 }

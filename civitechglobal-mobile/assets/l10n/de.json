@@ -2737,7 +2737,7 @@
   "tabHome": "Start",
   "tabExplore": "Entdecken",
   "tabStart": "Neu",
-  "tabInbox": "Posteingang",
+  "tabInbox": "Postfach",
   "tabMe": "Ich",
   "startTitle": "Was möchten Sie beginnen?",
   "startProject": "Softwareprojekt beauftragen",
@@ -2782,7 +2782,8 @@
   "comingInUpdate": "Dieser Bereich kommt mit dem nächsten Update. Bis dahin können Sie die Website nutzen.",
   "showPassword": "Passwort anzeigen",
   "hidePassword": "Passwort verbergen",
-  "welcomeName": "Willkommen zurück, {name}"
+  "welcomeName": "Willkommen zurück, {name}",
+  "paletteGlass": "Glas"
  },
  "work": {
   "findWork": "Aufträge finden",

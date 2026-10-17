@@ -226,7 +226,10 @@ class _GardenPainter extends CustomPainter {
     canvas.restore();
 
     // The pool.
-    canvas.drawPath(_octagon(120), fill..color = c.tints[2].ink);
+    // Deep water in both themes: the white logo sits on it. A tint's ink is
+    // dark by day but light at night, so at night the pool takes the tint's
+    // (dark) fill instead.
+    canvas.drawPath(_octagon(120), fill..color = _pool(c));
     canvas.drawPath(
       _octagon(108),
       stroke
@@ -237,6 +240,19 @@ class _GardenPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GardenPainter old) => old.turn != turn || old.c != c;
+}
+
+/// The pool's water: the sky tint in the garden palettes, the glass
+/// palette's own lapis (its primary tint) in Abgineh, where the third tint is
+/// rose.
+Color _pool(BaghColors c) {
+  final water = c.glass ? c.primarySoft : c.tints[2];
+  if (!c.isDark) return water.ink;
+  // At night the glass pool shares its tint with the quarters around it, so
+  // it sinks a step deeper to keep its shape.
+  return c.glass
+      ? Color.lerp(water.fill, const Color(0xFF000000), 0.45)!
+      : water.fill;
 }
 
 /// One star, for marks and badges.

@@ -2737,7 +2737,7 @@
   "tabHome": "Ana sayfa",
   "tabExplore": "Keşfet",
   "tabStart": "Başlat",
-  "tabInbox": "Gelen kutusu",
+  "tabInbox": "Mesajlar",
   "tabMe": "Ben",
   "startTitle": "Ne başlatmak istersiniz?",
   "startProject": "Yazılım projesi siparişi",
@@ -2782,7 +2782,8 @@
   "comingInUpdate": "Bu bölüm bir sonraki güncellemede gelecek. O zamana kadar web sitesini kullanabilirsiniz.",
   "showPassword": "Şifreyi göster",
   "hidePassword": "Şifreyi gizle",
-  "welcomeName": "Tekrar hoş geldiniz, {name}"
+  "welcomeName": "Tekrar hoş geldiniz, {name}",
+  "paletteGlass": "Cam"
  },
  "work": {
   "findWork": "İş bul",

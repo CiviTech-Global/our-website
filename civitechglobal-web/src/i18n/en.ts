@@ -2916,6 +2916,7 @@ const en: typeof fa = {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
     welcomeName: 'Welcome back, {name}',
+    paletteGlass: 'Glass',
   },
   work,
   bookshop,

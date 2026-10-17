@@ -35,11 +35,9 @@ class AccountPage extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            BaghSpace.gutter,
-            0,
-            BaghSpace.gutter,
-            BaghSpace.section * 2,
+          padding: BaghLayout.readablePadding(
+            context,
+            bottom: BaghSpace.section * 2,
           ),
           children: [
             Align(

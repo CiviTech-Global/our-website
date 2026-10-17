@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_client.dart';
+import '../api/api_exception.dart';
 import 'auth_user.dart';
 
 /// What a sign-in attempt produced: a session, or a second-factor challenge.
@@ -50,6 +51,13 @@ class SessionController extends AsyncNotifier<AuthUser?> {
 
   Future<AuthUser> _adopt(Object? data) async {
     final map = data! as Map;
+    // A server from before the mobile token transport answers with a cookie
+    // and no refresh token in the body. Without one this device could never
+    // renew the session, so it is not adopted at all: a plain sign-in
+    // failure, not a type error.
+    if (map['refreshToken'] is! String || map['accessToken'] is! String) {
+      throw const ApiException(message: '');
+    }
     await _api.tokens.save(
       accessToken: map['accessToken'] as String,
       refreshToken: map['refreshToken'] as String,

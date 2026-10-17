@@ -22,6 +22,42 @@ abstract final class BaghSpace {
   static const section = 24.0;
 }
 
+/// Layout that adapts to the screen.
+abstract final class BaghLayout {
+  /// The widest a column of reading or form content grows: about 70
+  /// characters of Persian body text. Phones never reach it; tablets and
+  /// landscape phones centre the content instead of stretching lines across
+  /// the whole screen.
+  static const readable = 640.0;
+
+  /// Padding that keeps a list's content within [readable], centred, with
+  /// at least the gutter on each side.
+  static EdgeInsets readablePadding(
+    BuildContext context, {
+    double top = 0,
+    double bottom = 0,
+  }) {
+    final width = MediaQuery.sizeOf(context).width;
+    final side = ((width - readable) / 2).clamp(
+      BaghSpace.gutter,
+      double.infinity,
+    );
+    return EdgeInsets.fromLTRB(side, top, side, bottom);
+  }
+
+  /// The height a tile needs for an icon and a two-line label at the
+  /// reader's text size, so grids grow with the text instead of overflowing.
+  static double tileHeight(
+    BuildContext context, {
+    double icon = 30,
+    double padding = 16,
+    double labelSize = 15,
+  }) {
+    final line = MediaQuery.textScalerOf(context).scale(labelSize) * 1.5;
+    return padding * 2 + icon + 10 + line * 2;
+  }
+}
+
 /// Depth: one light, straight overhead. Every offset is on the vertical axis
 /// only, so nothing has to be mirrored for right-to-left.
 abstract final class BaghDepth {
@@ -54,6 +90,37 @@ abstract final class BaghDepth {
       spreadRadius: -16,
     ),
   ];
+
+  /// The glass style's elevation: three soft layers (a wide ambient glow, a
+  /// directional key shadow, a tight contact shadow), all straight down.
+  ///
+  /// [height] runs from 0 (resting on the ground) to 1 (a card) and beyond
+  /// (2 for what floats). It is continuous, not a set of steps, so a press
+  /// can carry a surface down along a spring and let it rise again: the
+  /// "soft highs" of the style.
+  static List<BoxShadow> lift(BaghColors c, double height) {
+    final h = height.clamp(0.0, 2.5);
+    final strength = c.isDark ? 1.8 : 1.0;
+    return [
+      BoxShadow(
+        color: c.shadow.withValues(alpha: (0.05 * strength * h).clamp(0, 1)),
+        offset: Offset(0, 2 * h),
+        blurRadius: 4 * h,
+      ),
+      BoxShadow(
+        color: c.shadow.withValues(alpha: (0.08 * strength * h).clamp(0, 1)),
+        offset: Offset(0, 8 * h),
+        blurRadius: 20 * h,
+        spreadRadius: -4 * h,
+      ),
+      BoxShadow(
+        color: c.shadow.withValues(alpha: (0.10 * strength * h).clamp(0, 1)),
+        offset: Offset(0, 22 * h),
+        blurRadius: 44 * h,
+        spreadRadius: -14 * h,
+      ),
+    ];
+  }
 
   /// The tile lip under a key: a flat, zero-blur ledge, as on the web.
   static BoxShadow lip(Color edge) =>

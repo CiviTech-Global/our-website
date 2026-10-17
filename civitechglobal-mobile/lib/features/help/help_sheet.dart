@@ -4,25 +4,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/girih.dart';
+import '../../design/widgets/sheet.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import 'help_library.dart';
 
 /// Opens the guide [id] in a soft sheet that drags up to full height and down
 /// to dismiss: the app's version of the web's help panel.
-Future<void> showHelp(BuildContext context, String id) =>
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
-        builder: (context, scroll) => _HelpBody(id: id, scroll: scroll),
-      ),
-    );
+Future<void> showHelp(BuildContext context, String id) => showBaghSheet<void>(
+  context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  // Framed inside the drag, so the glass pane moves with the sheet.
+  framed: false,
+  builder: (_) => DraggableScrollableSheet(
+    expand: false,
+    initialChildSize: 0.7,
+    minChildSize: 0.4,
+    maxChildSize: 0.95,
+    builder: (context, scroll) => SheetFrame(
+      child: _HelpBody(id: id, scroll: scroll),
+    ),
+  ),
+);
 
 /// The "?" in an app bar that opens this screen's guide.
 class HelpAction extends ConsumerWidget {
@@ -126,11 +130,12 @@ class _Article extends ConsumerWidget {
 
     return ListView(
       controller: scroll,
-      padding: const EdgeInsets.fromLTRB(
-        BaghSpace.gutter,
-        0,
-        BaghSpace.gutter,
-        BaghSpace.section * 2,
+      // The sheet reaches the bottom edge, so its last lines clear the
+      // system buttons by their own height.
+      padding: BaghLayout.readablePadding(
+        context,
+        bottom:
+            BaghSpace.section * 2 + MediaQuery.viewPaddingOf(context).bottom,
       ),
       children: [
         Text(article.heading ?? article.title, style: text.headlineSmall),

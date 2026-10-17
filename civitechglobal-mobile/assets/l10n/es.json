@@ -2782,7 +2782,8 @@
   "comingInUpdate": "Esta sección llega en la próxima actualización. Mientras tanto, puede usar el sitio web.",
   "showPassword": "Mostrar contraseña",
   "hidePassword": "Ocultar contraseña",
-  "welcomeName": "Hola de nuevo, {name}"
+  "welcomeName": "Hola de nuevo, {name}",
+  "paletteGlass": "Cristal"
  },
  "work": {
   "findWork": "Buscar trabajo",

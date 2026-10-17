@@ -2743,6 +2743,7 @@ const fr: PartialTranslations = {
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
     welcomeName: 'Bon retour, {name}',
+    paletteGlass: 'Verre',
   },
   work,
   bookshop,

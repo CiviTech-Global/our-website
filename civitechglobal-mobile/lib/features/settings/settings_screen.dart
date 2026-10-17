@@ -34,106 +34,109 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(s.mobile.settingsTitle)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          BaghSpace.gutter,
-          0,
-          BaghSpace.gutter,
-          BaghSpace.section * 2,
-        ),
-        children: [
-          heading(s.mobile.palette),
-          for (final (palette, name) in [
-            (GardenPalette.pistachio, s.mobile.paletteB),
-            (GardenPalette.firouzeh, s.mobile.paletteA),
-            (GardenPalette.lapis, s.mobile.paletteC),
-          ])
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _PaletteChoice(
-                palette: palette,
-                name: name,
-                badge: palette == GardenPalette.pistachio
-                    ? s.mobile.paletteDefault
-                    : null,
-                selected: settings.palette == palette,
-                onTap: () => controller.setPalette(palette),
-              ),
-            ),
-          heading(s.mobile.themeMode),
-          SegmentedButton<ThemeMode>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: ThemeMode.system,
-                label: Text(s.mobile.themeSystem),
-              ),
-              ButtonSegment(
-                value: ThemeMode.light,
-                label: Text(s.mobile.themeLight),
-              ),
-              ButtonSegment(
-                value: ThemeMode.dark,
-                label: Text(s.mobile.themeDark),
-              ),
-            ],
-            selected: {settings.themeMode},
-            onSelectionChanged: (v) {
-              ref.read(hapticsProvider).selection();
-              controller.setThemeMode(v.first);
-            },
+      // Clear of the system buttons: the app draws edge to edge.
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: BaghLayout.readablePadding(
+            context,
+            bottom: BaghSpace.section * 2,
           ),
-          heading(s.mobile.motionTitle),
-          SoftSurface(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Column(
-              children: [
-                SwitchListTile(
-                  title: Text(s.mobile.reduceMotion),
-                  subtitle: Text(s.mobile.reduceMotionHint),
-                  value: settings.reduceMotion,
-                  onChanged: controller.setReduceMotion,
+          children: [
+            heading(s.mobile.palette),
+            for (final (palette, name) in [
+              (GardenPalette.pistachio, s.mobile.paletteB),
+              (GardenPalette.firouzeh, s.mobile.paletteA),
+              (GardenPalette.lapis, s.mobile.paletteC),
+              (GardenPalette.abgineh, s.mobile.paletteGlass),
+            ])
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _PaletteChoice(
+                  palette: palette,
+                  name: name,
+                  badge: palette == GardenPalette.pistachio
+                      ? s.mobile.paletteDefault
+                      : null,
+                  selected: settings.palette == palette,
+                  onTap: () => controller.setPalette(palette),
                 ),
-                SwitchListTile(
-                  title: Text(s.mobile.haptics),
-                  subtitle: Text(s.mobile.hapticsHint),
-                  value: settings.haptics,
-                  onChanged: settings.reduceMotion
-                      ? null
-                      : controller.setHaptics,
+              ),
+            heading(s.mobile.themeMode),
+            SegmentedButton<ThemeMode>(
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(
+                  value: ThemeMode.system,
+                  label: Text(s.mobile.themeSystem),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  label: Text(s.mobile.themeLight),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  label: Text(s.mobile.themeDark),
                 ),
               ],
-            ),
-          ),
-          heading(s.mobile.language),
-          SoftSurface(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: RadioGroup<String>(
-              groupValue: language,
-              onChanged: (v) {
-                if (v == null) return;
+              selected: {settings.themeMode},
+              onSelectionChanged: (v) {
                 ref.read(hapticsProvider).selection();
-                ref.read(l10nProvider.notifier).use(v);
+                controller.setThemeMode(v.first);
               },
+            ),
+            heading(s.mobile.motionTitle),
+            SoftSurface(
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Column(
                 children: [
-                  for (final code in supportedLanguages)
-                    RadioListTile<String>(
-                      value: code,
-                      title: Text(languageNames[code]!),
-                    ),
+                  SwitchListTile(
+                    title: Text(s.mobile.reduceMotion),
+                    subtitle: Text(s.mobile.reduceMotionHint),
+                    value: settings.reduceMotion,
+                    onChanged: controller.setReduceMotion,
+                  ),
+                  SwitchListTile(
+                    title: Text(s.mobile.haptics),
+                    subtitle: Text(s.mobile.hapticsHint),
+                    value: settings.haptics,
+                    onChanged: settings.reduceMotion
+                        ? null
+                        : controller.setHaptics,
+                  ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: BaghSpace.section),
-          Center(
-            child: Text(
-              '${s.mobile.version} ${localDigits(ref.watch(_versionProvider).value ?? '', language)}',
-              style: text.bodySmall,
+            heading(s.mobile.language),
+            SoftSurface(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: RadioGroup<String>(
+                groupValue: language,
+                onChanged: (v) {
+                  if (v == null) return;
+                  ref.read(hapticsProvider).selection();
+                  ref.read(l10nProvider.notifier).use(v);
+                },
+                child: Column(
+                  children: [
+                    for (final code in supportedLanguages)
+                      RadioListTile<String>(
+                        value: code,
+                        title: Text(languageNames[code]!),
+                      ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: BaghSpace.section),
+            Center(
+              child: Text(
+                '${s.mobile.version} ${localDigits(ref.watch(_versionProvider).value ?? '', language)}',
+                style: text.bodySmall,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -198,15 +201,17 @@ class _PaletteChoice extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.all(14),
           decoration: ShapeDecoration(
-            color: c.surface,
+            color: c.pane,
             shape: RoundedSuperellipseBorder(
               borderRadius: BorderRadius.circular(BaghRadius.card),
               side: BorderSide(
-                color: selected ? c.primary : c.hair,
+                color: selected ? c.primary : (c.glass ? c.rim : c.hair),
                 width: selected ? 2.5 : 1,
               ),
             ),
-            shadows: BaghDepth.rest(c),
+            shadows: c.glass
+                ? BaghDepth.lift(c, 1 - depth.clamp(0, 1))
+                : BaghDepth.rest(c),
           ),
           child: Row(
             spacing: 12,
@@ -216,10 +221,15 @@ class _PaletteChoice extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 8,
                   children: [
-                    Row(
+                    // A Wrap, not a Row: with long names (German) at large
+                    // text the badge moves under the name instead of
+                    // squeezing it to a sliver and overflowing.
+                    Wrap(
                       spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Flexible(child: Text(name, style: text.titleSmall)),
+                        Text(name, style: text.titleSmall),
                         if (badge != null)
                           Container(
                             padding: const EdgeInsets.symmetric(

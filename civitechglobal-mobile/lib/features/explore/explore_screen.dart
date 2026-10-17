@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/capabilities.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
+import '../../design/widgets/glass_pane.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../start/modules.dart';
@@ -24,13 +25,22 @@ class ExploreScreen extends ConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
+          SliverAppBar(
+            pinned: true,
             title: Text(s.mobile.exploreTitle),
-            backgroundColor: c.ground,
+            backgroundColor: c.glass ? Colors.transparent : c.ground,
             surfaceTintColor: Colors.transparent,
+            // Cards scroll under the pinned title: in the glass style it is
+            // frosted, so they blur away beneath it instead of colliding.
+            flexibleSpace: c.glass
+                ? const GlassPane(
+                    shape: RoundedRectangleBorder(),
+                    child: SizedBox.expand(),
+                  )
+                : null,
           ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: BaghSpace.gutter),
+            padding: BaghLayout.readablePadding(context),
             sliver: SliverToBoxAdapter(
               child: Text(
                 s.mobile.exploreSubtitle,
@@ -39,18 +49,21 @@ class ExploreScreen extends ConsumerWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              BaghSpace.gutter,
-              BaghSpace.gutter,
-              BaghSpace.gutter,
-              120,
+            padding: BaghLayout.readablePadding(
+              context,
+              top: BaghSpace.gutter,
+              bottom: 120,
             ),
-            sliver: SliverGrid.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.15,
-              children: [
+            // Two columns on a phone, more on a tablet; each tile as tall as
+            // its icon and a two-line label need at the reader's text size.
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 240,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                mainAxisExtent: BaghLayout.tileHeight(context) + 24,
+              ),
+              delegate: SliverChildListDelegate([
                 for (final module in modules)
                   SoftSurface(
                     tint: moduleTint(c, module.tint),
@@ -73,7 +86,7 @@ class ExploreScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-              ],
+              ]),
             ),
           ),
         ],
