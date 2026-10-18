@@ -202,6 +202,26 @@ async function main() {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
 
+    /*
+     * Only our own files load; anything from another host is refused at once.
+     *
+     * The page shows the Enamad trust seal, an <img> from trustseal.enamad.ir.
+     * From the production host in Iran it answers immediately; from CI's
+     * runners abroad it hangs for twenty seconds or more, and since 'load'
+     * waits for every image, every route waited with it. 107 of 211 routes
+     * timed out in CI that way, and the build failed after 73 minutes. The
+     * snapshot needs the <img> tag, which stays in the HTML, not the picture.
+     */
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const { hostname } = new URL(request.url());
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || request.url().startsWith('data:')) {
+        request.continue();
+      } else {
+        request.abort();
+      }
+    });
+
     for (const route of routes()) {
       try {
         // 'load' rather than 'networkidle0': pages hit /api/, which this
