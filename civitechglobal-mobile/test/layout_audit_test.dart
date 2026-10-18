@@ -80,6 +80,9 @@ const _screens = [
   '/track?code=PROJ1234',
   '/track?code=CONS1234',
   '/track?code=INSU1234',
+  '/track?code=RESU1234',
+  '/join',
+  '/volunteer',
 ];
 
 /// Data with the longest real-world shapes: long names, bios, quotes and
@@ -239,6 +242,19 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
             {'day': '2026-10-20', 'part': 'AFTERNOON'},
             {'day': '2026-10-21', 'part': 'EVENING'},
           ],
+        },
+      },
+    ),
+    '/track/RESU1234' => (
+      200,
+      {
+        'data': {
+          'kind': 'resume',
+          'trackingCode': 'RESU1234',
+          'track': 'INTERNSHIP',
+          'status': 'SHORTLISTED',
+          'createdAt': '2026-10-01T10:00:00Z',
+          'updatedAt': '2026-10-02T10:00:00Z',
         },
       },
     ),

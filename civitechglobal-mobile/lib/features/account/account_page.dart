@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_exception.dart';
+import '../../design/motion.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/girih.dart';
@@ -201,6 +202,34 @@ class _PasswordFieldState extends ConsumerState<PasswordField> {
           onPressed: () => setState(() => _visible = !_visible),
         ),
       ),
+    );
+  }
+}
+
+/// Brings the first field [form] flagged into view, as the web does after a
+/// refused submit: on a long form the mistake is often far above the key.
+void revealFirstError(GlobalKey<FormState> form) {
+  Element? first;
+  void visit(Element element) {
+    if (first != null) return;
+    if (element is StatefulElement &&
+        element.state is FormFieldState &&
+        (element.state as FormFieldState).hasError) {
+      first = element;
+      return;
+    }
+    element.visitChildElements(visit);
+  }
+
+  form.currentContext?.visitChildElements(visit);
+  if (first case final element?) {
+    Scrollable.ensureVisible(
+      element,
+      alignment: 0.2,
+      duration: MediaQuery.maybeDisableAnimationsOf(element) ?? false
+          ? Duration.zero
+          : BaghDurations.slow,
+      curve: Curves.easeOutCubic,
     );
   }
 }

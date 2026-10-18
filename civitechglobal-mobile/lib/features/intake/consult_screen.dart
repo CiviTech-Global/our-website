@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/format.dart';
@@ -14,6 +12,7 @@ import '../../design/widgets/date_field.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
+import 'code_issued.dart';
 
 const _topics = ['CAREER', 'TECHNICAL', 'STARTING_OUT', 'HIRING', 'OTHER'];
 const _modes = ['ONLINE', 'PHONE', 'IN_PERSON'];
@@ -81,6 +80,7 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
     ];
     if (!_tried) setState(() => _tried = true);
     final valid = _form.currentState!.validate();
+    if (!valid) revealFirstError(_form);
     if (windows.isEmpty) setState(() => _error = s.consult.needWindow);
     if (!valid || windows.isEmpty || _sending) return;
     setState(() {
@@ -127,44 +127,16 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
     final experts = ref.watch(consultExpertsProvider).value ?? const [];
 
     if (_code case final code?) {
-      return AccountPage(
+      return CodeIssued(
         title: k.doneTitle,
-        subtitle: k.doneBody,
+        body: k.doneBody,
         helpId: 'consult',
-        children: [
-          Text(
-            k.codeLabel,
-            style: text.titleSmall,
-            textAlign: TextAlign.center,
-          ),
-          SelectableText(
-            code,
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.ltr,
-            style: BaghType.weight(
-              text.headlineMedium!,
-              800,
-            ).copyWith(letterSpacing: 2, color: c.primary),
-          ),
-          Text(k.codeKeep, textAlign: TextAlign.center),
-          BaghKey(
-            label: s.project.copy,
-            icon: Icons.copy_rounded,
-            kind: BaghKeyKind.outline,
-            expand: true,
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: code));
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(s.project.copied)));
-            },
-          ),
-          BaghKey(
-            label: k.trackCta,
-            expand: true,
-            onPressed: () => context.go('/track?code=$code'),
-          ),
-        ],
+        codeLabel: k.codeLabel,
+        code: code,
+        note: k.codeKeep,
+        copyLabel: s.project.copy,
+        copiedLabel: s.project.copied,
+        trackLabel: k.trackCta,
       );
     }
 
@@ -254,6 +226,7 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                 if (experts.isNotEmpty)
                   DropdownButtonFormField<String?>(
                     initialValue: _expert,
+                    style: text.bodyLarge,
                     isExpanded: true,
                     decoration: InputDecoration(labelText: k.expertLabel),
                     items: [

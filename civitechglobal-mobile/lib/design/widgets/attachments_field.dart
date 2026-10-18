@@ -77,6 +77,8 @@ class AttachmentsField extends StatelessWidget {
     required this.tooBigText,
     required this.totalTooBigText,
     required this.language,
+    this.extensions = AttachmentRules.extensions,
+    this.maxFiles = AttachmentRules.maxFiles,
     super.key,
   });
 
@@ -90,16 +92,21 @@ class AttachmentsField extends StatelessWidget {
   final String totalTooBigText;
   final String language;
 
+  /// The types this field takes, and how many files; the intake defaults,
+  /// narrowed for a CV (one PDF, Word or LaTeX file).
+  final List<String> extensions;
+  final int maxFiles;
+
   Future<void> _pick(BuildContext context) async {
     final picked = await FilePicker.pickFiles(
       type: FileType.custom,
-      allowedExtensions: AttachmentRules.extensions,
+      allowedExtensions: extensions,
     );
     if (picked.isEmpty || !context.mounted) return;
     final next = [...files];
     String? problem;
     for (final f in picked) {
-      if (next.length >= AttachmentRules.maxFiles) {
+      if (next.length >= maxFiles) {
         problem = tooManyText;
         break;
       }
@@ -168,7 +175,7 @@ class AttachmentsField extends StatelessWidget {
               ],
             ),
           ),
-        if (files.length < AttachmentRules.maxFiles)
+        if (files.length < maxFiles)
           BaghKey(
             label: chooseLabel,
             icon: Icons.upload_file_rounded,

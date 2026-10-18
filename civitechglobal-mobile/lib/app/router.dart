@@ -21,6 +21,7 @@ import '../features/help/help_centre_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/intake/consult_screen.dart';
+import '../features/intake/resume_screen.dart';
 import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
 import '../features/me/me_screen.dart';
@@ -164,6 +165,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/consult',
         builder: (_, state) =>
             ConsultScreen(expertSlug: state.uri.queryParameters['expert']),
+      ),
+      GoRoute(path: '/join', builder: (_, _) => const ResumeScreen()),
+      GoRoute(
+        path: '/volunteer',
+        builder: (_, _) => const ResumeScreen(programme: true),
       ),
       GoRoute(
         path: '/track',

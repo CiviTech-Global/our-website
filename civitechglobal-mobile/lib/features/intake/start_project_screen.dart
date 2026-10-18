@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,11 +14,11 @@ import '../../design/tokens.dart';
 import '../../design/widgets/attachments_field.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/date_field.dart';
-import '../../design/widgets/girih.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import '../help/help_sheet.dart';
+import 'code_issued.dart';
 
 const _types = [
   'NEW_BUILD',
@@ -652,59 +651,20 @@ class _Success extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
-    final p = s.project;
+    final p = ref.watch(stringsProvider).project;
     final language = ref.watch(l10nProvider).language;
-    final c = BaghColors.of(context);
-    final text = Theme.of(context).textTheme;
-    return AccountPage(
+    return CodeIssued(
       title: p.successTitle,
-      subtitle: p.successBody,
-      children: [
-        Center(child: GirihStar(color: c.accent, size: 48, fill: true)),
-        Text(
-          p.trackingCode,
-          style: text.titleSmall,
-          textAlign: TextAlign.center,
-        ),
-        SelectableText(
-          code,
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.ltr,
-          style: BaghType.weight(
-            text.headlineMedium!,
-            800,
-          ).copyWith(letterSpacing: 2, color: c.primary),
-        ),
-        if (attached > 0)
-          Text(
-            p.attachedCount.fill({'n': localDigits(attached, language)}),
-            textAlign: TextAlign.center,
-          ),
-        BaghKey(
-          label: p.copy,
-          icon: Icons.copy_rounded,
-          kind: BaghKeyKind.outline,
-          expand: true,
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: code));
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(p.copied)));
-          },
-        ),
-        BaghKey(
-          label: p.goTrack,
-          expand: true,
-          onPressed: () => context.go('/track?code=$code'),
-        ),
-        BaghKey(
-          label: p.goHome,
-          kind: BaghKeyKind.outline,
-          expand: true,
-          onPressed: () => context.go('/'),
-        ),
-      ],
+      body: p.successBody,
+      codeLabel: p.trackingCode,
+      code: code,
+      note: attached > 0
+          ? p.attachedCount.fill({'n': localDigits(attached, language)})
+          : null,
+      copyLabel: p.copy,
+      copiedLabel: p.copied,
+      trackLabel: p.goTrack,
+      homeLabel: p.goHome,
     );
   }
 }

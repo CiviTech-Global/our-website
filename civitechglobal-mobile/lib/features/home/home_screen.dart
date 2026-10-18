@@ -125,6 +125,13 @@ class HomeScreen extends ConsumerWidget {
             builder: (context, box) {
               final columns = (box.maxWidth / 160).floor().clamp(2, 4);
               final width = (box.maxWidth - 10 * (columns - 1)) / columns;
+              // Room for two lines of label in every tile, so a label that
+              // wraps does not leave its row uneven.
+              final label = text.labelLarge!;
+              final twoLines =
+                  MediaQuery.textScalerOf(context).scale(label.fontSize!) *
+                  (label.height ?? 1.4) *
+                  2;
               return Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -146,6 +153,12 @@ class HomeScreen extends ConsumerWidget {
                     (Icons.diversity_3_outlined, s.nav.partners, '/partners'),
                     (Icons.article_outlined, s.nav.blog, '/blog'),
                     (Icons.mail_outline_rounded, s.nav.contact, '/contact'),
+                    (Icons.badge_outlined, s.nav.joinUs, '/join'),
+                    (
+                      Icons.volunteer_activism_outlined,
+                      s.nav.volunteer,
+                      '/volunteer',
+                    ),
                   ].indexed)
                     SizedBox(
                       width: width,
@@ -155,20 +168,23 @@ class HomeScreen extends ConsumerWidget {
                         semanticLabel: label,
                         padding: const EdgeInsets.all(14),
                         onTap: () => context.push(path),
-                        child: Row(
-                          spacing: 10,
-                          children: [
-                            Icon(icon, size: 22),
-                            Expanded(
-                              child: Text(
-                                label,
-                                style: BaghType.weight(
-                                  text.labelLarge!,
-                                  700,
-                                ).copyWith(color: moduleTint(c, i).ink),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: twoLines),
+                          child: Row(
+                            spacing: 10,
+                            children: [
+                              Icon(icon, size: 22),
+                              Expanded(
+                                child: Text(
+                                  label,
+                                  style: BaghType.weight(
+                                    text.labelLarge!,
+                                    700,
+                                  ).copyWith(color: moduleTint(c, i).ink),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

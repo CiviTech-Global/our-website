@@ -23,6 +23,8 @@ const _appPaths = <String>{
   '/start-project',
   '/consult',
   '/track',
+  '/join',
+  '/volunteer',
   '/login',
   '/register',
   '/forgot-password',
