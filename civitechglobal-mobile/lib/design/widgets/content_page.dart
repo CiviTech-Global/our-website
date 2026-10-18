@@ -18,6 +18,7 @@ class ContentPage extends StatelessWidget {
     this.eyebrow,
     this.helpId,
     this.actions = const [],
+    this.bottom,
     super.key,
   });
 
@@ -26,6 +27,9 @@ class ContentPage extends StatelessWidget {
   final String? eyebrow;
   final String? helpId;
   final List<Widget> actions;
+
+  /// A key kept in reach under the page, for one that is long.
+  final Widget? bottom;
   final List<Widget> children;
 
   @override
@@ -36,6 +40,23 @@ class ContentPage extends StatelessWidget {
       appBar: AppBar(
         actions: [...actions, if (helpId != null) HelpAction(helpId!)],
       ),
+      bottomNavigationBar: bottom == null
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                padding: BaghLayout.readablePadding(
+                  context,
+                  top: 8,
+                  bottom: 12,
+                ),
+                // Its own height, not all the room a bottom bar is offered.
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [bottom!],
+                ),
+              ),
+            ),
       body: SafeArea(
         top: false,
         child: ListView(

@@ -15,6 +15,7 @@ import '../../design/widgets/attachments_field.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/content_page.dart';
 import '../../design/widgets/date_field.dart';
+import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
@@ -147,6 +148,25 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
     }
   }
 
+  bool get _dirty =>
+      [
+        _name,
+        _email,
+        _phone,
+        _city,
+        _birthYear,
+        _cover,
+        _hours,
+        _duration,
+        _university,
+        _field,
+        _skills,
+        _github,
+        _portfolio,
+        _linkedin,
+      ].any((c) => c.text.trim().isNotEmpty) ||
+      _cv.isNotEmpty;
+
   Map<String, Object?> _payload() {
     String? text(TextEditingController c) =>
         c.text.trim().isEmpty ? null : c.text.trim();
@@ -276,292 +296,302 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
       ),
     );
 
-    return ContentPage(
-      title: widget.programme ? v.title : j.homeTitle,
-      subtitle: widget.programme ? v.subtitle : j.subtitle,
-      helpId: widget.programme ? 'volunteer' : 'join',
-      children: [
-        if (widget.programme) ...[
-          ContentSection(
-            title: v.forWhomTitle,
-            children: [
-              for (final line in [v.forWhom1, v.forWhom2, v.forWhom3])
-                _Bullet(line),
-            ],
-          ),
-          ContentSection(
-            title: v.offerTitle,
-            children: [
-              for (final line in [v.offer1, v.offer2, v.offer3]) _Bullet(line),
-            ],
-          ),
-        ] else
-          ContentSection(
-            title: j.processTitle,
-            subtitle: j.limitNote,
-            children: [
-              StepList(
-                language: language,
-                steps: [
-                  for (final step in [j.step1, j.step2, j.step3]) (step, ''),
-                ],
-              ),
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 4,
-                children: [
-                  Text(j.moreRoutes, style: text.bodyMedium),
-                  TextButton(
-                    onPressed: () => openLink(context, ref, '/volunteer'),
-                    child: Text(s.nav.volunteer),
-                  ),
-                  TextButton(
-                    onPressed: () => openLink(context, ref, '/jobs'),
-                    child: Text(s.nav.jobs),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        const SizedBox(height: BaghSpace.section),
-        Form(
-          key: _form,
-          autovalidateMode: _tried
-              ? AutovalidateMode.always
-              : AutovalidateMode.disabled,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: BaghSpace.gutter,
-            children: [
-              if (_exhausted) FormMessage(j.exhausted),
-              if (widget.programme)
-                _Section(
-                  title: v.trackLabel,
-                  children: [
-                    for (final (i, track) in const [
-                      'INTERNSHIP',
-                      'VOLUNTEER',
-                    ].indexed)
-                      _TrackChoice(
-                        icon: track == 'INTERNSHIP'
-                            ? Icons.school_outlined
-                            : Icons.volunteer_activism_outlined,
-                        title: v.tracks.label(track),
-                        body: track == 'INTERNSHIP'
-                            ? v.trackInternshipDesc
-                            : v.trackVolunteerDesc,
-                        tint: moduleTint(c, i),
-                        selected: _track == track,
-                        onTap: () {
-                          ref.read(hapticsProvider).selection();
-                          setState(() => _track = track);
-                          // The allowance is per track.
-                          _checkAllowance();
-                        },
-                      ),
+    return LeaveGuard(
+      isDirty: () => _dirty,
+      busy: _sending,
+      child: ContentPage(
+        title: widget.programme ? v.title : j.homeTitle,
+        subtitle: widget.programme ? v.subtitle : j.subtitle,
+        helpId: widget.programme ? 'volunteer' : 'join',
+        children: [
+          if (widget.programme) ...[
+            ContentSection(
+              title: v.forWhomTitle,
+              children: [
+                for (final line in [v.forWhom1, v.forWhom2, v.forWhom3])
+                  _Bullet(line),
+              ],
+            ),
+            ContentSection(
+              title: v.offerTitle,
+              children: [
+                for (final line in [v.offer1, v.offer2, v.offer3])
+                  _Bullet(line),
+              ],
+            ),
+          ] else
+            ContentSection(
+              title: j.processTitle,
+              subtitle: j.limitNote,
+              children: [
+                StepList(
+                  language: language,
+                  steps: [
+                    for (final step in [j.step1, j.step2, j.step3]) (step, ''),
                   ],
                 ),
-              _Section(
-                title: j.sectionYou,
-                children: [
-                  field(
-                    _name,
-                    j.fullName,
-                    validator: required,
-                    autofill: const [AutofillHints.name],
-                  ),
-                  field(
-                    _email,
-                    j.email,
-                    helper: j.identityHint,
-                    keyboard: TextInputType.emailAddress,
-                    ltr: true,
-                    focus: _emailFocus,
-                    autofill: const [AutofillHints.email],
-                    validator: (value) =>
-                        RegExp(r'^\S+@\S+\.\S+$').hasMatch((value ?? '').trim())
-                        ? null
-                        : j.errEmail,
-                  ),
-                  field(
-                    _phone,
-                    j.phone,
-                    hint: '09121234567',
-                    keyboard: TextInputType.phone,
-                    ltr: true,
-                    autofill: const [AutofillHints.telephoneNumber],
-                    validator: (value) {
-                      final n = _digits(value ?? '').length;
-                      return n >= 10 && n <= 20 ? null : j.errPhone;
-                    },
-                  ),
-                  field(_city, j.city),
-                  field(
-                    _birthYear,
-                    j.birthYear,
-                    hint: widget.programme ? '2003' : '1995',
-                    keyboard: TextInputType.number,
-                    ltr: true,
-                    maxLength: 4,
-                  ),
-                ],
-              ),
-              if (widget.programme) ...[
-                _Section(
-                  title: v.sectionPlacement,
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 4,
                   children: [
-                    DropdownButtonFormField<String>(
-                      initialValue: _discipline,
-                      style: text.bodyLarge,
-                      isExpanded: true,
-                      decoration: InputDecoration(labelText: v.discipline),
-                      hint: Text(v.choose),
-                      validator: (value) =>
-                          value == null ? v.errDiscipline : null,
-                      items: [
-                        for (final d in _disciplines)
-                          DropdownMenuItem(
-                            value: d,
-                            child: Text(v.disciplines.label(d)),
-                          ),
-                      ],
-                      onChanged: (value) => setState(() => _discipline = value),
+                    Text(j.moreRoutes, style: text.bodyMedium),
+                    TextButton(
+                      onPressed: () => openLink(context, ref, '/volunteer'),
+                      child: Text(s.nav.volunteer),
                     ),
-                    field(
-                      _hours,
-                      v.hoursPerWeek,
-                      helper: v.hoursHint,
-                      hint: '20',
-                      keyboard: TextInputType.number,
-                      ltr: true,
-                      maxLength: 2,
-                      validator: (value) {
-                        final n = int.tryParse(_digits(value ?? '')) ?? 0;
-                        return n >= 1 && n <= 60 ? null : v.errHours;
-                      },
-                    ),
-                    DateField(
-                      label: v.availableFrom,
-                      value: _availableFrom,
-                      firstDate: DateTime.now(),
-                      onChanged: (d) => setState(() => _availableFrom = d),
-                    ),
-                    field(
-                      _duration,
-                      v.durationMonths,
-                      helper: v.durationHint,
-                      hint: '6',
-                      keyboard: TextInputType.number,
-                      ltr: true,
-                      maxLength: 2,
-                      validator: (value) {
-                        final t = _digits(value ?? '');
-                        if (t.isEmpty) return null;
-                        final n = int.parse(t);
-                        return n >= 1 && n <= 24 ? null : v.durationHint;
-                      },
-                    ),
-                    DropdownButtonFormField<String?>(
-                      initialValue: _arrangement,
-                      style: text.bodyLarge,
-                      isExpanded: true,
-                      decoration: InputDecoration(labelText: v.arrangement),
-                      items: [
-                        DropdownMenuItem(child: Text(v.noPreference)),
-                        for (final a in _arrangements)
-                          DropdownMenuItem(
-                            value: a,
-                            child: Text(v.arrangements.label(a)),
-                          ),
-                      ],
-                      onChanged: (value) =>
-                          setState(() => _arrangement = value),
-                    ),
-                  ],
-                ),
-                _Section(
-                  title: v.sectionStudy,
-                  children: [
-                    field(_university, v.university),
-                    field(_field, v.fieldOfStudy),
-                    field(_skills, v.skills, helper: v.skillsHint),
-                    field(
-                      _github,
-                      v.githubUrl,
-                      hint: 'https://github.com/…',
-                      keyboard: TextInputType.url,
-                      ltr: true,
-                      validator: url,
-                    ),
-                    field(
-                      _portfolio,
-                      v.portfolioUrl,
-                      hint: 'https://…',
-                      keyboard: TextInputType.url,
-                      ltr: true,
-                      validator: url,
-                    ),
-                    field(
-                      _linkedin,
-                      v.linkedinUrl,
-                      hint: 'https://linkedin.com/in/…',
-                      keyboard: TextInputType.url,
-                      ltr: true,
-                      validator: url,
+                    TextButton(
+                      onPressed: () => openLink(context, ref, '/jobs'),
+                      child: Text(s.nav.jobs),
                     ),
                   ],
                 ),
               ],
-              _Section(
-                title: j.sectionResume,
-                hint: j.resumeHint,
-                children: [
-                  AttachmentsField(
-                    files: _cv,
-                    onChanged: (files) => setState(() => _cv = files),
-                    extensions: _cvTypes,
-                    maxFiles: 1,
-                    chooseLabel: j.chooseFile,
-                    rulesText: j.fileRules,
-                    removeLabel: j.removeFile,
-                    tooManyText: j.errFileBig,
-                    tooBigText: j.errFileBig,
-                    totalTooBigText: j.errFileBig,
-                    language: language,
+            ),
+          const SizedBox(height: BaghSpace.section),
+          Form(
+            key: _form,
+            autovalidateMode: _tried
+                ? AutovalidateMode.always
+                : AutovalidateMode.disabled,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: BaghSpace.gutter,
+              children: [
+                if (_exhausted) FormMessage(j.exhausted),
+                if (widget.programme)
+                  _Section(
+                    title: v.trackLabel,
+                    children: [
+                      for (final (i, track) in const [
+                        'INTERNSHIP',
+                        'VOLUNTEER',
+                      ].indexed)
+                        _TrackChoice(
+                          icon: track == 'INTERNSHIP'
+                              ? Icons.school_outlined
+                              : Icons.volunteer_activism_outlined,
+                          title: v.tracks.label(track),
+                          body: track == 'INTERNSHIP'
+                              ? v.trackInternshipDesc
+                              : v.trackVolunteerDesc,
+                          tint: moduleTint(c, i),
+                          selected: _track == track,
+                          onTap: () {
+                            ref.read(hapticsProvider).selection();
+                            setState(() => _track = track);
+                            // The allowance is per track.
+                            _checkAllowance();
+                          },
+                        ),
+                    ],
                   ),
-                  if (_tried && _cv.isEmpty)
-                    Text(
-                      j.errFileRequired,
-                      style: text.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                _Section(
+                  title: j.sectionYou,
+                  children: [
+                    field(
+                      _name,
+                      j.fullName,
+                      validator: required,
+                      autofill: const [AutofillHints.name],
                     ),
-                  field(_cover, j.coverNote, lines: 3),
-                ],
-              ),
-              if (_error != null) FormMessage(_error!),
-              if (_sending)
-                LinearProgressIndicator(
-                  value: _progress,
-                  minHeight: 6,
-                  borderRadius: BorderRadius.circular(3),
+                    field(
+                      _email,
+                      j.email,
+                      helper: j.identityHint,
+                      keyboard: TextInputType.emailAddress,
+                      ltr: true,
+                      focus: _emailFocus,
+                      autofill: const [AutofillHints.email],
+                      validator: (value) =>
+                          RegExp(
+                            r'^\S+@\S+\.\S+$',
+                          ).hasMatch((value ?? '').trim())
+                          ? null
+                          : j.errEmail,
+                    ),
+                    field(
+                      _phone,
+                      j.phone,
+                      hint: '09121234567',
+                      keyboard: TextInputType.phone,
+                      ltr: true,
+                      autofill: const [AutofillHints.telephoneNumber],
+                      validator: (value) {
+                        final n = _digits(value ?? '').length;
+                        return n >= 10 && n <= 20 ? null : j.errPhone;
+                      },
+                    ),
+                    field(_city, j.city),
+                    field(
+                      _birthYear,
+                      j.birthYear,
+                      hint: widget.programme ? '2003' : '1995',
+                      keyboard: TextInputType.number,
+                      ltr: true,
+                      maxLength: 4,
+                    ),
+                  ],
                 ),
-              BaghKey(
-                label: widget.programme ? v.submit : j.submit,
-                icon: Icons.send_rounded,
-                onPressed: _submit,
-                loading: _sending,
-                expand: true,
-              ),
-              Text(
-                j.submitHint,
-                style: text.bodySmall?.copyWith(color: c.ink2),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                if (widget.programme) ...[
+                  _Section(
+                    title: v.sectionPlacement,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        borderRadius: BorderRadius.circular(BaghRadius.field),
+                        initialValue: _discipline,
+                        style: text.bodyLarge,
+                        isExpanded: true,
+                        decoration: InputDecoration(labelText: v.discipline),
+                        hint: Text(v.choose),
+                        validator: (value) =>
+                            value == null ? v.errDiscipline : null,
+                        items: [
+                          for (final d in _disciplines)
+                            DropdownMenuItem(
+                              value: d,
+                              child: Text(v.disciplines.label(d)),
+                            ),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _discipline = value),
+                      ),
+                      field(
+                        _hours,
+                        v.hoursPerWeek,
+                        helper: v.hoursHint,
+                        hint: '20',
+                        keyboard: TextInputType.number,
+                        ltr: true,
+                        maxLength: 2,
+                        validator: (value) {
+                          final n = int.tryParse(_digits(value ?? '')) ?? 0;
+                          return n >= 1 && n <= 60 ? null : v.errHours;
+                        },
+                      ),
+                      DateField(
+                        label: v.availableFrom,
+                        value: _availableFrom,
+                        firstDate: DateTime.now(),
+                        onChanged: (d) => setState(() => _availableFrom = d),
+                      ),
+                      field(
+                        _duration,
+                        v.durationMonths,
+                        helper: v.durationHint,
+                        hint: '6',
+                        keyboard: TextInputType.number,
+                        ltr: true,
+                        maxLength: 2,
+                        validator: (value) {
+                          final t = _digits(value ?? '');
+                          if (t.isEmpty) return null;
+                          final n = int.parse(t);
+                          return n >= 1 && n <= 24 ? null : v.durationHint;
+                        },
+                      ),
+                      DropdownButtonFormField<String?>(
+                        borderRadius: BorderRadius.circular(BaghRadius.field),
+                        initialValue: _arrangement,
+                        style: text.bodyLarge,
+                        isExpanded: true,
+                        decoration: InputDecoration(labelText: v.arrangement),
+                        items: [
+                          DropdownMenuItem(child: Text(v.noPreference)),
+                          for (final a in _arrangements)
+                            DropdownMenuItem(
+                              value: a,
+                              child: Text(v.arrangements.label(a)),
+                            ),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _arrangement = value),
+                      ),
+                    ],
+                  ),
+                  _Section(
+                    title: v.sectionStudy,
+                    children: [
+                      field(_university, v.university),
+                      field(_field, v.fieldOfStudy),
+                      field(_skills, v.skills, helper: v.skillsHint),
+                      field(
+                        _github,
+                        v.githubUrl,
+                        hint: 'https://github.com/…',
+                        keyboard: TextInputType.url,
+                        ltr: true,
+                        validator: url,
+                      ),
+                      field(
+                        _portfolio,
+                        v.portfolioUrl,
+                        hint: 'https://…',
+                        keyboard: TextInputType.url,
+                        ltr: true,
+                        validator: url,
+                      ),
+                      field(
+                        _linkedin,
+                        v.linkedinUrl,
+                        hint: 'https://linkedin.com/in/…',
+                        keyboard: TextInputType.url,
+                        ltr: true,
+                        validator: url,
+                      ),
+                    ],
+                  ),
+                ],
+                _Section(
+                  title: j.sectionResume,
+                  hint: j.resumeHint,
+                  children: [
+                    AttachmentsField(
+                      files: _cv,
+                      onChanged: (files) => setState(() => _cv = files),
+                      extensions: _cvTypes,
+                      maxFiles: 1,
+                      chooseLabel: j.chooseFile,
+                      rulesText: j.fileRules,
+                      removeLabel: j.removeFile,
+                      tooManyText: j.errFileBig,
+                      tooBigText: j.errFileBig,
+                      totalTooBigText: j.errFileBig,
+                      language: language,
+                    ),
+                    if (_tried && _cv.isEmpty)
+                      Text(
+                        j.errFileRequired,
+                        style: text.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    field(_cover, j.coverNote, lines: 3),
+                  ],
+                ),
+                if (_error != null) FormMessage(_error!),
+                if (_sending)
+                  LinearProgressIndicator(
+                    value: _progress,
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                BaghKey(
+                  label: widget.programme ? v.submit : j.submit,
+                  icon: Icons.send_rounded,
+                  onPressed: _submit,
+                  loading: _sending,
+                  expand: true,
+                ),
+                Text(
+                  j.submitHint,
+                  style: text.bodySmall?.copyWith(color: c.ink2),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

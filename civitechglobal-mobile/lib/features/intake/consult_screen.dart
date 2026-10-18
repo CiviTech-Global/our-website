@@ -9,6 +9,7 @@ import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/content_page.dart';
 import '../../design/widgets/date_field.dart';
+import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
@@ -71,6 +72,16 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
     }
     super.dispose();
   }
+
+  bool get _dirty =>
+      [
+        _name,
+        _phone,
+        _email,
+        _goal,
+        _background,
+      ].any((c) => c.text.trim().isNotEmpty) ||
+      _windows.any((w) => w.$1 != null);
 
   Future<void> _submit() async {
     final s = ref.read(stringsProvider);
@@ -161,203 +172,214 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       ],
     );
 
-    return ContentPage(
-      title: k.title,
-      subtitle: k.subtitle,
-      helpId: 'consult',
-      children: [
-        ContentSection(
-          title: k.howTitle,
-          children: [
-            StepList(
-              language: language,
-              steps: [
-                for (final step in [
-                  k.howSteps.string('one'),
-                  k.howSteps.string('two'),
-                  k.howSteps.string('three'),
-                ])
-                  (step, ''),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: BaghSpace.section),
-        SoftSurface(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _form,
-            autovalidateMode: _tried
-                ? AutovalidateMode.always
-                : AutovalidateMode.disabled,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 14,
-              children: [
-                Text(k.topicLabel, style: text.titleSmall),
-                chips(
-                  _topics,
-                  _topic,
-                  k.topics,
-                  (v) => setState(() => _topic = v),
-                ),
-                Text(k.modeLabel, style: text.titleSmall),
-                chips(_modes, _mode, k.modes, (v) => setState(() => _mode = v)),
-                TextFormField(
-                  controller: _goal,
-                  minLines: 2,
-                  maxLines: 6,
-                  decoration: InputDecoration(
-                    labelText: k.goalLabel,
-                    helperText: k.goalHint,
-                    alignLabelWithHint: true,
+    return LeaveGuard(
+      isDirty: () => _dirty,
+      busy: _sending,
+      child: ContentPage(
+        title: k.title,
+        subtitle: k.subtitle,
+        helpId: 'consult',
+        children: [
+          ContentSection(
+            title: k.howTitle,
+            children: [
+              StepList(
+                language: language,
+                steps: [
+                  for (final step in [
+                    k.howSteps.string('one'),
+                    k.howSteps.string('two'),
+                    k.howSteps.string('three'),
+                  ])
+                    (step, ''),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: BaghSpace.section),
+          SoftSurface(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _form,
+              autovalidateMode: _tried
+                  ? AutovalidateMode.always
+                  : AutovalidateMode.disabled,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 14,
+                children: [
+                  Text(k.topicLabel, style: text.titleSmall),
+                  chips(
+                    _topics,
+                    _topic,
+                    k.topics,
+                    (v) => setState(() => _topic = v),
                   ),
-                ),
-                TextFormField(
-                  controller: _background,
-                  minLines: 2,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    labelText: k.backgroundLabel,
-                    helperText: k.backgroundHint,
-                    alignLabelWithHint: true,
+                  Text(k.modeLabel, style: text.titleSmall),
+                  chips(
+                    _modes,
+                    _mode,
+                    k.modes,
+                    (v) => setState(() => _mode = v),
                   ),
-                ),
-                if (experts.isNotEmpty)
-                  DropdownButtonFormField<String?>(
-                    initialValue: _expert,
-                    style: text.bodyLarge,
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: k.expertLabel),
-                    items: [
-                      DropdownMenuItem(value: null, child: Text(k.expertAny)),
-                      for (final e in experts)
-                        DropdownMenuItem(
-                          value: '${e['slug']}',
-                          child: Text(
-                            '${e['fullName']} · ${e['headline']}',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                    ],
-                    onChanged: (v) => setState(() => _expert = v),
-                  ),
-                Text(k.availabilityTitle, style: text.titleSmall),
-                Text(k.availabilityHint, style: text.bodySmall),
-                for (final (i, (day, part)) in _windows.indexed)
-                  SoftSurface(
-                    tint: moduleTint(c, i),
-                    radius: BaghRadius.tile,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 10,
-                      children: [
-                        DateField(
-                          label: k.dayLabel,
-                          value: day,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 90),
-                          ),
-                          onChanged: (d) =>
-                              setState(() => _windows[i] = (d, part)),
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: [
-                                  for (final p in _parts)
-                                    ChoiceChip(
-                                      label: Text(k.parts.label(p)),
-                                      selected: part == p,
-                                      onSelected: (_) => setState(
-                                        () => _windows[i] = (day, p),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            if (_windows.length > 1)
-                              IconButton(
-                                tooltip: k.removeWindow,
-                                icon: const Icon(Icons.close_rounded),
-                                onPressed: () =>
-                                    setState(() => _windows.removeAt(i)),
-                              ),
-                          ],
-                        ),
-                      ],
+                  TextFormField(
+                    controller: _goal,
+                    minLines: 2,
+                    maxLines: 6,
+                    decoration: InputDecoration(
+                      labelText: k.goalLabel,
+                      helperText: k.goalHint,
+                      alignLabelWithHint: true,
                     ),
                   ),
-                if (_windows.length < _maxWindows) ...[
-                  BaghKey(
-                    label: k.addWindow,
-                    icon: Icons.add_rounded,
-                    kind: BaghKeyKind.tonal,
-                    expand: true,
-                    onPressed: () =>
-                        setState(() => _windows.add((null, 'MORNING'))),
+                  TextFormField(
+                    controller: _background,
+                    minLines: 2,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      labelText: k.backgroundLabel,
+                      helperText: k.backgroundHint,
+                      alignLabelWithHint: true,
+                    ),
                   ),
-                  Text(
-                    k.windowsLeft.fill({
-                      'count': localDigits(
-                        _maxWindows - _windows.length,
-                        language,
+                  if (experts.isNotEmpty)
+                    DropdownButtonFormField<String?>(
+                      borderRadius: BorderRadius.circular(BaghRadius.field),
+                      initialValue: _expert,
+                      style: text.bodyLarge,
+                      isExpanded: true,
+                      decoration: InputDecoration(labelText: k.expertLabel),
+                      items: [
+                        DropdownMenuItem(value: null, child: Text(k.expertAny)),
+                        for (final e in experts)
+                          DropdownMenuItem(
+                            value: '${e['slug']}',
+                            child: Text(
+                              '${e['fullName']} · ${e['headline']}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                      onChanged: (v) => setState(() => _expert = v),
+                    ),
+                  Text(k.availabilityTitle, style: text.titleSmall),
+                  Text(k.availabilityHint, style: text.bodySmall),
+                  for (final (i, (day, part)) in _windows.indexed)
+                    SoftSurface(
+                      tint: moduleTint(c, i),
+                      radius: BaghRadius.tile,
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: 10,
+                        children: [
+                          DateField(
+                            label: k.dayLabel,
+                            value: day,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 90),
+                            ),
+                            onChanged: (d) =>
+                                setState(() => _windows[i] = (d, part)),
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    for (final p in _parts)
+                                      ChoiceChip(
+                                        label: Text(k.parts.label(p)),
+                                        selected: part == p,
+                                        onSelected: (_) => setState(
+                                          () => _windows[i] = (day, p),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              if (_windows.length > 1)
+                                IconButton(
+                                  tooltip: k.removeWindow,
+                                  icon: const Icon(Icons.close_rounded),
+                                  onPressed: () =>
+                                      setState(() => _windows.removeAt(i)),
+                                ),
+                            ],
+                          ),
+                        ],
                       ),
-                    }),
-                    style: text.bodySmall,
-                    textAlign: TextAlign.center,
+                    ),
+                  if (_windows.length < _maxWindows) ...[
+                    BaghKey(
+                      label: k.addWindow,
+                      icon: Icons.add_rounded,
+                      kind: BaghKeyKind.tonal,
+                      expand: true,
+                      onPressed: () =>
+                          setState(() => _windows.add((null, 'MORNING'))),
+                    ),
+                    Text(
+                      k.windowsLeft.fill({
+                        'count': localDigits(
+                          _maxWindows - _windows.length,
+                          language,
+                        ),
+                      }),
+                      style: text.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  TextFormField(
+                    controller: _name,
+                    autofillHints: const [AutofillHints.name],
+                    validator: (v) =>
+                        (v ?? '').trim().length >= 2 ? null : s.auth.required,
+                    decoration: InputDecoration(labelText: k.nameLabel),
+                  ),
+                  TextFormField(
+                    controller: _phone,
+                    keyboardType: TextInputType.phone,
+                    textDirection: TextDirection.ltr,
+                    autofillHints: const [AutofillHints.telephoneNumber],
+                    validator: (v) =>
+                        RegExp(
+                          r'^09\d{9}$',
+                        ).hasMatch(toLatinDigits((v ?? '').trim()))
+                        ? null
+                        : s.project.errPhone,
+                    decoration: InputDecoration(
+                      labelText: k.phoneLabel,
+                      helperText: k.phoneHint,
+                      hintText: '09xxxxxxxxx',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
+                    autofillHints: const [AutofillHints.email],
+                    validator: (v) => (v ?? '').trim().isEmpty
+                        ? null
+                        : Validators(s).email(v),
+                    decoration: InputDecoration(labelText: k.emailLabel),
+                  ),
+                  if (_error != null) FormMessage(_error!),
+                  BaghKey(
+                    label: k.submit,
+                    onPressed: _submit,
+                    loading: _sending,
+                    expand: true,
                   ),
                 ],
-                TextFormField(
-                  controller: _name,
-                  autofillHints: const [AutofillHints.name],
-                  validator: (v) =>
-                      (v ?? '').trim().length >= 2 ? null : s.auth.required,
-                  decoration: InputDecoration(labelText: k.nameLabel),
-                ),
-                TextFormField(
-                  controller: _phone,
-                  keyboardType: TextInputType.phone,
-                  textDirection: TextDirection.ltr,
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                  validator: (v) =>
-                      RegExp(
-                        r'^09\d{9}$',
-                      ).hasMatch(toLatinDigits((v ?? '').trim()))
-                      ? null
-                      : s.project.errPhone,
-                  decoration: InputDecoration(
-                    labelText: k.phoneLabel,
-                    helperText: k.phoneHint,
-                    hintText: '09xxxxxxxxx',
-                  ),
-                ),
-                TextFormField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  textDirection: TextDirection.ltr,
-                  autofillHints: const [AutofillHints.email],
-                  validator: (v) =>
-                      (v ?? '').trim().isEmpty ? null : Validators(s).email(v),
-                  decoration: InputDecoration(labelText: k.emailLabel),
-                ),
-                if (_error != null) FormMessage(_error!),
-                BaghKey(
-                  label: k.submit,
-                  onPressed: _submit,
-                  loading: _sending,
-                  expand: true,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

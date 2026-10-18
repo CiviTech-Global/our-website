@@ -25,6 +25,7 @@ const _appPaths = <String>{
   '/track',
   '/join',
   '/volunteer',
+  '/insurance',
   '/login',
   '/register',
   '/forgot-password',
@@ -35,7 +36,8 @@ bool isAppPath(String path) {
   final clean = Uri.parse(path).path;
   return _appPaths.contains(clean) ||
       clean.startsWith('/blog/') ||
-      clean.startsWith('/help/');
+      clean.startsWith('/help/') ||
+      clean.startsWith('/insurance/');
 }
 
 /// Follows a link: inside the app when it can, to the website or the wider

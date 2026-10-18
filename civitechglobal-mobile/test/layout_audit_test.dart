@@ -7,6 +7,7 @@ import 'package:civitech_global_flutter/core/auth/session.dart';
 import 'package:civitech_global_flutter/core/capabilities.dart';
 import 'package:civitech_global_flutter/core/settings.dart';
 import 'package:civitech_global_flutter/design/palette.dart';
+import 'package:civitech_global_flutter/design/widgets/bagh_key.dart';
 import 'package:civitech_global_flutter/features/account/security_screen.dart';
 import 'package:civitech_global_flutter/features/help/help_sheet.dart';
 import 'package:civitech_global_flutter/features/start/modules.dart';
@@ -83,6 +84,11 @@ const _screens = [
   '/track?code=RESU1234',
   '/join',
   '/volunteer',
+  '/insurance',
+  '/insurance/third-party',
+  '/insurance/test-cover',
+  '/insurance/test-cover/apply',
+  '/insurance/test-cover/apply?step=1',
 ];
 
 /// Data with the longest real-world shapes: long names, bios, quotes and
@@ -274,6 +280,21 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
         },
       },
     ),
+    '/insurance/catalog' => (
+      200,
+      {
+        'data': [
+          {
+            'slug': 'property',
+            'title': 'بیمه‌های اموال و مسئولیت ساختمان‌های مسکونی و تجاری',
+            'titleEn': 'Property and liability cover for homes and businesses',
+            'emoji': '🏠',
+            'products': [_insuranceProduct, _insuranceProduct],
+          },
+        ],
+      },
+    ),
+    '/insurance/products/test-cover' => (200, {'data': _insuranceDetail}),
     _ => (404, {'success': false, 'message': 'not found'}),
   };
 }
@@ -326,6 +347,7 @@ Future<void> _pump(
         capabilitiesProvider.overrideWith(
           (ref) async => const Capabilities(
             email: true,
+            sms: true,
             features: {
               'tradeMaster': true,
               'booksV2': true,
@@ -437,6 +459,16 @@ void main() {
             findsNothing,
             reason: '$target shows its error state',
           );
+          // A key stretched to the room it was given does not overflow, so
+          // it is checked on its own: a pinned key once filled the screen.
+          for (final key in tester.widgetList(find.byType(BaghKey))) {
+            final height = tester.getSize(find.byWidget(key)).height;
+            expect(
+              height,
+              lessThan(48 * scale + 64),
+              reason: '$target draws a key ${height.round()} px tall',
+            );
+          }
           final error = tester.takeException();
           // The full report names the widget that overflowed and by how much.
           expect(
@@ -556,3 +588,166 @@ void main() {
     }
   });
 }
+
+/// A product with the longest shapes: long names and a question of every
+/// type, so the product page and each step of its form are laid out full.
+const _insuranceProduct = {
+  'slug': 'test-cover',
+  'title': 'بیمهٔ آتش‌سوزی، زلزله و حوادث طبیعی ساختمان و اثاثیه منزل',
+  'titleEn':
+      'Fire, earthquake and natural-disaster cover for building and contents',
+  'summary':
+      'پوشش کامل ساختمان و اثاثیه در برابر آتش‌سوزی، انفجار، صاعقه، زلزله، سیل و طوفان با امکان افزودن پوشش‌های تکمیلی',
+  'summaryEn':
+      'Full cover for the building and its contents against fire, explosion, lightning, earthquake, flood and storm, with optional extras',
+  'intakeMode': 'CALLBACK',
+  'audience': 'CORPORATE',
+};
+
+final _insuranceDetail = {
+  ..._insuranceProduct,
+  'description':
+      'این بیمه ساختمان و اثاثیه را در برابر خطرهای اصلی پوشش می‌دهد و با پوشش‌های تکمیلی گسترش می‌یابد. ' *
+      3,
+  'descriptionEn':
+      'This cover protects the building and its contents against the main perils and extends with optional cover. ' *
+      3,
+  'category': {
+    'slug': 'property',
+    'title': 'اموال',
+    'titleEn': 'Property',
+    'emoji': '🏠',
+  },
+  'coverages': [
+    'آتش‌سوزی، انفجار و صاعقه با هزینهٔ پاک‌سازی آوار',
+    'Earthquake and volcanic eruption with the cost of temporary housing',
+  ],
+  'optionalCoverages': [
+    'سیل',
+    'طوفان',
+    'ترکیدگی لوله‌های آب و نشت فاضلاب',
+    'Theft with forced entry',
+  ],
+  'exclusions': ['خسارت ناشی از جنگ، شورش و انرژی هسته‌ای و استهلاک تدریجی'],
+  'claimSteps': [
+    'Report the loss within five working days',
+    'An assessor visits',
+  ],
+  'requiredDocuments': ['Title deed or lease', 'Photos of the property'],
+  'premiumFactors': ['Building age', 'Construction type', 'Sum insured'],
+  'notes': ['Underinsurance reduces the payout in proportion.'],
+  'faq': [
+    {
+      'question': 'Does it cover rented homes and the tenant’s furniture?',
+      'answer': 'Yes. ' * 20,
+    },
+  ],
+  'keyFacts': [
+    {
+      'label': 'Maximum sum insured for contents',
+      'value': '۵۰٬۰۰۰٬۰۰۰٬۰۰۰ ریال',
+    },
+    {
+      'label': 'Waiting period',
+      'value': 'None for fire; 15 days for earthquake',
+    },
+    {'label': 'Term', 'value': 'One year, renewable'},
+  ],
+  'formSchema': [
+    {
+      'name': 'subject',
+      'label': 'موضوع بیمه',
+      'labelEn': 'What to insure',
+      'type': 'select',
+      'required': true,
+      'options': [
+        {
+          'value': 'BOTH',
+          'label': 'ساختمان و اثاثیه',
+          'labelEn': 'Building and contents, with all fixtures and fittings',
+        },
+        {
+          'value': 'BUILDING',
+          'label': 'فقط ساختمان',
+          'labelEn': 'Building only',
+        },
+      ],
+    },
+    {
+      'name': 'contentsValue',
+      'label': 'ارزش اثاثیه',
+      'labelEn': 'Value of the contents',
+      'type': 'currency',
+      'required': true,
+      'unit': 'ریال',
+      'unitEn': 'rials',
+      'help': 'ارزش جایگزینی همهٔ اثاثیه به قیمت روز، بدون کسر استهلاک',
+      'helpEn':
+          'What it would cost to replace everything today, without deducting wear',
+    },
+    {
+      'name': 'area',
+      'label': 'متراژ',
+      'labelEn': 'Floor area',
+      'type': 'number',
+      'unit': 'متر مربع',
+      'unitEn': 'm²',
+    },
+    {
+      'name': 'startDate',
+      'label': 'تاریخ شروع پوشش',
+      'labelEn': 'Cover starts on',
+      'type': 'date',
+      'min': 'today',
+      'required': true,
+    },
+    {
+      'name': 'perils',
+      'label': 'پوشش‌های تکمیلی مورد نیاز',
+      'labelEn': 'Optional cover you need',
+      'type': 'multiselect',
+      'options': [
+        {
+          'value': 'FLOOD',
+          'label': 'سیل و آب‌گرفتگی',
+          'labelEn': 'Flood and water damage',
+        },
+        {'value': 'STORM', 'label': 'طوفان', 'labelEn': 'Storm'},
+        {
+          'value': 'THEFT',
+          'label': 'سرقت با شکست حرز',
+          'labelEn': 'Theft with forced entry',
+        },
+        {'value': 'PIPES', 'label': 'ترکیدگی لوله', 'labelEn': 'Burst pipes'},
+      ],
+    },
+    {
+      'name': 'hasAlarm',
+      'label': 'سیستم اعلام حریق دارد',
+      'labelEn': 'Has a fire alarm system installed and serviced',
+      'type': 'bool',
+    },
+    {
+      'name': 'ownerId',
+      'label': 'کد ملی مالک',
+      'labelEn': 'Owner national ID',
+      'type': 'nationalId',
+      'required': true,
+    },
+    {'name': 'plate', 'label': 'پلاک', 'labelEn': 'Plate', 'type': 'plate'},
+    {
+      'name': 'fullName',
+      'label': 'نام و نام خانوادگی',
+      'labelEn': 'Full name',
+      'type': 'text',
+      'required': true,
+    },
+    {
+      'name': 'notes',
+      'label': 'توضیحات',
+      'labelEn': 'Notes',
+      'type': 'textarea',
+      'maxLength': 1000,
+    },
+  ],
+};

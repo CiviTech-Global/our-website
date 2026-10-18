@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/format.dart';
@@ -14,7 +13,9 @@ import '../../design/tokens.dart';
 import '../../design/widgets/attachments_field.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/date_field.dart';
+import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/soft_surface.dart';
+import '../../design/widgets/step_keys.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import '../help/help_sheet.dart';
@@ -156,14 +157,39 @@ class _StartProjectScreenState extends ConsumerState<StartProjectScreen> {
     }
   }
 
-  void _back() {
-    if (_step == 0) {
-      context.pop();
-      return;
-    }
+  /// One step back; false on the first step, where back leaves the form.
+  bool _stepBack() {
+    if (_step == 0) return false;
     ref.read(hapticsProvider).selection();
     setState(() => _step--);
+    return true;
   }
+
+  void _back() {
+    if (!_stepBack()) Navigator.of(context).maybePop();
+  }
+
+  bool get _dirty =>
+      [
+        _name,
+        _role,
+        _org,
+        _website,
+        _email,
+        _phone,
+        _title,
+        _summary,
+        _goals,
+        _users,
+        _existing,
+        _constraints,
+        _outOfScope,
+        _min,
+        _max,
+        _suggested,
+        _notes,
+      ].any((c) => c.text.trim().isNotEmpty) ||
+      _files.isNotEmpty;
 
   Map<String, Object?> _payload() {
     String? opt(TextEditingController c) =>
@@ -251,11 +277,10 @@ class _StartProjectScreenState extends ConsumerState<StartProjectScreen> {
       p.sectionFiles,
     ];
     final reduce = reduceMotion(context, ref);
-    return PopScope(
-      canPop: _step == 0 && !_sending,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && !_sending) _back();
-      },
+    return LeaveGuard(
+      isDirty: () => _dirty,
+      stepBack: _stepBack,
+      busy: _sending,
       child: Scaffold(
         appBar: AppBar(
           title: Text(p.title, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -321,27 +346,17 @@ class _StartProjectScreenState extends ConsumerState<StartProjectScreen> {
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(3),
                       ),
-                    Row(
-                      spacing: 10,
-                      children: [
-                        Expanded(
-                          child: BaghKey(
-                            label: _step == 0
-                                ? s.common.cancel
-                                : s.common.previous,
-                            kind: BaghKeyKind.outline,
-                            onPressed: _sending ? null : _back,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: BaghKey(
-                            label: _step == 4 ? p.submit : s.common.next,
-                            onPressed: _next,
-                            loading: _sending,
-                          ),
-                        ),
-                      ],
+                    StepKeys(
+                      backLabel: _step == 0
+                          ? s.common.cancel
+                          : s.common.previous,
+                      onBack: _sending ? null : _back,
+                      forward: BaghKey(
+                        label: _step == 4 ? p.submit : s.common.next,
+                        expand: true,
+                        onPressed: _next,
+                        loading: _sending,
+                      ),
                     ),
                   ],
                 ),

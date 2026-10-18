@@ -20,6 +20,10 @@ import '../features/explore/explore_screen.dart';
 import '../features/help/help_centre_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/inbox/inbox_screen.dart';
+import '../features/insurance/apply_screen.dart';
+import '../features/insurance/insurance_screen.dart';
+import '../features/insurance/product_screen.dart';
+import '../features/insurance/third_party_screen.dart';
 import '../features/intake/consult_screen.dart';
 import '../features/intake/resume_screen.dart';
 import '../features/intake/start_project_screen.dart';
@@ -148,6 +152,33 @@ final routerProvider = Provider<GoRouter>((ref) {
               slug: state.pathParameters['slug']!,
               locale: state.uri.queryParameters['lang'],
             ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/insurance',
+        builder: (_, _) => const InsuranceScreen(),
+        routes: [
+          // Before ':slug', which would otherwise take it as a product.
+          GoRoute(
+            path: 'third-party',
+            builder: (_, _) => const ThirdPartyScreen(),
+          ),
+          GoRoute(
+            path: ':slug',
+            builder: (_, state) =>
+                InsuranceProductScreen(slug: state.pathParameters['slug']!),
+            routes: [
+              GoRoute(
+                path: 'apply',
+                builder: (_, state) => InsuranceApplyScreen(
+                  slug: state.pathParameters['slug']!,
+                  initialStep:
+                      int.tryParse(state.uri.queryParameters['step'] ?? '') ??
+                      0,
+                ),
+              ),
+            ],
           ),
         ],
       ),

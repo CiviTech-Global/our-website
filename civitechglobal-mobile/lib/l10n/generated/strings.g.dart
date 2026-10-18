@@ -719,6 +719,40 @@ class StringsMobile extends L10nNode {
   String get welcomeName => string("welcomeName");
   String get paletteGlass => string("paletteGlass");
   String get deadlineBeforeStart => string("deadlineBeforeStart");
+  String get optional => string("optional");
+  String get yes => string("yes");
+  String get select => string("select");
+  String get stepOf => string("stepOf");
+  String get insuranceApply => string("insuranceApply");
+  String get insuranceAbout => string("insuranceAbout");
+  String get leaveTitle => string("leaveTitle");
+  String get leaveBody => string("leaveBody");
+  String get leaveConfirm => string("leaveConfirm");
+  String get leaveStay => string("leaveStay");
+  StringsMobileFieldRules get fieldRules => StringsMobileFieldRules(node("fieldRules"));
+}
+
+class StringsMobileFieldRules extends L10nNode {
+  const StringsMobileFieldRules(super.raw);
+
+  String get required => string("required");
+  String get minChars => string("minChars");
+  String get maxChars => string("maxChars");
+  String get notNumber => string("notNumber");
+  String get wholeAmount => string("wholeAmount");
+  String get atLeast => string("atLeast");
+  String get atMost => string("atMost");
+  String get dateInvalid => string("dateInvalid");
+  String get datePast => string("datePast");
+  String get dateRange => string("dateRange");
+  String get optionInvalid => string("optionInvalid");
+  String get minOptions => string("minOptions");
+  String get maxOptions => string("maxOptions");
+  String get valueInvalid => string("valueInvalid");
+  String get nationalIdLength => string("nationalIdLength");
+  String get nationalIdCheck => string("nationalIdCheck");
+  String get phoneFormat => string("phoneFormat");
+  String get plateInvalid => string("plateInvalid");
 }
 
 class StringsCategoryDesk extends L10nNode {
