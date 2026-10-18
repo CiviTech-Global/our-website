@@ -28,6 +28,9 @@ class ContactScreen extends ConsumerStatefulWidget {
 
 class _ContactScreenState extends ConsumerState<ContactScreen> {
   final _form = GlobalKey<FormState>();
+  // After a first attempt, fields re-check as they change, so a fixed
+  // mistake stops being flagged.
+  bool _tried = false;
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _subject = TextEditingController();
@@ -49,6 +52,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
   }
 
   Future<void> _send() async {
+    if (!_tried) setState(() => _tried = true);
     if (_sending || !_form.currentState!.validate()) return;
     final s = ref.read(stringsProvider);
     setState(() {
@@ -190,6 +194,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
             padding: const EdgeInsets.all(20),
             child: Form(
               key: _form,
+              autovalidateMode: _tried
+                  ? AutovalidateMode.always
+                  : AutovalidateMode.disabled,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 16,

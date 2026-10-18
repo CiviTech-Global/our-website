@@ -2783,7 +2783,8 @@
   "showPassword": "Mostrar contraseña",
   "hidePassword": "Ocultar contraseña",
   "welcomeName": "Hola de nuevo, {name}",
-  "paletteGlass": "Cristal"
+  "paletteGlass": "Cristal",
+  "deadlineBeforeStart": "La fecha límite no puede ser anterior a la de inicio."
  },
  "work": {
   "findWork": "Buscar trabajo",

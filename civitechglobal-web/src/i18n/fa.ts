@@ -2905,6 +2905,7 @@ const fa = {
     hidePassword: 'پنهان کردن رمز عبور',
     welcomeName: '{name}، خوش آمدید',
     paletteGlass: 'آبگینه',
+    deadlineBeforeStart: 'مهلت تحویل نمی‌تواند پیش از تاریخ شروع باشد.',
   },
   work,
   bookshop,

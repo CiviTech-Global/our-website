@@ -71,6 +71,15 @@ const _screens = [
   '/blog/third-party-insurance-guide',
   '/help',
   '/contact',
+  '/start-project',
+  '/start-project?step=1',
+  '/start-project?step=2',
+  '/start-project?step=3',
+  '/start-project?step=4',
+  '/consult',
+  '/track?code=PROJ1234',
+  '/track?code=CONS1234',
+  '/track?code=INSU1234',
 ];
 
 /// Data with the longest real-world shapes: long names, bios, quotes and
@@ -154,6 +163,99 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
       200,
       {
         'data': [project, project],
+      },
+    ),
+    '/consult/experts' => (
+      200,
+      {
+        'data': [
+          {
+            'slug': 'x',
+            'fullName': member['name'],
+            'headline': member['title'],
+            'acceptsConsultations': true,
+          },
+        ],
+      },
+    ),
+    '/track/PROJ1234' => (
+      200,
+      {
+        'data': {
+          'kind': 'project',
+          'trackingCode': 'PROJ1234',
+          'title': project['title'],
+          'status': 'PROPOSAL_SENT',
+          'submittedAt': '2026-10-01T10:00:00Z',
+          'updatedAt': '2026-10-05T10:00:00Z',
+          'proposal': {
+            'status': 'SENT',
+            'scopeSummary': long,
+            'message': long,
+            'deliverables': [long, long],
+            'assumptions': [long],
+            'exclusions': [long],
+            'milestones': [
+              {
+                'title': long,
+                'durationDays': 21,
+                'price': '450000000',
+                'description': long,
+              },
+            ],
+            'pertHours': 512.5,
+            'priceMin': '900000000',
+            'priceLikely': '1200000000',
+            'priceMax': '1800000000',
+            'currency': 'IRT',
+            'hourlyRate': '2500000',
+            'discoveryRequired': true,
+            'discoveryPrice': '90000000',
+            'timelineWeeksMin': 10,
+            'timelineWeeksMax': 16,
+            'validUntil': '2026-12-01',
+          },
+        },
+      },
+    ),
+    '/track/CONS1234' => (
+      200,
+      {
+        'data': {
+          'kind': 'consultation',
+          'trackingCode': 'CONS1234',
+          'fullName': member['name'],
+          'topic': 'STARTING_OUT',
+          'preferredMode': 'IN_PERSON',
+          'status': 'SCHEDULED',
+          'scheduledAt': '2026-10-20T09:00:00Z',
+          'createdAt': '2026-10-01T10:00:00Z',
+          'expert': {
+            'fullName': member['name'],
+            'slug': 'x',
+            'headline': member['title'],
+          },
+          'availability': [
+            {'day': '2026-10-20', 'part': 'AFTERNOON'},
+            {'day': '2026-10-21', 'part': 'EVENING'},
+          ],
+        },
+      },
+    ),
+    '/track/INSU1234' => (
+      200,
+      {
+        'data': {
+          'kind': 'insurance',
+          'trackingCode': 'INSU1234',
+          'status': 'IN_PROGRESS',
+          'productTitle': 'بیمهٔ مسئولیت مدنی مهندسان ناظر ساختمان',
+          'productTitleEn':
+              'Supervising engineer professional liability insurance',
+          'submittedAt': '2026-10-01T10:00:00Z',
+          'updatedAt': '2026-10-05T10:00:00Z',
+          'callbackScheduledAt': '2026-10-06T10:00:00Z',
+        },
       },
     ),
     _ => (404, {'success': false, 'message': 'not found'}),

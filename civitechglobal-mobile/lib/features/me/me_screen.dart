@@ -137,6 +137,11 @@ class MeScreen extends ConsumerWidget {
                     () => context.push('/me/security'),
                   ),
                 row(
+                  Icons.manage_search_rounded,
+                  s.nav.track,
+                  () => context.push('/track'),
+                ),
+                row(
                   Icons.tune_rounded,
                   s.mobile.settingsTitle,
                   () => context.push('/me/settings'),

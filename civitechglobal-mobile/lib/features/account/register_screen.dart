@@ -20,6 +20,9 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _form = GlobalKey<FormState>();
+  // After a first attempt, fields re-check as they change, so a fixed
+  // mistake stops being flagged.
+  bool _tried = false;
   final _first = TextEditingController();
   final _last = TextEditingController();
   final _email = TextEditingController();
@@ -39,6 +42,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     setState(() => _fieldErrors = const {});
+    if (!_tried) setState(() => _tried = true);
     if (_busy || !_form.currentState!.validate()) return;
     final s = ref.read(stringsProvider);
     setState(() {
@@ -85,6 +89,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       children: [
         Form(
           key: _form,
+          autovalidateMode: _tried
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
           child: AutofillGroup(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -2917,6 +2917,7 @@ const en: typeof fa = {
     hidePassword: 'Hide password',
     welcomeName: 'Welcome back, {name}',
     paletteGlass: 'Glass',
+    deadlineBeforeStart: 'The deadline cannot be before the start date.',
   },
   work,
   bookshop,

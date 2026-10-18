@@ -718,6 +718,7 @@ class StringsMobile extends L10nNode {
   String get hidePassword => string("hidePassword");
   String get welcomeName => string("welcomeName");
   String get paletteGlass => string("paletteGlass");
+  String get deadlineBeforeStart => string("deadlineBeforeStart");
 }
 
 class StringsCategoryDesk extends L10nNode {

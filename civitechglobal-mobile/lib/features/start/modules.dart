@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/capabilities.dart';
 import '../../core/config.dart';
+import '../../core/links.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
@@ -147,55 +149,61 @@ List<AppModule> visibleModules(List<AppModule> modules, Capabilities caps) => [
 
 /// Until a module's screens arrive in the app, it opens here: a short note
 /// and the way to the same page on the website.
-Future<void> showModuleSoon(BuildContext context, AppModule module) =>
-    showBaghSheet<void>(
-      context,
-      builder: (context) => Consumer(
-        builder: (context, ref, _) {
-          final s = ref.watch(stringsProvider);
-          final language = ref.watch(l10nProvider).language;
-          final c = BaghColors.of(context);
-          final tint = moduleTint(c, module.tint);
-          final text = Theme.of(context).textTheme;
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: BaghLayout.readablePadding(
-                context,
-                bottom: BaghSpace.gutter,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 14,
-                children: [
-                  Row(
-                    spacing: 12,
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: tint.fill,
-                        child: Icon(module.icon, color: tint.ink),
-                      ),
-                      Expanded(
-                        child: Text(module.label(s), style: text.titleLarge),
-                      ),
-                      GirihStar(color: tint.ink, size: 22),
-                    ],
-                  ),
-                  Text(s.mobile.comingInUpdate, style: text.bodyLarge),
-                  BaghKey(
-                    label: s.nav.viewSite,
-                    icon: Icons.open_in_new_rounded,
-                    expand: true,
-                    onPressed: () => launchUrl(
-                      AppConfig.website(module.webPath, language),
-                      mode: LaunchMode.externalApplication,
-                    ),
-                  ),
-                ],
-              ),
+Future<void> showModuleSoon(BuildContext context, AppModule module) async {
+  // Screens the app already has open directly; the note is only for the rest.
+  if (isAppPath(module.webPath)) {
+    await GoRouter.of(context).push(module.webPath);
+    return;
+  }
+  await showBaghSheet<void>(
+    context,
+    builder: (context) => Consumer(
+      builder: (context, ref, _) {
+        final s = ref.watch(stringsProvider);
+        final language = ref.watch(l10nProvider).language;
+        final c = BaghColors.of(context);
+        final tint = moduleTint(c, module.tint);
+        final text = Theme.of(context).textTheme;
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: BaghLayout.readablePadding(
+              context,
+              bottom: BaghSpace.gutter,
             ),
-          );
-        },
-      ),
-    );
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 14,
+              children: [
+                Row(
+                  spacing: 12,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: tint.fill,
+                      child: Icon(module.icon, color: tint.ink),
+                    ),
+                    Expanded(
+                      child: Text(module.label(s), style: text.titleLarge),
+                    ),
+                    GirihStar(color: tint.ink, size: 22),
+                  ],
+                ),
+                Text(s.mobile.comingInUpdate, style: text.bodyLarge),
+                BaghKey(
+                  label: s.nav.viewSite,
+                  icon: Icons.open_in_new_rounded,
+                  expand: true,
+                  onPressed: () => launchUrl(
+                    AppConfig.website(module.webPath, language),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}

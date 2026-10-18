@@ -207,10 +207,11 @@ class StepList extends StatelessWidget {
                     spacing: 4,
                     children: [
                       Text(title, style: text.titleSmall),
-                      Text(
-                        body,
-                        style: text.bodyMedium?.copyWith(color: c.ink2),
-                      ),
+                      if (body.isNotEmpty)
+                        Text(
+                          body,
+                          style: text.bodyMedium?.copyWith(color: c.ink2),
+                        ),
                     ],
                   ),
                 ),

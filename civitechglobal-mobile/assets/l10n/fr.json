@@ -2783,7 +2783,8 @@
   "showPassword": "Afficher le mot de passe",
   "hidePassword": "Masquer le mot de passe",
   "welcomeName": "Bon retour, {name}",
-  "paletteGlass": "Verre"
+  "paletteGlass": "Verre",
+  "deadlineBeforeStart": "L'échéance ne peut pas précéder la date de début."
  },
  "work": {
   "findWork": "Trouver une mission",

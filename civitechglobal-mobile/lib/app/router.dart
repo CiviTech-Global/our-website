@@ -20,6 +20,9 @@ import '../features/explore/explore_screen.dart';
 import '../features/help/help_centre_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/inbox/inbox_screen.dart';
+import '../features/intake/consult_screen.dart';
+import '../features/intake/start_project_screen.dart';
+import '../features/intake/track_screen.dart';
 import '../features/me/me_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -149,6 +152,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/help', builder: (_, _) => const HelpCentreScreen()),
       GoRoute(path: '/contact', builder: (_, _) => const ContactScreen()),
+      // Client intake.
+      GoRoute(
+        path: '/start-project',
+        builder: (_, state) => StartProjectScreen(
+          initialStep:
+              int.tryParse(state.uri.queryParameters['step'] ?? '') ?? 0,
+        ),
+      ),
+      GoRoute(
+        path: '/consult',
+        builder: (_, state) =>
+            ConsultScreen(expertSlug: state.uri.queryParameters['expert']),
+      ),
+      GoRoute(
+        path: '/track',
+        builder: (_, state) =>
+            TrackScreen(code: state.uri.queryParameters['code']),
+      ),
       GoRoute(
         path: '/register',
         builder: (_, state) =>

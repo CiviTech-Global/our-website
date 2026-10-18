@@ -84,6 +84,46 @@ class ApiClient {
   Future<T> delete<T>(String path, {T Function(Object? data)? parse}) =>
       _send('DELETE', path, parse: parse);
 
+  /// A multipart upload, reporting progress from 0 to 1 as it is sent.
+  ///
+  /// [form] is built fresh by the caller for every attempt: a FormData's
+  /// file streams can be read only once, so the retry after a token refresh
+  /// asks for a new one.
+  Future<T> upload<T>(
+    String path, {
+    required FormData Function() form,
+    void Function(double progress)? onProgress,
+    T Function(Object? data)? parse,
+  }) async {
+    Future<T> attempt() async {
+      final response = await _dio.post<Object?>(
+        path,
+        data: form(),
+        onSendProgress: onProgress == null
+            ? null
+            : (sent, total) {
+                if (total > 0) onProgress(sent / total);
+              },
+      );
+      final envelope = response.data;
+      final data = envelope is Map ? envelope['data'] : envelope;
+      return parse != null ? parse(data) : data as T;
+    }
+
+    try {
+      return await attempt();
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401 && await refresh()) {
+        try {
+          return await attempt();
+        } on DioException catch (retryError) {
+          throw ApiException.from(retryError);
+        }
+      }
+      throw ApiException.from(error);
+    }
+  }
+
   Future<T> _send<T>(
     String method,
     String path, {

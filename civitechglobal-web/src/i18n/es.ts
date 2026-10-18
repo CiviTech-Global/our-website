@@ -2748,6 +2748,7 @@ const es: PartialTranslations = {
     hidePassword: 'Ocultar contraseña',
     welcomeName: 'Hola de nuevo, {name}',
     paletteGlass: 'Cristal',
+    deadlineBeforeStart: 'La fecha límite no puede ser anterior a la de inicio.',
   },
   work,
   bookshop,

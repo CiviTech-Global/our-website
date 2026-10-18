@@ -2754,6 +2754,7 @@ const tr: PartialTranslations = {
     hidePassword: 'Şifreyi gizle',
     welcomeName: 'Tekrar hoş geldiniz, {name}',
     paletteGlass: 'Cam',
+    deadlineBeforeStart: 'Teslim tarihi başlangıç tarihinden önce olamaz.',
   },
   work,
   bookshop,

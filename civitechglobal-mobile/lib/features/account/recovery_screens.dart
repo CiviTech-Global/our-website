@@ -25,6 +25,9 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _form = GlobalKey<FormState>();
+  // After a first attempt, fields re-check as they change, so a fixed
+  // mistake stops being flagged.
+  bool _tried = false;
   final _email = TextEditingController();
   bool _busy = false;
   bool _sent = false;
@@ -37,6 +40,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   Future<void> _submit() async {
+    if (!_tried) setState(() => _tried = true);
     if (_busy || !_form.currentState!.validate()) return;
     final s = ref.read(stringsProvider);
     setState(() {
@@ -104,6 +108,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       children: [
         Form(
           key: _form,
+          autovalidateMode: _tried
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
           child: TextFormField(
             controller: _email,
             keyboardType: TextInputType.emailAddress,
@@ -141,6 +148,9 @@ class ResetPasswordScreen extends ConsumerStatefulWidget {
 
 class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _form = GlobalKey<FormState>();
+  // After a first attempt, fields re-check as they change, so a fixed
+  // mistake stops being flagged.
+  bool _tried = false;
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _busy = false;
@@ -155,6 +165,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   }
 
   Future<void> _submit() async {
+    if (!_tried) setState(() => _tried = true);
     if (_busy || !_form.currentState!.validate()) return;
     final s = ref.read(stringsProvider);
     setState(() {
@@ -208,6 +219,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       children: [
         Form(
           key: _form,
+          autovalidateMode: _tried
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 16,

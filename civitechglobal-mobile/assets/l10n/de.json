@@ -2783,7 +2783,8 @@
   "showPassword": "Passwort anzeigen",
   "hidePassword": "Passwort verbergen",
   "welcomeName": "Willkommen zurück, {name}",
-  "paletteGlass": "Glas"
+  "paletteGlass": "Glas",
+  "deadlineBeforeStart": "Die Frist kann nicht vor dem Startdatum liegen."
  },
  "work": {
   "findWork": "Aufträge finden",
