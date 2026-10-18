@@ -1,0 +1,120 @@
+{
+ "slug": "how-we-work",
+ "locale": "fr",
+ "title": "Comment nous travaillons — du premier message à la livraison",
+ "description": "Comment se déroule un projet chez Rayan Tamaddon Jahan Gostar : demande, code de suivi, proposition écrite, livraison. Clair, rapide, sans coût caché.",
+ "date": "2026-09-23",
+ "dateLabel": "Septembre 2026",
+ "faqHeading": "Questions fréquentes sur notre façon de travailler",
+ "readingMinutes": 3,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "La plupart des gens qui s'adressent à une entreprise de logiciel ont la même inquiétude : *comment savoir si l'on ne me raconte pas d'histoires ?* L'inquiétude est légitime. Voici donc exactement à quoi ressemble une collaboration avec nous — pas un slogan, mais le chemin que prend un vrai projet."
+  },
+  {
+   "kind": "h2",
+   "text": "En bref : quatre étapes"
+  },
+  {
+   "kind": "ol",
+   "items": [
+    "Vous décrivez votre besoin, avec vos mots. Joignez vos documents si vous en avez.",
+    "Nous le lisons et posons des questions si quelque chose n'est pas clair. Demander n'est pas de la négligence : nous préférons ne pas deviner.",
+    "Vous recevez une **proposition écrite** : périmètre, livrables, hypothèses, ce qui n'est *pas* inclus, calendrier et fourchette de prix.",
+    "Avec votre code de suivi, vous ouvrez la proposition et l'acceptez ou la refusez. Sans relances, sans pression commerciale."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Le code de suivi — petit, mais essentiel"
+  },
+  {
+   "kind": "p",
+   "text": "En déposant une demande, vous recevez un code de suivi. Gardez-le : c'est votre clé. Chaque fois que vous voulez savoir où en est votre dossier, vous saisissez ce code."
+  },
+  {
+   "kind": "p",
+   "text": "Pourquoi ainsi ? Parce que suivre son propre projet ne devrait pas dépendre de quelqu'un qui décroche le téléphone. La [page de suivi](/track) est toujours ouverte — y compris à trois heures du matin."
+  },
+  {
+   "kind": "h2",
+   "text": "Ce qui nous distingue réellement"
+  },
+  {
+   "kind": "p",
+   "text": "Honnêtement : aucune entreprise ne devient la meilleure en l'annonçant. Ce que nous pouvons promettre, ce sont ces quatre points."
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "**Qualité.** Le code est relu, testé, et prévu pour fonctionner des années — pas seulement le jour de la livraison.",
+    "**Rapidité.** Le chemin entre la demande et la proposition est court et défini. Vous n'attendez pas qu'on « regarde ça et revienne vers vous ».",
+    "**Accessibilité.** Le site fonctionne au clavier, avec un lecteur d'écran, et sur un téléphone bon marché. C'est une décision, pas une option secondaire.",
+    "**Bon sens économique.** Vous connaissez la fourchette de prix avant de commencer. Si un travail n'en vaut pas la peine, nous le disons tôt."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Si vous hésitez encore"
+  },
+  {
+   "kind": "p",
+   "text": "Vous n'êtes pas obligé de commencer par un grand projet. Vous pouvez [demander un rendez-vous de conseil](/consult), nous indiquer quelques créneaux qui vous conviennent, et nous appelons. Un échange ne vous engage à rien."
+  },
+  {
+   "kind": "h2",
+   "text": "Questions fréquentes sur notre façon de travailler"
+  },
+  {
+   "kind": "h3",
+   "text": "Un devis est-il payant ?"
+  },
+  {
+   "kind": "p",
+   "text": "Non. L'examen de votre demande et la rédaction de la proposition sont gratuits."
+  },
+  {
+   "kind": "h3",
+   "text": "Que se passe-t-il si je refuse la proposition ?"
+  },
+  {
+   "kind": "p",
+   "text": "Rien. Vous refusez, et c'est tout. Ce que vous nous avez transmis reste chez nous et n'est communiqué à personne."
+  },
+  {
+   "kind": "h3",
+   "text": "J'ai perdu mon code de suivi."
+  },
+  {
+   "kind": "p",
+   "text": "Contactez-nous depuis le numéro ou l'adresse e-mail utilisés lors du dépôt, et nous vous le redonnons."
+  },
+  {
+   "kind": "h3",
+   "text": "Acceptez-vous les petits projets ?"
+  },
+  {
+   "kind": "p",
+   "text": "Oui. La taille n'est pas notre critère. Si un sujet sort de nos compétences, nous vous le dirons franchement."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "Un devis est-il payant ?",
+   "answer": "Non. L'examen de votre demande et la rédaction de la proposition sont gratuits."
+  },
+  {
+   "question": "Que se passe-t-il si je refuse la proposition ?",
+   "answer": "Rien. Vous refusez, et c'est tout. Ce que vous nous avez transmis reste chez nous et n'est communiqué à personne."
+  },
+  {
+   "question": "J'ai perdu mon code de suivi.",
+   "answer": "Contactez-nous depuis le numéro ou l'adresse e-mail utilisés lors du dépôt, et nous vous le redonnons."
+  },
+  {
+   "question": "Acceptez-vous les petits projets ?",
+   "answer": "Oui. La taille n'est pas notre critère. Si un sujet sort de nos compétences, nous vous le dirons franchement."
+  }
+ ]
+}

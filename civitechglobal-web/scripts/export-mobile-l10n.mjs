@@ -17,12 +17,14 @@
  * - civitechglobal-mobile/assets/help/manifest.json and <locale>.json: the
  *   public and member guides. Staff guides stay on the web, as the app has no
  *   staff screens.
+ * - civitechglobal-mobile/assets/blog/index.json and one file per article:
+ *   the blog, parsed into the same blocks the web renders.
  *
  * Usage:
  *   node scripts/export-mobile-l10n.mjs           write the files
  *   node scripts/export-mobile-l10n.mjs --check   exit 1 if they are stale (CI)
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createJiti } from 'jiti';
@@ -36,6 +38,7 @@ const check = process.argv.includes('--check');
 
 const jiti = createJiti(join(WEB, 'package.json'), { alias: { '@': join(WEB, 'src') } });
 const load = (path) => jiti(join(WEB, path)).default;
+const jitiJsx = createJiti(join(WEB, 'package.json'), { jsx: true, alias: { '@': join(WEB, 'src') } });
 
 /** Missing keys filled from `base`, at any depth. Arrays are values, not merged. */
 function fill(partial, base) {
@@ -131,6 +134,49 @@ for (const locale of LOCALES) {
   const articles = Object.fromEntries(Object.entries(library.articles).filter(([id]) => ids.has(id)));
   const collections = Object.fromEntries(Object.entries(library.collections).filter(([id]) => id !== 'staff'));
   outputs.set(join(MOBILE, 'assets', 'help', `${locale}.json`), json({ collections, articles }));
+}
+
+// ---- Blog articles ------------------------------------------------------------
+// Parsed by the web's own Markdown parser (src/lib/markdown.tsx), so the app
+// renders exactly the blocks the site renders: headings, paragraphs, lists,
+// tables and quotes, with **bold** and [links](...) inline. The frontmatter
+// rules mirror parseFrontmatter in src/content/blog.ts, which cannot be
+// imported here: it loads its files through a Vite-only glob.
+const markdown = jitiJsx(join(WEB, 'src', 'lib', 'markdown.tsx'));
+const blogDir = join(WEB, 'src', 'content', 'blog');
+const posts = [];
+for (const name of readdirSync(blogDir).filter((file) => file.endsWith('.md')).sort()) {
+  const raw = readFileSync(join(blogDir, name), 'utf8').replace(/\r\n/g, '\n');
+  const match = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(raw);
+  if (!match) throw new Error(`${name}: missing its frontmatter block`);
+  const fields = {};
+  for (const line of match[1].split('\n')) {
+    const field = /^([A-Za-z]+):\s*(.*)$/.exec(line);
+    if (field) fields[field[1]] = field[2].trim();
+  }
+  const locale = /\.([a-z]{2})\.md$/.exec(name)?.[1] ?? 'fa';
+  const blocks = markdown.parseMarkdown(match[2].trim());
+  posts.push({
+    slug: fields.slug,
+    locale,
+    title: fields.title,
+    description: fields.description,
+    date: fields.date,
+    dateLabel: fields.dateLabel,
+    faqHeading: fields.faqHeading,
+    readingMinutes: Math.max(1, Math.ceil(markdown.countWords(blocks) / 180)),
+    blocks,
+    faqs: markdown.extractFaqs(blocks, fields.faqHeading),
+  });
+}
+posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.slug.localeCompare(b.slug)));
+// One index for the list (no bodies), one file per article, loaded on open.
+outputs.set(
+  join(MOBILE, 'assets', 'blog', 'index.json'),
+  json(posts.map(({ blocks: _blocks, faqs: _faqs, ...meta }) => meta))
+);
+for (const post of posts) {
+  outputs.set(join(MOBILE, 'assets', 'blog', `${post.slug}.${post.locale}.json`), json(post));
 }
 
 // ---- Write or check -----------------------------------------------------------

@@ -10,7 +10,14 @@ import '../features/account/mfa_screen.dart';
 import '../features/account/recovery_screens.dart';
 import '../features/account/register_screen.dart';
 import '../features/account/security_screen.dart';
+import '../features/blog/blog.dart';
+import '../features/company/about_screen.dart';
+import '../features/company/services_screen.dart';
+import '../features/company/showcase.dart';
+import '../features/company/team_screen.dart';
+import '../features/contact/contact_screen.dart';
 import '../features/explore/explore_screen.dart';
+import '../features/help/help_centre_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/me/me_screen.dart';
@@ -114,6 +121,34 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // The company and its content, at the website's own paths.
+      GoRoute(path: '/services', builder: (_, _) => const ServicesScreen()),
+      GoRoute(path: '/about', builder: (_, _) => const AboutScreen()),
+      GoRoute(path: '/team', builder: (_, _) => const TeamScreen()),
+      GoRoute(path: '/portfolio', builder: (_, _) => const PortfolioScreen()),
+      GoRoute(
+        path: '/customers',
+        builder: (_, _) => const OrganizationsScreen(customers: true),
+      ),
+      GoRoute(
+        path: '/partners',
+        builder: (_, _) => const OrganizationsScreen(customers: false),
+      ),
+      GoRoute(
+        path: '/blog',
+        builder: (_, _) => const BlogIndexScreen(),
+        routes: [
+          GoRoute(
+            path: ':slug',
+            builder: (_, state) => BlogPostScreen(
+              slug: state.pathParameters['slug']!,
+              locale: state.uri.queryParameters['lang'],
+            ),
+          ),
+        ],
+      ),
+      GoRoute(path: '/help', builder: (_, _) => const HelpCentreScreen()),
+      GoRoute(path: '/contact', builder: (_, _) => const ContactScreen()),
       GoRoute(
         path: '/register',
         builder: (_, state) =>

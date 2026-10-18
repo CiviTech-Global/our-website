@@ -117,7 +117,66 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-          const SizedBox(height: BaghSpace.unit),
+          const SizedBox(height: BaghSpace.section),
+          Text(s.nav.companyMenu, style: text.titleLarge),
+          const SizedBox(height: 10),
+          // The company's pages, as tiles in their garden tints.
+          LayoutBuilder(
+            builder: (context, box) {
+              final columns = (box.maxWidth / 160).floor().clamp(2, 4);
+              final width = (box.maxWidth - 10 * (columns - 1)) / columns;
+              return Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final (i, (icon, label, path)) in [
+                    (
+                      Icons.design_services_outlined,
+                      s.nav.services,
+                      '/services',
+                    ),
+                    (Icons.info_outline_rounded, s.nav.about, '/about'),
+                    (Icons.groups_outlined, s.nav.team, '/team'),
+                    (
+                      Icons.collections_bookmark_outlined,
+                      s.nav.portfolio,
+                      '/portfolio',
+                    ),
+                    (Icons.handshake_outlined, s.nav.customers, '/customers'),
+                    (Icons.diversity_3_outlined, s.nav.partners, '/partners'),
+                    (Icons.article_outlined, s.nav.blog, '/blog'),
+                    (Icons.mail_outline_rounded, s.nav.contact, '/contact'),
+                  ].indexed)
+                    SizedBox(
+                      width: width,
+                      child: SoftSurface(
+                        tint: moduleTint(c, i),
+                        radius: BaghRadius.tile,
+                        semanticLabel: label,
+                        padding: const EdgeInsets.all(14),
+                        onTap: () => context.push(path),
+                        child: Row(
+                          spacing: 10,
+                          children: [
+                            Icon(icon, size: 22),
+                            Expanded(
+                              child: Text(
+                                label,
+                                style: BaghType.weight(
+                                  text.labelLarge!,
+                                  700,
+                                ).copyWith(color: moduleTint(c, i).ink),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: BaghSpace.section),
           SoftSurface(
             onTap: () => showModuleSoon(context, startActions.first),
             semanticLabel: s.home.ctaTitle,

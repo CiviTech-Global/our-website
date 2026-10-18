@@ -1,0 +1,187 @@
+{
+ "slug": "what-we-build",
+ "locale": "de",
+ "title": "Was wir bauen — Software, die Jahre halten soll",
+ "description": "Individualsoftware, Web- und Mobil-Anwendungen, Civic-Tech-Plattformen und Datenarbeit. Was wir bauen, wie wir es bauen, und warum wir Qualität nicht gegen Tempo eintauschen.",
+ "date": "2026-09-24",
+ "dateLabel": "September 2026",
+ "faqHeading": "Häufige Fragen zu unserer Softwarearbeit",
+ "readingMinutes": 3,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "Softwareentwicklung ist unsere Hauptarbeit. Alles andere auf dieser Seite — die Versicherungsanträge, der Büchermarkt, die Stellenbörse — ist daraus entstanden: Wir haben Werkzeuge gebaut, die wir selbst brauchten, und dann gemerkt, dass andere sie auch brauchen."
+  },
+  {
+   "kind": "h2",
+   "text": "Vier Dinge, die wir bauen"
+  },
+  {
+   "kind": "h3",
+   "text": "1. Individualsoftware"
+  },
+  {
+   "kind": "p",
+   "text": "Software, die sich an Ihre tatsächlichen Abläufe anpasst, statt umgekehrt. Viele Organisationen haben sich jahrelang an die Grenzen eines Standardprodukts angepasst. Manchmal ist es günstiger, wenn sich stattdessen die Software anpasst."
+  },
+  {
+   "kind": "h3",
+   "text": "2. Web- und Mobil-Anwendungen"
+  },
+  {
+   "kind": "p",
+   "text": "Schnell, skalierbar, verständlich. Diese drei Wörter schreibt jeder, deshalb konkreter: eine Seite, die bei langsamer Verbindung und auf einem günstigen Telefon lädt — und eine Oberfläche, die man ohne Schulung versteht."
+  },
+  {
+   "kind": "h3",
+   "text": "3. Civic-Tech-Plattformen"
+  },
+  {
+   "kind": "p",
+   "text": "Plattformen, die Verwaltungen, Organisationen und Menschen näher zusammenbringen. Daher kommt unser Name, und das ist die Arbeit, die dem Team am meisten bedeutet."
+  },
+  {
+   "kind": "h3",
+   "text": "4. Daten und Auswertung"
+  },
+  {
+   "kind": "p",
+   "text": "Aus Rohdaten werden Dashboards und Erkenntnisse, die eine Entscheidung erleichtern. Daten, die niemand ansieht, sind Wartungskosten und kein Vermögenswert."
+  },
+  {
+   "kind": "h2",
+   "text": "Vier Zusagen"
+  },
+  {
+   "kind": "p",
+   "text": "Hier fangen Unternehmen üblicherweise an, Behauptungen aufzustellen. Deshalb: was jede davon praktisch bedeutet."
+  },
+  {
+   "kind": "h3",
+   "text": "Qualität"
+  },
+  {
+   "kind": "p",
+   "text": "Der Code wird überprüft, er hat Tests, und er soll Jahre laufen — nicht nur am Tag der Übergabe. Software, die nach einem halben Jahr niemand mehr anzufassen wagt, wurde nicht wirklich geliefert."
+  },
+  {
+   "kind": "h3",
+   "text": "Tempo"
+  },
+  {
+   "kind": "p",
+   "text": "Der Weg von der Anfrage bis zum schriftlichen Angebot ist kurz und festgelegt. Sie warten nicht darauf, dass sich jemand meldet. Tempo heißt bei uns, **Ihre Wartezeit zu verkürzen** — nicht, beim Bauen zu hetzen."
+  },
+  {
+   "kind": "h3",
+   "text": "Zugänglichkeit"
+  },
+  {
+   "kind": "p",
+   "text": "Die Seite funktioniert mit Tastatur, funktioniert mit Screenreader, lädt bei schwacher Verbindung und ist auf einem günstigen Telefon benutzbar. Das ist eine technische Entscheidung und kein nachträgliches Extra — und sie ist genau auf dieser Seite umgesetzt."
+  },
+  {
+   "kind": "h3",
+   "text": "Wirtschaftlichkeit"
+  },
+  {
+   "kind": "p",
+   "text": "Sie sehen eine Preisspanne, **bevor** etwas beginnt. Und wenn sich eine Arbeit nicht lohnt, sagen wir das früh. Wir haben Kunden schon gesagt, dass ihr Problem mit einem bereits vorhandenen Werkzeug günstiger gelöst ist — und das Projekt nicht angenommen."
+  },
+  {
+   "kind": "h2",
+   "text": "Wie es beginnt"
+  },
+  {
+   "kind": "ol",
+   "items": [
+    "Sie beschreiben Ihren Bedarf im [Projektformular](/start-project) und hängen vorhandene Unterlagen an.",
+    "Wir prüfen und fragen nach, wenn etwas unklar ist.",
+    "Sie erhalten ein schriftliches Angebot: Umfang, Ergebnisse, Annahmen, was *nicht* enthalten ist, Zeitplan und Preisspanne.",
+    "Mit Ihrem Vorgangscode öffnen Sie das Angebot und nehmen es an oder lehnen es ab."
+   ]
+  },
+  {
+   "kind": "p",
+   "text": "Der Weg im Detail steht in [Wie wir arbeiten](/blog/how-we-work)."
+  },
+  {
+   "kind": "h2",
+   "text": "Bisherige Arbeiten"
+  },
+  {
+   "kind": "p",
+   "text": "Die Werkzeuge für die technische Community — Expertenclub, Büchermarkt und Stellenbörse — beschreibt [dieser Beitrag](/blog/community-platform)."
+  },
+  {
+   "kind": "p",
+   "text": "Die [Projektseite](/portfolio) zeigt laufende und abgeschlossene Arbeiten mit Bildern und Details. Wen wir begleitet haben, sehen Sie unter [Kunden](/customers) und [Partner](/partners)."
+  },
+  {
+   "kind": "h2",
+   "text": "Häufige Fragen zu unserer Softwarearbeit"
+  },
+  {
+   "kind": "h3",
+   "text": "Nehmen Sie auch kleine Projekte an?"
+  },
+  {
+   "kind": "p",
+   "text": "Ja. Die Größe entscheidet nicht. Liegt etwas außerhalb unserer Stärken, sagen wir das offen."
+  },
+  {
+   "kind": "h3",
+   "text": "Kostet ein Angebot etwas?"
+  },
+  {
+   "kind": "p",
+   "text": "Nein. Die Prüfung Ihrer Anfrage und das Angebot sind kostenlos."
+  },
+  {
+   "kind": "h3",
+   "text": "Wie lange dauert es bis zum Angebot?"
+  },
+  {
+   "kind": "p",
+   "text": "Das hängt von der Komplexität ab. Der Weg ist aber festgelegt, und Sie sehen den Stand jederzeit über Ihren Vorgangscode."
+  },
+  {
+   "kind": "h3",
+   "text": "Wem gehört der Code?"
+  },
+  {
+   "kind": "p",
+   "text": "Das steht ausdrücklich im Angebot und im Vertrag, damit später nichts offenbleibt."
+  },
+  {
+   "kind": "h3",
+   "text": "Und wenn wir nach der Übergabe Änderungen brauchen?"
+  },
+  {
+   "kind": "p",
+   "text": "Betreuung und Weiterentwicklung sind Teil des ersten Gesprächs und stehen im Angebot."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "Nehmen Sie auch kleine Projekte an?",
+   "answer": "Ja. Die Größe entscheidet nicht. Liegt etwas außerhalb unserer Stärken, sagen wir das offen."
+  },
+  {
+   "question": "Kostet ein Angebot etwas?",
+   "answer": "Nein. Die Prüfung Ihrer Anfrage und das Angebot sind kostenlos."
+  },
+  {
+   "question": "Wie lange dauert es bis zum Angebot?",
+   "answer": "Das hängt von der Komplexität ab. Der Weg ist aber festgelegt, und Sie sehen den Stand jederzeit über Ihren Vorgangscode."
+  },
+  {
+   "question": "Wem gehört der Code?",
+   "answer": "Das steht ausdrücklich im Angebot und im Vertrag, damit später nichts offenbleibt."
+  },
+  {
+   "question": "Und wenn wir nach der Übergabe Änderungen brauchen?",
+   "answer": "Betreuung und Weiterentwicklung sind Teil des ersten Gesprächs und stehen im Angebot."
+  }
+ ]
+}

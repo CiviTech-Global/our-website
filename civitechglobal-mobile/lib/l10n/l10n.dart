@@ -26,6 +26,12 @@ Future<Map<String, Object?>> loadJsonAsset(String path) async {
       as Map<String, Object?>;
 }
 
+/// A JSON asset whose top level is a list.
+Future<List<Object?>> loadJsonList(String path) async {
+  final bytes = await rootBundle.load(path);
+  return jsonDecode(utf8.decode(bytes.buffer.asUint8List())) as List<Object?>;
+}
+
 /// The language to start in before anyone has chosen: the device's, when it
 /// is one of the six, otherwise Persian, the platform's first language.
 String deviceLanguage() {

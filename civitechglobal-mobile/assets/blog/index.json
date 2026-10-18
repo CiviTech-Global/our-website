@@ -1,0 +1,442 @@
+[
+ {
+  "slug": "accident-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ حوادث؛ ارزان‌ترین آرامشی که می‌توانید بخرید",
+  "description": "بیمهٔ حوادث انفرادی و گروهی چه چیزی را پوشش می‌دهد، چرا حق بیمه‌اش به شغل بستگی دارد نه سن، و چرا ۲۴ ساعته بودنش مهم است.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ حوادث",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "community-platform",
+  "locale": "de",
+  "title": "Expertenclub, Büchermarkt, Stellenbörse — und warum wir sie gebaut haben",
+  "description": "Fachleute, Bücher, Stellenanzeigen und Freelance-Projekte: vier Werkzeuge für die technische Community, alle kostenlos und vor der Veröffentlichung geprüft.",
+  "date": "2026-09-24",
+  "dateLabel": "September 2026",
+  "faqHeading": "Häufige Fragen zu diesen Bereichen",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "community-platform",
+  "locale": "en",
+  "title": "An experts club, a book market, a job board — and why we built them",
+  "description": "Experts, books, job listings and freelance projects: four tools we built for the technical community, and why every one of them is free and reviewed before it goes live.",
+  "date": "2026-09-24",
+  "dateLabel": "September 2026",
+  "faqHeading": "Common questions about these sections",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "community-platform",
+  "locale": "es",
+  "title": "Un club de expertos, un mercado de libros, un tablón de empleo — y por qué los construimos",
+  "description": "Expertos, libros, ofertas de empleo y proyectos freelance: cuatro herramientas para la comunidad técnica, todas gratuitas y revisadas antes de publicarse.",
+  "date": "2026-09-24",
+  "dateLabel": "Septiembre de 2026",
+  "faqHeading": "Preguntas frecuentes sobre estas secciones",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "community-platform",
+  "locale": "fr",
+  "title": "Un club d'experts, un marché du livre, un tableau d'offres — et pourquoi nous les avons construits",
+  "description": "Experts, livres, offres d'emploi et projets freelance : quatre outils pour la communauté technique, tous gratuits et relus avant publication.",
+  "date": "2026-09-24",
+  "dateLabel": "Septembre 2026",
+  "faqHeading": "Questions fréquentes sur ces rubriques",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "community-platform",
+  "locale": "fa",
+  "title": "باشگاه کارشناسان، بازار کتاب، تابلوی شغل؛ چرا این‌ها را ساختیم",
+  "description": "کارشناسان، کتاب، آگهی شغل و پروژه‌های فریلنسری — چهار ابزاری که برای جامعهٔ فنی ساختیم و چرا همه‌شان رایگان و بازبینی‌شده‌اند.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول دربارهٔ این بخش‌ها",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "community-platform",
+  "locale": "tr",
+  "title": "Uzmanlar kulübü, kitap pazarı, iş ilanları — ve bunları neden yaptık",
+  "description": "Uzmanlar, kitaplar, iş ilanları ve serbest projeler: teknik topluluk için yaptığımız dört araç; hepsi ücretsiz ve yayımlanmadan önce inceleniyor.",
+  "date": "2026-09-24",
+  "dateLabel": "Eylül 2026",
+  "faqHeading": "Bu bölümlerle ilgili sık sorulanlar",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "corporate-health-insurance",
+  "locale": "fa",
+  "title": "بیمهٔ درمان تکمیلی شرکتی؛ مزیتی که کارمند واقعاً حس می‌کند",
+  "description": "طرح درمان تکمیلی گروهی چطور قیمت‌گذاری می‌شود، حداقل تعداد نفرات چقدر است و چرا دورهٔ انتظار در گروه‌های بزرگ کوتاه‌تر می‌شود.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ درمان گروهی",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "corporate-insurance-guide",
+  "locale": "fa",
+  "title": "بیمه‌های بازرگانی؛ باربری، اعتبار اسنادی و پروژه‌های مهندسی",
+  "description": "بیمهٔ باربری وارداتی، صادراتی و مرهونات چه تفاوتی دارند، بیمه‌نامهٔ اوپن چیست و چرا تمام‌خطر مهندسی شرط شروع بسیاری از پروژه‌هاست.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمه‌های بازرگانی",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "health-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ درمان تکمیلی؛ وقتی بیمهٔ پایه کافی نیست",
+  "description": "درمان تکمیلی چه چیزی را روی بیمهٔ پایه اضافه می‌کند، دورهٔ انتظار یعنی چه و فرانشیز چطور حساب می‌شود؟ راهنمای ساده برای خانواده‌ها و شرکت‌ها.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ درمان تکمیلی",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "insurance-guides-index",
+  "locale": "fa",
+  "title": "راهنمای جامع بیمه‌ها؛ از کجا شروع کنم؟",
+  "description": "فهرست کامل راهنماهای بیمه — خودرو، ساختمان، درمان، عمر، حوادث، مسافرتی، مسئولیت، موبایل و بازرگانی. هر بیمه را با زبان ساده توضیح داده‌ایم.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول انتخاب بیمه",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "liability-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ مسئولیت؛ وقتی پای جبران خسارت دیگران وسط است",
+  "description": "مسئولیت پزشکان، مدیران ساختمان، مهندسان ناظر و کارفرمایان چه تفاوتی دارد و هرکدام چه کسی را در برابر چه چیزی محافظت می‌کند.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ مسئولیت",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "life-insurance-category-guide",
+  "locale": "fa",
+  "title": "بیمهٔ عمر و سرمایه‌گذاری؛ هم محافظت، هم پس‌انداز",
+  "description": "بیمهٔ عمر چطور کار می‌کند، اندوخته و وام بدون ضامن یعنی چه، و کدام طرح برای خانواده، وام‌گیرنده یا سازمان مناسب است.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ عمر",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "mobile-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ موبایل؛ بخوانید تا بعداً غافلگیر نشوید",
+  "description": "بیمهٔ موبایل چه چیزی را پوشش می‌دهد، «سرقت با شکست حرز» یعنی چه و چرا این بیمه‌نامه فقط یک بار قابل استفاده است.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ موبایل",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "travel-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ مسافرتی؛ از ویزای شینگن تا سفر زیارتی",
+  "description": "بیمهٔ مسافرتی خارجی، داخلی، زائرین و ورودی به ایران چه تفاوتی دارند، کدام برای ویزا الزامی است و چه چیزهایی پوشش داده نمی‌شود.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ مسافرتی",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "what-we-build",
+  "locale": "de",
+  "title": "Was wir bauen — Software, die Jahre halten soll",
+  "description": "Individualsoftware, Web- und Mobil-Anwendungen, Civic-Tech-Plattformen und Datenarbeit. Was wir bauen, wie wir es bauen, und warum wir Qualität nicht gegen Tempo eintauschen.",
+  "date": "2026-09-24",
+  "dateLabel": "September 2026",
+  "faqHeading": "Häufige Fragen zu unserer Softwarearbeit",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "what-we-build",
+  "locale": "en",
+  "title": "What we build — software meant to last years",
+  "description": "Custom software, web and mobile apps, civic technology platforms and data work. What we build, how we build it, and why we don't trade quality for speed.",
+  "date": "2026-09-24",
+  "dateLabel": "September 2026",
+  "faqHeading": "Common questions about our software work",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "what-we-build",
+  "locale": "es",
+  "title": "Qué construimos — software pensado para durar años",
+  "description": "Software a medida, aplicaciones web y móviles, plataformas de tecnología cívica y trabajo con datos. Qué construimos, cómo lo construimos y por qué no cambiamos calidad por rapidez.",
+  "date": "2026-09-24",
+  "dateLabel": "Septiembre de 2026",
+  "faqHeading": "Preguntas frecuentes sobre nuestro trabajo de software",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "what-we-build",
+  "locale": "fr",
+  "title": "Ce que nous construisons — des logiciels faits pour durer",
+  "description": "Logiciel sur mesure, applications web et mobiles, plateformes de technologie civique et travail sur les données. Ce que nous construisons, comment, et pourquoi nous ne sacrifions pas la qualité à la vitesse.",
+  "date": "2026-09-24",
+  "dateLabel": "Septembre 2026",
+  "faqHeading": "Questions fréquentes sur nos services logiciels",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "what-we-build",
+  "locale": "fa",
+  "title": "چه چیزهایی می‌سازیم؛ نرم‌افزاری که سال‌ها کار کند",
+  "description": "نرم‌افزار سفارشی، وب و موبایل، پلتفرم‌های فناوری مدنی و تحلیل داده — چه می‌سازیم، چطور می‌سازیم و چرا کیفیت را به سرعت ترجیح نمی‌دهیم.",
+  "date": "2026-09-24",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول دربارهٔ خدمات نرم‌افزاری",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "what-we-build",
+  "locale": "tr",
+  "title": "Ne inşa ediyoruz — yıllarca çalışsın diye yazılan yazılım",
+  "description": "Özel yazılım, web ve mobil uygulamalar, sivil teknoloji platformları ve veri çalışmaları. Ne yapıyoruz, nasıl yapıyoruz ve kaliteyi neden hıza feda etmiyoruz.",
+  "date": "2026-09-24",
+  "dateLabel": "Eylül 2026",
+  "faqHeading": "Yazılım hizmetlerimizle ilgili sık sorulanlar",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "car-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ خودرو و موتورسیکلت؛ راهنمای کامل انتخاب از صفر",
+  "description": "شخص ثالث، بدنه و بیمهٔ موتورسیکلت چه تفاوتی دارند، کدام اجباری است و کدام به‌صرفه؟ راهنمای ساده و بی‌اصطلاح برای انتخاب درست.",
+  "date": "2026-09-23",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ خودرو",
+  "readingMinutes": 5
+ },
+ {
+  "slug": "earthquake-insurance",
+  "locale": "fa",
+  "title": "بیمهٔ زلزله مسکونی؛ در کشوری که روی گسل نشسته",
+  "description": "بیمهٔ زلزله چه چیزی را جبران می‌کند، چه چیزی را نه، و چرا منطقهٔ لرزه‌خیزی ملک بیشترین اثر را بر حق بیمه دارد.",
+  "date": "2026-09-23",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ زلزله",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "elevator-insurance",
+  "locale": "fa",
+  "title": "بیمهٔ مسئولیت آسانسور؛ چیزی که هیأت مدیره باید بداند",
+  "description": "بیمهٔ آسانسور چه کسی را محافظت می‌کند، چرا نبود آن مسئولیت را متوجه هیأت مدیره می‌کند و چرا سرویس دوره‌ای شرط پرداخت خسارت است.",
+  "date": "2026-09-23",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ آسانسور",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "how-we-work",
+  "locale": "de",
+  "title": "Wie wir arbeiten — von der ersten Nachricht bis zur Übergabe",
+  "description": "Wie ein Projekt bei Rayan Tamaddon Jahan Gostar abläuft: Anfrage, Vorgangscode, schriftliches Angebot, Übergabe. Klar, zügig und ohne versteckte Kosten.",
+  "date": "2026-09-23",
+  "dateLabel": "September 2026",
+  "faqHeading": "Häufige Fragen zu unserer Arbeitsweise",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "how-we-work",
+  "locale": "en",
+  "title": "How we work — from your first message to delivered software",
+  "description": "How a project runs at Rayan Tamaddon Jahan Gostar — request, tracking code, a written proposal, delivery. Clear, quick, and no hidden costs.",
+  "date": "2026-09-23",
+  "dateLabel": "September 2026",
+  "faqHeading": "Common questions about how we work",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "how-we-work",
+  "locale": "es",
+  "title": "Cómo trabajamos — del primer mensaje a la entrega",
+  "description": "Cómo transcurre un proyecto en Rayan Tamaddon Jahan Gostar: solicitud, código de seguimiento, propuesta escrita, entrega. Claro, ágil y sin costes ocultos.",
+  "date": "2026-09-23",
+  "dateLabel": "Septiembre de 2026",
+  "faqHeading": "Preguntas frecuentes sobre nuestra forma de trabajar",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "how-we-work",
+  "locale": "fr",
+  "title": "Comment nous travaillons — du premier message à la livraison",
+  "description": "Comment se déroule un projet chez Rayan Tamaddon Jahan Gostar : demande, code de suivi, proposition écrite, livraison. Clair, rapide, sans coût caché.",
+  "date": "2026-09-23",
+  "dateLabel": "Septembre 2026",
+  "faqHeading": "Questions fréquentes sur notre façon de travailler",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "how-we-work",
+  "locale": "fa",
+  "title": "چطور کار می‌کنیم؟ از اولین پیام تا تحویل کار",
+  "description": "روش کار ما در رایان تمدن جهان‌گستر؛ از ثبت درخواست و کد رهگیری تا پیشنهاد رسمی و تحویل. شفاف، سریع و بدون هزینهٔ پنهان.",
+  "date": "2026-09-23",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول دربارهٔ روش کار ما",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "how-we-work",
+  "locale": "tr",
+  "title": "Nasıl çalışıyoruz — ilk mesajdan teslime kadar",
+  "description": "Rayan Tamaddon Jahan Gostar'da bir proje nasıl ilerler: başvuru, takip kodu, yazılı teklif, teslim. Açık, hızlı ve gizli maliyetsiz.",
+  "date": "2026-09-23",
+  "dateLabel": "Eylül 2026",
+  "faqHeading": "Çalışma biçimimizle ilgili sık sorulanlar",
+  "readingMinutes": 2
+ },
+ {
+  "slug": "motorcycle-insurance",
+  "locale": "fa",
+  "title": "بیمهٔ شخص ثالث موتورسیکلت؛ اجباری، ارزان و صدور همان‌روز",
+  "description": "بیمهٔ موتورسیکلت چه چیزی را پوشش می‌دهد، چه مدارکی لازم دارد و چرا نداشتن آن گران‌تر از داشتنش تمام می‌شود.",
+  "date": "2026-09-23",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ موتورسیکلت",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "property-insurance-guide",
+  "locale": "fa",
+  "title": "بیمهٔ اموال و ساختمان؛ از خانهٔ مسکونی تا کارخانه",
+  "description": "آتش‌سوزی، زلزله، آسانسور و بسته‌های جامع ساختمانی چه تفاوتی دارند و هرکدام به درد چه کسی می‌خورد؟ راهنمای ساده برای مالک و مستأجر.",
+  "date": "2026-09-23",
+  "dateLabel": "مهر ۱۴۰۵",
+  "faqHeading": "سوال‌های متداول بیمهٔ اموال",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "choose-software-company",
+  "locale": "fa",
+  "title": "چطور یک شرکت نرم‌افزاری مناسب انتخاب کنیم؟ ۸ معیار قبل از امضا",
+  "description": "انتخاب شرکت نرم‌افزاری را با چه معیارهایی بسنجیم؟ نمونه‌کار، قرارداد، مالکیت کد، پشتیبانی و ۸ معیار کلیدی که قبل از امضا باید چک کنید.",
+  "date": "2026-08-10",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول انتخاب شرکت نرم‌افزاری",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "freelance-income-guide",
+  "locale": "fa",
+  "title": "درآمد از فریلنس: راهنمای عملی شروع کار پروژه‌ای در ایران",
+  "description": "چطور فریلنسر شویم؟ یافتن اولین پروژه، قیمت‌گذاری، قرارداد و دریافت مطمئن — راهنمای عملی شروع کار پروژه‌ای در پلتفرم رایان تمدن.",
+  "date": "2026-08-10",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول فریلنس",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "supplementary-health-insurance",
+  "locale": "fa",
+  "title": "بیمه درمان تکمیلی: پوشش‌ها، معاینه و نکات خرید ۱۴۰۵",
+  "description": "بیمه درمان تکمیلی چه پوشش‌هایی دارد؟ چه بیماری‌هایی را نمی‌پردازد؟ فرانشیز، معاینه پزشکی و راهنمای انتخاب طرح مناسب خانواده.",
+  "date": "2026-08-10",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول بیمه درمان تکمیلی",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "fire-insurance-shop",
+  "locale": "fa",
+  "title": "بیمه آتش‌سوزی مغازه و کارگاه: راهنمای خرید ۱۴۰۵",
+  "description": "بیمه آتش‌سوزی برای مغازه و کارگاه چه پوشش‌هایی دارد؟ انواع خطرات، نحوه ارزش‌گذاری اموال و نکاتی که قبل از خرید باید بدانید.",
+  "date": "2026-08-09",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول بیمه آتش‌سوزی",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "liability-insurance-small-business",
+  "locale": "fa",
+  "title": "بیمه مسئولیت برای کسب‌وکارهای کوچک: چرا حیاتی است؟",
+  "description": "بیمه مسئولیت چیست و چرا برای مغازه، رستوران، کارگاه و فروشگاه ضروری است؟ پوشش‌ها، مثال‌های واقعی و راهنمای خرید ۱۴۰۵.",
+  "date": "2026-08-09",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول بیمه مسئولیت",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "app-development-cost",
+  "locale": "fa",
+  "title": "هزینه طراحی اپلیکیشن در ۱۴۰۵ چقدر است؟ راهنمای بودجه واقع‌بینانه",
+  "description": "هزینه طراحی اپلیکیشن به چه عواملی بستگی دارد؟ پلتفرم، امکانات، طراحی و نگهداری — با جدول بازه‌های قیمتی و ۵ سؤالی که قبل از استعلام بپرسید.",
+  "date": "2026-08-08",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول هزینه اپلیکیشن",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "body-insurance-claim",
+  "locale": "fa",
+  "title": "خسارت بیمه بدنه: مراحل دریافت، مدارک و نکات کلیدی ۱۴۰۵",
+  "description": "پس از تصادف چطور خسارت بیمه بدنه بگیریم؟ مراحل اعلام خسارت، مدارک لازم، فرانشیز و نکاتی که پرداخت را سریع‌تر می‌کند.",
+  "date": "2026-08-08",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول خسارت بیمه بدنه",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "life-insurance-guide",
+  "locale": "fa",
+  "title": "بیمه عمر چیست؟ مزایا، معایب و راهنمای خرید ۱۴۰۵",
+  "description": "بیمه عمر چیست و چه مزایایی دارد؟ سرمایه‌گذاری، پوشش فوت، معافیت مالیاتی و نکات انتخاب بهترین بیمه عمر در راهنمای کامل ۱۴۰۵.",
+  "date": "2026-08-07",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول بیمه عمر",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "third-party-vs-body",
+  "locale": "fa",
+  "title": "تفاوت بیمه شخص ثالث و بدنه در یک جدول؛ کدام را بخریم؟",
+  "description": "بیمه شخص ثالث و بدنه چه تفاوت‌هایی دارند؟ پوشش، اجباری بودن، قیمت و اینکه کدام را اول بخریم — مقایسه کامل با جدول.",
+  "date": "2026-08-07",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول مقایسه بیمه‌ها",
+  "readingMinutes": 3
+ },
+ {
+  "slug": "body-insurance-coverage",
+  "locale": "fa",
+  "title": "بیمه بدنه شامل چیست؟ پوشش‌ها، استثنائات و نکات خرید ۱۴۰۵",
+  "description": "بیمه بدنه چه پوشش‌هایی دارد و چه مواردی را پوشش نمی‌دهد؟ راهنمای کامل خرید بیمه بدنه خودرو در ۱۴۰۵ با فرانشیز، پوشش‌های تکمیلی و استعلام آنلاین.",
+  "date": "2026-08-06",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول بیمه بدنه",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "third-party-insurance-guide",
+  "locale": "fa",
+  "title": "راهنمای کامل بیمه شخص ثالث ۱۴۰۵؛ قیمت، تخفیف و نکات خرید",
+  "description": "بیمه شخص ثالث چیست، قیمت آن در ۱۴۰۵ چطور محاسبه می‌شود و چطور با تخفیف عدم خسارت ارزان‌تر بخرید؟ راهنمای کامل + استعلام آنلاین با کد رهگیری.",
+  "date": "2026-08-06",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول بیمه شخص ثالث",
+  "readingMinutes": 4
+ },
+ {
+  "slug": "third-party-price-factors",
+  "locale": "fa",
+  "title": "قیمت بیمه شخص ثالث چگونه محاسبه می‌شود؟ عوامل تعیین‌کننده در ۱۴۰۵",
+  "description": "عوامل محاسبه قیمت بیمه شخص ثالث: نرخ بیمه مرکزی، تخفیف عدم خسارت، جریمه معوقه و نوع خودرو. با مثال عددی + استعلام آنلاین رایگان.",
+  "date": "2026-08-06",
+  "dateLabel": "مرداد ۱۴۰۵",
+  "faqHeading": "سوالات متداول قیمت بیمه شخص ثالث",
+  "readingMinutes": 3
+ }
+]

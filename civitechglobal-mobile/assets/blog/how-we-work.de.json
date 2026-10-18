@@ -1,0 +1,120 @@
+{
+ "slug": "how-we-work",
+ "locale": "de",
+ "title": "Wie wir arbeiten — von der ersten Nachricht bis zur Übergabe",
+ "description": "Wie ein Projekt bei Rayan Tamaddon Jahan Gostar abläuft: Anfrage, Vorgangscode, schriftliches Angebot, Übergabe. Klar, zügig und ohne versteckte Kosten.",
+ "date": "2026-09-23",
+ "dateLabel": "September 2026",
+ "faqHeading": "Häufige Fragen zu unserer Arbeitsweise",
+ "readingMinutes": 3,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "Wer auf ein Softwareunternehmen zugeht, trägt meist dieselbe Sorge mit sich: *Woher weiß ich, dass ich nicht über den Tisch gezogen werde?* Eine berechtigte Sorge. Deshalb hier genau, wie die Zusammenarbeit mit uns aussieht — kein Slogan, sondern der Weg, den ein echtes Projekt nimmt."
+  },
+  {
+   "kind": "h2",
+   "text": "Kurz gefasst: vier Schritte"
+  },
+  {
+   "kind": "ol",
+   "items": [
+    "Sie beschreiben Ihren Bedarf in eigenen Worten. Unterlagen hängen Sie an, falls vorhanden.",
+    "Wir lesen das und fragen nach, wenn etwas unklar ist. Nachfragen ist keine Nachlässigkeit — wir raten lieber nicht.",
+    "Sie erhalten ein **schriftliches Angebot**: Umfang, Ergebnisse, Annahmen, was *nicht* enthalten ist, Zeitplan und Preisspanne.",
+    "Mit Ihrem Vorgangscode öffnen Sie das Angebot und nehmen es an oder lehnen es ab. Kein Nachtelefonieren, kein Verkaufsdruck."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Der Vorgangscode — klein, aber wichtig"
+  },
+  {
+   "kind": "p",
+   "text": "Mit Ihrer Anfrage erhalten Sie einen Vorgangscode. Bewahren Sie ihn auf, denn er ist Ihr Schlüssel: Wann immer Sie sehen wollen, wie es um Ihre Sache steht, geben Sie diesen Code ein."
+  },
+  {
+   "kind": "p",
+   "text": "Warum so? Weil das Verfolgen des eigenen Projekts nicht davon abhängen sollte, ob jemand ans Telefon geht. Die [Verfolgungsseite](/track) ist immer offen — auch um drei Uhr nachts."
+  },
+  {
+   "kind": "h2",
+   "text": "Was uns tatsächlich unterscheidet"
+  },
+  {
+   "kind": "p",
+   "text": "Ehrlich gesagt: Kein Unternehmen wird dadurch das beste, dass es das behauptet. Zusagen können wir diese vier Dinge."
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "**Qualität.** Unser Code wird überprüft, getestet und soll Jahre laufen — nicht nur am Übergabetag.",
+    "**Tempo.** Der Weg von der Anfrage zum Angebot ist kurz und festgelegt. Sie warten nicht darauf, dass sich jemand meldet.",
+    "**Zugänglichkeit.** Die Seite funktioniert mit Tastatur, mit Screenreader und auf einem günstigen Telefon. Das ist eine Entscheidung, kein Zusatz.",
+    "**Wirtschaftlichkeit.** Die Preisspanne steht fest, bevor etwas beginnt. Lohnt sich eine Arbeit nicht, sagen wir das früh."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Wenn Sie noch unsicher sind"
+  },
+  {
+   "kind": "p",
+   "text": "Sie müssen nicht mit einem großen Projekt anfangen. Sie können eine [Beratung anfragen](/consult), uns ein paar passende Zeiten nennen, und wir rufen an. Eine Beratung verpflichtet Sie zu nichts."
+  },
+  {
+   "kind": "h2",
+   "text": "Häufige Fragen zu unserer Arbeitsweise"
+  },
+  {
+   "kind": "h3",
+   "text": "Kostet ein Angebot etwas?"
+  },
+  {
+   "kind": "p",
+   "text": "Nein. Die Prüfung Ihrer Anfrage und das Angebot sind kostenlos."
+  },
+  {
+   "kind": "h3",
+   "text": "Was passiert, wenn ich das Angebot ablehne?"
+  },
+  {
+   "kind": "p",
+   "text": "Nichts. Sie lehnen ab, und damit hat es sich. Was Sie uns geschickt haben, bleibt bei uns und geht an niemanden weiter."
+  },
+  {
+   "kind": "h3",
+   "text": "Ich habe meinen Vorgangscode verloren."
+  },
+  {
+   "kind": "p",
+   "text": "Melden Sie sich über die Telefonnummer oder E-Mail-Adresse, die Sie bei der Anfrage angegeben haben; dann geben wir Ihnen den Code erneut."
+  },
+  {
+   "kind": "h3",
+   "text": "Nehmen Sie auch kleine Projekte an?"
+  },
+  {
+   "kind": "p",
+   "text": "Ja. Die Größe entscheidet nicht. Liegt etwas außerhalb unserer Stärken, sagen wir das offen."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "Kostet ein Angebot etwas?",
+   "answer": "Nein. Die Prüfung Ihrer Anfrage und das Angebot sind kostenlos."
+  },
+  {
+   "question": "Was passiert, wenn ich das Angebot ablehne?",
+   "answer": "Nichts. Sie lehnen ab, und damit hat es sich. Was Sie uns geschickt haben, bleibt bei uns und geht an niemanden weiter."
+  },
+  {
+   "question": "Ich habe meinen Vorgangscode verloren.",
+   "answer": "Melden Sie sich über die Telefonnummer oder E-Mail-Adresse, die Sie bei der Anfrage angegeben haben; dann geben wir Ihnen den Code erneut."
+  },
+  {
+   "question": "Nehmen Sie auch kleine Projekte an?",
+   "answer": "Ja. Die Größe entscheidet nicht. Liegt etwas außerhalb unserer Stärken, sagen wir das offen."
+  }
+ ]
+}

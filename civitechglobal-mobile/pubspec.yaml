@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
 
   animations: ^2.2.0
+  cached_network_image: ^3.4.1
   dio: ^5.11.1
   flutter_riverpod: ^3.3.2
   flutter_secure_storage: ^11.2.0
@@ -43,6 +44,7 @@ flutter:
     - assets/brand/
     - assets/l10n/
     - assets/help/
+    - assets/blog/
   fonts:
     # Vazirmatn, the web's face (OFL; licence beside the file). Variable, so
     # every weight from 100 to 900 comes from this one file through FontVariation.

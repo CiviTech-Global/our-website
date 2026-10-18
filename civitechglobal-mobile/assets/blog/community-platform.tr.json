@@ -1,0 +1,175 @@
+{
+ "slug": "community-platform",
+ "locale": "tr",
+ "title": "Uzmanlar kulübü, kitap pazarı, iş ilanları — ve bunları neden yaptık",
+ "description": "Uzmanlar, kitaplar, iş ilanları ve serbest projeler: teknik topluluk için yaptığımız dört araç; hepsi ücretsiz ve yayımlanmadan önce inceleniyor.",
+ "date": "2026-09-24",
+ "dateLabel": "Eylül 2026",
+ "faqHeading": "Bu bölümlerle ilgili sık sorulanlar",
+ "readingMinutes": 3,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "Bir yazılım şirketinin kitap pazarına ihtiyacı yoktur. Bizim de yoktu — çevremizdeki insanların teknik kitaplarını dağınık grup sohbetlerinde elden ele dolaştırdığını, bunun için güvenilir bir yer olmadığını fark edene kadar."
+  },
+  {
+   "kind": "p",
+   "text": "Bu yazı, benzer nedenlerle doğan dört araç hakkında."
+  },
+  {
+   "kind": "h2",
+   "text": "1. Uzmanlar kulübü"
+  },
+  {
+   "kind": "p",
+   "text": "[Uzmanlar kulübü](/experts) bir rehberdir: uzmanlık alanları, diller, deneyim ve iletişim yolu. Listedekilerin bir kısmı danışmanlık kabul eder, bir kısmı yalnızca tanıtılmıştır."
+  },
+  {
+   "kind": "p",
+   "text": "Neden sade bir rehber? Çünkü bir uzmanlığa ihtiyaç duyanların çoğu nereden başlayacağını bilmez ve kulaktan kulağa tavsiyeye güvenir. Görünür bir liste, görünmez bir ağdan iyidir."
+  },
+  {
+   "kind": "p",
+   "text": "Danışmanlık isterseniz [talep oluşturun](/consult) ve uygun olduğunuz birkaç zaman aralığını bildirin — bir gün ve günün bir bölümü. Sonrasında **biz ararız**. Bu bilinçli bir tercih: bir yabancının dolu takviminden saat seçmek zahmetlidir; \"salı öğleden sonraları uygun\" demek kolaydır."
+  },
+  {
+   "kind": "h2",
+   "text": "2. Kitap pazarı"
+  },
+  {
+   "kind": "p",
+   "text": "[Kitap pazarı](/books), kitapların — sıfır ya da ikinci el — alınıp satıldığı yerdir; önerilen fiyat ve kapak fotoğrafıyla birlikte."
+  },
+  {
+   "kind": "p",
+   "text": "Tasarımındaki üç karar anlatmaya değer:"
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "**Her ilan yayımlanmadan önce incelenir.** İlanınız anında yayına girmez; bu bilerek böyledir: her şeyi yayımlayan bir liste, kimsenin güvenmediği bir listedir.",
+    "**Kapak fotoğrafı zorunludur.** Fotoğrafsız \"iyi durumda\" ifadesi, alıcıdan bir sıfata güvenmesini istemektir.",
+    "**Şirketin kendi koyduğu ilan etiketlenir.** Bir kişiyle mi yoksa bizimle mi muhatap olduğunuzu bilmelisiniz."
+   ]
+  },
+  {
+   "kind": "p",
+   "text": "Henüz çevrim içi ödeme yok ve bunu açıkça söylemeyi tercih ediyoruz: pazar, bulmak ve görmek içindir; gerisini iki taraf kendi arasında ayarlar."
+  },
+  {
+   "kind": "h2",
+   "text": "3. İş ilanları"
+  },
+  {
+   "kind": "p",
+   "text": "[İlanlar](/jobs) — tek farkla: her ilan ve her işveren **kimlik doğrulamasından** geçer."
+  },
+  {
+   "kind": "p",
+   "text": "İş arayan için bu, vaktini boşa harcamayacak bir ilan demektir. İşveren için, sahte ilanlarla yarışmamak demektir. Herkesin her şeyi yazabildiği bir pano, onu okuyan için neredeyse değersizdir."
+  },
+  {
+   "kind": "h2",
+   "text": "4. Serbest projeler"
+  },
+  {
+   "kind": "p",
+   "text": "[Proje panosunda](/projects) işverenler işi tanımlar, serbest çalışanlar teklif verir. Aynı kural geçerli: projeler incelenir, iki taraf da doğrulanır."
+  },
+  {
+   "kind": "p",
+   "text": "Serbest çalışıyorsanız, [serbest çalışan geliri rehberini](/blog/freelance-income-guide) de yazdık."
+  },
+  {
+   "kind": "h2",
+   "text": "Ortak çizgi"
+  },
+  {
+   "kind": "p",
+   "text": "Dördünün ortak iki yanı var: **yayımdan önce inceleme** ve **katılımdan önce doğrulama**."
+  },
+  {
+   "kind": "p",
+   "text": "Bu işi yavaşlatır ve bize bir maliyeti vardır. Ama alternatifini — her şeyin yayımlandığı bir platformu — hepimiz gördük ve nereye vardığını biliyoruz."
+  },
+  {
+   "kind": "h2",
+   "text": "Katılmak ister misiniz?"
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "Kitabınız mı var? [Kitap pazarına](/books) ekleyin.",
+    "İşe mi alıyorsunuz? [İş ilanlarına](/jobs) ilan verin.",
+    "Gönüllü ya da stajyer olarak çalışmak? [Bu sayfaya](/volunteer) bakın.",
+    "Uzmansınız ve yeriniz kulüpte mi? [İletişim sayfasından](/contact) bize yazın."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Bu bölümlerle ilgili sık sorulanlar"
+  },
+  {
+   "kind": "h3",
+   "text": "Bu bölümler ücretli mi?"
+  },
+  {
+   "kind": "p",
+   "text": "Hayır. Kitap, iş ilanı veya proje eklemek ücretsizdir."
+  },
+  {
+   "kind": "h3",
+   "text": "İlanım neden hemen görünmüyor?"
+  },
+  {
+   "kind": "p",
+   "text": "Çünkü önce inceleniyor. Diğer ilanları okumaya değer kılan da tam olarak budur."
+  },
+  {
+   "kind": "h3",
+   "text": "İlan vermek için neden kimlik doğrulaması gerekiyor?"
+  },
+  {
+   "kind": "p",
+   "text": "Sizinle muhatap olan kişinin kiminle iş yaptığını bilmesi için. Kural herkes için aynıdır."
+  },
+  {
+   "kind": "h3",
+   "text": "Danışmanlık talebi nasıl işler?"
+  },
+  {
+   "kind": "p",
+   "text": "Uygun olduğunuz birkaç zaman aralığını bildirirsiniz, biz ararız. Takvimden seçim yok, dakika rezervasyonu yok."
+  },
+  {
+   "kind": "h3",
+   "text": "Bu bölümlerde de takip kodu var mı?"
+  },
+  {
+   "kind": "p",
+   "text": "Evet. Danışmanlık talebinin takip kodu olur ve durumunu [takip sayfasından](/track) görebilirsiniz."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "Bu bölümler ücretli mi?",
+   "answer": "Hayır. Kitap, iş ilanı veya proje eklemek ücretsizdir."
+  },
+  {
+   "question": "İlanım neden hemen görünmüyor?",
+   "answer": "Çünkü önce inceleniyor. Diğer ilanları okumaya değer kılan da tam olarak budur."
+  },
+  {
+   "question": "İlan vermek için neden kimlik doğrulaması gerekiyor?",
+   "answer": "Sizinle muhatap olan kişinin kiminle iş yaptığını bilmesi için. Kural herkes için aynıdır."
+  },
+  {
+   "question": "Danışmanlık talebi nasıl işler?",
+   "answer": "Uygun olduğunuz birkaç zaman aralığını bildirirsiniz, biz ararız. Takvimden seçim yok, dakika rezervasyonu yok."
+  },
+  {
+   "question": "Bu bölümlerde de takip kodu var mı?",
+   "answer": "Evet. Danışmanlık talebinin takip kodu olur ve durumunu [takip sayfasından](/track) görebilirsiniz."
+  }
+ ]
+}

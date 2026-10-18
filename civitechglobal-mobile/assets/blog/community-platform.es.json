@@ -1,0 +1,175 @@
+{
+ "slug": "community-platform",
+ "locale": "es",
+ "title": "Un club de expertos, un mercado de libros, un tablón de empleo — y por qué los construimos",
+ "description": "Expertos, libros, ofertas de empleo y proyectos freelance: cuatro herramientas para la comunidad técnica, todas gratuitas y revisadas antes de publicarse.",
+ "date": "2026-09-24",
+ "dateLabel": "Septiembre de 2026",
+ "faqHeading": "Preguntas frecuentes sobre estas secciones",
+ "readingMinutes": 4,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "Una empresa de software no necesita un mercado de libros. Nosotros tampoco — hasta que vimos que la gente de nuestro entorno se pasaba los libros técnicos por grupos de chat dispersos, sin ningún sitio fiable para hacerlo."
+  },
+  {
+   "kind": "p",
+   "text": "Esto trata de cuatro herramientas que nacieron por razones así."
+  },
+  {
+   "kind": "h2",
+   "text": "1. El club de expertos"
+  },
+  {
+   "kind": "p",
+   "text": "El [club de expertos](/experts) es un directorio: especialidades, idiomas, experiencia y una forma de contactar. Algunas de las personas aceptan consultas; otras simplemente están presentadas."
+  },
+  {
+   "kind": "p",
+   "text": "¿Por qué un directorio sencillo? Porque la mayoría de quien necesita una especialidad no sabe por dónde empezar y acaba fiándose del boca a boca. Una lista visible es mejor que una red invisible."
+  },
+  {
+   "kind": "p",
+   "text": "Si quiere una consulta, [solicítela](/consult) e indíquenos algunos huecos en los que esté disponible: un día y una parte del día. Después **llamamos nosotros**. Es deliberado: elegir hueco en la agenda llena de un desconocido cuesta trabajo; decir «los martes por la tarde me va bien» no cuesta nada."
+  },
+  {
+   "kind": "h2",
+   "text": "2. El mercado de libros"
+  },
+  {
+   "kind": "p",
+   "text": "El [mercado de libros](/books) sirve para comprar y vender libros — nuevos o de segunda mano — con un precio propuesto y una foto de la portada."
+  },
+  {
+   "kind": "p",
+   "text": "Tres decisiones de diseño merecen contarse:"
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "**Cada anuncio se revisa antes de publicarse.** Su anuncio no aparece al instante, y es a propósito: una lista que publica cualquier cosa es una lista en la que nadie confía.",
+    "**La foto de la portada es obligatoria.** Describir un libro como «en buen estado» sin imagen es pedir que se crea a un adjetivo.",
+    "**Un anuncio publicado por la propia empresa lleva su etiqueta.** Usted debe saber si trata con un particular o con nosotros."
+   ]
+  },
+  {
+   "kind": "p",
+   "text": "Todavía no hay pago en línea, y preferimos decirlo con claridad: el mercado sirve para encontrar y ver; el resto lo acuerdan las dos partes."
+  },
+  {
+   "kind": "h2",
+   "text": "3. El tablón de empleo"
+  },
+  {
+   "kind": "p",
+   "text": "[Las ofertas](/jobs) — con una diferencia: cada anuncio y cada empleador está **verificado**."
+  },
+  {
+   "kind": "p",
+   "text": "Para quien busca trabajo, eso significa un anuncio que no le hará perder el tiempo. Para un empleador, no competir con anuncios falsos. Un tablón donde cualquiera publica cualquier cosa apenas vale nada para quien lo lee."
+  },
+  {
+   "kind": "h2",
+   "text": "4. Proyectos freelance"
+  },
+  {
+   "kind": "p",
+   "text": "En el [tablón de proyectos](/projects), los clientes describen un trabajo y los autónomos presentan sus ofertas. Rige la misma norma: los proyectos se revisan y ambas partes están verificadas."
+  },
+  {
+   "kind": "p",
+   "text": "Si trabaja por cuenta propia, también hemos escrito una [guía de ingresos freelance](/blog/freelance-income-guide)."
+  },
+  {
+   "kind": "h2",
+   "text": "El hilo común"
+  },
+  {
+   "kind": "p",
+   "text": "Las cuatro comparten dos cosas: **revisión antes de publicar** y **verificación antes de participar**."
+  },
+  {
+   "kind": "p",
+   "text": "Eso ralentiza y nos cuesta algo. Pero la alternativa — una plataforma donde aparece todo — ya la hemos visto todos, y sabemos adónde lleva."
+  },
+  {
+   "kind": "h2",
+   "text": "¿Quiere participar?"
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "¿Tiene libros? Publíquelos en el [mercado de libros](/books).",
+    "¿Está contratando? Anuncie en el [tablón de empleo](/jobs).",
+    "¿Quiere colaborar como voluntario o en prácticas? Vea [esta página](/volunteer).",
+    "¿Es especialista y su sitio está en el club? Escríbanos desde la [página de contacto](/contact)."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Preguntas frecuentes sobre estas secciones"
+  },
+  {
+   "kind": "h3",
+   "text": "¿Estas secciones cuestan algo?"
+  },
+  {
+   "kind": "p",
+   "text": "No. Publicar un libro, una oferta o un proyecto es gratuito."
+  },
+  {
+   "kind": "h3",
+   "text": "¿Por qué mi anuncio no aparece enseguida?"
+  },
+  {
+   "kind": "p",
+   "text": "Porque primero se revisa. Eso es justamente lo que hace que los demás anuncios merezcan leerse."
+  },
+  {
+   "kind": "h3",
+   "text": "¿Por qué tengo que verificar mi identidad?"
+  },
+  {
+   "kind": "p",
+   "text": "Para que quien trate con usted sepa con quién está tratando. La norma es la misma para todos."
+  },
+  {
+   "kind": "h3",
+   "text": "¿Cómo funciona una solicitud de consulta?"
+  },
+  {
+   "kind": "p",
+   "text": "Usted indica algunos huecos en los que está disponible y nosotros llamamos. No hay agenda que consultar ni minuto exacto que reservar."
+  },
+  {
+   "kind": "h3",
+   "text": "¿Estas secciones también tienen código de seguimiento?"
+  },
+  {
+   "kind": "p",
+   "text": "Sí. Una solicitud de consulta tiene código de seguimiento y puede ver su estado en la [página de seguimiento](/track)."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "¿Estas secciones cuestan algo?",
+   "answer": "No. Publicar un libro, una oferta o un proyecto es gratuito."
+  },
+  {
+   "question": "¿Por qué mi anuncio no aparece enseguida?",
+   "answer": "Porque primero se revisa. Eso es justamente lo que hace que los demás anuncios merezcan leerse."
+  },
+  {
+   "question": "¿Por qué tengo que verificar mi identidad?",
+   "answer": "Para que quien trate con usted sepa con quién está tratando. La norma es la misma para todos."
+  },
+  {
+   "question": "¿Cómo funciona una solicitud de consulta?",
+   "answer": "Usted indica algunos huecos en los que está disponible y nosotros llamamos. No hay agenda que consultar ni minuto exacto que reservar."
+  },
+  {
+   "question": "¿Estas secciones también tienen código de seguimiento?",
+   "answer": "Sí. Una solicitud de consulta tiene código de seguimiento y puede ver su estado en la [página de seguimiento](/track)."
+  }
+ ]
+}

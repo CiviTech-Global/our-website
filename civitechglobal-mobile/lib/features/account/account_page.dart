@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -99,8 +100,13 @@ class FormMessage extends StatelessWidget {
   }
 }
 
-/// The words for a failed request.
+/// The words for a failed request: the server's own message when it sent
+/// one (it writes them for people), the dictionary's otherwise. Never the
+/// error's own text, which is for developers ("Unable to load asset...").
 String describeError(Strings s, Object error, {String? fallback}) {
+  if (error is! ApiException && error is! DioException) {
+    return fallback ?? s.common.error;
+  }
   final e = ApiException.from(error);
   if (e.offline) return s.mobile.offline;
   if (e.message.isNotEmpty) return e.message;

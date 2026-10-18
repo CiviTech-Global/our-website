@@ -1,0 +1,175 @@
+{
+ "slug": "community-platform",
+ "locale": "fr",
+ "title": "Un club d'experts, un marché du livre, un tableau d'offres — et pourquoi nous les avons construits",
+ "description": "Experts, livres, offres d'emploi et projets freelance : quatre outils pour la communauté technique, tous gratuits et relus avant publication.",
+ "date": "2026-09-24",
+ "dateLabel": "Septembre 2026",
+ "faqHeading": "Questions fréquentes sur ces rubriques",
+ "readingMinutes": 4,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "Une entreprise de logiciel n'a pas besoin d'un marché du livre. Nous non plus — jusqu'à ce que nous remarquions que les gens autour de nous se passaient leurs ouvrages techniques dans des groupes de discussion dispersés, sans endroit fiable pour le faire."
+  },
+  {
+   "kind": "p",
+   "text": "Voici quatre outils nés de ce genre de constat."
+  },
+  {
+   "kind": "h2",
+   "text": "1. Le club d'experts"
+  },
+  {
+   "kind": "p",
+   "text": "Le [club d'experts](/experts) est un annuaire : spécialités, langues, expérience et un moyen de prendre contact. Certaines personnes y acceptent des consultations, d'autres sont simplement présentées."
+  },
+  {
+   "kind": "p",
+   "text": "Pourquoi un simple annuaire ? Parce que la plupart de ceux qui cherchent une spécialité ne savent pas par où commencer et s'en remettent au bouche-à-oreille. Une liste visible vaut mieux qu'un réseau invisible."
+  },
+  {
+   "kind": "p",
+   "text": "Si vous souhaitez une consultation, [demandez-la](/consult) en indiquant quelques créneaux où vous êtes disponible — un jour, et un moment de la journée. Ensuite **c'est nous qui appelons**. C'est volontaire : choisir un créneau dans l'agenda chargé d'un inconnu demande un effort ; dire « le mardi après-midi me va » n'en demande aucun."
+  },
+  {
+   "kind": "h2",
+   "text": "2. Le marché du livre"
+  },
+  {
+   "kind": "p",
+   "text": "Le [marché du livre](/books) sert à acheter et vendre des livres — neufs ou d'occasion — avec un prix souhaité et une photo de couverture."
+  },
+  {
+   "kind": "p",
+   "text": "Trois choix de conception méritent d'être dits :"
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "**Chaque annonce est relue avant d'être publiée.** Votre annonce ne paraît pas instantanément, et c'est délibéré : une liste qui publie tout est une liste à laquelle personne ne se fie.",
+    "**La photo de couverture est obligatoire.** Décrire un livre comme « en bon état » sans image revient à demander de croire un adjectif.",
+    "**Une annonce déposée par l'entreprise est signalée comme telle.** Vous devez savoir si vous traitez avec un particulier ou avec nous."
+   ]
+  },
+  {
+   "kind": "p",
+   "text": "Il n'y a pas encore de paiement en ligne, et nous préférons le dire franchement : le marché sert à trouver et à voir ; les deux parties s'arrangent ensuite."
+  },
+  {
+   "kind": "h2",
+   "text": "3. Le tableau d'offres d'emploi"
+  },
+  {
+   "kind": "p",
+   "text": "[Les offres](/jobs) — avec une différence : chaque annonce et chaque employeur est **vérifié**."
+  },
+  {
+   "kind": "p",
+   "text": "Pour qui cherche un poste, cela veut dire une annonce qui ne fera pas perdre son temps. Pour un employeur, ne pas rivaliser avec de fausses annonces. Un tableau où chacun publie n'importe quoi n'a presque aucune valeur pour celui qui le lit."
+  },
+  {
+   "kind": "h2",
+   "text": "4. Les projets freelance"
+  },
+  {
+   "kind": "p",
+   "text": "Sur le [tableau des projets](/projects), des clients décrivent un travail et des indépendants proposent leurs services. Même règle : les projets sont relus et les deux parties vérifiées."
+  },
+  {
+   "kind": "p",
+   "text": "Si vous travaillez en freelance, nous avons aussi écrit un [guide du revenu freelance](/blog/freelance-income-guide)."
+  },
+  {
+   "kind": "h2",
+   "text": "Le fil commun"
+  },
+  {
+   "kind": "p",
+   "text": "Ces quatre rubriques partagent deux principes : **relecture avant publication** et **vérification avant participation**."
+  },
+  {
+   "kind": "p",
+   "text": "Cela ralentit les choses et nous coûte quelque chose. Mais l'autre voie — une plateforme où tout paraît — nous l'avons tous déjà vue, et nous savons où elle mène."
+  },
+  {
+   "kind": "h2",
+   "text": "Envie de participer ?"
+  },
+  {
+   "kind": "ul",
+   "items": [
+    "Des livres ? Déposez-les sur le [marché du livre](/books).",
+    "Vous recrutez ? Publiez sur le [tableau d'offres](/jobs).",
+    "Travailler avec nous comme bénévole ou stagiaire ? Voyez [cette page](/volunteer).",
+    "Vous êtes spécialiste et votre place est dans le club ? Écrivez-nous depuis la [page de contact](/contact)."
+   ]
+  },
+  {
+   "kind": "h2",
+   "text": "Questions fréquentes sur ces rubriques"
+  },
+  {
+   "kind": "h3",
+   "text": "Ces rubriques sont-elles payantes ?"
+  },
+  {
+   "kind": "p",
+   "text": "Non. Déposer un livre, une offre ou un projet est gratuit."
+  },
+  {
+   "kind": "h3",
+   "text": "Pourquoi mon annonce n'apparaît-elle pas tout de suite ?"
+  },
+  {
+   "kind": "p",
+   "text": "Parce qu'elle est d'abord relue. C'est précisément ce qui rend les autres annonces dignes d'être lues."
+  },
+  {
+   "kind": "h3",
+   "text": "Pourquoi dois-je vérifier mon identité ?"
+  },
+  {
+   "kind": "p",
+   "text": "Pour que la personne qui traite avec vous sache à qui elle a affaire. La règle est la même pour tous."
+  },
+  {
+   "kind": "h3",
+   "text": "Comment fonctionne une demande de consultation ?"
+  },
+  {
+   "kind": "p",
+   "text": "Vous indiquez quelques créneaux de disponibilité et nous vous appelons. Aucun agenda à consulter, aucune minute précise à réserver."
+  },
+  {
+   "kind": "h3",
+   "text": "Y a-t-il aussi un code de suivi ici ?"
+  },
+  {
+   "kind": "p",
+   "text": "Oui. Une demande de consultation reçoit un code de suivi, dont vous voyez l'état sur la [page de suivi](/track)."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "Ces rubriques sont-elles payantes ?",
+   "answer": "Non. Déposer un livre, une offre ou un projet est gratuit."
+  },
+  {
+   "question": "Pourquoi mon annonce n'apparaît-elle pas tout de suite ?",
+   "answer": "Parce qu'elle est d'abord relue. C'est précisément ce qui rend les autres annonces dignes d'être lues."
+  },
+  {
+   "question": "Pourquoi dois-je vérifier mon identité ?",
+   "answer": "Pour que la personne qui traite avec vous sache à qui elle a affaire. La règle est la même pour tous."
+  },
+  {
+   "question": "Comment fonctionne une demande de consultation ?",
+   "answer": "Vous indiquez quelques créneaux de disponibilité et nous vous appelons. Aucun agenda à consulter, aucune minute précise à réserver."
+  },
+  {
+   "question": "Y a-t-il aussi un code de suivi ici ?",
+   "answer": "Oui. Une demande de consultation reçoit un code de suivi, dont vous voyez l'état sur la [page de suivi](/track)."
+  }
+ ]
+}

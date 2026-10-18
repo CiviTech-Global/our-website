@@ -12,6 +12,7 @@ import 'package:civitech_global_flutter/features/help/help_sheet.dart';
 import 'package:civitech_global_flutter/features/start/modules.dart';
 import 'package:civitech_global_flutter/features/start/start_sheet.dart';
 import 'package:civitech_global_flutter/l10n/l10n.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/api_client_test.dart' show MemoryTokens;
+import 'core/api_client_test.dart' show FakeServer, MemoryTokens;
 
 /// Every screen, in every place it can be squeezed.
 ///
@@ -60,7 +61,104 @@ const _screens = [
   '/forgot-password',
   '/reset-password?token=t',
   '/reset-password',
+  '/services',
+  '/about',
+  '/team',
+  '/portfolio',
+  '/customers',
+  '/partners',
+  '/blog',
+  '/blog/third-party-insurance-guide',
+  '/help',
+  '/contact',
 ];
+
+/// Data with the longest real-world shapes: long names, bios, quotes and
+/// technology lists, so content screens are laid out with something in them.
+Future<(int, Object?)> _fakeApi(RequestOptions o) async {
+  const long =
+      'Rayan Tamaddon Jahan Gostar builds creative, innovative software '
+      'that makes life simpler for people and organisations alike.';
+  final member = {
+    'id': 'm1',
+    'name': 'Maryam-Alexandra Ahmadi-Khorasani',
+    'title': 'Principal software architect and engineering lead',
+    'bio': long,
+    'email': 'maryam@example.com',
+    'linkedin': 'https://linkedin.com/in/x',
+    'github': 'https://github.com/x',
+    'website': 'https://example.com',
+  };
+  final org = {
+    'id': 'o1',
+    'name':
+        'Sazman-e Fanavari-ye Ettela'
+        'at-e Shahrvandi-ye Iran',
+    'description': long,
+    'industry': 'Government and civic technology',
+    'website': 'https://example.com',
+    'featured': true,
+    'active': true,
+    'sinceYear': 2021,
+    'partnershipType': 'TECHNOLOGY',
+    'testimonialQuote': long,
+    'testimonialAuthor': 'Dr. Seyed Mohammad-Reza Hosseini-Tabatabaei',
+    'testimonialRole': 'Director of digital transformation',
+  };
+  final project = {
+    'id': 'p1',
+    'title': 'Municipal citizen-services platform for permits and complaints',
+    'summary': long,
+    'description': long,
+    'status': 'IN_PROGRESS',
+    'technologies': [
+      'TypeScript',
+      'PostgreSQL',
+      'Flutter',
+      'Kubernetes',
+      'Elasticsearch',
+      'Redis',
+      'GraphQL',
+    ],
+    'screenshots': <Object>[],
+    'client': {'id': 'o1', 'name': org['name']},
+  };
+  return switch (o.path) {
+    '/team' => (
+      200,
+      {
+        'data': {
+          'sections': [
+            {
+              'id': 's1',
+              'name': 'Engineering and product design',
+              'description': long,
+              'members': [member, member],
+            },
+          ],
+          'unsectioned': [member],
+        },
+      },
+    ),
+    '/showcase/customers' || '/showcase/partners' => (
+      200,
+      {
+        'data': [
+          org,
+          {...org, 'featured': false},
+          {...org, 'active': false},
+        ],
+      },
+    ),
+    '/showcase/projects' => (
+      200,
+      {
+        'data': [project, project],
+      },
+    ),
+    _ => (404, {'success': false, 'message': 'not found'}),
+  };
+}
 
 const _sheets = ['start', 'module', 'help'];
 
@@ -99,6 +197,14 @@ Future<void> _pump(
           () => L10nController(L10nState(language, strings)),
         ),
         tokenStoreProvider.overrideWithValue(MemoryTokens()),
+        apiClientProvider.overrideWithValue(
+          ApiClient(
+            tokens: MemoryTokens(),
+            language: () => language,
+            dio: Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+              ..httpClientAdapter = FakeServer(_fakeApi),
+          ),
+        ),
         capabilitiesProvider.overrideWith(
           (ref) async => const Capabilities(
             email: true,
@@ -204,6 +310,15 @@ void main() {
           );
           _open(tester, target);
           await _settle(tester);
+          // No screen may land in its error state: that is a missing asset
+          // or a broken request, not a layout, and it hid a missing blog
+          // export from this audit once.
+          final retry = (await loadStrings(language)).common.retry;
+          expect(
+            find.text(retry),
+            findsNothing,
+            reason: '$target shows its error state',
+          );
           final error = tester.takeException();
           // The full report names the widget that overflowed and by how much.
           expect(

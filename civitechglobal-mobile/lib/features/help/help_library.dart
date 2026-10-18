@@ -65,12 +65,31 @@ class HelpArticle {
 }
 
 class HelpLibrary {
-  const HelpLibrary(this._own, this._english, this._related, this._isEnglish);
+  const HelpLibrary(
+    this._own,
+    this._english,
+    this._related,
+    this._isEnglish, {
+    this.entries = const [],
+  });
 
   final Map<String, Object?> _own;
   final Map<String, Object?>? _english;
   final Map<String, List<String>> _related;
   final bool _isEnglish;
+
+  /// Every guide the app carries, in the manifest's order:
+  /// (id, collection, audience).
+  final List<(String, String, String)> entries;
+
+  /// A collection's title and description in the reader's language.
+  (String, String)? collection(String id) {
+    final own =
+        (_own['collections'] as Map?)?[id] ??
+        (_english?['collections'] as Map?)?[id];
+    if (own is! Map) return null;
+    return ('${own['title'] ?? id}', '${own['description'] ?? ''}');
+  }
 
   HelpArticle? article(String id) {
     final own = (_own['articles'] as Map?)?[id];
@@ -107,5 +126,14 @@ final helpLibraryProvider = FutureProvider<HelpLibrary>((ref) async {
   final english = language == 'en'
       ? null
       : await loadJsonAsset('assets/help/en.json');
-  return HelpLibrary(own, english, related, language == 'en');
+  return HelpLibrary(
+    own,
+    english,
+    related,
+    language == 'en',
+    entries: [
+      for (final e in manifest.cast<Map<String, Object?>>())
+        ('${e['id']}', '${e['collection']}', '${e['audience']}'),
+    ],
+  );
 });

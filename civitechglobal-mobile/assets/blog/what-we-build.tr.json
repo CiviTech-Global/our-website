@@ -1,0 +1,187 @@
+{
+ "slug": "what-we-build",
+ "locale": "tr",
+ "title": "Ne inşa ediyoruz — yıllarca çalışsın diye yazılan yazılım",
+ "description": "Özel yazılım, web ve mobil uygulamalar, sivil teknoloji platformları ve veri çalışmaları. Ne yapıyoruz, nasıl yapıyoruz ve kaliteyi neden hıza feda etmiyoruz.",
+ "date": "2026-09-24",
+ "dateLabel": "Eylül 2026",
+ "faqHeading": "Yazılım hizmetlerimizle ilgili sık sorulanlar",
+ "readingMinutes": 3,
+ "blocks": [
+  {
+   "kind": "p",
+   "text": "Asıl işimiz yazılım mühendisliği. Bu sitedeki diğer her şey — sigorta başvuruları, kitap pazarı, iş ilanları — bu işten doğdu: kendi ihtiyacımız olan araçları yaptık, sonra başkalarının da bunlara ihtiyacı olduğunu gördük."
+  },
+  {
+   "kind": "h2",
+   "text": "Yaptığımız dört iş"
+  },
+  {
+   "kind": "h3",
+   "text": "1. Özel yazılım"
+  },
+  {
+   "kind": "p",
+   "text": "Kurumunuzun gerçekte nasıl çalıştığına göre biçimlenen yazılım; tersi değil. Pek çok kurum yıllarca hazır bir ürünün sınırlarına kendini uydurur. Bazen yazılımın uyum sağlaması daha ucuza gelir."
+  },
+  {
+   "kind": "h3",
+   "text": "2. Web ve mobil uygulamalar"
+  },
+  {
+   "kind": "p",
+   "text": "Hızlı, ölçeklenebilir, anlaşılır. Bu üç kelimeyi herkes yazıyor; o yüzden somutlaştıralım: yavaş bağlantıda ve ucuz bir telefonda açılan bir sayfa ve eğitim gerektirmeden anlaşılan bir arayüz."
+  },
+  {
+   "kind": "h3",
+   "text": "3. Sivil teknoloji platformları"
+  },
+  {
+   "kind": "p",
+   "text": "Kamu kurumlarını, kuruluşları ve insanları birbirine yaklaştıran platformlar. Adımız buradan geliyor ve ekibin en çok önemsediği iş bu."
+  },
+  {
+   "kind": "h3",
+   "text": "4. Veri ve analiz"
+  },
+  {
+   "kind": "p",
+   "text": "Ham veriyi, karar vermeyi kolaylaştıran panolara ve içgörüye dönüştürmek. Kimsenin bakmadığı veri bir varlık değil, bir bakım masrafıdır."
+  },
+  {
+   "kind": "h2",
+   "text": "Dört taahhüt"
+  },
+  {
+   "kind": "p",
+   "text": "Şirketlerin genellikle iddia etmeye başladığı yer burasıdır. O yüzden her birinin pratikte ne anlama geldiğini yazalım."
+  },
+  {
+   "kind": "h3",
+   "text": "Kalite"
+  },
+  {
+   "kind": "p",
+   "text": "Kod gözden geçirilir, testleri vardır ve yalnızca teslim günü değil, yıllarca çalışsın diye yazılır. Altı ay sonra kimsenin dokunmaya cesaret edemediği yazılım aslında teslim edilmemiştir."
+  },
+  {
+   "kind": "h3",
+   "text": "Hız"
+  },
+  {
+   "kind": "p",
+   "text": "Başvurudan yazılı teklife giden yol kısadır ve bellidir. Birinin sizi geri aramasını beklemezsiniz. Bizde hız, **sizin bekleme sürenizi kısaltmak** demektir; inşa ederken acele etmek değil."
+  },
+  {
+   "kind": "h3",
+   "text": "Erişilebilirlik"
+  },
+  {
+   "kind": "p",
+   "text": "Site klavyeyle çalışır, ekran okuyucuyla çalışır, zayıf bağlantıda açılır ve ucuz bir telefonda kullanılabilir. Bu sonradan eklenen bir özellik değil, bir mühendislik kararıdır — ve okuduğunuz sitede uygulanmıştır."
+  },
+  {
+   "kind": "h3",
+   "text": "Ekonomik akıl"
+  },
+  {
+   "kind": "p",
+   "text": "Fiyat aralığını, iş **başlamadan önce** görürsünüz. Bir iş masrafına değmiyorsa bunu erkenden söyleriz. Müşterilere, sorunlarının hâlihazırda var olan bir araçla daha ucuza çözüleceğini söylediğimiz ve projeyi almadığımız oldu."
+  },
+  {
+   "kind": "h2",
+   "text": "Nasıl başlıyor"
+  },
+  {
+   "kind": "ol",
+   "items": [
+    "İhtiyacınızı [proje formunda](/start-project) anlatırsınız, belgeleriniz varsa eklersiniz.",
+    "İnceleriz; belirsiz bir nokta varsa sorarız.",
+    "Yazılı bir teklif alırsınız: kapsam, teslim edilecekler, varsayımlar, kapsam *dışı* olanlar, takvim ve fiyat aralığı.",
+    "Takip kodunuzla teklifi açar, kabul eder veya reddedersiniz."
+   ]
+  },
+  {
+   "kind": "p",
+   "text": "Bu yolun ayrıntısı [nasıl çalışıyoruz](/blog/how-we-work) yazısında."
+  },
+  {
+   "kind": "h2",
+   "text": "Önceki işler"
+  },
+  {
+   "kind": "p",
+   "text": "Teknik topluluk için yaptığımız araçları — uzmanlar kulübü, kitap pazarı ve iş ilanları — [bu yazıda](/blog/community-platform) anlattık."
+  },
+  {
+   "kind": "p",
+   "text": "[Projeler sayfası](/portfolio) süren ve tamamlanan işleri ekran görüntüleriyle gösterir. Kimlerle çalıştığımızı [müşteriler](/customers) ve [iş ortakları](/partners) sayfalarında görebilirsiniz."
+  },
+  {
+   "kind": "h2",
+   "text": "Yazılım hizmetlerimizle ilgili sık sorulanlar"
+  },
+  {
+   "kind": "h3",
+   "text": "Küçük projeleri alıyor musunuz?"
+  },
+  {
+   "kind": "p",
+   "text": "Evet. Ölçü, büyüklük değil. Bir konu uzmanlığımızın dışındaysa bunu açıkça söyleriz."
+  },
+  {
+   "kind": "h3",
+   "text": "Teklif almak ücretli mi?"
+  },
+  {
+   "kind": "p",
+   "text": "Hayır. Başvurunuzu incelemek ve teklifi yazmak ücretsizdir."
+  },
+  {
+   "kind": "h3",
+   "text": "Teklif ne kadar sürede gelir?"
+  },
+  {
+   "kind": "p",
+   "text": "Karmaşıklığa bağlı; ama yol bellidir ve takip kodunuzla durumu istediğiniz an görürsünüz."
+  },
+  {
+   "kind": "h3",
+   "text": "Kod kime ait olur?"
+  },
+  {
+   "kind": "p",
+   "text": "Bu, teklifte ve sözleşmede açıkça yazılır; sonradan belirsizlik kalmaz."
+  },
+  {
+   "kind": "h3",
+   "text": "Teslimden sonra değişiklik gerekirse?"
+  },
+  {
+   "kind": "p",
+   "text": "Destek ve sonraki geliştirmeler ilk görüşmenin parçasıdır ve teklifte yer alır."
+  }
+ ],
+ "faqs": [
+  {
+   "question": "Küçük projeleri alıyor musunuz?",
+   "answer": "Evet. Ölçü, büyüklük değil. Bir konu uzmanlığımızın dışındaysa bunu açıkça söyleriz."
+  },
+  {
+   "question": "Teklif almak ücretli mi?",
+   "answer": "Hayır. Başvurunuzu incelemek ve teklifi yazmak ücretsizdir."
+  },
+  {
+   "question": "Teklif ne kadar sürede gelir?",
+   "answer": "Karmaşıklığa bağlı; ama yol bellidir ve takip kodunuzla durumu istediğiniz an görürsünüz."
+  },
+  {
+   "question": "Kod kime ait olur?",
+   "answer": "Bu, teklifte ve sözleşmede açıkça yazılır; sonradan belirsizlik kalmaz."
+  },
+  {
+   "question": "Teslimden sonra değişiklik gerekirse?",
+   "answer": "Destek ve sonraki geliştirmeler ilk görüşmenin parçasıdır ve teklifte yer alır."
+  }
+ ]
+}

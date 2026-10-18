@@ -144,7 +144,7 @@ class MeScreen extends ConsumerWidget {
                 row(
                   Icons.help_outline_rounded,
                   s.mobile.help,
-                  () => showHelp(context, 'help-centre'),
+                  () => context.push('/help'),
                 ),
                 if (user?.isStaff ?? false)
                   row(
