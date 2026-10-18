@@ -231,7 +231,9 @@ export function InsuranceForm({ product, onSubmitted }: InsuranceFormProps) {
         )}
 
         {isLastStep ? (
-          <Button type="submit" isLoading={submit.isPending} disabled={!phoneToken}>
+          // Held back only while a code is owed. Without a gateway no token can
+          // ever arrive, so waiting for one would lock the form shut.
+          <Button type="submit" isLoading={submit.isPending} disabled={canSms && !phoneToken}>
             <Send className="size-4" />
             {product.intakeMode === 'CALLBACK'
               ? t.insurance.submitCallback
