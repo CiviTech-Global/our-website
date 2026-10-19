@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ir.rayantamaddonjahangostar.app",
+      "sha256_cert_fingerprints": [
+        "AF:0B:EA:E3:AD:81:83:4B:22:45:E4:91:88:08:13:EC:2D:69:0D:E9:7C:66:96:F1:3E:5C:69:DA:B8:17:91:B4"
+      ]
+    }
+  }
+]
