@@ -2755,6 +2755,8 @@ const fr: PartialTranslations = {
     leaveBody: 'Ce que vous avez saisi ici sera perdu.',
     leaveConfirm: 'Quitter',
     leaveStay: 'Continuer la saisie',
+    undo: 'Annuler',
+    requestRemoved: '{code} a été retiré de vos demandes.',
     fieldRules: {
       required: 'Ce champ est obligatoire',
       minChars: 'Au moins {n} caractères',

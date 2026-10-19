@@ -5,6 +5,7 @@ import '../../features/help/help_sheet.dart';
 import '../palette.dart';
 import '../tokens.dart';
 import 'bagh_key.dart';
+import 'home_leading.dart';
 import 'kinetic_words.dart';
 import 'soft_surface.dart';
 
@@ -38,6 +39,7 @@ class ContentPage extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
+        leading: homeLeading(context),
         actions: [...actions, if (helpId != null) HelpAction(helpId!)],
       ),
       bottomNavigationBar: bottom == null

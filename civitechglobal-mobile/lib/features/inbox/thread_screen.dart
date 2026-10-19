@@ -11,6 +11,7 @@ import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/centered_scroll.dart';
 import '../../design/widgets/girih.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import 'inbox_data.dart';
@@ -81,6 +82,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: homeLeading(context),
         title: Text(
           anchor?.listingTitle ?? s.market.messagesNav,
           overflow: TextOverflow.ellipsis,

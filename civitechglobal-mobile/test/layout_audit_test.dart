@@ -100,6 +100,7 @@ const _screens = [
 
 /// Screens a member sees: audited signed in only.
 const _memberScreens = [
+  '/dashboard/requests',
   '/inbox?tab=notifications',
   '/dashboard/messages/b/t1',
   '/dashboard/messages/a/t2',
@@ -204,6 +205,93 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     'createdAt': '2026-10-05T10:00:00Z',
   };
   return switch (o.path) {
+    // A member who plays every part, with something waiting in each.
+    '/market/me/workspace' => (
+      200,
+      {
+        'data': {
+          'verification': 'REJECTED',
+          'hiring': {
+            'postings': 12,
+            'open': 9,
+            'byStatus': {'CHANGES_REQUESTED': 2},
+            'applicants': 1284,
+            'unseen': 37,
+            'byOutcome': {'SHORTLISTED': 18, 'INTERVIEW': 6},
+            'recent': <Object>[],
+            'company': null,
+          },
+          'jobSearch': {
+            'applications': 44,
+            'byOutcome': {'INTERVIEW': 3, 'PENDING': 20},
+            'recent': <Object>[],
+            'savedJobs': 15,
+            'activeAlerts': 4,
+          },
+          'client': {
+            'projects': 7,
+            'open': 3,
+            'byStatus': {'PENDING_REVIEW': 1},
+            'bidsAwaiting': 26,
+          },
+          'freelance': {
+            'bids': 31,
+            'byOutcome': {'SHORTLISTED': 5, 'ACCEPTED': 2},
+          },
+          'selling': {
+            'books': 9,
+            'booksByStatus': {'APPROVED': 6, 'PENDING_REVIEW': 3},
+          },
+          'collaborations': {'active': 2, 'completed': 11},
+          'unread': {'notifications': 7, 'messages': 128},
+          'recentNotifications': [
+            for (var i = 0; i < 3; i++)
+              {
+                'id': 'n$i',
+                'title':
+                    'A new offer on your project, from a verified freelancer',
+                'body': long,
+                'link': i == 2 ? null : '/dashboard/messages/b/t1',
+                'readAt': i == 0 ? null : '2026-10-06T10:00:00Z',
+                'createdAt': '2026-10-05T10:00:00Z',
+              },
+          ],
+          'trackedRequests': 4,
+        },
+      },
+    ),
+    '/market/me/tracked-requests' => (
+      200,
+      {
+        'data': [
+          {
+            'code': 'PROJ1234',
+            'label':
+                'Municipal permits platform, phase two, for the city council',
+            'createdAt': '2026-10-01T10:00:00Z',
+            'state': {'kind': 'project', 'status': 'NEEDS_CLARIFICATION'},
+          },
+          {
+            'code': 'CONS1234',
+            'label': null,
+            'createdAt': '2026-10-01T10:00:00Z',
+            'state': {'kind': 'consultation', 'status': 'NO_ANSWER'},
+          },
+          {
+            'code': 'INSU1234',
+            'label': '',
+            'createdAt': '2026-10-01T10:00:00Z',
+            'state': {'kind': 'insurance', 'status': 'IN_PROGRESS'},
+          },
+          {
+            'code': 'RESU1234ABCDEFGHIJKL',
+            'label': null,
+            'createdAt': '2026-10-01T10:00:00Z',
+            'state': null,
+          },
+        ],
+      },
+    ),
     '/market/me/conversations' => (
       200,
       {
@@ -230,12 +318,16 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
       200,
       {
         'data': {
+          // The page asked for, with its own rows, as the server does.
           'items': [
-            notice,
-            {...notice, 'id': 'n2', 'readAt': '2026-10-06T10:00:00Z'},
-            {...notice, 'id': 'n3', 'link': null},
+            for (final n in [
+              notice,
+              {...notice, 'id': 'n2', 'readAt': '2026-10-06T10:00:00Z'},
+              {...notice, 'id': 'n3', 'link': null},
+            ])
+              {...n, 'id': '${n['id']}-p${o.queryParameters['page'] ?? 1}'},
           ],
-          'page': 1,
+          'page': o.queryParameters['page'] ?? 1,
           'pageSize': 20,
           'total': 30,
           'totalPages': 2,
@@ -515,6 +607,34 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
+/// Steps every vertical list on screen to its end, most of a screen at a
+/// time, so the rows below the first screen are laid out and measured too.
+/// Returns the first exception a step raised.
+Future<Object?> _scrollThrough(WidgetTester tester) async {
+  final lists = tester
+      .stateList<ScrollableState>(find.byType(Scrollable))
+      .where((s) => s.position.axis == Axis.vertical)
+      .toList();
+  for (final list in lists) {
+    final position = list.position;
+    // A list that grows as it goes (the next page of notices) stops after a
+    // bounded number of steps.
+    for (var step = 0; step < 40; step++) {
+      if (!list.mounted || position.pixels >= position.maxScrollExtent) break;
+      position.jumpTo(
+        (position.pixels + position.viewportDimension * 0.8).clamp(
+          0,
+          position.maxScrollExtent,
+        ),
+      );
+      await tester.pump();
+      if (tester.takeException() case final error?) return error;
+    }
+  }
+  await _settle(tester);
+  return tester.takeException();
+}
+
 void _open(WidgetTester tester, String target) {
   final context = tester.element(find.byType(Scaffold).first);
   // Opened, not awaited: a sheet's future completes only when it closes.
@@ -612,7 +732,10 @@ void main() {
               reason: '$target draws a key ${height.round()} px tall',
             );
           }
-          final error = tester.takeException();
+          var error = tester.takeException();
+          // A list lays out only what is near the screen, so the rest of a
+          // long page is measured by scrolling through it.
+          error ??= await _scrollThrough(tester);
           // The full report names the widget that overflowed and by how much.
           expect(
             error,

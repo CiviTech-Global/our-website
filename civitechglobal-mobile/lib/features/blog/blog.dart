@@ -8,6 +8,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/content_page.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/markdown_blocks.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
@@ -205,7 +206,7 @@ class _NotFound extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(),
+    appBar: AppBar(leading: homeLeading(context)),
     body: EmptyNote(message: '${s.blog.notFoundTitle}\n${s.blog.notFoundBody}'),
   );
 }

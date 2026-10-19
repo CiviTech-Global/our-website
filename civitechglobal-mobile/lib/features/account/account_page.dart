@@ -7,6 +7,7 @@ import '../../design/motion.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/girih.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../help/help_sheet.dart';
@@ -33,7 +34,10 @@ class AccountPage extends StatelessWidget {
     final c = BaghColors.of(context);
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(actions: [if (helpId != null) HelpAction(helpId!)]),
+      appBar: AppBar(
+        leading: homeLeading(context),
+        actions: [if (helpId != null) HelpAction(helpId!)],
+      ),
       body: SafeArea(
         top: false,
         child: ListView(

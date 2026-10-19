@@ -7,6 +7,7 @@ import '../../core/settings.dart';
 import '../../design/haptics.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/pressable.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
@@ -33,7 +34,10 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.mobile.settingsTitle)),
+      appBar: AppBar(
+        leading: homeLeading(context),
+        title: Text(s.mobile.settingsTitle),
+      ),
       // Clear of the system buttons: the app draws edge to edge.
       body: SafeArea(
         top: false,

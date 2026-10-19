@@ -12,6 +12,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/sheet.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
@@ -48,6 +49,7 @@ class SecurityScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: homeLeading(context),
         title: Text(s.dashboard.securityTitle),
         actions: const [HelpAction('profile')],
       ),

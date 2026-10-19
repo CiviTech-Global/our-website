@@ -28,6 +28,8 @@ class TrackScreen extends ConsumerStatefulWidget {
 class _TrackScreenState extends ConsumerState<TrackScreen> {
   late final _code = TextEditingController(text: widget.code ?? '');
   bool _busy = false;
+  int _asks = 0;
+  String? _asking;
   String? _error;
   Map<String, Object?>? _result;
 
@@ -36,6 +38,20 @@ class _TrackScreenState extends ConsumerState<TrackScreen> {
     super.initState();
     if ((widget.code ?? '').isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _track());
+    }
+  }
+
+  /// The same screen at another code (a link while it is open) looks that
+  /// one up instead of keeping the old answer.
+  @override
+  void didUpdateWidget(TrackScreen old) {
+    super.didUpdateWidget(old);
+    final code = widget.code ?? '';
+    if (code != (old.code ?? '') && code.isNotEmpty) {
+      _code.text = code;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _track();
+      });
     }
   }
 
@@ -50,7 +66,11 @@ class _TrackScreenState extends ConsumerState<TrackScreen> {
     final code = toLatinDigits(
       _code.text,
     ).trim().toUpperCase().replaceAll(' ', '');
-    if (_busy || code.isEmpty) return;
+    if (code.isEmpty || (_busy && code == _asking)) return;
+    // Only the latest lookup may answer: a slow one for an earlier code
+    // must not land over it.
+    final ask = ++_asks;
+    _asking = code;
     setState(() {
       _busy = true;
       _error = null;
@@ -63,17 +83,19 @@ class _TrackScreenState extends ConsumerState<TrackScreen> {
             '/track/${Uri.encodeComponent(code)}',
             parse: (d) => d! as Map<String, Object?>,
           );
-      setState(() => _result = result);
+      if (mounted && ask == _asks) setState(() => _result = result);
     } catch (e) {
-      setState(
-        () => _error = describeError(
-          s,
-          e,
-          fallback: s.insurance.trackNotFoundBody,
-        ),
-      );
+      if (mounted && ask == _asks) {
+        setState(
+          () => _error = describeError(
+            s,
+            e,
+            fallback: s.insurance.trackNotFoundBody,
+          ),
+        );
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && ask == _asks) setState(() => _busy = false);
     }
   }
 
@@ -125,6 +147,25 @@ class _TrackScreenState extends ConsumerState<TrackScreen> {
     );
   }
 }
+
+/// A tracked request's status in the reader's words, by its kind: the same
+/// labels the tracking screen and the web's MyRequestsPage use.
+String requestStatusLabel(Strings s, String kind, String status) =>
+    switch (kind) {
+      'insurance' => _leadStatus(s, status),
+      'project' => s.proposal.statuses.label(status),
+      'resume' => s.join.statuses.label(status),
+      _ => s.consult.statuses.label(status),
+    };
+
+/// The garden tint for a status: settled well (0), waiting on the client
+/// (1), settled badly (3), or under way (2).
+int requestStatusTone(String status) => switch (status) {
+  'COMPLETED' || 'ACCEPTED' || 'SCHEDULED' || 'MATCHED' => 0,
+  'PROPOSAL_SENT' || 'NEEDS_CLARIFICATION' || 'SENT' => 1,
+  'CANCELLED' || 'DECLINED' || 'WITHDRAWN' || 'EXPIRED' || 'NO_ANSWER' => 3,
+  _ => 2,
+};
 
 String _leadStatus(Strings s, String status) => switch (status) {
   'NEW' => s.admin.newLeads,
@@ -206,7 +247,10 @@ class _SimpleResult extends ConsumerWidget {
         children: [
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: StatusPill(statusLabel),
+            child: StatusPill(
+              statusLabel,
+              tone: requestStatusTone('${r['status']}'),
+            ),
           ),
           _facts(context, [
             (s.insurance.product, product ?? ''),
@@ -303,7 +347,7 @@ class _ConsultationResultState extends ConsumerState<_ConsultationResult> {
             alignment: AlignmentDirectional.centerStart,
             child: StatusPill(
               s.consult.statuses.label(status),
-              tone: status == 'SCHEDULED' ? 0 : 2,
+              tone: requestStatusTone(status),
             ),
           ),
           _facts(context, [
@@ -354,7 +398,10 @@ class _ProjectResult extends ConsumerWidget {
             children: [
               Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: StatusPill(s.proposal.statuses.label('${r['status']}')),
+                child: StatusPill(
+                  s.proposal.statuses.label('${r['status']}'),
+                  tone: requestStatusTone('${r['status']}'),
+                ),
               ),
               _facts(context, [
                 (s.proposal.project, '${r['title']}'),
@@ -501,7 +548,7 @@ class _ProposalViewState extends ConsumerState<ProposalView> {
               Text(p.title, style: text.titleLarge),
               StatusPill(
                 status == 'SENT' ? p.awaiting : p.statuses.label(status),
-                tone: status == 'ACCEPTED' ? 0 : 2,
+                tone: requestStatusTone(status),
               ),
             ],
           ),

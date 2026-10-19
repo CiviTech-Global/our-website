@@ -2916,6 +2916,8 @@ const fa = {
     leaveBody: 'آنچه اینجا وارد کرده‌اید از بین می‌رود.',
     leaveConfirm: 'خروج',
     leaveStay: 'ادامهٔ تکمیل',
+    undo: 'بازگرداندن',
+    requestRemoved: '{code} از درخواست‌های شما برداشته شد.',
     fieldRules: {
       required: 'این فیلد الزامی است',
       minChars: 'حداقل {n} کاراکتر',

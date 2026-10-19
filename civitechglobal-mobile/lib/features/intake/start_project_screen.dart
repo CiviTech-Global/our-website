@@ -13,6 +13,7 @@ import '../../design/tokens.dart';
 import '../../design/widgets/attachments_field.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/date_field.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../design/widgets/step_keys.dart';
@@ -283,6 +284,7 @@ class _StartProjectScreenState extends ConsumerState<StartProjectScreen> {
       busy: _sending,
       child: Scaffold(
         appBar: AppBar(
+          leading: homeLeading(context),
           title: Text(p.title, maxLines: 1, overflow: TextOverflow.ellipsis),
           actions: const [HelpAction('start-project')],
         ),

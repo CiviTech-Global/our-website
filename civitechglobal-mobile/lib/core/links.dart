@@ -33,6 +33,8 @@ const appPaths = <String>{
   '/forgot-password',
   '/reset-password',
   '/verify-email',
+  '/dashboard',
+  '/dashboard/requests',
   '/dashboard/messages',
   '/dashboard/notifications',
 };

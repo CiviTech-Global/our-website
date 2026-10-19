@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:civitech_global_flutter/app/app.dart';
 import 'package:civitech_global_flutter/core/api/api_client.dart';
 import 'package:civitech_global_flutter/core/capabilities.dart';
@@ -143,6 +145,26 @@ void main() {
       expect(await visit(tester, '/en/track?code=AB12'), '/track?code=AB12');
     });
 
+    testWidgets('a page opened straight from a link has a way home', (
+      tester,
+    ) async {
+      await pumpApp(tester, language: 'en');
+      // Alone in the history, as a link opens it: home, not back.
+      expect(await visit(tester, '/team'), '/team');
+      expect(find.byIcon(Icons.home_outlined), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.home_outlined));
+      await settle(tester);
+      final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
+      expect(router.routerDelegate.currentConfiguration.uri.toString(), '/');
+
+      // Opened from inside the app: the usual back arrow instead.
+      // Not awaited: a push completes only when the page is closed.
+      unawaited(router.push('/team'));
+      await settle(tester);
+      expect(find.byIcon(Icons.home_outlined), findsNothing);
+      expect(find.byType(BackButton), findsOneWidget);
+    });
+
     testWidgets('a proposal opens on the tracking screen', (tester) async {
       await pumpApp(tester, language: 'en');
       expect(await visit(tester, '/proposal/PROJ1234'), '/track?code=PROJ1234');
@@ -157,6 +179,17 @@ void main() {
       );
       // A message notice from before the thread kind was in its link.
       expect(await visit(tester, '/dashboard/messages/abc123'), '/inbox');
+    });
+
+    testWidgets('the member home is the Me tab, and requests need sign-in', (
+      tester,
+    ) async {
+      await pumpApp(tester, language: 'en');
+      expect(await visit(tester, '/dashboard'), '/me');
+      expect(await visit(tester, '/en/dashboard'), '/me');
+      final at = Uri.parse(await visit(tester, '/dashboard/requests'));
+      expect(at.path, '/login');
+      expect(at.queryParameters['from'], '/dashboard/requests');
     });
 
     testWidgets('a thread asks a signed-out visitor to sign in', (

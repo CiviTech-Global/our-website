@@ -2765,6 +2765,8 @@ const tr: PartialTranslations = {
     leaveBody: 'Buraya girdikleriniz kaybolacak.',
     leaveConfirm: 'Çık',
     leaveStay: 'Düzenlemeye devam et',
+    undo: 'Geri al',
+    requestRemoved: '{code} isteklerinizden kaldırıldı.',
     fieldRules: {
       required: 'Bu alan zorunludur',
       minChars: 'En az {n} karakter',

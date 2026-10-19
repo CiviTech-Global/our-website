@@ -729,6 +729,8 @@ class StringsMobile extends L10nNode {
   String get leaveBody => string("leaveBody");
   String get leaveConfirm => string("leaveConfirm");
   String get leaveStay => string("leaveStay");
+  String get undo => string("undo");
+  String get requestRemoved => string("requestRemoved");
   StringsMobileFieldRules get fieldRules => StringsMobileFieldRules(node("fieldRules"));
 }
 

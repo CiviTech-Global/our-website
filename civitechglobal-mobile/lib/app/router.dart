@@ -34,6 +34,7 @@ import '../features/intake/resume_screen.dart';
 import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
 import '../features/me/me_screen.dart';
+import '../features/me/requests_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../l10n/l10n.dart';
@@ -92,6 +93,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (path == '/dashboard/notifications') {
         return '/inbox?tab=notifications';
       }
+      // The member home is the Me tab.
+      if (path == '/dashboard') return '/me';
       // First run: the language comes before anything else.
       if (ref.read(settingsProvider).language == null) {
         return path == '/welcome' ? null : '/welcome';
@@ -143,6 +146,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/me/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(
+        path: '/dashboard/requests',
+        builder: (_, _) => const RequestsScreen(),
+      ),
       GoRoute(
         path: '/dashboard/messages/:kind/:threadId',
         builder: (_, state) => ThreadScreen(

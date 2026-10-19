@@ -67,6 +67,8 @@
                 <data android:pathPrefix="/help/"/>
                 <data android:pathPrefix="/experts/"/>
                 <data android:pathPrefix="/insurance/"/>
+                <data android:path="/dashboard"/>
+                <data android:path="/dashboard/requests"/>
                 <data android:path="/dashboard/messages"/>
                 <data android:path="/dashboard/notifications"/>
                 <data android:pathPrefix="/dashboard/messages/"/>
@@ -96,6 +98,8 @@
                 <data android:pathPrefix="/en/help/"/>
                 <data android:pathPrefix="/en/experts/"/>
                 <data android:pathPrefix="/en/insurance/"/>
+                <data android:path="/en/dashboard"/>
+                <data android:path="/en/dashboard/requests"/>
                 <data android:path="/en/dashboard/messages"/>
                 <data android:path="/en/dashboard/notifications"/>
                 <data android:pathPrefix="/en/dashboard/messages/"/>
@@ -125,6 +129,8 @@
                 <data android:pathPrefix="/tr/help/"/>
                 <data android:pathPrefix="/tr/experts/"/>
                 <data android:pathPrefix="/tr/insurance/"/>
+                <data android:path="/tr/dashboard"/>
+                <data android:path="/tr/dashboard/requests"/>
                 <data android:path="/tr/dashboard/messages"/>
                 <data android:path="/tr/dashboard/notifications"/>
                 <data android:pathPrefix="/tr/dashboard/messages/"/>
@@ -154,6 +160,8 @@
                 <data android:pathPrefix="/de/help/"/>
                 <data android:pathPrefix="/de/experts/"/>
                 <data android:pathPrefix="/de/insurance/"/>
+                <data android:path="/de/dashboard"/>
+                <data android:path="/de/dashboard/requests"/>
                 <data android:path="/de/dashboard/messages"/>
                 <data android:path="/de/dashboard/notifications"/>
                 <data android:pathPrefix="/de/dashboard/messages/"/>
@@ -183,6 +191,8 @@
                 <data android:pathPrefix="/fr/help/"/>
                 <data android:pathPrefix="/fr/experts/"/>
                 <data android:pathPrefix="/fr/insurance/"/>
+                <data android:path="/fr/dashboard"/>
+                <data android:path="/fr/dashboard/requests"/>
                 <data android:path="/fr/dashboard/messages"/>
                 <data android:path="/fr/dashboard/notifications"/>
                 <data android:pathPrefix="/fr/dashboard/messages/"/>
@@ -212,6 +222,8 @@
                 <data android:pathPrefix="/es/help/"/>
                 <data android:pathPrefix="/es/experts/"/>
                 <data android:pathPrefix="/es/insurance/"/>
+                <data android:path="/es/dashboard"/>
+                <data android:path="/es/dashboard/requests"/>
                 <data android:path="/es/dashboard/messages"/>
                 <data android:path="/es/dashboard/notifications"/>
                 <data android:pathPrefix="/es/dashboard/messages/"/>

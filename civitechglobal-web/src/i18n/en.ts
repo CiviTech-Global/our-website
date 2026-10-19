@@ -2928,6 +2928,8 @@ const en: typeof fa = {
     leaveBody: 'What you have entered here will be lost.',
     leaveConfirm: 'Leave',
     leaveStay: 'Keep editing',
+    undo: 'Undo',
+    requestRemoved: '{code} removed from your requests.',
     fieldRules: {
       required: 'This field is required',
       minChars: 'At least {n} characters',
