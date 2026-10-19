@@ -132,6 +132,10 @@ export async function getWorkspace(userId: string) {
           { application: { job: { authorId: userId } } },
           { bid: { bidderId: userId } },
           { bid: { project: { authorId: userId } } },
+          // And book purchase threads, buyer and seller alike: the inbox
+          // lists them, so the home counted fewer unread than it showed.
+          { bookRequest: { buyerId: userId } },
+          { bookRequest: { sellerId: userId } },
         ],
       },
     }),
