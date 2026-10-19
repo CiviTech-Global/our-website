@@ -74,18 +74,30 @@ const RESERVED = new Set(
 );
 const IDENTIFIER = /^[a-z][A-Za-z0-9]*$/;
 const pascal = (key) => key.charAt(0).toUpperCase() + key.slice(1);
-const field = (key) => (RESERVED.has(key) ? `${key}_` : key);
+// Members of L10nMap, which a mixed section's class extends.
+const MAP_MEMBERS = new Set(['keys', 'label']);
+const field = (key, map = false) => (RESERVED.has(key) || (map && MAP_MEMBERS.has(key)) ? `${key}_` : key);
 
 /** An object whose keys are all camelCase becomes a class; anything else a lookup map. */
 function isStruct(value) {
   return isObject(value) && Object.keys(value).every((key) => IDENTIFIER.test(key));
 }
 
+/**
+ * A section of interface strings with a few server enum values among them
+ * (market holds FULL_TIME and REMOTE beside its 290 labels): a class over a
+ * lookup map, so the labels are typed and the enum values still look up.
+ */
+function isMixed(value) {
+  return isObject(value) && Object.keys(value).some((key) => IDENTIFIER.test(key)) && !isStruct(value);
+}
+
 const classes = [];
-function emitClass(name, value) {
+function emitClass(name, value, map = false) {
   const members = [];
   for (const [key, child] of Object.entries(value)) {
-    const id = field(key);
+    if (map && !IDENTIFIER.test(key)) continue;
+    const id = field(key, map);
     const k = JSON.stringify(key);
     if (typeof child === 'string') {
       members.push(`  String get ${id} => string(${k});`);
@@ -95,9 +107,9 @@ function emitClass(name, value) {
       } else {
         members.push(`  List<List<String>> get ${id} => pairs(${k});`);
       }
-    } else if (isStruct(child)) {
+    } else if (isStruct(child) || isMixed(child)) {
       const childName = `${name}${pascal(key)}`;
-      emitClass(childName, child);
+      emitClass(childName, child, isMixed(child));
       members.push(`  ${childName} get ${id} => ${childName}(node(${k}));`);
     } else {
       // Keys that are server enum values (NEW_BUILD, marketplace-ops): looked
@@ -106,7 +118,7 @@ function emitClass(name, value) {
     }
   }
   classes.push(
-    `class ${name} extends L10nNode {\n  const ${name}(super.raw);\n\n${members.join('\n')}\n}\n`
+    `class ${name} extends ${map ? 'L10nMap' : 'L10nNode'} {\n  const ${name}(super.raw);\n\n${members.join('\n')}\n}\n`
   );
 }
 emitClass('Strings', dictionaries.fa);
