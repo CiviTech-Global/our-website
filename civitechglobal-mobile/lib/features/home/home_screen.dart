@@ -145,6 +145,11 @@ class HomeScreen extends ConsumerWidget {
                     (Icons.info_outline_rounded, s.nav.about, '/about'),
                     (Icons.groups_outlined, s.nav.team, '/team'),
                     (
+                      Icons.workspace_premium_outlined,
+                      s.nav.experts,
+                      '/experts',
+                    ),
+                    (
                       Icons.collections_bookmark_outlined,
                       s.nav.portfolio,
                       '/portfolio',

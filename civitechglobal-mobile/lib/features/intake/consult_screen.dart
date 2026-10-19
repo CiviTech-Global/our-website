@@ -13,6 +13,7 @@ import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
+import '../company/experts_screen.dart';
 import 'code_issued.dart';
 
 const _topics = ['CAREER', 'TECHNICAL', 'STARTING_OUT', 'HIRING', 'OTHER'];
@@ -20,18 +21,12 @@ const _modes = ['ONLINE', 'PHONE', 'IN_PERSON'];
 const _parts = ['MORNING', 'AFTERNOON', 'EVENING'];
 const _maxWindows = 6;
 
-/// Experts who take consultations: `GET /consult/experts`.
-final consultExpertsProvider = FutureProvider<List<Map<String, Object?>>>(
-  (ref) => ref
-      .read(apiClientProvider)
-      .get(
-        '/consult/experts',
-        parse: (d) => [
-          for (final e in (d as List? ?? const []))
-            if (e is Map<String, Object?> && e['acceptsConsultations'] != false)
-              e,
-        ],
-      ),
+/// Experts who take consultations, from the club's list.
+final consultExpertsProvider = FutureProvider<List<Expert>>(
+  (ref) async => [
+    for (final e in await ref.watch(expertsProvider.future))
+      if (e.acceptsConsultations) e,
+  ],
 );
 
 /// Asking for a consultation, as the web's ConsultPage: what about, how,
@@ -112,7 +107,11 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
               if (_goal.text.trim().isNotEmpty) 'goal': _goal.text.trim(),
               if (_background.text.trim().isNotEmpty)
                 'background': _background.text.trim(),
-              'expertSlug': ?_expert,
+              // Only the expert the form shows as chosen.
+              if ((ref.read(consultExpertsProvider).value ?? const []).any(
+                (e) => e.slug == _expert,
+              ))
+                'expertSlug': ?_expert,
               'availability': windows,
             },
             parse: (d) => '${(d! as Map)['trackingCode']}',
@@ -245,7 +244,10 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                   if (experts.isNotEmpty)
                     DropdownButtonFormField<String?>(
                       borderRadius: BorderRadius.circular(BaghRadius.field),
-                      initialValue: _expert,
+                      // A link may name someone who no longer consults.
+                      initialValue: experts.any((e) => e.slug == _expert)
+                          ? _expert
+                          : null,
                       style: text.bodyLarge,
                       isExpanded: true,
                       decoration: InputDecoration(labelText: k.expertLabel),
@@ -253,9 +255,9 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                         DropdownMenuItem(value: null, child: Text(k.expertAny)),
                         for (final e in experts)
                           DropdownMenuItem(
-                            value: '${e['slug']}',
+                            value: e.slug,
                             child: Text(
-                              '${e['fullName']} · ${e['headline']}',
+                              '${e.fullName} · ${e.headline}',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

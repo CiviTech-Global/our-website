@@ -5,11 +5,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/l10n.dart';
 import 'config.dart';
+import 'settings.dart';
 
 /// Website paths the app has its own screen for. A link to one of these
 /// (from a blog article, a guide, a button) opens the screen; anything else
 /// opens the same page on the website.
-const _appPaths = <String>{
+const appPaths = <String>{
   '/',
   '/services',
   '/about',
@@ -22,6 +23,7 @@ const _appPaths = <String>{
   '/contact',
   '/start-project',
   '/consult',
+  '/experts',
   '/track',
   '/join',
   '/volunteer',
@@ -29,14 +31,31 @@ const _appPaths = <String>{
   '/login',
   '/register',
   '/forgot-password',
+  '/reset-password',
+  '/verify-email',
 };
+
+/// [path] without the website's language prefix: '/en/blog' is '/blog', and
+/// '/en' is '/'. Persian has no prefix on the website.
+String stripLocalePrefix(String path) {
+  for (final language in supportedLanguages) {
+    if (path == '/$language') return '/';
+    if (path.startsWith('/$language/')) {
+      return path.substring(language.length + 1);
+    }
+  }
+  return path;
+}
 
 /// Whether [path] (a website path, any query dropped) is a screen in the app.
 bool isAppPath(String path) {
   final clean = Uri.parse(path).path;
-  return _appPaths.contains(clean) ||
+  return appPaths.contains(clean) ||
       clean.startsWith('/blog/') ||
       clean.startsWith('/help/') ||
+      clean.startsWith('/experts/') ||
+      (clean.startsWith('/proposal/') &&
+          !clean.startsWith('/proposal/preview/')) ||
       clean.startsWith('/insurance/');
 }
 

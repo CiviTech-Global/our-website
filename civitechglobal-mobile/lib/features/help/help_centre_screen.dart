@@ -12,7 +12,10 @@ import 'help_sheet.dart';
 /// titles and summaries: the web's help centre. A guide opens in the help
 /// sheet; member guides carry a "for members" mark.
 class HelpCentreScreen extends ConsumerStatefulWidget {
-  const HelpCentreScreen({super.key});
+  const HelpCentreScreen({this.guide, super.key});
+
+  /// A guide to open over the centre as it arrives: the web's /help/:id.
+  final String? guide;
 
   @override
   ConsumerState<HelpCentreScreen> createState() => _HelpCentreScreenState();
@@ -20,6 +23,16 @@ class HelpCentreScreen extends ConsumerStatefulWidget {
 
 class _HelpCentreScreenState extends ConsumerState<HelpCentreScreen> {
   String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.guide case final id?) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showHelp(context, id);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

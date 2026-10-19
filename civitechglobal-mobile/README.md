@@ -81,6 +81,25 @@ their backup, outside the repository. Without the file a release build falls
 back to the debug key. That is fine for `flutter run --release` but cannot
 be uploaded to a store.
 
+## Website links (Android App Links)
+
+`AndroidManifest.xml` claims the website paths the app has a screen for,
+unprefixed (Persian) and under `/en`, `/tr`, `/de`, `/fr` and `/es`. The
+router drops the language prefix, so `/en/blog/x` opens the same article in
+the app's own language. `test/core/app_links_test.dart` fails when the
+manifest and `appPaths` in `lib/core/links.dart` disagree: add a screen to
+both or to neither. Never claim a path the app lacks; a page only the
+website has is opened in a browser tab (`inAppBrowserView`), and a claimed
+one would bounce back into the app.
+
+Android opens these links without asking only once it has verified the site:
+`civitechglobal-web/public/.well-known/assetlinks.json` lists
+`ir.rayantamaddonjahangostar.app` with the release key's SHA-256 fingerprint
+(`keytool -list -v -keystore upload-keystore.jks`). A debug build is signed
+with another key, so its links are not verified. A store that re-signs
+uploads uses its own key, and that fingerprint has to be added to the file.
+Check a device with `adb shell pm get-app-links ir.rayantamaddonjahangostar.app`.
+
 ## Signing in against the API
 
 The browser keeps its refresh token in an httpOnly cookie. The app sends

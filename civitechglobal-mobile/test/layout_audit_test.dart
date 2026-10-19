@@ -71,6 +71,7 @@ const _screens = [
   '/blog',
   '/blog/third-party-insurance-guide',
   '/help',
+  '/help/consult',
   '/contact',
   '/start-project',
   '/start-project?step=1',
@@ -78,6 +79,12 @@ const _screens = [
   '/start-project?step=3',
   '/start-project?step=4',
   '/consult',
+  '/consult?expert=gone',
+  '/experts',
+  '/experts/x',
+  '/experts/missing',
+  '/proposal/PROJ1234',
+  '/en/team',
   '/track?code=PROJ1234',
   '/track?code=CONS1234',
   '/track?code=INSU1234',
@@ -141,6 +148,29 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     'screenshots': <Object>[],
     'client': {'id': 'o1', 'name': org['name']},
   };
+  final expert = {
+    'id': 'e1',
+    'slug': 'x',
+    'fullName': member['name'],
+    'headline': member['title'],
+    'bio': long,
+    'specialities': [
+      'Kubernetes and platform engineering',
+      'PostgreSQL performance',
+      'Career changes into software',
+      'Flutter',
+      'Hiring engineers',
+      'Distributed systems',
+    ],
+    'languages': ['فارسی', 'English', 'Deutsch'],
+    'yearsExperience': 17,
+    'linkedinUrl': 'https://www.linkedin.com/in/example',
+    'githubUrl': 'https://github.com/example',
+    'websiteUrl': 'https://example.com',
+    'acceptsConsultations': true,
+    'featured': true,
+    'photoUrl': null,
+  };
   return switch (o.path) {
     '/team' => (
       200,
@@ -178,14 +208,15 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
       200,
       {
         'data': [
-          {
-            'slug': 'x',
-            'fullName': member['name'],
-            'headline': member['title'],
-            'acceptsConsultations': true,
-          },
+          expert,
+          {...expert, 'slug': 'y', 'acceptsConsultations': false},
         ],
       },
+    ),
+    '/consult/experts/x' => (200, {'data': expert}),
+    '/consult/experts/missing' => (
+      404,
+      {'success': false, 'message': 'Not found'},
     ),
     '/track/PROJ1234' => (
       200,

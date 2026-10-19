@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/auth/session.dart';
+import '../core/config.dart';
+import '../core/links.dart';
 import '../core/settings.dart';
 import '../core/telemetry.dart';
 import '../features/account/login_screen.dart';
@@ -12,6 +15,7 @@ import '../features/account/register_screen.dart';
 import '../features/account/security_screen.dart';
 import '../features/blog/blog.dart';
 import '../features/company/about_screen.dart';
+import '../features/company/experts_screen.dart';
 import '../features/company/services_screen.dart';
 import '../features/company/showcase.dart';
 import '../features/company/team_screen.dart';
@@ -31,6 +35,7 @@ import '../features/intake/track_screen.dart';
 import '../features/me/me_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../l10n/l10n.dart';
 import 'shell.dart';
 
 /// Paths follow the website's wherever a screen exists on both
@@ -48,9 +53,34 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   final router = GoRouter(
     initialLocation: '/',
+    // A website link the app has no screen for opens that page in a browser
+    // tab over the app. Not the outside browser: Android could hand a link
+    // to this site straight back to the app.
+    onException: (context, state, router) {
+      launchUrl(
+        AppConfig.website(
+          state.uri.toString(),
+          ref.read(l10nProvider).language,
+        ),
+        mode: LaunchMode.inAppBrowserView,
+      );
+      if (router.routerDelegate.currentConfiguration.isEmpty) router.go('/');
+    },
     refreshListenable: refresh,
     redirect: (context, state) {
       final path = state.uri.path;
+      // A website link carries its language as a prefix (/en/blog/...); the
+      // app shows the same screen in the language it is already set to.
+      if (stripLocalePrefix(path) case final bare when bare != path) {
+        return state.uri.replace(path: bare).toString();
+      }
+      // The proposal document lives on the tracking screen in the app.
+      if (path.startsWith('/proposal/') && !path.contains('/preview/')) {
+        return Uri(
+          path: '/track',
+          queryParameters: {'code': path.substring('/proposal/'.length)},
+        ).toString();
+      }
       // First run: the language comes before anything else.
       if (ref.read(settingsProvider).language == null) {
         return path == '/welcome' ? null : '/welcome';
@@ -182,7 +212,29 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(path: '/help', builder: (_, _) => const HelpCentreScreen()),
+      GoRoute(
+        path: '/experts',
+        builder: (_, _) => const ExpertsScreen(),
+        routes: [
+          GoRoute(
+            path: ':slug',
+            builder: (_, state) =>
+                ExpertScreen(slug: state.pathParameters['slug']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/help',
+        builder: (_, _) => const HelpCentreScreen(),
+        routes: [
+          // A guide's own address opens the centre with that guide on top.
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                HelpCentreScreen(guide: state.pathParameters['id']),
+          ),
+        ],
+      ),
       GoRoute(path: '/contact', builder: (_, _) => const ContactScreen()),
       // Client intake.
       GoRoute(

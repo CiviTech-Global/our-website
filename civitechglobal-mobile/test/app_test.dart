@@ -7,6 +7,7 @@ import 'package:civitech_global_flutter/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api_client_test.dart' show MemoryTokens;
@@ -125,6 +126,35 @@ void main() {
       colors().primary,
       BaghColors.resolve(GardenPalette.lapis, Brightness.light).primary,
     );
+  });
+
+  group('website addresses', () {
+    Future<String> visit(WidgetTester tester, String path) async {
+      final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
+      router.go(path);
+      await settle(tester);
+      return router.routerDelegate.currentConfiguration.uri.toString();
+    }
+
+    testWidgets('lose their language prefix', (tester) async {
+      await pumpApp(tester, language: 'en');
+      expect(await visit(tester, '/de/team'), '/team');
+      expect(await visit(tester, '/fr'), '/');
+      expect(await visit(tester, '/en/track?code=AB12'), '/track?code=AB12');
+    });
+
+    testWidgets('a proposal opens on the tracking screen', (tester) async {
+      await pumpApp(tester, language: 'en');
+      expect(await visit(tester, '/proposal/PROJ1234'), '/track?code=PROJ1234');
+    });
+
+    testWidgets('a guide opens over the help centre', (tester) async {
+      await pumpApp(tester, language: 'en');
+      expect(await visit(tester, '/help/consult'), '/help/consult');
+      await settle(tester);
+      // The intro is in the guide, not in the centre's list.
+      expect(find.textContaining('Your career path'), findsOneWidget);
+    });
   });
 
   testWidgets('the sign-in form checks its fields before asking the server', (
