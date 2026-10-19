@@ -134,7 +134,7 @@ export async function sendApplicationMessage(
       type: 'message.received',
       title: 'پیام جدید',
       body: `پیام جدید دربارهٔ «${anchor.jobTitle}»: ${body.slice(0, 80)}`,
-      link: `/dashboard/messages/${applicationId}`,
+      link: `/dashboard/messages/a/${applicationId}`,
     });
   }
 
@@ -156,7 +156,7 @@ export async function sendBidMessage(userId: string, bidId: string, body: string
       type: 'message.received',
       title: 'پیام جدید',
       body: `پیام جدید دربارهٔ «${anchor.projectTitle}»: ${body.slice(0, 80)}`,
-      link: `/dashboard/messages/${bidId}`,
+      link: `/dashboard/messages/b/${bidId}`,
     });
   }
 

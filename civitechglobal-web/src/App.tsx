@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router';
+import { Navigate, Routes, Route } from 'react-router';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { UserLayout } from '@/components/layout/UserLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -837,6 +837,9 @@ export default function App() {
             </Suspense>
           }
         />
+        {/* Message notifications written before the thread kind was in the
+            link (/dashboard/messages/<id>): to the list, not the not-found page. */}
+        <Route path="messages/:threadId" element={<Navigate to="/dashboard/messages" replace />} />
         <Route
           path="messages/:kind/:threadId"
           element={
