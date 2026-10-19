@@ -20,9 +20,18 @@ npm run test:mobile   # flutter test
 
 Or inside this folder: `flutter pub get`, `flutter run`, `flutter test`.
 
-Against a local server instead of production:
-`flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000/api/v1`
-(10.0.2.2 is the host machine, seen from the Android emulator).
+Against a local server instead of production, in a debug build (the only
+kind allowed plain HTTP, and only to these hosts:
+`android/app/src/debug/res/xml/network_security_config.xml`):
+
+- a phone on USB: `adb reverse tcp:5000 tcp:5000`, then
+  `flutter run --dart-define=API_BASE_URL=http://localhost:5000/api/v1`;
+- the emulator: `--dart-define=API_BASE_URL=http://10.0.2.2:5000/api/v1`
+  (10.0.2.2 is the host machine, seen from the emulator).
+
+The development demo data (`npm run demo:seed` in civitechglobal-server) has
+members with conversations and notifications; every demo account's password
+is `demo-password`.
 
 ## Layout
 

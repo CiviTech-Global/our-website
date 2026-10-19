@@ -41,7 +41,7 @@ void main() {
             : '$prefix$path';
         expect(claimedPaths, contains(claimed), reason: claimed);
       }
-      for (final section in ['/blog/', '/help/', '/experts/', '/insurance/']) {
+      for (final section in appPrefixes) {
         expect(claimedPrefixes, contains('$prefix$section'));
       }
     }

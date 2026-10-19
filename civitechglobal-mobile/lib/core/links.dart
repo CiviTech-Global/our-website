@@ -33,7 +33,18 @@ const appPaths = <String>{
   '/forgot-password',
   '/reset-password',
   '/verify-email',
+  '/dashboard/messages',
+  '/dashboard/notifications',
 };
+
+/// Sections whose every page is a screen in the app.
+const appPrefixes = <String>[
+  '/blog/',
+  '/help/',
+  '/experts/',
+  '/insurance/',
+  '/dashboard/messages/',
+];
 
 /// [path] without the website's language prefix: '/en/blog' is '/blog', and
 /// '/en' is '/'. Persian has no prefix on the website.
@@ -51,12 +62,9 @@ String stripLocalePrefix(String path) {
 bool isAppPath(String path) {
   final clean = Uri.parse(path).path;
   return appPaths.contains(clean) ||
-      clean.startsWith('/blog/') ||
-      clean.startsWith('/help/') ||
-      clean.startsWith('/experts/') ||
+      appPrefixes.any(clean.startsWith) ||
       (clean.startsWith('/proposal/') &&
-          !clean.startsWith('/proposal/preview/')) ||
-      clean.startsWith('/insurance/');
+          !clean.startsWith('/proposal/preview/'));
 }
 
 /// Follows a link: inside the app when it can, to the website or the wider

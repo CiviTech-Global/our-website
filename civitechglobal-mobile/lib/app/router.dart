@@ -24,6 +24,7 @@ import '../features/explore/explore_screen.dart';
 import '../features/help/help_centre_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/inbox/inbox_screen.dart';
+import '../features/inbox/thread_screen.dart';
 import '../features/insurance/apply_screen.dart';
 import '../features/insurance/insurance_screen.dart';
 import '../features/insurance/product_screen.dart';
@@ -81,6 +82,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           queryParameters: {'code': path.substring('/proposal/'.length)},
         ).toString();
       }
+      // The web's member inbox is the Inbox tab here. A message notice
+      // written before the thread's kind was in its link
+      // (/dashboard/messages/<id>) opens the list.
+      if (path == '/dashboard/messages' ||
+          RegExp(r'^/dashboard/messages/[^/]+$').hasMatch(path)) {
+        return '/inbox';
+      }
+      if (path == '/dashboard/notifications') {
+        return '/inbox?tab=notifications';
+      }
       // First run: the language comes before anything else.
       if (ref.read(settingsProvider).language == null) {
         return path == '/welcome' ? null : '/welcome';
@@ -90,7 +101,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Screens that need an account send a signed-out visitor to sign in
       // and back again afterwards.
       final session = ref.read(sessionProvider);
-      const private = ['/me/security'];
+      const private = ['/me/security', '/dashboard'];
       if (!session.isLoading &&
           session.value == null &&
           private.any(path.startsWith)) {
@@ -119,7 +130,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/inbox', builder: (_, _) => const InboxScreen()),
+              GoRoute(
+                path: '/inbox',
+                builder: (_, state) =>
+                    InboxScreen(tab: state.uri.queryParameters['tab']),
+              ),
             ],
           ),
           StatefulShellBranch(
@@ -128,6 +143,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/me/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(
+        path: '/dashboard/messages/:kind/:threadId',
+        builder: (_, state) => ThreadScreen(
+          kind: state.pathParameters['kind']!,
+          threadId: state.pathParameters['threadId']!,
+        ),
+      ),
       GoRoute(
         path: '/me/security',
         builder: (_, _) => const SecurityScreen(),

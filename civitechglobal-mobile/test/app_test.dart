@@ -148,6 +148,26 @@ void main() {
       expect(await visit(tester, '/proposal/PROJ1234'), '/track?code=PROJ1234');
     });
 
+    testWidgets('the member inbox is the Inbox tab', (tester) async {
+      await pumpApp(tester, language: 'en');
+      expect(await visit(tester, '/dashboard/messages'), '/inbox');
+      expect(
+        await visit(tester, '/dashboard/notifications'),
+        '/inbox?tab=notifications',
+      );
+      // A message notice from before the thread kind was in its link.
+      expect(await visit(tester, '/dashboard/messages/abc123'), '/inbox');
+    });
+
+    testWidgets('a thread asks a signed-out visitor to sign in', (
+      tester,
+    ) async {
+      await pumpApp(tester, language: 'en');
+      final at = Uri.parse(await visit(tester, '/dashboard/messages/b/t1'));
+      expect(at.path, '/login');
+      expect(at.queryParameters['from'], '/dashboard/messages/b/t1');
+    });
+
     testWidgets('a guide opens over the help centre', (tester) async {
       await pumpApp(tester, language: 'en');
       expect(await visit(tester, '/help/consult'), '/help/consult');

@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart' show TextDirection;
 import 'package:shamsi_date/shamsi_date.dart';
 
 const _persianDigits = '۰۱۲۳۴۵۶۷۸۹';
@@ -38,6 +39,13 @@ const _jalaliMonths = [
 
 /// A date as its reader expects it: the Iranian calendar in Persian digits
 /// for Persian ("۲۵ مهر ۱۴۰۵"), ISO-like Gregorian otherwise.
+/// The hour and minute of [date], local, in the reader's digits.
+String formatTime(DateTime date, String language) {
+  final local = date.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return localDigits('${two(local.hour)}:${two(local.minute)}', language);
+}
+
 String formatDate(DateTime date, String language) {
   final local = date.toLocal();
   if (language == 'fa') {
@@ -46,4 +54,21 @@ String formatDate(DateTime date, String language) {
   }
   String two(int n) => n.toString().padLeft(2, '0');
   return '${local.year}-${two(local.month)}-${two(local.day)}';
+}
+
+final _firstLetter = RegExp(r'\p{L}', unicode: true);
+
+/// Hebrew, Arabic and Persian letters, with their presentation forms.
+bool _isRtl(int c) =>
+    (c >= 0x0590 && c <= 0x08FF) ||
+    (c >= 0xFB1D && c <= 0xFDFF) ||
+    (c >= 0xFE70 && c <= 0xFEFF);
+
+/// The direction of what someone wrote, from its first letter: the web's
+/// `dir="auto"`. A message in English reads left to right in a Persian
+/// screen; one with no letters at all (a number, an emoji) takes [fallback].
+TextDirection textDirectionOf(String text, TextDirection fallback) {
+  final letter = _firstLetter.firstMatch(text)?.group(0);
+  if (letter == null) return fallback;
+  return _isRtl(letter.runes.first) ? TextDirection.rtl : TextDirection.ltr;
 }

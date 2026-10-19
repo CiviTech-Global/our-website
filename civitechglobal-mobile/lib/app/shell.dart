@@ -8,6 +8,7 @@ import '../design/palette.dart';
 import '../design/tokens.dart';
 import '../design/widgets/glass_pane.dart';
 import '../design/widgets/pressable.dart';
+import '../features/inbox/inbox_data.dart';
 import '../features/start/start_sheet.dart';
 import '../l10n/l10n.dart';
 
@@ -75,6 +76,7 @@ class AppShell extends ConsumerWidget {
                   selectedIcon: items[i].$2,
                   label: items[i].$3,
                   selected: shell.currentIndex == i,
+                  badge: i == 2 ? ref.watch(inboxBadgeProvider) : 0,
                   onTap: () => go(i),
                 ),
             ],
@@ -202,6 +204,7 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.badge = 0,
   });
 
   final IconData icon;
@@ -209,6 +212,9 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Unread items: a dot on the icon, and the count for a screen reader.
+  final int badge;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +225,7 @@ class _NavItem extends StatelessWidget {
       selected: selected,
       child: Pressable(
         onPressed: onTap,
-        semanticLabel: label,
+        semanticLabel: badge > 0 ? '$label ($badge)' : label,
         focusRadius: 20,
         builder: (context, _) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -232,10 +238,15 @@ class _NavItem extends StatelessWidget {
                 color: selected ? c.primarySoft.fill : Colors.transparent,
                 shape: const StadiumBorder(),
               ),
-              child: Icon(
-                selected ? selectedIcon : icon,
-                color: selected ? c.primarySoft.ink : color,
-                size: 22,
+              child: Badge(
+                isLabelVisible: badge > 0,
+                backgroundColor: c.accent,
+                smallSize: 9,
+                child: Icon(
+                  selected ? selectedIcon : icon,
+                  color: selected ? c.primarySoft.ink : color,
+                  size: 22,
+                ),
               ),
             ),
             // Scaled down a little rather than cut off when a language's word

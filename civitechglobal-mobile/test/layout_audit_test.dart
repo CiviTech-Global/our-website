@@ -98,6 +98,14 @@ const _screens = [
   '/insurance/test-cover/apply?step=1',
 ];
 
+/// Screens a member sees: audited signed in only.
+const _memberScreens = [
+  '/inbox?tab=notifications',
+  '/dashboard/messages/b/t1',
+  '/dashboard/messages/a/t2',
+  '/dashboard/messages/x/t1',
+];
+
 /// Data with the longest real-world shapes: long names, bios, quotes and
 /// technology lists, so content screens are laid out with something in them.
 Future<(int, Object?)> _fakeApi(RequestOptions o) async {
@@ -171,7 +179,108 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     'featured': true,
     'photoUrl': null,
   };
+  final conversation = {
+    'threadId': 't1',
+    'kind': 'bid',
+    'listingTitle': project['title'],
+    'listingCode': 'P1234',
+    'path': '/projects/P1234',
+    'counterpart': {'verified': true},
+    'counterpartName': member['name'],
+    'lastMessage': {
+      'body': long,
+      'createdAt': '2026-10-05T10:00:00Z',
+      'mine': true,
+    },
+    'unreadCount': 128,
+  };
+  final notice = {
+    'id': 'n1',
+    'type': 'message.received',
+    'title': 'A new offer on your project, from a verified freelancer',
+    'body': long,
+    'link': '/dashboard/messages/b/t1',
+    'readAt': null,
+    'createdAt': '2026-10-05T10:00:00Z',
+  };
   return switch (o.path) {
+    '/market/me/conversations' => (
+      200,
+      {
+        'data': [
+          conversation,
+          {
+            ...conversation,
+            'threadId': 't2',
+            'kind': 'application',
+            'unreadCount': 0,
+            'counterpartName': null,
+            'counterpart': null,
+          },
+        ],
+      },
+    ),
+    '/market/me/notifications/unread-count' => (
+      200,
+      {
+        'data': {'count': 7},
+      },
+    ),
+    '/market/me/notifications' => (
+      200,
+      {
+        'data': {
+          'items': [
+            notice,
+            {...notice, 'id': 'n2', 'readAt': '2026-10-06T10:00:00Z'},
+            {...notice, 'id': 'n3', 'link': null},
+          ],
+          'page': 1,
+          'pageSize': 20,
+          'total': 30,
+          'totalPages': 2,
+          'unreadCount': 7,
+        },
+      },
+    ),
+    '/market/me/bids/t1/messages' => (
+      200,
+      {
+        'data': {
+          'anchor': {
+            'kind': 'bid',
+            'listingTitle': project['title'],
+            'listingCode': 'P1234',
+            'path': '/projects/P1234',
+          },
+          'messages': [
+            for (var i = 0; i < 6; i++)
+              {
+                'id': 'm$i',
+                'body': i.isEven ? long : 'Thanks, that works.',
+                'senderId': i.isEven ? 'u1' : 'u2',
+                'readAt': null,
+                'createdAt': '2026-10-0${i + 1}T10:00:00Z',
+                'mine': i.isEven,
+              },
+          ],
+        },
+      },
+    ),
+    '/market/me/applications/t2/messages' => (
+      200,
+      {
+        'data': {
+          'anchor': {
+            'kind': 'application',
+            'listingTitle': 'Senior Flutter engineer',
+            'listingCode': 'J1',
+            'path': '/jobs/J1',
+          },
+          'messages': <Object>[],
+        },
+      },
+    ),
     '/team' => (
       200,
       {
@@ -464,9 +573,12 @@ void main() {
         '$language ${size.width.toInt()}x${size.height.toInt()} '
         'text×$scale ${palette.name} ${mode.name}';
     for (final signedIn in [false, true]) {
-      for (final target in [..._screens, ..._sheets]) {
-        // Signed-in only changes Home and Me; skip the rest twice over.
-        if (signedIn && !['/', '/me'].contains(target)) continue;
+      for (final target in [..._screens, ..._sheets, ..._memberScreens]) {
+        // Signed-in only changes Home, Me and the member screens; skip the
+        // rest twice over, and the member screens signed out.
+        final member = _memberScreens.contains(target);
+        final changes = member || ['/', '/me', '/inbox'].contains(target);
+        if (signedIn ? !changes : member) continue;
         testWidgets('$target ${signedIn ? '(signed in) ' : ''}fits: $where', (
           tester,
         ) async {

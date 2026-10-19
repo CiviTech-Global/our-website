@@ -72,10 +72,12 @@ class RemoteImage extends StatelessWidget {
 }
 
 /// The first letter of each of the first two words: "MA" for Maryam Ahmadi.
+/// Marks before a letter go, so a handle reads "R" for @reza_data, not "@".
 String initialsOf(String name) => name
     .trim()
     .split(RegExp(r'\s+'))
+    .map((w) => w.replaceFirst(RegExp(r'^[^\p{L}\p{N}]+', unicode: true), ''))
     .where((w) => w.isNotEmpty)
     .take(2)
-    .map((w) => w.characters.first)
+    .map((w) => w.characters.first.toUpperCase())
     .join();

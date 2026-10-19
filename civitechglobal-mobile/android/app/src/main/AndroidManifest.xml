@@ -67,6 +67,9 @@
                 <data android:pathPrefix="/help/"/>
                 <data android:pathPrefix="/experts/"/>
                 <data android:pathPrefix="/insurance/"/>
+                <data android:path="/dashboard/messages"/>
+                <data android:path="/dashboard/notifications"/>
+                <data android:pathPrefix="/dashboard/messages/"/>
                 <data android:path="/en"/>
                 <data android:path="/en/services"/>
                 <data android:path="/en/about"/>
@@ -93,6 +96,9 @@
                 <data android:pathPrefix="/en/help/"/>
                 <data android:pathPrefix="/en/experts/"/>
                 <data android:pathPrefix="/en/insurance/"/>
+                <data android:path="/en/dashboard/messages"/>
+                <data android:path="/en/dashboard/notifications"/>
+                <data android:pathPrefix="/en/dashboard/messages/"/>
                 <data android:path="/tr"/>
                 <data android:path="/tr/services"/>
                 <data android:path="/tr/about"/>
@@ -119,6 +125,9 @@
                 <data android:pathPrefix="/tr/help/"/>
                 <data android:pathPrefix="/tr/experts/"/>
                 <data android:pathPrefix="/tr/insurance/"/>
+                <data android:path="/tr/dashboard/messages"/>
+                <data android:path="/tr/dashboard/notifications"/>
+                <data android:pathPrefix="/tr/dashboard/messages/"/>
                 <data android:path="/de"/>
                 <data android:path="/de/services"/>
                 <data android:path="/de/about"/>
@@ -145,6 +154,9 @@
                 <data android:pathPrefix="/de/help/"/>
                 <data android:pathPrefix="/de/experts/"/>
                 <data android:pathPrefix="/de/insurance/"/>
+                <data android:path="/de/dashboard/messages"/>
+                <data android:path="/de/dashboard/notifications"/>
+                <data android:pathPrefix="/de/dashboard/messages/"/>
                 <data android:path="/fr"/>
                 <data android:path="/fr/services"/>
                 <data android:path="/fr/about"/>
@@ -171,6 +183,9 @@
                 <data android:pathPrefix="/fr/help/"/>
                 <data android:pathPrefix="/fr/experts/"/>
                 <data android:pathPrefix="/fr/insurance/"/>
+                <data android:path="/fr/dashboard/messages"/>
+                <data android:path="/fr/dashboard/notifications"/>
+                <data android:pathPrefix="/fr/dashboard/messages/"/>
                 <data android:path="/es"/>
                 <data android:path="/es/services"/>
                 <data android:path="/es/about"/>
@@ -197,6 +212,9 @@
                 <data android:pathPrefix="/es/help/"/>
                 <data android:pathPrefix="/es/experts/"/>
                 <data android:pathPrefix="/es/insurance/"/>
+                <data android:path="/es/dashboard/messages"/>
+                <data android:path="/es/dashboard/notifications"/>
+                <data android:pathPrefix="/es/dashboard/messages/"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
