@@ -125,6 +125,11 @@ services:
       OTP_RESEND_COOLDOWN_SECONDS: "{{ otp_resend_cooldown_seconds }}"
       OTP_MAX_ATTEMPTS: "{{ otp_max_attempts }}"
       PHONE_TOKEN_TTL_SECONDS: "{{ phone_token_ttl_seconds }}"
+      # Pushes to the mobile app. 'none' until a Pushe account exists; the
+      # token lives in the vault once there is one (default '' until then).
+      PUSH_PROVIDER: "{{ push_provider }}"
+      PUSHE_API_TOKEN: "{{ vault_pushe_api_token | default('') }}"
+      PUSHE_APP_ID: "{{ pushe_app_id }}"
     deploy:
       resources:
         limits:

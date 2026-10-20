@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/auth/session.dart';
 import '../core/capabilities.dart';
+import '../core/links.dart';
+import '../core/push.dart';
 import '../core/settings.dart';
 import '../design/theme.dart';
 import '../features/settings/update_screen.dart';
@@ -24,6 +27,16 @@ class CiviTechApp extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final language = ref.watch(l10nProvider.select((l) => l.language));
     final router = ref.watch(routerProvider);
+    // This phone is registered for whoever is signed in. The session always
+    // starts out loading, so a member already signed in arrives here too.
+    ref
+      ..listen(sessionProvider.select((s) => s.value?.id), (_, id) {
+        if (id != null) ref.read(pushRegistrarProvider).register(id);
+      })
+      // A tapped push opens what it is about, when the app has that screen.
+      ..listen(pushTapsProvider, (_, next) {
+        if (next.value case final link? when isAppPath(link)) router.push(link);
+      });
     final highContrast = MediaQuery.maybeHighContrastOf(context) ?? false;
 
     return MaterialApp.router(

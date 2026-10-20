@@ -21,6 +21,7 @@ import demoRoutes from './demo.routes.js';
 import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
 import sitemapRoutes from './sitemap.routes.js';
+import pushRoutes from './push.routes.js';
 
 const router = Router();
 
@@ -56,6 +57,9 @@ router.use('/showcase', showcaseRoutes);
 
 // What this deployment can do — read before offering email or SMS steps.
 router.use('/capabilities', capabilitiesRoutes);
+
+// The mobile app's phones, for pushing notifications to.
+router.use('/push', pushRoutes);
 
 // Which language to open in, for a visitor who has not chosen one.
 router.use('/i18n', i18nRoutes);

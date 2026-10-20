@@ -151,6 +151,17 @@ export const env = {
   /** Kavenegar/SMS.ir verify-lookup template name. */
   SMS_OTP_TEMPLATE: optional('SMS_OTP_TEMPLATE', ''),
 
+  // --- Push notifications to the mobile app -------------------------------
+  //
+  // 'none' registers phones and sends nothing: the default, and the setting
+  // until a Pushe account exists. 'console' logs what would be sent
+  // (development only); 'pushe' sends. See `services/push/index.ts`.
+  PUSH_PROVIDER: optional('PUSH_PROVIDER', 'none'),
+  PUSHE_API_TOKEN: optional('PUSHE_API_TOKEN', ''),
+  PUSHE_APP_ID: optional('PUSHE_APP_ID', ''),
+  /** Placeholder until checked against Pushe's API reference. */
+  PUSHE_API_URL: optional('PUSHE_API_URL', 'https://api.pushe.co/v2/messaging/notifications/'),
+
   OTP_TTL_SECONDS: parseInt(optional('OTP_TTL_SECONDS', '300'), 10),
   /** Seconds a caller must wait between requesting codes for one number. */
   OTP_RESEND_COOLDOWN_SECONDS: parseInt(optional('OTP_RESEND_COOLDOWN_SECONDS', '60'), 10),

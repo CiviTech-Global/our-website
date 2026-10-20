@@ -2,6 +2,7 @@ import { prisma } from '../config/database.js';
 import { toPage } from '../utils/page.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { pushSafely } from './push-devices.service.js';
 
 /**
  * In-app notifications.
@@ -35,6 +36,9 @@ export async function notifyUser(userId: string, input: NotifyInput): Promise<vo
       link: input.link,
     },
   });
+  // The same notice on the member's phones, once the row exists: the row is
+  // the record, the push only says there is something to read.
+  pushSafely(userId, { title: input.title, body: input.body, link: input.link });
 }
 
 /** Fire-and-forget: logs, never throws, callers do not await for correctness. */

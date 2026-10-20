@@ -73,6 +73,25 @@
           applicant instead of failing here.
       no_log: true
 
+    - name: Refuse to deploy a push provider that cannot deliver
+      # The SMS rule again: a real provider with real credentials, or 'none'
+      # said out loud. Pushes are a convenience (the app polls and catches up
+      # on launch), but a named provider that fails every send only fills the
+      # log. The console provider would write members' notices to it.
+      ansible.builtin.assert:
+        that:
+          - push_provider in ['none', 'pushe']
+          - >-
+            push_provider == 'none' or (
+              vault_pushe_api_token is defined and (vault_pushe_api_token | length) > 0
+              and not (vault_pushe_api_token | string).startswith('REPLACE_ME')
+              and (pushe_app_id | length) > 0
+            )
+        fail_msg: >-
+          push_provider must be pushe with vault_pushe_api_token in vault.yml
+          and pushe_app_id set, or 'none' while there is no Pushe account.
+      no_log: true
+
     - name: Refuse to deploy a mail provider that cannot deliver
       # Either this deployment has a working provider, or it says out loud that
       # it has none. What is not allowed is the state this was in: a real

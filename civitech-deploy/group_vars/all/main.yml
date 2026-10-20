@@ -125,6 +125,13 @@ db_app_user: civitech_app
 # thing so the failure surfaces before the container starts.
 sms_provider: none
 
+# Push notifications to the mobile app (services/push in the API). "none"
+# registers phones and sends nothing: the setting until a Pushe account
+# exists. "pushe" needs vault_pushe_api_token and pushe_app_id; deploy.yml
+# refuses it with either missing. "console" is refused in production.
+push_provider: none
+pushe_app_id: ""
+
 otp_ttl_seconds: 300
 # Per-number cooldown. The API also rate-limits per caller; this bounds many
 # sources hitting one number, that bounds one source hitting many numbers.

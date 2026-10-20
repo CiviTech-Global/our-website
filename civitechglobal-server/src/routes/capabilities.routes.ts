@@ -3,6 +3,7 @@ import { publicCache } from '../middleware/cacheControl.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { canSendEmail } from '../services/email/index.js';
 import { canSendSms } from '../services/sms/index.js';
+import { canSendPush } from '../services/push/index.js';
 import { features } from '../config/features.js';
 
 /**
@@ -67,6 +68,9 @@ router.get(
     successResponse(res, {
       email: safely(canSendEmail),
       sms: safely(canSendSms),
+      // Whether a registered phone is actually reached. The app registers
+      // either way, so turning a provider on reaches it without a release.
+      push: safely(canSendPush),
       // The module switches, so the app follows production's without a new
       // release; the web reads the same switches at build time.
       features: { ...features },

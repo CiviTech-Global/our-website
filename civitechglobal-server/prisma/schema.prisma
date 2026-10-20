@@ -199,6 +199,7 @@ model User {
   reviewsReceived MarketplaceReview[]  @relation("Reviewee")
   reviewsGiven    MarketplaceReview[]  @relation("Rater")
   notifications   Notification[]
+  pushDevices     PushDevice[]
   messagesSent    MarketplaceMessage[] @relation("MessageSender")
 
   @@index([role])
@@ -1881,6 +1882,34 @@ model Notification {
 
   @@index([userId, readAt, createdAt])
   @@map("notifications")
+}
+
+/// A phone that receives this account's notifications as pushes. The token
+/// is the push provider's address for one app install, so it is unique per
+/// provider: an install that signs in as somebody else moves to them rather
+/// than receiving both accounts' notices. Removed on sign-out from that
+/// phone and whenever every session of the account ends.
+model PushDevice {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// pushe today; fcm when it is added. See services/push.
+  provider   String
+  token      String
+  /// android; ios if it is ever built.
+  platform   String
+  appVersion String? @map("app_version")
+  /// The app's language, so a later localised push knows which to use.
+  language   String?
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+
+  @@unique([provider, token])
+  @@index([userId])
+  @@map("push_devices")
 }
 
 /// Ratings are two-sided and only exist after an award: one review per

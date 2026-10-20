@@ -123,3 +123,26 @@ The browser keeps its refresh token in an httpOnly cookie. The app sends
   keep it in secure storage (Keychain / Android Keystore), never in plain
   preferences.
 - Every other request uses `Authorization: Bearer <accessToken>`.
+
+## Push notifications
+
+Every in-app notification the server writes is also pushed to the member's
+registered phones (`civitechglobal-server/src/services/push`). Until a Pushe
+account exists this is wired with placeholders:
+
+- The app has no push SDK yet. `NoPushTokenSource` (`lib/core/push.dart`)
+  returns no token, so nothing is registered; the Inbox polls while the app
+  is open and catches up on launch, so nothing is missed. Adding Pushe means
+  a `PushTokenSource` backed by `pushe_flutter` and nothing else.
+- The server's `PUSH_PROVIDER` is `none` (production too; `deploy.yml`
+  refuses `pushe` without `vault_pushe_api_token` and `pushe_app_id`).
+  The Pushe request format in `PushePushProvider` must be checked against
+  Pushe's API reference when the account is set up.
+- The app registers the phone at sign-in and on every start, removes it
+  before signing out, and the server forgets every phone of an account when
+  all its sessions end. A tapped push opens its link in the app.
+
+To try the whole path locally: run the server with `PUSH_PROVIDER=console`,
+and build with `--dart-define=PUSH_DEV_TOKEN=<any 8+ characters>`. The
+server log then shows `[console push]` with what each notification would
+have sent.

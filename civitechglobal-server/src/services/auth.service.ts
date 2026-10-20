@@ -8,6 +8,7 @@ import { hashPassword, comparePassword } from '../utils/password.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, getRefreshTokenExpiry } from '../utils/jwt.js';
 import { AppError } from '../middleware/errorHandler.js';
 import type { RegisterInput, LoginInput, UpdateProfileInput } from '../validators/auth.schema.js';
+import { forgetDevices } from './push-devices.service.js';
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_WINDOW_SECONDS = 15 * 60;
@@ -366,6 +367,10 @@ export async function changePassword(userId: string, currentPassword: string, ne
 export async function revokeAllUserRefreshTokens(userId: string): Promise<void> {
   await refreshTokenRepository.updateMany({ where: { userId }, data: { revokedAt: new Date() } });
   await userRepository.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
+  // Every session ended (sign out everywhere, a new password, a paused
+  // account, a replayed token): no phone keeps receiving the account's
+  // notices. A phone still signed in registers itself again on its next start.
+  await forgetDevices(userId);
 }
 
 export async function getMe(userId: string) {

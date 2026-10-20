@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_client.dart';
 import '../api/api_exception.dart';
+import '../push.dart';
 import 'auth_user.dart';
 
 /// What a sign-in attempt produced: a session, or a second-factor challenge.
@@ -108,6 +109,9 @@ class SessionController extends AsyncNotifier<AuthUser?> {
   );
 
   Future<void> logout() async {
+    // This phone stops receiving the account's notices before the session
+    // that can say whose phone it is ends.
+    await ref.read(pushRegistrarProvider).unregister();
     final token = await _api.tokens.readRefreshToken();
     try {
       await _api.post<Object?>('/auth/logout', body: {'refreshToken': token});
@@ -122,6 +126,9 @@ class SessionController extends AsyncNotifier<AuthUser?> {
 
   /// Ends every session for this account, on every device.
   Future<void> logoutEverywhere() async {
+    // The server forgets every phone of the account itself; this only
+    // stops this one being remembered here as registered.
+    await ref.read(pushRegistrarProvider).unregister();
     try {
       await _api.post<Object?>('/auth/logout-all');
     } finally {
