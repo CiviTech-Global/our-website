@@ -96,11 +96,15 @@ const _screens = [
   '/insurance/test-cover',
   '/insurance/test-cover/apply',
   '/insurance/test-cover/apply?step=1',
+  '/profiles/maryam_long',
+  '/profiles/missing',
 ];
 
 /// Screens a member sees: audited signed in only.
 const _memberScreens = [
   '/dashboard/requests',
+  '/dashboard/profile',
+  '/dashboard/verification',
   '/inbox?tab=notifications',
   '/dashboard/messages/b/t1',
   '/dashboard/messages/a/t2',
@@ -527,6 +531,93 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
       },
     ),
     '/insurance/products/test-cover' => (200, {'data': _insuranceDetail}),
+    '/market/me/profile' => (
+      200,
+      {
+        'data': {
+          'username': 'maryam_alexandra_ahmadi',
+          'headline': member['title'],
+          'bio': long,
+          'website': 'https://maryam-alexandra-ahmadi-khorasani.example.com',
+          'skills': [
+            'Kubernetes',
+            'PostgreSQL',
+            'Flutter',
+            'Distributed systems',
+          ],
+        },
+      },
+    ),
+    // A company turned down once: the status, the reviewer's note and the
+    // whole form again, with the company's own fields.
+    '/market/me/verification' => (
+      200,
+      {
+        'data': {
+          'status': 'REJECTED',
+          'kind': 'COMPANY',
+          'legalFirstName': 'Maryam-Alexandra',
+          'legalLastName': 'Ahmadi-Khorasani',
+          'companyName': org['name'],
+          'submittedAt': '2026-10-01T10:00:00Z',
+          'reviewedAt': '2026-10-02T10:00:00Z',
+          'reviewNote': long,
+          'documents': <Object>[],
+        },
+      },
+    ),
+    '/market/profiles/maryam_long' => (
+      200,
+      {
+        'data': {
+          'username': 'maryam_alexandra_ahmadi_khorasani',
+          'headline': member['title'],
+          'bio': long,
+          'skills': [
+            'Kubernetes and platform engineering',
+            'PostgreSQL',
+            'Flutter',
+            'Distributed systems',
+          ],
+          'website': 'https://maryam-alexandra-ahmadi-khorasani.example.com',
+          'companyName': org['name'],
+          'verified': true,
+          'ratingAvg': 4.5,
+          'ratingCount': 1284,
+          'joinedAt': '2021-03-01T10:00:00Z',
+          'jobs': [
+            {
+              'code': 'J1',
+              'title': 'Senior Flutter engineer for a municipal services app',
+              'employmentType': 'FULL_TIME',
+              'state': 'OPEN',
+              'publishedAt': '2026-10-01T10:00:00Z',
+            },
+          ],
+          'projects': [
+            {
+              'code': 'P1',
+              'title': project['title'],
+              'category': 'Web development and civic technology',
+              'state': 'AWARDED',
+              'publishedAt': '2026-10-01T10:00:00Z',
+            },
+          ],
+          'reviews': [
+            for (final role in ['employer', 'client', 'buyer'])
+              {
+                'rating': 4,
+                'text': long,
+                'createdAt': '2026-10-01T10:00:00Z',
+                'role': role,
+                'listingCode': 'X1',
+                'listingTitle': project['title'],
+                'listingPath': role == 'buyer' ? null : '/projects/X1',
+              },
+          ],
+        },
+      },
+    ),
     _ => (404, {'success': false, 'message': 'not found'}),
   };
 }

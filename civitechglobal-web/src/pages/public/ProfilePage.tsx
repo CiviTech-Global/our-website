@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router';
 import { ArrowLeft, Briefcase, FileText, Globe } from 'lucide-react';
 import { usePublicProfile } from '@/api/marketplace';
+import type { PublicProfile } from '@/types/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { formatDate } from '@/i18n/utils';
@@ -19,11 +20,16 @@ const ROLE_LABEL_KEYS = {
 
 type ReviewRole = keyof typeof ROLE_LABEL_KEYS | 'buyer' | 'seller';
 
-/** Where the listing a review was left on lives. */
-function reviewListPath(role: ReviewRole): string {
-  if (role === 'employer' || role === 'applicant') return '/jobs';
-  if (role === 'buyer' || role === 'seller') return '/books';
-  return '/projects';
+/**
+ * Where the listing a review was left on lives: the server's own path, which
+ * knows a service from a project (both read as client and freelancer). The
+ * role-based guess is only for a server from before listingPath.
+ */
+function reviewListingPath(review: PublicProfile['reviews'][number]): string | null {
+  if (review.listingPath !== undefined) return review.listingPath;
+  const role: ReviewRole = review.role;
+  const base = role === 'employer' || role === 'applicant' ? '/jobs' : role === 'buyer' || role === 'seller' ? '/books' : '/projects';
+  return `${base}/${review.listingCode}`;
 }
 
 /**
@@ -169,9 +175,13 @@ export default function ProfilePage() {
                   <RatingStars avg={review.rating} count={0} />
                   <span className="text-xs text-text-muted">
                     {review.role === 'buyer' ? t.bookshop.reviewRoleBuyer : review.role === 'seller' ? t.bookshop.reviewRoleSeller : t.market[ROLE_LABEL_KEYS[review.role]]}{' '}
-                    <Link to={`${reviewListPath(review.role)}/${review.listingCode}`} className="text-brand-600 hover:underline">
-                      {review.listingTitle}
-                    </Link>{' '}
+                    {reviewListingPath(review) ? (
+                      <Link to={reviewListingPath(review)!} className="text-brand-600 hover:underline">
+                        {review.listingTitle}
+                      </Link>
+                    ) : (
+                      review.listingTitle
+                    )}{' '}
                     · {formatDate(review.createdAt, locale)}
                   </span>
                 </div>

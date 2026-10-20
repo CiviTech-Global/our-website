@@ -190,11 +190,8 @@ class AttachmentsField extends StatelessWidget {
 
 /// 1.4 MB, 820 KB: in the reader's digits.
 String formatBytes(int bytes, String language) {
-  final String value;
   if (bytes >= 1024 * 1024) {
-    value = '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-  } else {
-    value = '${(bytes / 1024).ceil()} KB';
+    return '${localDecimal(bytes / (1024 * 1024), 1, language)} MB';
   }
-  return localDigits(value, language);
+  return localDigits('${(bytes / 1024).ceil()} KB', language);
 }

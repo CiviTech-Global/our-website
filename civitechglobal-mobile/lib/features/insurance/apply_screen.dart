@@ -17,6 +17,7 @@ import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/date_field.dart';
 import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/leave_guard.dart';
+import '../../design/widgets/local_counter.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../design/widgets/step_keys.dart';
 import '../../l10n/l10n.dart';
@@ -504,6 +505,7 @@ class _FieldInput extends ConsumerWidget {
           minLines: 3,
           maxLines: 8,
           maxLength: field.maxLength,
+          buildCounter: localCounter(ref.watch(l10nProvider).language),
           keyboardType: TextInputType.multiline,
           onChanged: onChanged,
           decoration: decoration(),

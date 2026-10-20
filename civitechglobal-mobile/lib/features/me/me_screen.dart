@@ -114,6 +114,8 @@ class MeScreen extends ConsumerWidget {
               )
             else
               SoftSurface(
+                onTap: () => context.push('/dashboard/profile'),
+                semanticLabel: s.dashboard.profile,
                 child: Row(
                   spacing: 14,
                   children: [
@@ -140,6 +142,7 @@ class MeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    Icon(forward, color: c.ink2),
                   ],
                 ),
               ),
@@ -158,6 +161,22 @@ class MeScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Column(
                 children: [
+                  if (user != null)
+                    row(
+                      Icons.person_outline_rounded,
+                      s.dashboard.profile,
+                      () => context.push('/dashboard/profile'),
+                    ),
+                  if (user != null)
+                    row(
+                      Icons.verified_user_outlined,
+                      s.market.verificationTitle,
+                      hint: switch (ref.watch(workspaceProvider).value) {
+                        final w? => s.market.label(w.verification),
+                        _ => null,
+                      },
+                      () => context.push('/dashboard/verification'),
+                    ),
                   if (user != null)
                     row(
                       Icons.inventory_2_outlined,

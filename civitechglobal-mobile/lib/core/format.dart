@@ -22,6 +22,14 @@ String toLatinDigits(String value) => value
 String localDigits(Object value, String language) =>
     language == 'fa' ? toPersianDigits(value) : value.toString();
 
+/// [value] with [places] decimals in the reader's script. Persian takes its
+/// own separator (٫): a Latin point beside Persian digits reads as their
+/// dot-shaped zero, so «۵.۰» looks like fifty.
+String localDecimal(num value, int places, String language) {
+  final fixed = value.toStringAsFixed(places);
+  return language == 'fa' ? toPersianDigits(fixed).replaceAll('.', '٫') : fixed;
+}
+
 const _jalaliMonths = [
   'فروردین',
   'اردیبهشت',

@@ -71,6 +71,9 @@
                 <data android:path="/dashboard/requests"/>
                 <data android:path="/dashboard/messages"/>
                 <data android:path="/dashboard/notifications"/>
+                <data android:path="/dashboard/profile"/>
+                <data android:path="/dashboard/verification"/>
+                <data android:pathPrefix="/profiles/"/>
                 <data android:pathPrefix="/dashboard/messages/"/>
                 <data android:path="/en"/>
                 <data android:path="/en/services"/>
@@ -102,6 +105,9 @@
                 <data android:path="/en/dashboard/requests"/>
                 <data android:path="/en/dashboard/messages"/>
                 <data android:path="/en/dashboard/notifications"/>
+                <data android:path="/en/dashboard/profile"/>
+                <data android:path="/en/dashboard/verification"/>
+                <data android:pathPrefix="/en/profiles/"/>
                 <data android:pathPrefix="/en/dashboard/messages/"/>
                 <data android:path="/tr"/>
                 <data android:path="/tr/services"/>
@@ -133,6 +139,9 @@
                 <data android:path="/tr/dashboard/requests"/>
                 <data android:path="/tr/dashboard/messages"/>
                 <data android:path="/tr/dashboard/notifications"/>
+                <data android:path="/tr/dashboard/profile"/>
+                <data android:path="/tr/dashboard/verification"/>
+                <data android:pathPrefix="/tr/profiles/"/>
                 <data android:pathPrefix="/tr/dashboard/messages/"/>
                 <data android:path="/de"/>
                 <data android:path="/de/services"/>
@@ -164,6 +173,9 @@
                 <data android:path="/de/dashboard/requests"/>
                 <data android:path="/de/dashboard/messages"/>
                 <data android:path="/de/dashboard/notifications"/>
+                <data android:path="/de/dashboard/profile"/>
+                <data android:path="/de/dashboard/verification"/>
+                <data android:pathPrefix="/de/profiles/"/>
                 <data android:pathPrefix="/de/dashboard/messages/"/>
                 <data android:path="/fr"/>
                 <data android:path="/fr/services"/>
@@ -195,6 +207,9 @@
                 <data android:path="/fr/dashboard/requests"/>
                 <data android:path="/fr/dashboard/messages"/>
                 <data android:path="/fr/dashboard/notifications"/>
+                <data android:path="/fr/dashboard/profile"/>
+                <data android:path="/fr/dashboard/verification"/>
+                <data android:pathPrefix="/fr/profiles/"/>
                 <data android:pathPrefix="/fr/dashboard/messages/"/>
                 <data android:path="/es"/>
                 <data android:path="/es/services"/>
@@ -226,6 +241,9 @@
                 <data android:path="/es/dashboard/requests"/>
                 <data android:path="/es/dashboard/messages"/>
                 <data android:path="/es/dashboard/notifications"/>
+                <data android:path="/es/dashboard/profile"/>
+                <data android:path="/es/dashboard/verification"/>
+                <data android:pathPrefix="/es/profiles/"/>
                 <data android:pathPrefix="/es/dashboard/messages/"/>
             </intent-filter>
         </activity>

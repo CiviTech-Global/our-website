@@ -131,6 +131,23 @@ class SessionController extends AsyncNotifier<AuthUser?> {
   }
 
   Future<void> reload() async => state = AsyncData(await _me());
+
+  /// Saves the account's own name and phone (`PUT /auth/me`), and shows the
+  /// account as the server now holds it.
+  Future<AuthUser> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String phone,
+  }) async {
+    final user = await _api.put(
+      '/auth/me',
+      body: {'firstName': firstName, 'lastName': lastName, 'phone': phone},
+      parse: (d) =>
+          AuthUser.fromJson((d! as Map)['user'] as Map<String, Object?>),
+    );
+    state = AsyncData(user);
+    return user;
+  }
 }
 
 /// Recovery and verification: no session involved.

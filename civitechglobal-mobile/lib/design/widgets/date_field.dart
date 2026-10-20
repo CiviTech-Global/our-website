@@ -17,6 +17,7 @@ class DateField extends ConsumerWidget {
     required this.onChanged,
     this.firstDate,
     this.lastDate,
+    this.initialDate,
     this.errorText,
     super.key,
   });
@@ -26,6 +27,10 @@ class DateField extends ConsumerWidget {
   final ValueChanged<DateTime?> onChanged;
   final DateTime? firstDate;
   final DateTime? lastDate;
+
+  /// Where the calendar opens while nothing is chosen; today otherwise. A
+  /// birth date opens years back rather than a scroll through decades.
+  final DateTime? initialDate;
   final String? errorText;
 
   @override
@@ -37,7 +42,17 @@ class DateField extends ConsumerWidget {
     final last = lastDate ?? DateTime(now.year + 5);
 
     Future<void> pick() async {
-      final initial = value ?? (now.isBefore(first) ? first : now);
+      // The field that had focus would take it back when the dialog closes
+      // and open the keyboard over the date just chosen.
+      FocusScope.of(context).unfocus();
+      final start = initialDate ?? now;
+      final initial =
+          value ??
+          (start.isBefore(first)
+              ? first
+              : start.isAfter(last)
+              ? last
+              : start);
       DateTime? picked;
       if (language == 'fa') {
         final jalali = await showPersianDatePicker(

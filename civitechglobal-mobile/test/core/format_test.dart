@@ -4,6 +4,15 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'decimals take the Persian separator, not a point that reads as zero',
+    () {
+      expect(localDecimal(4.5, 1, 'fa'), '۴٫۵');
+      expect(localDecimal(5, 1, 'fa'), '۵٫۰');
+      expect(localDecimal(4.5, 1, 'en'), '4.5');
+    },
+  );
+
   group('textDirectionOf', () {
     test('follows the first letter, like dir="auto"', () {
       expect(

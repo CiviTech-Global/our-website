@@ -81,6 +81,12 @@ class ApiClient {
     T Function(Object? data)? parse,
   }) => _send('PUT', path, body: body, parse: parse);
 
+  Future<T> patch<T>(
+    String path, {
+    Object? body,
+    T Function(Object? data)? parse,
+  }) => _send('PATCH', path, body: body, parse: parse);
+
   Future<T> delete<T>(String path, {T Function(Object? data)? parse}) =>
       _send('DELETE', path, parse: parse);
 

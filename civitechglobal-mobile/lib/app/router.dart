@@ -35,6 +35,9 @@ import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
 import '../features/me/me_screen.dart';
 import '../features/me/requests_screen.dart';
+import '../features/profile/profile_screen.dart';
+import '../features/profile/public_profile_screen.dart';
+import '../features/profile/verification_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../l10n/l10n.dart';
@@ -149,6 +152,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/dashboard/requests',
         builder: (_, _) => const RequestsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/profile',
+        builder: (_, _) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/verification',
+        builder: (_, _) => const VerificationScreen(),
+      ),
+      // Public: anyone may read a member's profile.
+      GoRoute(
+        path: '/profiles/:username',
+        builder: (_, state) =>
+            PublicProfileScreen(username: state.pathParameters['username']!),
       ),
       GoRoute(
         path: '/dashboard/messages/:kind/:threadId',

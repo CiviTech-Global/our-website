@@ -195,7 +195,20 @@ export interface PublicProfileReview {
   role: 'employer' | 'applicant' | 'client' | 'freelancer' | 'buyer' | 'seller';
   listingCode: string;
   listingTitle: string;
+  /// Where the listing is read. Sent because the role cannot say: a service
+  /// order and a freelance project both read as client and freelancer, and
+  /// deriving the path from the role sent every service review to a project
+  /// page that does not exist. Null when the listing has no public page (a
+  /// book request whose book has no code).
+  listingPath: string | null;
 }
+
+const LISTING_BASE = {
+  job: '/jobs',
+  project: '/projects',
+  service: '/freelance-services',
+  book: '/books',
+} as const;
 
 export interface PublicProfile {
   username: string;
@@ -384,7 +397,8 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
           : raterIsAuthor
             ? ('client' as const)
             : ('freelancer' as const);
-    return [{ rating: review.rating, text: review.text, createdAt: review.createdAt, role, listingCode: listing.code, listingTitle: listing.title }];
+    const listingPath = listing.code ? `${LISTING_BASE[listing.kind]}/${listing.code}` : null;
+    return [{ rating: review.rating, text: review.text, createdAt: review.createdAt, role, listingCode: listing.code, listingTitle: listing.title, listingPath }];
   });
 
   return {

@@ -242,6 +242,8 @@ export interface PublicProfile {
     role: 'employer' | 'applicant' | 'client' | 'freelancer' | 'buyer' | 'seller';
     listingCode: string;
     listingTitle: string;
+    /** Where the listing is read; null when it has no page. Absent from older servers. */
+    listingPath?: string | null;
   }>;
 }
 
