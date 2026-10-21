@@ -2930,6 +2930,13 @@ const en: typeof fa = {
     leaveStay: 'Keep editing',
     undo: 'Undo',
     requestRemoved: '{code} removed from your requests.',
+    agoYesterday: 'yesterday',
+    agoDays: '{n} days ago',
+    agoLastWeek: 'last week',
+    agoWeeks: '{n} weeks ago',
+    agoLastMonth: 'last month',
+    agoMonths: '{n} months ago',
+    showResults: 'Show results',
     fieldRules: {
       required: 'This field is required',
       minChars: 'At least {n} characters',

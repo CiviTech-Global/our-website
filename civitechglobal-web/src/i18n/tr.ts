@@ -2767,6 +2767,13 @@ const tr: PartialTranslations = {
     leaveStay: 'Düzenlemeye devam et',
     undo: 'Geri al',
     requestRemoved: '{code} isteklerinizden kaldırıldı.',
+    agoYesterday: 'dün',
+    agoDays: '{n} gün önce',
+    agoLastWeek: 'geçen hafta',
+    agoWeeks: '{n} hafta önce',
+    agoLastMonth: 'geçen ay',
+    agoMonths: '{n} ay önce',
+    showResults: 'Sonuçları göster',
     fieldRules: {
       required: 'Bu alan zorunludur',
       minChars: 'En az {n} karakter',

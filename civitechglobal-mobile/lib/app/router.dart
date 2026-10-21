@@ -33,6 +33,8 @@ import '../features/intake/consult_screen.dart';
 import '../features/intake/resume_screen.dart';
 import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
+import '../features/jobs/job_board_screen.dart';
+import '../features/jobs/job_screen.dart';
 import '../features/me/me_screen.dart';
 import '../features/me/requests_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -282,6 +284,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/contact', builder: (_, _) => const ContactScreen()),
+      // The job board, its landing addresses, and a posting by its code.
+      // The landing paths come first: 'in', 'category' and 'country' are
+      // never codes.
+      GoRoute(
+        path: '/jobs',
+        builder: (_, _) => const JobBoardScreen(),
+        routes: [
+          GoRoute(
+            path: 'in/:province',
+            builder: (_, state) =>
+                JobBoardScreen(provinceSlug: state.pathParameters['province']),
+          ),
+          GoRoute(
+            path: 'category/:category',
+            builder: (_, state) =>
+                JobBoardScreen(categorySlug: state.pathParameters['category']),
+          ),
+          GoRoute(
+            path: 'country/:country',
+            builder: (_, state) =>
+                JobBoardScreen(countryCode: state.pathParameters['country']),
+          ),
+          GoRoute(
+            path: ':code',
+            builder: (_, state) => JobScreen(
+              code: state.pathParameters['code']!,
+              toApply: state.uri.fragment == 'apply',
+            ),
+          ),
+        ],
+      ),
       // Client intake.
       GoRoute(
         path: '/start-project',

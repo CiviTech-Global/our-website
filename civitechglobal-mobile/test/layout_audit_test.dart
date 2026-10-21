@@ -98,11 +98,20 @@ const _screens = [
   '/insurance/test-cover/apply?step=1',
   '/profiles/maryam_long',
   '/profiles/missing',
+  '/jobs',
+  '/jobs/in/tehran',
+  '/jobs/in/nowhere',
+  '/jobs/country/DE',
+  '/jobs/category/web-development',
+  '/jobs/LONG1',
+  '/jobs/missing',
 ];
 
 /// Screens a member sees: audited signed in only.
 const _memberScreens = [
   '/dashboard/requests',
+  // Signed in, the apply section has its own states (here: not verified).
+  '/jobs/LONG1#apply',
   '/dashboard/profile',
   '/dashboard/verification',
   '/inbox?tab=notifications',
@@ -566,6 +575,73 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
         },
       },
     ),
+    '/market/jobs' => (
+      200,
+      {
+        'data': {
+          'items': [_longJob, _abroadJob, _plainJob],
+          'page': 1,
+          'pageSize': 20,
+          'total': 12845,
+          'totalPages': 643,
+        },
+      },
+    ),
+    '/market/jobs/LONG1' => (
+      200,
+      {
+        'data': {
+          ..._longJob,
+          'description': '$long\n\n$long\n\n$long',
+          'educationLevel': 'BACHELOR',
+          'fieldOfStudy':
+              'Computer engineering or a closely related field of study',
+          'workingHours':
+              'Saturday to Wednesday, 9 to 17, with two days a week from home',
+          'genderRequirement': 'FEMALE',
+          'ageMin': 22,
+          'ageMax': 45,
+          'militaryService': 'COMPLETED_OR_EXEMPT',
+          'viewCount': 128451,
+          '_count': {'applications': 1284},
+          'responsiveness': {'rate': 0.97, 'sample': 40, 'responsive': true},
+          'similar': [_abroadJob, _plainJob],
+        },
+      },
+    ),
+    '/jobs/categories' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'c1',
+            'slug': 'web-development',
+            'name': 'توسعه وب (فرانت‌اند، بک‌اند، فول‌استک)',
+            'nameEn': 'Web development, front end, back end and full stack',
+            'parentId': null,
+          },
+        ],
+      },
+    ),
+    '/jobs/me/saved/ids' => (
+      200,
+      {
+        'data': ['j1'],
+      },
+    ),
+    '/jobs/me/match/j1' => (
+      200,
+      {
+        'data': {
+          'matched': ['React', 'TypeScript'],
+          'missing': ['GraphQL', 'Kubernetes and platform engineering'],
+          'total': 4,
+          'hasProfileSkills': true,
+        },
+      },
+    ),
+    '/market/me/applications' ||
+    '/market/me/jobs' => (200, {'data': <Object>[]}),
     '/market/profiles/maryam_long' => (
       200,
       {
@@ -1107,4 +1183,101 @@ final _insuranceDetail = {
       'maxLength': 1000,
     },
   ],
+};
+
+/// A posting with everything a card can show, all of it long.
+const _longJob = <String, Object?>{
+  'id': 'j1',
+  'code': 'LONG1',
+  'title':
+      'Senior full-stack engineer for the municipal citizen-services platform (React, Node.js, PostgreSQL)',
+  'companyName': 'Sazman-e Fanavari-ye Ettelaat-e Shahrvandi-ye Iran',
+  'company': {
+    'slug': 'civic',
+    'name': 'Sazman-e Fanavari-ye Ettelaat-e Shahrvandi-ye Iran',
+    'logoUrl': null,
+  },
+  'featured': true,
+  'urgent': true,
+  'employmentType': 'FULL_TIME',
+  'workArrangement': 'HYBRID',
+  'country': 'IR',
+  'province': 'سیستان و بلوچستان',
+  'city': 'Zahedan, the provincial capital and its surrounding districts',
+  'remoteWorldwide': false,
+  'salaryMin': '1250000000',
+  'salaryMax': '1850000000',
+  'salaryUndisclosed': false,
+  'currency': 'IRT',
+  'salaryPeriod': 'MONTH',
+  'publishedAt': '2026-10-19T10:00:00Z',
+  'closesAt': '2030-10-22T10:00:00Z',
+  'skills': [
+    'React',
+    'TypeScript',
+    'GraphQL',
+    'Kubernetes and platform engineering',
+    'PostgreSQL performance tuning',
+    'Accessibility',
+    'Jest',
+  ],
+  'jobCategory': {
+    'id': 'c1',
+    'slug': 'web-development',
+    'name': 'توسعه وب (فرانت‌اند، بک‌اند، فول‌استک)',
+    'nameEn': 'Web development, front end, back end and full stack',
+  },
+  'seniority': 'MANAGER',
+  'minExperienceYears': 12,
+  'benefits': [
+    'SUPPLEMENTARY_INSURANCE',
+    'FOREIGN_CURRENCY_PAY',
+    'OCCASION_GIFTS',
+    'CAREER_GROWTH',
+    'FLEXIBLE_HOURS',
+  ],
+  'amriehEligible': true,
+  'disabilityFriendly': true,
+  'openings': 128,
+  'authorProfile': {
+    'username': 'maryam_alexandra_ahmadi_khorasani',
+    'verified': true,
+    'ratingAvg': 4.6,
+    'ratingCount': 1284,
+  },
+  'applicantCount': 1284,
+  'reviewingNow': true,
+  'responsiveEmployer': true,
+};
+
+/// Abroad, hourly, in euros, open to anyone anywhere.
+final _abroadJob = <String, Object?>{
+  ..._longJob,
+  'id': 'j2',
+  'code': 'ABROAD1',
+  'featured': false,
+  'urgent': false,
+  'workArrangement': 'REMOTE',
+  'remoteWorldwide': true,
+  'country': 'DE',
+  'province': null,
+  'city': 'Berlin-Charlottenburg-Wilmersdorf',
+  'currency': 'EUR',
+  'salaryPeriod': 'HOUR',
+  'salaryMin': '45',
+  'salaryMax': '95',
+  'seniority': 'INTERN',
+  'employmentType': 'INTERNSHIP',
+};
+
+/// The least a posting can carry.
+const _plainJob = <String, Object?>{
+  'id': 'j3',
+  'code': 'PLAIN1',
+  'title': 'Driver',
+  'employmentType': 'PART_TIME',
+  'workArrangement': 'ONSITE',
+  'salaryUndisclosed': true,
+  'skills': <String>[],
+  'benefits': <String>[],
 };

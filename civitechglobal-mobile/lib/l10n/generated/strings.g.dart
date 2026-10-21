@@ -731,6 +731,13 @@ class StringsMobile extends L10nNode {
   String get leaveStay => string("leaveStay");
   String get undo => string("undo");
   String get requestRemoved => string("requestRemoved");
+  String get agoYesterday => string("agoYesterday");
+  String get agoDays => string("agoDays");
+  String get agoLastWeek => string("agoLastWeek");
+  String get agoWeeks => string("agoWeeks");
+  String get agoLastMonth => string("agoLastMonth");
+  String get agoMonths => string("agoMonths");
+  String get showResults => string("showResults");
   StringsMobileFieldRules get fieldRules => StringsMobileFieldRules(node("fieldRules"));
 }
 

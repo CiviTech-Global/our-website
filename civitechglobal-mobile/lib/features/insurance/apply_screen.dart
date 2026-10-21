@@ -20,6 +20,7 @@ import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/local_counter.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../design/widgets/step_keys.dart';
+import '../../design/widgets/thousands_formatter.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import '../help/help_sheet.dart';
@@ -602,7 +603,7 @@ class _FieldInput extends ConsumerWidget {
 
       case 'currency':
         return digitsField(
-          formatters: [digitsOnly, const _ThousandsFormatter()],
+          formatters: [digitsOnly, const ThousandsFormatter()],
         );
 
       case 'number':
@@ -637,23 +638,6 @@ class _FieldInput extends ConsumerWidget {
           decoration: decoration(),
         );
     }
-  }
-}
-
-/// Groups an amount by thousands as it is typed.
-class _ThousandsFormatter extends TextInputFormatter {
-  const _ThousandsFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final grouped = groupThousands(newValue.text);
-    return TextEditingValue(
-      text: grouped,
-      selection: TextSelection.collapsed(offset: grouped.length),
-    );
   }
 }
 

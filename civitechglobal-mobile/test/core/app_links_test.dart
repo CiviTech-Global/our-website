@@ -60,6 +60,7 @@ void main() {
     expect(isAppPath('/proposal/PROJ1234'), isTrue);
     expect(isAppPath('/proposal/preview/abc'), isFalse);
     expect(isAppPath('/experts/sara'), isTrue);
-    expect(isAppPath('/jobs'), isFalse);
+    expect(isAppPath('/jobs/Q8HJYZRFGN'), isTrue);
+    expect(isAppPath('/projects'), isFalse);
   });
 }

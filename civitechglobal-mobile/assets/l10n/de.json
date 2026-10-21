@@ -2797,6 +2797,13 @@
   "leaveStay": "Weiter bearbeiten",
   "undo": "Rückgängig",
   "requestRemoved": "{code} wurde aus Ihren Anfragen entfernt.",
+  "agoYesterday": "gestern",
+  "agoDays": "vor {n} Tagen",
+  "agoLastWeek": "letzte Woche",
+  "agoWeeks": "vor {n} Wochen",
+  "agoLastMonth": "letzten Monat",
+  "agoMonths": "vor {n} Monaten",
+  "showResults": "Ergebnisse anzeigen",
   "fieldRules": {
    "required": "Dieses Feld ist erforderlich",
    "minChars": "Mindestens {n} Zeichen",

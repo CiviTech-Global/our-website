@@ -2797,6 +2797,13 @@
   "leaveStay": "Seguir editando",
   "undo": "Deshacer",
   "requestRemoved": "{code} se quitó de sus solicitudes.",
+  "agoYesterday": "ayer",
+  "agoDays": "hace {n} días",
+  "agoLastWeek": "la semana pasada",
+  "agoWeeks": "hace {n} semanas",
+  "agoLastMonth": "el mes pasado",
+  "agoMonths": "hace {n} meses",
+  "showResults": "Mostrar resultados",
   "fieldRules": {
    "required": "Este campo es obligatorio",
    "minChars": "Al menos {n} caracteres",

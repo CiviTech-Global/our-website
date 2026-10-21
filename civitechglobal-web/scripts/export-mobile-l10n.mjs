@@ -191,6 +191,40 @@ for (const post of posts) {
   outputs.set(join(MOBILE, 'assets', 'blog', `${post.slug}.${post.locale}.json`), json(post));
 }
 
+// ---- Countries, currencies and languages, by name (--geo) ---------------------
+//
+// The web names them through Intl.DisplayNames; Dart has nothing like it. So
+// the names are written out from Node's own Intl, in each language, already
+// sorted the way that language sorts them. Only with --geo, and never
+// compared by --check: the names come from Node's ICU data, which changes
+// between Node versions, and a CI runner on another one would call them
+// stale forever. Regenerate when a code list in src/lib/geo.ts or
+// src/types/work.ts changes; the app's geo test fails on a code with no name.
+if (process.argv.includes('--geo')) {
+  const geo = jiti(join(WEB, 'src', 'lib', 'geo.ts'));
+  const { WORK_LANGUAGES } = jiti(join(WEB, 'src', 'types', 'work.ts'));
+  const { LOCALE_TAGS } = jiti(join(WEB, 'src', 'i18n', 'locales.ts'));
+  for (const locale of LOCALES) {
+    const tag = LOCALE_TAGS[locale];
+    const named = (type, codes) => {
+      const names = new Intl.DisplayNames([tag], { type });
+      const collator = new Intl.Collator(tag);
+      return codes
+        .map((code) => [code, names.of(code) ?? code])
+        .sort((a, b) => collator.compare(a[1], b[1]));
+    };
+    outputs.set(
+      join(MOBILE, 'assets', 'geo', `${locale}.json`),
+      json({
+        countries: named('region', [...geo.COUNTRY_CODES]),
+        // The toman has no ISO code; the dictionary names it (market.currency).
+        currencies: named('currency', geo.CURRENCIES.filter((code) => code !== 'IRT')),
+        languages: named('language', [...WORK_LANGUAGES]),
+      }),
+    );
+  }
+}
+
 // ---- Write or check -----------------------------------------------------------
 const stale = [];
 for (const [file, content] of outputs) {

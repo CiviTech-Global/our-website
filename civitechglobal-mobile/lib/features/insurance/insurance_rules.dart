@@ -1,6 +1,10 @@
 import '../../core/format.dart';
 import '../../l10n/l10n.dart';
 
+/// 125000000 as 125,000,000: an amount that decides a premium is easy to get
+/// wrong by a zero without the grouping. Shared with every amount field.
+export '../../design/widgets/thousands_formatter.dart' show groupThousands;
+
 /// One question of a product's form, as the server's catalog declares it
 /// (civitechglobal-server/src/insurance/catalog/types.ts). The app knows
 /// how to draw and check each type; which questions a product asks, and
@@ -292,11 +296,4 @@ List<({String key, List<FieldDef> fields})> splitIntoSteps(
     if (details.isNotEmpty) (key: 'details', fields: details),
     (key: 'contact', fields: contact),
   ];
-}
-
-/// 125000000 as 125,000,000: an amount that decides a premium is easy to
-/// get wrong by a zero without the grouping.
-String groupThousands(String value) {
-  final digits = _digitsOf(value);
-  return digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
 }

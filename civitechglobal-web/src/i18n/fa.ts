@@ -2918,6 +2918,13 @@ const fa = {
     leaveStay: 'ادامهٔ تکمیل',
     undo: 'بازگرداندن',
     requestRemoved: '{code} از درخواست‌های شما برداشته شد.',
+    agoYesterday: 'دیروز',
+    agoDays: '{n} روز پیش',
+    agoLastWeek: 'هفتهٔ گذشته',
+    agoWeeks: '{n} هفته پیش',
+    agoLastMonth: 'ماه گذشته',
+    agoMonths: '{n} ماه پیش',
+    showResults: 'نمایش نتایج',
     fieldRules: {
       required: 'این فیلد الزامی است',
       minChars: 'حداقل {n} کاراکتر',

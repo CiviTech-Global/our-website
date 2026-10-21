@@ -2797,6 +2797,13 @@
   "leaveStay": "Continuer la saisie",
   "undo": "Annuler",
   "requestRemoved": "{code} a été retiré de vos demandes.",
+  "agoYesterday": "hier",
+  "agoDays": "il y a {n} jours",
+  "agoLastWeek": "la semaine dernière",
+  "agoWeeks": "il y a {n} semaines",
+  "agoLastMonth": "le mois dernier",
+  "agoMonths": "il y a {n} mois",
+  "showResults": "Afficher les résultats",
   "fieldRules": {
    "required": "Ce champ est obligatoire",
    "minChars": "Au moins {n} caractères",
