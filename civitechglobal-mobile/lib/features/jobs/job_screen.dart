@@ -154,7 +154,7 @@ class _JobScreenState extends ConsumerState<JobScreen> {
               ),
               SaveJobButton(jobId: detail.id),
             ],
-            const HelpAction('jobs'),
+            const HelpAction('job-detail'),
           ],
         ),
         bottomNavigationBar: !showKey

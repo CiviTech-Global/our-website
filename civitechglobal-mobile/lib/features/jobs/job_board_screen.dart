@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/auth/session.dart';
 import '../../core/format.dart';
 import '../../core/geo.dart';
 import '../../core/links.dart';
@@ -14,12 +16,16 @@ import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
 import '../../design/widgets/home_leading.dart';
+import '../../design/widgets/local_counter.dart';
 import '../../design/widgets/sheet.dart';
+import '../../design/widgets/soft_surface.dart';
 import '../../design/widgets/thousands_formatter.dart';
 import '../../l10n/l10n.dart';
+import '../account/account_page.dart';
 import '../help/help_sheet.dart';
 import 'job_card.dart';
 import 'jobs_data.dart';
+import 'seeker_data.dart';
 
 const _employment = [
   'FULL_TIME',
@@ -80,12 +86,17 @@ class JobBoardScreen extends ConsumerStatefulWidget {
     this.provinceSlug,
     this.categorySlug,
     this.countryCode,
+    this.initialParams = const {},
     super.key,
   });
 
   final String? provinceSlug;
   final String? categorySlug;
   final String? countryCode;
+
+  /// The address's own filters (?q=…&province=…): a saved search opening,
+  /// or a link to a filtered board from the website.
+  final Map<String, String> initialParams;
 
   @override
   ConsumerState<JobBoardScreen> createState() => _JobBoardScreenState();
@@ -95,7 +106,7 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
   final _search = TextEditingController();
   final _scroll = ScrollController();
   Timer? _debounce;
-  JobQuery _query = const JobQuery();
+  late JobQuery _query = jobQueryOf(widget.initialParams);
 
   IranProvince? get _fixedProvince => provinceBySlug(widget.provinceSlug);
 
@@ -119,6 +130,7 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
   @override
   void initState() {
     super.initState();
+    _search.text = _query.search;
     _scroll.addListener(() {
       if (_scroll.position.extentAfter < 600) {
         ref.read(jobBoardProvider(_effective()).notifier).loadMore();
@@ -291,8 +303,8 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                                   child: Text(
                                     switch (board?.value) {
                                       final p? => j.resultsCount.fill({
-                                        'count': localDigits(
-                                          groupedNumber('${p.total}', 'en'),
+                                        'count': groupedNumber(
+                                          '${p.total}',
                                           language,
                                         ),
                                       }),
@@ -304,6 +316,24 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                                   ),
                                 ),
                               ),
+                              IconButton(
+                                tooltip: j.saveSearch,
+                                icon: const Icon(
+                                  Icons.notification_add_outlined,
+                                ),
+                                onPressed: () => showBaghSheet<void>(
+                                  context,
+                                  isScrollControlled: true,
+                                  builder: (_) => _SaveSearchSheet(
+                                    query: query,
+                                    defaultName: _query.search.trim().isNotEmpty
+                                        ? _query.search.trim()
+                                        : _landing
+                                        ? title
+                                        : s.market.jobsTitle,
+                                  ),
+                                ),
+                              ),
                               _SortMenu(
                                 value: _query.sort,
                                 onChanged: (v) =>
@@ -312,6 +342,15 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                             ],
                           ),
                           const SizedBox(height: 8),
+                          // Picked for a member on the plain board only:
+                          // once somebody filters, they have said what they
+                          // want, and other things are in the way.
+                          if (!_landing &&
+                              _query.activeFilters == 0 &&
+                              _query.search.trim().isEmpty &&
+                              _query.country.isEmpty &&
+                              _query.province.isEmpty)
+                            const _Recommended(),
                         ],
                       ),
                     ),
@@ -1033,6 +1072,181 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Saving the board's current filters as an alert that notifies. Signed
+/// out, the way to sign in that comes back to the board.
+class _SaveSearchSheet extends ConsumerStatefulWidget {
+  const _SaveSearchSheet({required this.query, required this.defaultName});
+
+  final JobQuery query;
+  final String defaultName;
+
+  @override
+  ConsumerState<_SaveSearchSheet> createState() => _SaveSearchSheetState();
+}
+
+class _SaveSearchSheetState extends ConsumerState<_SaveSearchSheet> {
+  late final _name = TextEditingController(
+    text: widget.defaultName.characters.take(80).toString(),
+  );
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final s = ref.read(stringsProvider);
+    if (_name.text.trim().isEmpty || _saving) return;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(seekerActionsProvider)
+          .createAlert(_name.text, alertQueryOf(widget.query));
+      await ref.read(hapticsProvider).success();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s.jobs.alertCreated)));
+      Navigator.of(context).pop();
+    } catch (e) {
+      setState(() => _error = describeError(s, e));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    final j = s.jobs;
+    final text = Theme.of(context).textTheme;
+    final signedIn = ref.watch(sessionProvider).value != null;
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 14,
+          children: [
+            Text(j.saveSearch, style: text.titleLarge),
+            if (!signedIn) ...[
+              Text(j.signInToSave),
+              BaghKey(
+                label: s.nav.login,
+                icon: Icons.login_rounded,
+                expand: true,
+                onPressed: () {
+                  final here = GoRouterState.of(context).uri.toString();
+                  Navigator.of(context).pop();
+                  context.push(
+                    Uri(
+                      path: '/login',
+                      queryParameters: {'from': here},
+                    ).toString(),
+                  );
+                },
+              ),
+            ] else ...[
+              TextField(
+                controller: _name,
+                maxLength: 80,
+                buildCounter: localCounter(ref.watch(l10nProvider).language),
+                autofocus: true,
+                decoration: InputDecoration(labelText: j.alertName),
+                onSubmitted: (_) => _save(),
+              ),
+              if (_error != null) FormMessage(_error!),
+              BaghKey(
+                label: j.saveSearch,
+                icon: Icons.notification_add_outlined,
+                loading: _saving,
+                expand: true,
+                onPressed: _save,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Recommended for you", above the results, for a member we know something
+/// about: three postings, and from what they were picked. Somebody with
+/// nothing to go on is asked for their skills instead.
+class _Recommended extends ConsumerWidget {
+  const _Recommended();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final j = ref.watch(stringsProvider).jobs;
+    final c = BaghColors.of(context);
+    final text = Theme.of(context).textTheme;
+    final picked = ref.watch(recommendedJobsProvider).value;
+    if (picked == null) return const SizedBox.shrink();
+    if (picked.basis == 'none') {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: BaghSpace.gutter),
+        child: SoftSurface(
+          tint: c.primarySoft,
+          padding: const EdgeInsets.all(14),
+          onTap: () => context.push('/dashboard/profile'),
+          child: Row(
+            spacing: 10,
+            children: [
+              Icon(Icons.auto_awesome_outlined, color: c.primarySoft.ink),
+              Expanded(
+                child: Text(
+                  j.addSkillsPrompt,
+                  style: text.bodyMedium?.copyWith(color: c.primarySoft.ink),
+                ),
+              ),
+              Text(
+                j.editProfile,
+                style: text.labelLarge?.copyWith(color: c.primarySoft.ink),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (picked.items.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: BaghSpace.section),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 10,
+        children: [
+          Row(
+            spacing: 8,
+            children: [
+              Icon(Icons.auto_awesome_outlined, color: c.primary, size: 20),
+              Expanded(
+                child: Text(j.recommendedTitle, style: text.titleMedium),
+              ),
+            ],
+          ),
+          Text(
+            picked.basis == 'skills'
+                ? j.recommendedBasisSkills
+                : j.recommendedBasisActivity,
+            style: text.bodySmall?.copyWith(color: c.ink2),
+          ),
+          for (final (job, _) in picked.items.take(3)) JobCard(job: job),
+          const Divider(),
         ],
       ),
     );

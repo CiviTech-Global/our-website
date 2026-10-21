@@ -35,6 +35,7 @@ import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
 import '../features/jobs/job_board_screen.dart';
 import '../features/jobs/job_screen.dart';
+import '../features/jobs/seeker_screens.dart';
 import '../features/me/me_screen.dart';
 import '../features/me/requests_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -154,6 +155,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/dashboard/requests',
         builder: (_, _) => const RequestsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/applications',
+        builder: (_, _) => const MyApplicationsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/saved-jobs',
+        builder: (_, _) => const SavedJobsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/job-alerts',
+        builder: (_, _) => const JobAlertsScreen(),
       ),
       GoRoute(
         path: '/dashboard/profile',
@@ -289,7 +302,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // never codes.
       GoRoute(
         path: '/jobs',
-        builder: (_, _) => const JobBoardScreen(),
+        builder: (_, state) =>
+            JobBoardScreen(initialParams: state.uri.queryParameters),
         routes: [
           GoRoute(
             path: 'in/:province',

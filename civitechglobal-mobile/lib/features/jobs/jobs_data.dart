@@ -434,12 +434,45 @@ final savedJobIdsProvider = FutureProvider<Set<String>>((ref) async {
       );
 });
 
-/// A member's application, as far as the board needs it.
-typedef OwnApplication = ({
-  String jobCode,
-  String outcome,
-  DateTime? createdAt,
-});
+/// One of a member's applications: `GET /market/me/applications`.
+class OwnApplication {
+  OwnApplication.fromJson(Map<Object?, Object?> a)
+    : id = '${a['id']}',
+      jobCode = '${(a['job'] as Map?)?['code'] ?? ''}',
+      jobTitle = '${(a['job'] as Map?)?['title'] ?? ''}',
+      companyName = _text((a['job'] as Map?)?['companyName']),
+      outcome = '${a['outcome'] ?? ''}',
+      moderationStatus = '${a['moderationStatus'] ?? 'APPROVED'}',
+      coverLetter = _text(a['coverLetter']),
+      expectedSalary = _text(a['expectedSalary']),
+      cvOriginalName = _text(a['cvOriginalName']),
+      reviewNote = _text(a['reviewNote']),
+      createdAt = _date(a['createdAt']),
+      employerSeenAt = _date(a['employerSeenAt']);
+
+  final String id;
+  final String jobCode;
+  final String jobTitle;
+  final String? companyName;
+
+  /// PENDING, SHORTLISTED, INTERVIEW, ACCEPTED, DECLINED or WITHDRAWN.
+  final String outcome;
+
+  /// Where the platform's own review stands; the employer sees it only
+  /// once APPROVED.
+  final String moderationStatus;
+  final String? coverLetter;
+  final String? expectedSalary;
+  final String? cvOriginalName;
+  final String? reviewNote;
+  final DateTime? createdAt;
+  final DateTime? employerSeenAt;
+
+  /// The applicant may still take it back from these stages.
+  bool get withdrawable =>
+      moderationStatus != 'REJECTED' &&
+      const {'PENDING', 'SHORTLISTED', 'INTERVIEW'}.contains(outcome);
+}
 
 final ownApplicationsProvider = FutureProvider<List<OwnApplication>>((
   ref,
@@ -451,12 +484,7 @@ final ownApplicationsProvider = FutureProvider<List<OwnApplication>>((
         '/market/me/applications',
         parse: (d) => [
           for (final a in (d as List? ?? const []))
-            if (a is Map)
-              (
-                jobCode: '${(a['job'] as Map?)?['code'] ?? ''}',
-                outcome: '${a['outcome'] ?? ''}',
-                createdAt: _date(a['createdAt']),
-              ),
+            if (a is Map) OwnApplication.fromJson(a),
         ],
       );
 });

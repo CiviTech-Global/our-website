@@ -110,6 +110,10 @@ const _screens = [
 /// Screens a member sees: audited signed in only.
 const _memberScreens = [
   '/dashboard/requests',
+  '/dashboard/applications',
+  '/dashboard/saved-jobs',
+  '/dashboard/job-alerts',
+  '/jobs?q=react&workArrangement=REMOTE',
   // Signed in, the apply section has its own states (here: not verified).
   '/jobs/LONG1#apply',
   '/dashboard/profile',
@@ -640,8 +644,86 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
         },
       },
     ),
-    '/market/me/applications' ||
     '/market/me/jobs' => (200, {'data': <Object>[]}),
+    // Every stage an application passes through, and one sent back with a
+    // reviewer's note, all on the longest posting.
+    '/market/me/applications' => (
+      200,
+      {
+        'data': [
+          for (final (status, outcome) in const [
+            ('APPROVED', 'INTERVIEW'),
+            ('APPROVED', 'DECLINED'),
+            ('APPROVED', 'ACCEPTED'),
+            ('PENDING_REVIEW', 'PENDING'),
+            ('CHANGES_REQUESTED', 'PENDING'),
+          ])
+            {
+              'id': 'a-$outcome-$status',
+              'moderationStatus': status,
+              'outcome': outcome,
+              'expectedSalary': '1250000000',
+              'reviewNote': status == 'CHANGES_REQUESTED' ? long : null,
+              'createdAt': '2026-10-01T10:00:00Z',
+              'employerSeenAt': '2026-10-02T10:00:00Z',
+              'job': {
+                'code': 'LONG1',
+                'title': _longJob['title'],
+                'companyName': _longJob['companyName'],
+                'state': 'OPEN',
+              },
+            },
+        ],
+      },
+    ),
+    '/jobs/me/saved' => (
+      200,
+      {
+        'data': [
+          {'savedAt': '2026-10-01T10:00:00Z', 'open': true, 'job': _longJob},
+          {'savedAt': '2026-09-01T10:00:00Z', 'open': false, 'job': _abroadJob},
+        ],
+      },
+    ),
+    '/jobs/me/alerts' => (
+      200,
+      {
+        'data': [
+          for (final active in [true, false])
+            {
+              'id': 'al-$active',
+              'name':
+                  'Senior full-stack roles in Sistan and Baluchestan, hybrid',
+              'query': {
+                'search': 'Kubernetes and platform engineering',
+                'jobCategoryId': 'c1',
+                'country': 'IR',
+                'province': 'سیستان و بلوچستان',
+                'employmentType': 'FULL_TIME',
+                'workArrangement': 'HYBRID',
+                'seniority': 'MANAGER',
+                'salaryMin': '1250000000',
+              },
+              'active': active,
+              'lastNotifiedAt': active ? '2026-10-05T10:00:00Z' : null,
+            },
+        ],
+      },
+    ),
+    '/jobs/me/recommended' => (
+      200,
+      {
+        'data': {
+          'basis': 'skills',
+          'items': [
+            {
+              ..._longJob,
+              'match': {'matched': 3, 'total': 7},
+            },
+          ],
+        },
+      },
+    ),
     '/market/profiles/maryam_long' => (
       200,
       {
@@ -864,7 +946,8 @@ void main() {
         // Signed-in only changes Home, Me and the member screens; skip the
         // rest twice over, and the member screens signed out.
         final member = _memberScreens.contains(target);
-        final changes = member || ['/', '/me', '/inbox'].contains(target);
+        final changes =
+            member || ['/', '/me', '/inbox', '/jobs'].contains(target);
         if (signedIn ? !changes : member) continue;
         testWidgets('$target ${signedIn ? '(signed in) ' : ''}fits: $where', (
           tester,

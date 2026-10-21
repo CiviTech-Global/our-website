@@ -98,13 +98,15 @@ class ApiClient {
   Future<T> upload<T>(
     String path, {
     required FormData Function() form,
+    String method = 'POST',
     void Function(double progress)? onProgress,
     T Function(Object? data)? parse,
   }) async {
     Future<T> attempt() async {
-      final response = await _dio.post<Object?>(
+      final response = await _dio.request<Object?>(
         path,
         data: form(),
+        options: Options(method: method),
         onSendProgress: onProgress == null
             ? null
             : (sent, total) {
