@@ -105,6 +105,10 @@ const _screens = [
   '/jobs/category/web-development',
   '/jobs/LONG1',
   '/jobs/missing',
+  '/companies',
+  '/companies/civic',
+  '/companies/plain',
+  '/companies/missing',
 ];
 
 /// Screens a member sees: audited signed in only.
@@ -674,6 +678,34 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
               },
             },
         ],
+      },
+    ),
+    '/jobs/companies' => (
+      200,
+      {
+        'data': {
+          'items': [_longCompany, _plainCompany],
+          'page': 1,
+          'pageSize': 24,
+          'total': 2,
+          'totalPages': 1,
+        },
+      },
+    ),
+    '/jobs/companies/civic' => (
+      200,
+      {
+        'data': {
+          ..._longCompany,
+          'about': '$long\n\n$long',
+          'jobs': [_longJob, _abroadJob],
+        },
+      },
+    ),
+    '/jobs/companies/plain' => (
+      200,
+      {
+        'data': {..._plainCompany, 'jobs': <Object>[]},
       },
     ),
     '/jobs/me/saved' => (
@@ -1363,4 +1395,33 @@ const _plainJob = <String, Object?>{
   'salaryUndisclosed': true,
   'skills': <String>[],
   'benefits': <String>[],
+};
+
+/// An employer with everything a company page can show, all of it long.
+const _longCompany = <String, Object?>{
+  'id': 'co1',
+  'slug': 'civic',
+  'name': 'Sazman-e Fanavari-ye Ettelaat-e Shahrvandi-ye Iran',
+  'tagline':
+      'Citizen-services platforms for municipalities, permits and complaints, across every province',
+  'industry': 'GAMING_ENTERTAINMENT',
+  'size': 'SIZE_1000_PLUS',
+  'foundedYear': 1395,
+  'website': 'https://sazman-e-fanavari-ye-ettelaat.example.com/careers',
+  'country': 'IR',
+  'province': 'سیستان و بلوچستان',
+  'city': 'Zahedan, the provincial capital and its surrounding districts',
+  'logoUrl': null,
+  'coverUrl': null,
+  'openJobs': 1284,
+  'responsiveness': {'rate': 0.97, 'sample': 40, 'responsive': true},
+  'hiredCount': 1284,
+};
+
+/// The least an employer can carry.
+const _plainCompany = <String, Object?>{
+  'id': 'co2',
+  'slug': 'plain',
+  'name': 'Co',
+  'openJobs': 0,
 };

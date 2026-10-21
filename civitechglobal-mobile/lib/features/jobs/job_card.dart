@@ -265,10 +265,27 @@ class JobCard extends ConsumerWidget {
                         spacing: 6,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Text(
-                            company,
-                            style: text.bodyMedium?.copyWith(color: c.ink2),
-                          ),
+                          // The employer's own page, where there is one.
+                          if (job.companySlug case final slug?)
+                            InkWell(
+                              borderRadius: BorderRadius.circular(6),
+                              onTap: () => context.push(
+                                '/companies/${Uri.encodeComponent(slug)}',
+                              ),
+                              child: Text(
+                                company,
+                                style: text.bodyMedium?.copyWith(
+                                  color: c.ink2,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: c.edge,
+                                ),
+                              ),
+                            )
+                          else
+                            Text(
+                              company,
+                              style: text.bodyMedium?.copyWith(color: c.ink2),
+                            ),
                           if (job.authorVerified)
                             Tooltip(
                               message: j.verifiedEmployer,

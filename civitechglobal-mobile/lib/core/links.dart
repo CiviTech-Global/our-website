@@ -40,6 +40,7 @@ const appPaths = <String>{
   '/dashboard/profile',
   '/dashboard/verification',
   '/jobs',
+  '/companies',
   '/dashboard/applications',
   '/dashboard/saved-jobs',
   '/dashboard/job-alerts',
@@ -54,6 +55,7 @@ const appPrefixes = <String>[
   '/dashboard/messages/',
   '/profiles/',
   '/jobs/',
+  '/companies/',
 ];
 
 /// [path] without the website's language prefix: '/en/blog' is '/blog', and

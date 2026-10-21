@@ -79,6 +79,8 @@
                 <data android:path="/dashboard/saved-jobs"/>
                 <data android:path="/dashboard/job-alerts"/>
                 <data android:pathPrefix="/jobs/"/>
+                <data android:path="/companies"/>
+                <data android:pathPrefix="/companies/"/>
                 <data android:pathPrefix="/dashboard/messages/"/>
                 <data android:path="/en"/>
                 <data android:path="/en/services"/>
@@ -118,6 +120,8 @@
                 <data android:path="/en/dashboard/saved-jobs"/>
                 <data android:path="/en/dashboard/job-alerts"/>
                 <data android:pathPrefix="/en/jobs/"/>
+                <data android:path="/en/companies"/>
+                <data android:pathPrefix="/en/companies/"/>
                 <data android:pathPrefix="/en/dashboard/messages/"/>
                 <data android:path="/tr"/>
                 <data android:path="/tr/services"/>
@@ -157,6 +161,8 @@
                 <data android:path="/tr/dashboard/saved-jobs"/>
                 <data android:path="/tr/dashboard/job-alerts"/>
                 <data android:pathPrefix="/tr/jobs/"/>
+                <data android:path="/tr/companies"/>
+                <data android:pathPrefix="/tr/companies/"/>
                 <data android:pathPrefix="/tr/dashboard/messages/"/>
                 <data android:path="/de"/>
                 <data android:path="/de/services"/>
@@ -196,6 +202,8 @@
                 <data android:path="/de/dashboard/saved-jobs"/>
                 <data android:path="/de/dashboard/job-alerts"/>
                 <data android:pathPrefix="/de/jobs/"/>
+                <data android:path="/de/companies"/>
+                <data android:pathPrefix="/de/companies/"/>
                 <data android:pathPrefix="/de/dashboard/messages/"/>
                 <data android:path="/fr"/>
                 <data android:path="/fr/services"/>
@@ -235,6 +243,8 @@
                 <data android:path="/fr/dashboard/saved-jobs"/>
                 <data android:path="/fr/dashboard/job-alerts"/>
                 <data android:pathPrefix="/fr/jobs/"/>
+                <data android:path="/fr/companies"/>
+                <data android:pathPrefix="/fr/companies/"/>
                 <data android:pathPrefix="/fr/dashboard/messages/"/>
                 <data android:path="/es"/>
                 <data android:path="/es/services"/>
@@ -274,6 +284,8 @@
                 <data android:path="/es/dashboard/saved-jobs"/>
                 <data android:path="/es/dashboard/job-alerts"/>
                 <data android:pathPrefix="/es/jobs/"/>
+                <data android:path="/es/companies"/>
+                <data android:pathPrefix="/es/companies/"/>
                 <data android:pathPrefix="/es/dashboard/messages/"/>
             </intent-filter>
         </activity>

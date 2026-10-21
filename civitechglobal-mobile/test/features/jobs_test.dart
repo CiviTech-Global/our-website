@@ -144,6 +144,15 @@ void main() {
       expect(placeText(job, _geo, 'en'), 'Berlin, Germany');
     });
 
+    test('abroad, a city named as its province says it once', () {
+      final job = _job({
+        'country': 'TR',
+        'city': 'Istanbul',
+        'province': 'İstanbul',
+      });
+      expect(placeText(job, _geo, 'en'), 'Istanbul, Türkiye');
+    });
+
     test('a role anyone anywhere may take says so instead of a place', () {
       final job = _job({
         'workArrangement': 'REMOTE',

@@ -33,6 +33,7 @@ import '../features/intake/consult_screen.dart';
 import '../features/intake/resume_screen.dart';
 import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
+import '../features/jobs/companies.dart';
 import '../features/jobs/job_board_screen.dart';
 import '../features/jobs/job_screen.dart';
 import '../features/jobs/seeker_screens.dart';
@@ -297,6 +298,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/contact', builder: (_, _) => const ContactScreen()),
+      GoRoute(
+        path: '/companies',
+        builder: (_, _) => const CompaniesScreen(),
+        routes: [
+          GoRoute(
+            path: ':slug',
+            builder: (_, state) =>
+                CompanyScreen(slug: state.pathParameters['slug']!),
+          ),
+        ],
+      ),
       // The job board, its landing addresses, and a posting by its code.
       // The landing paths come first: 'in', 'category' and 'country' are
       // never codes.

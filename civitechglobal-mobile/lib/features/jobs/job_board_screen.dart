@@ -16,6 +16,7 @@ import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
 import '../../design/widgets/home_leading.dart';
+import '../../design/widgets/list_picker.dart';
 import '../../design/widgets/local_counter.dart';
 import '../../design/widgets/sheet.dart';
 import '../../design/widgets/soft_surface.dart';
@@ -246,7 +247,14 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
       appBar: AppBar(
         leading: homeLeading(context),
         title: Text(_landing ? s.market.jobsTitle : j.boardTitle),
-        actions: const [HelpAction('jobs')],
+        actions: [
+          IconButton(
+            tooltip: j.companiesTitle,
+            icon: const Icon(Icons.business_outlined),
+            onPressed: () => openLink(context, ref, '/companies'),
+          ),
+          const HelpAction('jobs'),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -507,7 +515,7 @@ class _PlaceAndFilters extends ConsumerWidget {
                 : geo.country(query.country),
             selected: query.country.isNotEmpty,
             onTap: () async {
-              final code = await _pickFromList(
+              final code = await pickFromList(
                 context,
                 title: j.country,
                 all: j.allCountries,
@@ -534,7 +542,7 @@ class _PlaceAndFilters extends ConsumerWidget {
                 : displayProvince(query.province, language),
             selected: query.province.isNotEmpty,
             onTap: () async {
-              final value = await _pickFromList(
+              final value = await pickFromList(
                 context,
                 title: s.market.province,
                 all: j.allProvinces,
@@ -623,97 +631,6 @@ class _SortMenu extends ConsumerWidget {
             Text(options[value] ?? value),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// One value from a list, in a sheet; "all" clears it. Null when dismissed.
-Future<String?> _pickFromList(
-  BuildContext context, {
-  required String title,
-  required String all,
-  required List<(String, String)> options,
-  bool searchable = false,
-}) => showBaghSheet<String>(
-  context,
-  isScrollControlled: true,
-  builder: (_) => _ListPicker(
-    title: title,
-    all: all,
-    options: options,
-    searchable: searchable,
-  ),
-);
-
-class _ListPicker extends StatefulWidget {
-  const _ListPicker({
-    required this.title,
-    required this.all,
-    required this.options,
-    required this.searchable,
-  });
-
-  final String title;
-  final String all;
-  final List<(String, String)> options;
-  final bool searchable;
-
-  @override
-  State<_ListPicker> createState() => _ListPickerState();
-}
-
-class _ListPickerState extends State<_ListPicker> {
-  String _filter = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final needle = _filter.trim().toLowerCase();
-    final shown = needle.isEmpty
-        ? widget.options
-        : [
-            for (final o in widget.options)
-              if (o.$2.toLowerCase().contains(needle) ||
-                  o.$1.toLowerCase() == needle)
-                o,
-          ];
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.75,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-            child: Text(widget.title, style: text.titleLarge),
-          ),
-          if (widget.searchable)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                autofocus: false,
-                onChanged: (v) => setState(() => _filter = v),
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search_rounded),
-                ),
-              ),
-            ),
-          Expanded(
-            child: ListView(
-              children: [
-                ListTile(
-                  title: Text(widget.all),
-                  onTap: () => Navigator.of(context).pop(''),
-                ),
-                for (final (value, label) in shown)
-                  ListTile(
-                    title: Text(label),
-                    onTap: () => Navigator.of(context).pop(value),
-                  ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -844,7 +761,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
                     InkWell(
                       borderRadius: BorderRadius.circular(BaghRadius.field),
                       onTap: () async {
-                        final id = await _pickFromList(
+                        final id = await pickFromList(
                           context,
                           title: j.category,
                           all: j.allCategories,

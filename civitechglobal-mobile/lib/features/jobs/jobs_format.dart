@@ -37,26 +37,49 @@ String? salaryText(JobSummary job, Strings s, String language) {
 }
 
 /// City and province in the reader's language; abroad, with the country.
-String placeText(JobSummary job, GeoNames geo, String language) {
+String placeText(JobSummary job, GeoNames geo, String language) => placeOf(
+  city: job.city,
+  province: job.province,
+  country: job.country,
+  geo: geo,
+  language: language,
+);
+
+/// The same for anything with a place: a posting, a company.
+String placeOf({
+  required String? city,
+  required String? province,
+  required String? country,
+  required GeoNames geo,
+  required String language,
+}) {
   final sep = language == 'fa' ? '، ' : ', ';
-  if (job.country != null && job.country != homeCountry) {
+  if (country != null && country != homeCountry) {
     return [
-      job.city,
-      job.province,
-      geo.country(job.country),
+      city,
+      if (!_samePlace(city, province)) province,
+      geo.country(country),
     ].whereType<String>().where((x) => x.isNotEmpty).join(sep);
   }
-  final province = displayProvince(job.province, language);
-  final city = job.city;
+  final shown = displayProvince(province, language);
   // A provincial capital named after its province (Tehran, Tehran) says it once.
   final same =
       city != null &&
-      province.isNotEmpty &&
-      (city.trim().toLowerCase() == province.trim().toLowerCase() ||
-          city.trim() == job.province?.trim());
-  return (same ? [province] : [city ?? '', province])
+      shown.isNotEmpty &&
+      (city.trim().toLowerCase() == shown.trim().toLowerCase() ||
+          city.trim() == province?.trim());
+  return (same ? [shown] : [city ?? '', shown])
       .where((x) => x.isNotEmpty)
       .join(sep);
+}
+
+/// Whether two place names are one place said twice: Tehran, Tehran or
+/// Istanbul, İstanbul (Turkish dotted capitals are folded first, since a
+/// plain lower-casing keeps the dot and calls them different).
+bool _samePlace(String? a, String? b) {
+  String fold(String x) =>
+      x.trim().replaceAll('İ', 'I').replaceAll('ı', 'i').toLowerCase();
+  return a != null && b != null && a.isNotEmpty && fold(a) == fold(b);
 }
 
 /// Where a posting is, and for a remote role who may take it.
