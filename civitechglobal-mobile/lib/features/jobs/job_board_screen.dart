@@ -36,7 +36,7 @@ const _employment = [
   'FREELANCE',
 ];
 const _arrangement = ['ONSITE', 'HYBRID', 'REMOTE'];
-const _seniority = [
+const jobSeniorities = [
   'INTERN',
   'JUNIOR',
   'MID',
@@ -823,7 +823,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
                 const SizedBox(height: BaghSpace.gutter),
                 section(j.seniority, [
                   choices(
-                    _seniority,
+                    jobSeniorities,
                     _q.seniority,
                     j.seniorityLevels.label,
                     (v) => setState(() => _q = _q.copyWith(seniority: v)),

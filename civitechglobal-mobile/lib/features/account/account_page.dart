@@ -108,12 +108,17 @@ class FormMessage extends StatelessWidget {
 /// The words for a failed request: the server's own message when it sent
 /// one (it writes them for people), the dictionary's otherwise. Never the
 /// error's own text, which is for developers ("Unable to load asset...").
+///
+/// The first field's complaint comes before the general message, as on the
+/// web (apiMessage): "the title is too short" says what to fix, and the
+/// general one of a failed check is the English "Validation failed".
 String describeError(Strings s, Object error, {String? fallback}) {
   if (error is! ApiException && error is! DioException) {
     return fallback ?? s.common.error;
   }
   final e = ApiException.from(error);
   if (e.offline) return s.mobile.offline;
+  if (e.fieldErrors.values.firstOrNull case final field?) return field;
   if (e.message.isNotEmpty) return e.message;
   return fallback ?? s.common.error;
 }

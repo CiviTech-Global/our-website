@@ -34,8 +34,10 @@ import '../features/intake/resume_screen.dart';
 import '../features/intake/start_project_screen.dart';
 import '../features/intake/track_screen.dart';
 import '../features/jobs/companies.dart';
+import '../features/jobs/company_screen.dart';
 import '../features/jobs/employer_screens.dart';
 import '../features/jobs/job_board_screen.dart';
+import '../features/jobs/job_editor_screen.dart';
 import '../features/jobs/job_screen.dart';
 import '../features/jobs/seeker_screens.dart';
 import '../features/me/me_screen.dart';
@@ -174,7 +176,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/dashboard/jobs',
         builder: (_, _) => const MyJobsScreen(),
         routes: [
-          // The app's own page; on the web the list opens in a dialog.
+          // The app's own pages; on the web these open in dialogs.
+          GoRoute(path: 'new', builder: (_, _) => const JobEditorScreen()),
+          GoRoute(
+            path: ':jobId/edit',
+            builder: (_, state) =>
+                JobEditorScreen(jobId: state.pathParameters['jobId']),
+          ),
           GoRoute(
             path: ':jobId/applicants',
             builder: (_, state) => ApplicantsScreen(
@@ -183,6 +191,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/dashboard/company',
+        builder: (_, _) => const MyCompanyScreen(),
       ),
       GoRoute(
         path: '/dashboard/profile',

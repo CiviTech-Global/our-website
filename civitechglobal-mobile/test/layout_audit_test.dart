@@ -10,6 +10,7 @@ import 'package:civitech_global_flutter/design/palette.dart';
 import 'package:civitech_global_flutter/design/widgets/bagh_key.dart';
 import 'package:civitech_global_flutter/features/account/security_screen.dart';
 import 'package:civitech_global_flutter/features/help/help_sheet.dart';
+import 'package:civitech_global_flutter/features/profile/profile_data.dart';
 import 'package:civitech_global_flutter/features/start/modules.dart';
 import 'package:civitech_global_flutter/features/start/start_sheet.dart';
 import 'package:civitech_global_flutter/l10n/l10n.dart';
@@ -119,6 +120,9 @@ const _memberScreens = [
   '/dashboard/job-alerts',
   '/dashboard/jobs',
   '/dashboard/jobs/own1/applicants?title=Senior%20full-stack%20engineer',
+  '/dashboard/jobs/new',
+  '/dashboard/jobs/own2/edit',
+  '/dashboard/company',
   '/jobs?q=react&workArrangement=REMOTE',
   // Signed in, the apply section has its own states (here: not verified).
   '/jobs/LONG1#apply',
@@ -130,9 +134,20 @@ const _memberScreens = [
   '/dashboard/messages/x/t1',
 ];
 
+/// Member screens audited as a verified account: forms that need one.
+const _verifiedScreens = {'/dashboard/company'};
+
 /// Data with the longest real-world shapes: long names, bios, quotes and
 /// technology lists, so content screens are laid out with something in them.
+/// Postings sent to the fake server, so a test can tell whether a form
+/// stopped on the phone or reached the server.
+var _postedJobs = 0;
+
 Future<(int, Object?)> _fakeApi(RequestOptions o) async {
+  if (o.method == 'POST' && o.path == '/market/me/jobs') {
+    _postedJobs++;
+    return (201, {'data': <String, Object?>{}});
+  }
   const long =
       'Rayan Tamaddon Jahan Gostar builds creative, innovative software '
       'that makes life simpler for people and organisations alike.';
@@ -669,11 +684,47 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
               'moderationStatus': status,
               'state': state,
               'reviewNote': status == 'APPROVED' ? null : long,
+              // What only the form shows, at its longest.
+              'description': '$long\n\n$long',
+              'jobCategoryId': 'c1',
+              'workingHours':
+                  'Saturday to Wednesday, 8:00 to 17:00, '
+                  'and Thursday mornings by arrangement',
+              'educationLevel': 'DOCTORATE',
+              'fieldOfStudy': 'Computer engineering or information technology',
+              'genderRequirement': 'ANY',
+              'ageMin': 25,
+              'ageMax': 45,
+              'militaryService': 'COMPLETED_OR_EXEMPT',
               'createdAt': '2026-10-01T10:00:00Z',
               'viewCount': 1234567,
               '_count': {'applications': 4321},
             },
         ],
+      },
+    ),
+    // The employer's own page, filled to every limit, abroad (so the region
+    // is typed), and hidden by staff (so the notice shows). No pictures: the
+    // fake server answers JSON, which is not image data.
+    '/jobs/me/company' => (
+      200,
+      {
+        'data': {
+          ..._longCompany,
+          'tagline': long,
+          'about': '$long\n\n$long',
+          'industry': 'SOFTWARE_INTERNET',
+          'size': 'SIZE_1000_PLUS',
+          'foundedYear': 1385,
+          'website':
+              'https://www.example-company-with-a-long-name.com/en/about',
+          'country': 'DE',
+          'province': 'Nordrhein-Westfalen',
+          'city': 'Mönchengladbach',
+          'hidden': true,
+          'logoUrl': null,
+          'coverUrl': null,
+        },
       },
     ),
     '/jobs/me/pipeline' => (
@@ -913,6 +964,7 @@ Future<void> _pump(
   required GardenPalette palette,
   required ThemeMode mode,
   bool signedIn = false,
+  bool verified = false,
 }) async {
   tester.view
     ..physicalSize = size * 2
@@ -965,6 +1017,12 @@ Future<void> _pump(
           (ref) async => (enabled: true, codesLeft: 2),
         ),
         if (signedIn) sessionProvider.overrideWith(_SignedIn.new),
+        // The fake account is turned down, for the verification screen; a
+        // form that needs a verified identity is audited as one.
+        if (verified)
+          ownVerificationProvider.overrideWith(
+            (ref) async => const OwnVerification(status: 'APPROVED'),
+          ),
       ],
       child: const CiviTechApp(),
     ),
@@ -1083,6 +1141,7 @@ void main() {
             palette: palette,
             mode: mode,
             signedIn: signedIn,
+            verified: _verifiedScreens.contains(target),
           );
           _open(tester, target);
           await _settle(tester);
@@ -1202,6 +1261,61 @@ void main() {
       }
     }
   });
+
+  // A ListView drops the fields scrolled out of sight, and a dropped field
+  // is never checked: an empty posting reached the server that way on a
+  // phone, and came back as a bare "Validation failed".
+  testWidgets('an empty posting is stopped on the phone, every field checked', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      language: 'en',
+      size: const Size(360, 640),
+      textScale: 1,
+      palette: GardenPalette.pistachio,
+      mode: ThemeMode.light,
+      signedIn: true,
+    );
+    _open(tester, '/dashboard/jobs/new');
+    await _settle(tester);
+    _postedJobs = 0;
+    final save = find.text('Save draft');
+    await tester.scrollUntilVisible(
+      save,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(save);
+    await _settle(tester);
+    expect(_postedJobs, 0, reason: 'the empty form reached the server');
+    // Brought back to the first problem, at the top of the form.
+    expect(find.text('This field is required'), findsWidgets);
+  });
+
+  // The form's starting point was taken lazily, on the first Back, so it
+  // always matched what had just been typed and the guard never asked.
+  for (final target in ['/dashboard/jobs/own2/edit', '/dashboard/company']) {
+    testWidgets('$target asks before throwing a change away', (tester) async {
+      await _pump(
+        tester,
+        language: 'en',
+        size: const Size(412, 915),
+        textScale: 1,
+        palette: GardenPalette.pistachio,
+        mode: ThemeMode.light,
+        signedIn: true,
+        verified: true,
+      );
+      _open(tester, target);
+      await _settle(tester);
+      await tester.enterText(find.byType(TextFormField).first, 'Changed');
+      await tester.pump();
+      await tester.binding.handlePopRoute();
+      await _settle(tester);
+      expect(find.text('Leave this form?'), findsOneWidget);
+    });
+  }
 
   testWidgets('pressing a key moves nothing around it', (tester) async {
     for (final palette in GardenPalette.values) {

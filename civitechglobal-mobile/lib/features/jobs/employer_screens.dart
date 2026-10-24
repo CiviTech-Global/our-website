@@ -86,8 +86,8 @@ Future<bool> _confirm(
 
 /// What an employer sees of their own postings, as the web's MyJobsPage:
 /// drafts included, with the review state, the reviewer's note, and where
-/// each live posting's applicants stand. Writing a posting is the next
-/// slice; this one reads, sends for review, closes, and opens applicants.
+/// each live posting's applicants stand. New postings and drafts open the
+/// editor; the company page is one tap away.
 class MyJobsScreen extends ConsumerStatefulWidget {
   const MyJobsScreen({super.key});
 
@@ -130,6 +130,22 @@ class _MyJobsScreenState extends ConsumerState<MyJobsScreen> {
         // before stays readable either way.
         if (verification != null && verification.status != 'APPROVED') ...[
           _VerifyFirst(status: verification.status),
+          const SizedBox(height: BaghSpace.gutter),
+        ] else if (verification != null) ...[
+          BaghKey(
+            label: m.newJob,
+            icon: Icons.add_rounded,
+            expand: true,
+            onPressed: () => context.push('/dashboard/jobs/new'),
+          ),
+          const SizedBox(height: 10),
+          BaghKey(
+            label: s.jobs.myCompany,
+            icon: Icons.business_rounded,
+            kind: BaghKeyKind.outline,
+            expand: true,
+            onPressed: () => context.push('/dashboard/company'),
+          ),
           const SizedBox(height: BaghSpace.gutter),
         ],
         if (all.isNotEmpty) ...[
@@ -294,6 +310,17 @@ class _PostingCard extends ConsumerWidget {
           ),
           if (v2 && job.approved) _Gauges(job: job, pipeline: pipeline),
           if (job.reviewNote case final note?) ReviewNote(note),
+          // The same two states the server lets an author change.
+          if (job.editable)
+            BaghKey(
+              label: s.common.edit,
+              icon: Icons.edit_outlined,
+              kind: BaghKeyKind.outline,
+              expand: true,
+              onPressed: () => context.push(
+                '/dashboard/jobs/${Uri.encodeComponent(job.id)}/edit',
+              ),
+            ),
           if (job.editable)
             BaghKey(
               label: m.submitForReview,

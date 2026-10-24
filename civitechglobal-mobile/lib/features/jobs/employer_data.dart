@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
 import '../../core/capabilities.dart';
+import '../../core/files.dart';
 import '../me/workspace_data.dart';
 import 'jobs_data.dart';
 
@@ -28,13 +33,18 @@ final _accountProvider = Provider<String?>(
 /// the review state reaches the person it concerns.
 class OwnJob {
   OwnJob.fromJson(Map<String, Object?> j)
-    : posting = JobSummary.fromJson(j),
+    : raw = j,
+      posting = JobSummary.fromJson(j),
       moderationStatus = '${j['moderationStatus'] ?? 'DRAFT'}',
       state = '${j['state'] ?? 'OPEN'}',
       reviewNote = _text(j['reviewNote']),
       createdAt = _date(j['createdAt']),
       viewCount = _int(j['viewCount']) ?? 0,
       applicationCount = _int((j['_count'] as Map?)?['applications']) ?? 0;
+
+  /// The whole record as the server sent it: the form edits fields no list
+  /// shows.
+  final Map<String, Object?> raw;
 
   final JobSummary posting;
 
@@ -182,6 +192,73 @@ final jobApplicantsProvider = FutureProvider.autoDispose
       return list;
     });
 
+/// The employer's own company page as they wrote it: `GET /jobs/me/company`,
+/// null until the first save.
+class OwnCompany {
+  OwnCompany.fromJson(Map<String, Object?> c)
+    : slug = '${c['slug'] ?? ''}',
+      name = '${c['name'] ?? ''}',
+      tagline = _text(c['tagline']),
+      about = _text(c['about']),
+      industry = _text(c['industry']),
+      size = _text(c['size']),
+      foundedYear = _int(c['foundedYear']),
+      website = _text(c['website']),
+      country = _text(c['country']) ?? 'IR',
+      province = _text(c['province']),
+      city = _text(c['city']),
+      hidden = c['hidden'] == true,
+      hasLogo = _text(c['logoUrl']) != null,
+      hasCover = _text(c['coverUrl']) != null;
+
+  final String slug;
+  final String name;
+  final String? tagline;
+  final String? about;
+  final String? industry;
+  final String? size;
+  final int? foundedYear;
+  final String? website;
+  final String country;
+  final String? province;
+  final String? city;
+
+  /// Taken off the directory by staff; the owner still sees and edits it.
+  final bool hidden;
+  final bool hasLogo;
+  final bool hasCover;
+}
+
+final ownCompanyProvider = FutureProvider.autoDispose<OwnCompany?>((ref) async {
+  if (ref.watch(_accountProvider) == null) return null;
+  return ref
+      .read(apiClientProvider)
+      .get(
+        '/jobs/me/company',
+        parse: (d) => d is Map<String, Object?> ? OwnCompany.fromJson(d) : null,
+      );
+});
+
+/// The owner's copy of their logo or cover. Through the sign-in, not the
+/// public address: a hidden page's pictures are not public.
+final ownCompanyImageProvider = FutureProvider.autoDispose
+    .family<Uint8List?, String>((ref, which) async {
+      final file = await ref
+          .read(apiClientProvider)
+          .download('/jobs/me/company/$which');
+      return file.bytes.isEmpty ? null : Uint8List.fromList(file.bytes);
+    });
+
+/// The company sizes the server knows, smallest first.
+const companySizes = [
+  'SIZE_1_10',
+  'SIZE_11_50',
+  'SIZE_51_200',
+  'SIZE_201_500',
+  'SIZE_501_1000',
+  'SIZE_1000_PLUS',
+];
+
 /// The employer's writes. Each one refreshes what it changes.
 final employerActionsProvider = Provider<EmployerActions>(EmployerActions.new);
 
@@ -196,6 +273,56 @@ class EmployerActions {
     ..invalidate(ownJobsProvider)
     ..invalidate(ownJobCodesProvider)
     ..invalidate(workspaceProvider);
+
+  /// A new posting, saved as a draft; nothing goes to review until sent.
+  Future<void> createJob(Map<String, Object?> payload) async {
+    await _api.post<void>('/market/me/jobs', body: payload);
+    _postingsChanged();
+  }
+
+  /// Only a draft or a posting sent back can change; the server refuses
+  /// the rest.
+  Future<void> updateJob(String jobId, Map<String, Object?> payload) async {
+    await _api.patch<void>(
+      '/market/me/jobs/${Uri.encodeComponent(jobId)}',
+      body: payload,
+    );
+    _postingsChanged();
+  }
+
+  /// The company page: one per account, created by its first save, which
+  /// links every posting already published. Without a new picture, the one
+  /// on file stays.
+  Future<void> saveCompany(
+    Map<String, Object?> payload, {
+    PreparedImage? logo,
+    PreparedImage? cover,
+    void Function(double progress)? onProgress,
+  }) async {
+    await _api.upload<void>(
+      '/jobs/me/company',
+      method: 'PUT',
+      form: () => FormData.fromMap({
+        'payload': jsonEncode(payload),
+        if (logo != null)
+          'logo': MultipartFile.fromBytes(
+            logo.bytes,
+            filename: logo.name,
+            contentType: DioMediaType('image', 'webp'),
+          ),
+        if (cover != null)
+          'cover': MultipartFile.fromBytes(
+            cover.bytes,
+            filename: cover.name,
+            contentType: DioMediaType('image', 'webp'),
+          ),
+      }),
+      onProgress: onProgress,
+    );
+    _ref
+      ..invalidate(ownCompanyProvider)
+      ..invalidate(ownCompanyImageProvider);
+  }
 
   Future<void> submit(String jobId) async {
     await _api.post<void>(

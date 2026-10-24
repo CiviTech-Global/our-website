@@ -45,6 +45,7 @@ const appPaths = <String>{
   '/dashboard/saved-jobs',
   '/dashboard/job-alerts',
   '/dashboard/jobs',
+  '/dashboard/company',
 };
 
 /// Sections whose every page is a screen in the app.
