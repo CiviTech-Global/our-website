@@ -2764,6 +2764,10 @@ const de: PartialTranslations = {
     agoLastMonth: 'letzten Monat',
     agoMonths: 'vor {n} Monaten',
     showResults: 'Ergebnisse anzeigen',
+    noFileViewer: 'Auf diesem Telefon gibt es keine App, die diese Art von Datei öffnet.',
+    hireConfirm: '{name} erfährt von der Zusage. Ist damit die letzte Stelle besetzt, wird die Anzeige geschlossen und alle anderen Wartenden erhalten eine Absage.',
+    declineConfirm: '{name} erfährt, dass Sie mit jemand anderem weitermachen.',
+    closePostingConfirm: 'Die Anzeige verschwindet von der Jobbörse und nimmt keine Bewerbungen mehr an.',
     fieldRules: {
       required: 'Dieses Feld ist erforderlich',
       minChars: 'Mindestens {n} Zeichen',

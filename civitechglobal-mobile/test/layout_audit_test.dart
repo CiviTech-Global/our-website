@@ -117,6 +117,8 @@ const _memberScreens = [
   '/dashboard/applications',
   '/dashboard/saved-jobs',
   '/dashboard/job-alerts',
+  '/dashboard/jobs',
+  '/dashboard/jobs/own1/applicants?title=Senior%20full-stack%20engineer',
   '/jobs?q=react&workArrangement=REMOTE',
   // Signed in, the apply section has its own states (here: not verified).
   '/jobs/LONG1#apply',
@@ -648,7 +650,96 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
         },
       },
     ),
-    '/market/me/jobs' => (200, {'data': <Object>[]}),
+    // The employer's own postings: live with a busy pipeline, sent back with
+    // a long note, and closed. Not LONG1, which the apply audit reads as
+    // somebody else's.
+    '/market/me/jobs' => (
+      200,
+      {
+        'data': [
+          for (final (id, status, state) in const [
+            ('own1', 'APPROVED', 'OPEN'),
+            ('own2', 'CHANGES_REQUESTED', 'OPEN'),
+            ('own3', 'APPROVED', 'CLOSED'),
+          ])
+            {
+              ..._longJob,
+              'id': id,
+              'code': 'J-${id.toUpperCase()}-2026',
+              'moderationStatus': status,
+              'state': state,
+              'reviewNote': status == 'APPROVED' ? null : long,
+              'createdAt': '2026-10-01T10:00:00Z',
+              'viewCount': 1234567,
+              '_count': {'applications': 4321},
+            },
+        ],
+      },
+    ),
+    '/jobs/me/pipeline' => (
+      200,
+      {
+        'data': {
+          'own1': {
+            'total': 4321,
+            'unseen': 1234,
+            'byOutcome': {'SHORTLISTED': 987, 'INTERVIEW': 654},
+          },
+        },
+      },
+    ),
+    // Somebody new with everything filled in, one who withdrew, and one who
+    // sent nothing but their name.
+    '/market/me/jobs/own1/applications' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'ap1',
+            'outcome': 'INTERVIEW',
+            'coverLetter': '$long\n\n$long',
+            'expectedSalary': '1250000000',
+            'cvOriginalName':
+                'Maryam-Alexandra Ahmadi-Khorasani - CV - final version 3.pdf',
+            'employerNote': long,
+            'createdAt': '2026-10-01T10:00:00Z',
+            'employerSeenAt': null,
+            'skillMatch': {'matched': 3, 'total': 12},
+            'applicant': {
+              'id': 'u1',
+              'firstName': 'Maryam-Alexandra',
+              'lastName': 'Ahmadi-Khorasani',
+              'email': 'maryam.alexandra.ahmadi.khorasani@example.com',
+            },
+            'applicantProfile': {
+              'username': 'maryam_alexandra_long',
+              'verified': true,
+              'ratingAvg': 4.75,
+              'ratingCount': 1234,
+            },
+          },
+          {
+            'id': 'ap2',
+            'outcome': 'WITHDRAWN',
+            'createdAt': '2026-10-01T10:00:00Z',
+            'applicant': {'id': 'u2', 'firstName': 'Ali', 'lastName': 'Rezaei'},
+            'applicantProfile': null,
+          },
+          {
+            'id': 'ap3',
+            'outcome': 'PENDING',
+            'createdAt': '2026-10-01T10:00:00Z',
+            'employerSeenAt': '2026-10-02T10:00:00Z',
+            'applicant': {
+              'id': 'u3',
+              'firstName': 'Sara',
+              'lastName': 'Moradi',
+            },
+            'applicantProfile': null,
+          },
+        ],
+      },
+    ),
     // Every stage an application passes through, and one sent back with a
     // reviewer's note, all on the longest posting.
     '/market/me/applications' => (

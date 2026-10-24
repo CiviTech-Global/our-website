@@ -738,6 +738,10 @@ class StringsMobile extends L10nNode {
   String get agoLastMonth => string("agoLastMonth");
   String get agoMonths => string("agoMonths");
   String get showResults => string("showResults");
+  String get noFileViewer => string("noFileViewer");
+  String get hireConfirm => string("hireConfirm");
+  String get declineConfirm => string("declineConfirm");
+  String get closePostingConfirm => string("closePostingConfirm");
   StringsMobileFieldRules get fieldRules => StringsMobileFieldRules(node("fieldRules"));
 }
 

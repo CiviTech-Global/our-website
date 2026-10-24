@@ -2804,6 +2804,10 @@
   "agoLastMonth": "last month",
   "agoMonths": "{n} months ago",
   "showResults": "Show results",
+  "noFileViewer": "Nothing on this phone opens this kind of file.",
+  "hireConfirm": "{name} will be told they are hired. If this fills the last opening, the posting closes and everyone still waiting is told no.",
+  "declineConfirm": "{name} will be told you are going ahead with someone else.",
+  "closePostingConfirm": "The posting leaves the board and takes no more applications.",
   "fieldRules": {
    "required": "This field is required",
    "minChars": "At least {n} characters",

@@ -78,6 +78,7 @@
                 <data android:path="/dashboard/applications"/>
                 <data android:path="/dashboard/saved-jobs"/>
                 <data android:path="/dashboard/job-alerts"/>
+                <data android:path="/dashboard/jobs"/>
                 <data android:pathPrefix="/jobs/"/>
                 <data android:path="/companies"/>
                 <data android:pathPrefix="/companies/"/>
@@ -119,6 +120,7 @@
                 <data android:path="/en/dashboard/applications"/>
                 <data android:path="/en/dashboard/saved-jobs"/>
                 <data android:path="/en/dashboard/job-alerts"/>
+                <data android:path="/en/dashboard/jobs"/>
                 <data android:pathPrefix="/en/jobs/"/>
                 <data android:path="/en/companies"/>
                 <data android:pathPrefix="/en/companies/"/>
@@ -160,6 +162,7 @@
                 <data android:path="/tr/dashboard/applications"/>
                 <data android:path="/tr/dashboard/saved-jobs"/>
                 <data android:path="/tr/dashboard/job-alerts"/>
+                <data android:path="/tr/dashboard/jobs"/>
                 <data android:pathPrefix="/tr/jobs/"/>
                 <data android:path="/tr/companies"/>
                 <data android:pathPrefix="/tr/companies/"/>
@@ -201,6 +204,7 @@
                 <data android:path="/de/dashboard/applications"/>
                 <data android:path="/de/dashboard/saved-jobs"/>
                 <data android:path="/de/dashboard/job-alerts"/>
+                <data android:path="/de/dashboard/jobs"/>
                 <data android:pathPrefix="/de/jobs/"/>
                 <data android:path="/de/companies"/>
                 <data android:pathPrefix="/de/companies/"/>
@@ -242,6 +246,7 @@
                 <data android:path="/fr/dashboard/applications"/>
                 <data android:path="/fr/dashboard/saved-jobs"/>
                 <data android:path="/fr/dashboard/job-alerts"/>
+                <data android:path="/fr/dashboard/jobs"/>
                 <data android:pathPrefix="/fr/jobs/"/>
                 <data android:path="/fr/companies"/>
                 <data android:pathPrefix="/fr/companies/"/>
@@ -283,12 +288,25 @@
                 <data android:path="/es/dashboard/applications"/>
                 <data android:path="/es/dashboard/saved-jobs"/>
                 <data android:path="/es/dashboard/job-alerts"/>
+                <data android:path="/es/dashboard/jobs"/>
                 <data android:pathPrefix="/es/jobs/"/>
                 <data android:path="/es/companies"/>
                 <data android:pathPrefix="/es/companies/"/>
                 <data android:pathPrefix="/es/dashboard/messages/"/>
             </intent-filter>
         </activity>
+        <!-- Lets the phone's own viewer read a file the app downloaded (an
+             applicant's CV); see MainActivity.open. Not exported: access is
+             granted per file, to the app picked, for reading only. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.shared"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/shared_files" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

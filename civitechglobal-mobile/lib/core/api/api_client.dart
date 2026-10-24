@@ -132,6 +132,40 @@ class ApiClient {
     }
   }
 
+  /// A file behind the sign-in, as bytes and the type the server gave it.
+  /// The web opens these through a viewer that sends the token; a plain
+  /// link would not, and neither would a browser tab.
+  Future<({List<int> bytes, String mimeType})> download(String path) async {
+    Future<({List<int> bytes, String mimeType})> attempt() async {
+      final response = await _dio.get<List<int>>(
+        path,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return (
+        bytes: response.data ?? const <int>[],
+        mimeType:
+            response.headers
+                .value(Headers.contentTypeHeader)
+                ?.split(';')
+                .first ??
+            'application/octet-stream',
+      );
+    }
+
+    try {
+      return await attempt();
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401 && await refresh()) {
+        try {
+          return await attempt();
+        } on DioException catch (retryError) {
+          throw ApiException.from(retryError);
+        }
+      }
+      throw ApiException.from(error);
+    }
+  }
+
   Future<T> _send<T>(
     String method,
     String path, {

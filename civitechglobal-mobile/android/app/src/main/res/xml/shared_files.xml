@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the app may hand to another app to read: files it downloaded for the
+     reader (an applicant's CV), and nothing else in its storage. -->
+<paths>
+    <cache-path name="shared" path="shared/" />
+</paths>

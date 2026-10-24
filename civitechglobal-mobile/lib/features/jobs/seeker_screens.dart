@@ -23,20 +23,25 @@ import 'job_card.dart';
 import 'jobs_data.dart';
 import 'seeker_data.dart';
 
-/// The frame the seeker's lists share: a title, a line under it, the guide
+/// The frame the member's job lists share: a title, a line under it, the guide
 /// one tap away, and a list that refreshes on pull.
-class _ListPage extends ConsumerWidget {
-  const _ListPage({
+class MemberListPage extends ConsumerWidget {
+  const MemberListPage({
     required this.title,
     required this.onRefresh,
     required this.children,
     this.subtitle,
+    this.helpId = 'my-applications',
+    super.key,
   });
 
   final String title;
   final String? subtitle;
   final Future<void> Function() onRefresh;
   final List<Widget> children;
+
+  /// The guide behind the help key: the seeker's, unless said otherwise.
+  final String helpId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,7 +51,7 @@ class _ListPage extends ConsumerWidget {
       appBar: AppBar(
         leading: homeLeading(context),
         title: Text(title),
-        actions: const [HelpAction('my-applications')],
+        actions: [HelpAction(helpId)],
       ),
       body: SafeArea(
         top: false,
@@ -86,7 +91,7 @@ const _moderationStatuses = [
 
 /// The garden tint for a review state or an outcome: settled well (0),
 /// waiting on somebody (1), under way (2), a no (3).
-int _tone(String status) => switch (status) {
+int statusTone(String status) => switch (status) {
   'APPROVED' || 'ACCEPTED' => 0,
   'PENDING_REVIEW' || 'CHANGES_REQUESTED' || 'DRAFT' => 1,
   'SHORTLISTED' || 'INTERVIEW' => 2,
@@ -128,7 +133,7 @@ class _MyApplicationsScreenState extends ConsumerState<MyApplicationsScreen> {
     ];
     final filtering = needle.isNotEmpty || _status.isNotEmpty;
 
-    return _ListPage(
+    return MemberListPage(
       title: m.myApplications,
       subtitle: s.app.memberDescriptions.myApplications,
       onRefresh: () => ref.refresh(ownApplicationsProvider.future),
@@ -230,10 +235,10 @@ class _ApplicationCard extends ConsumerWidget {
             children: [
               StatusPill(
                 m.label(a.moderationStatus),
-                tone: _tone(a.moderationStatus),
+                tone: statusTone(a.moderationStatus),
               ),
               if (approved)
-                StatusPill(m.label(a.outcome), tone: _tone(a.outcome)),
+                StatusPill(m.label(a.outcome), tone: statusTone(a.outcome)),
               if (a.employerSeenAt != null && a.outcome != 'WITHDRAWN')
                 StatusPill(j.seenByEmployer, tone: 2),
             ],
@@ -245,7 +250,7 @@ class _ApplicationCard extends ConsumerWidget {
               '${formatMoneyIn(pay, 'IRT', language, m.currency)}',
               style: text.bodyMedium?.copyWith(color: c.ink2),
             ),
-          if (a.reviewNote case final note?) _ReviewNote(note),
+          if (a.reviewNote case final note?) ReviewNote(note),
           if (a.moderationStatus == 'CHANGES_REQUESTED')
             BaghKey(
               label: m.revise,
@@ -303,8 +308,9 @@ class _ApplicationCard extends ConsumerWidget {
   }
 }
 
-class _ReviewNote extends ConsumerWidget {
-  const _ReviewNote(this.note);
+/// What the platform's reviewer wrote back to the author.
+class ReviewNote extends ConsumerWidget {
+  const ReviewNote(this.note, {super.key});
 
   final String note;
 
@@ -530,7 +536,7 @@ class _ReviseSheetState extends ConsumerState<_ReviseSheet> {
           children: [
             Text(m.revise, style: text.titleLarge),
             if (widget.application.reviewNote case final note?)
-              _ReviewNote(note),
+              ReviewNote(note),
             TextField(
               controller: _cover,
               minLines: 4,
@@ -602,7 +608,7 @@ class SavedJobsScreen extends ConsumerWidget {
     final c = BaghColors.of(context);
     final text = Theme.of(context).textTheme;
     final saved = ref.watch(savedJobsProvider);
-    return _ListPage(
+    return MemberListPage(
       title: j.savedJobsTitle,
       onRefresh: () => ref.refresh(savedJobsProvider.future),
       children: [
@@ -662,7 +668,7 @@ class JobAlertsScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final alerts = ref.watch(jobAlertsProvider);
     final count = alerts.value?.length ?? 0;
-    return _ListPage(
+    return MemberListPage(
       title: j.alertsTitle,
       subtitle: j.alertsIntro,
       onRefresh: () => ref.refresh(jobAlertsProvider.future),

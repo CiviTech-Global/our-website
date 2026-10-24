@@ -2774,6 +2774,10 @@ const tr: PartialTranslations = {
     agoLastMonth: 'geçen ay',
     agoMonths: '{n} ay önce',
     showResults: 'Sonuçları göster',
+    noFileViewer: 'Bu telefonda bu tür dosyayı açabilecek bir uygulama yok.',
+    hireConfirm: '{name} kişisine işe alındığı bildirilecek. Bu son kontenjansa ilan kapanır ve bekleyen diğer adaylara olumsuz yanıt gider.',
+    declineConfirm: '{name} kişisine başka biriyle devam ettiğiniz bildirilecek.',
+    closePostingConfirm: 'İlan listeden kaldırılır ve artık başvuru almaz.',
     fieldRules: {
       required: 'Bu alan zorunludur',
       minChars: 'En az {n} karakter',

@@ -111,9 +111,11 @@ describe('accepting an applicant', () => {
 
     await setApplicationOutcome('emp', 'a1', 'ACCEPTED');
 
-    expect(mocks.tx.jobApplication.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { outcome: 'DECLINED' } }),
-    );
+    // Interviewees too: left out, they sat at "interview" on a filled role.
+    expect(mocks.tx.jobApplication.updateMany).toHaveBeenCalledWith({
+      where: expect.objectContaining({ outcome: { in: ['PENDING', 'SHORTLISTED', 'INTERVIEW'] } }),
+      data: { outcome: 'DECLINED', outcomeChangedAt: expect.any(Date) },
+    });
     expect(mocks.tx.jobPost.update).toHaveBeenCalledWith(expect.objectContaining({ data: { state: 'AWARDED' } }));
   });
 });

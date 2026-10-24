@@ -2764,6 +2764,10 @@ const fr: PartialTranslations = {
     agoLastMonth: 'le mois dernier',
     agoMonths: 'il y a {n} mois',
     showResults: 'Afficher les résultats',
+    noFileViewer: 'Aucune application de ce téléphone n\'ouvre ce type de fichier.',
+    hireConfirm: '{name} sera informé(e) de son embauche. Si c\'était le dernier poste à pourvoir, l\'offre est fermée et les autres candidats en attente reçoivent une réponse négative.',
+    declineConfirm: '{name} sera informé(e) que vous poursuivez avec quelqu\'un d\'autre.',
+    closePostingConfirm: 'L\'offre est retirée du tableau et n\'accepte plus de candidatures.',
     fieldRules: {
       required: 'Ce champ est obligatoire',
       minChars: 'Au moins {n} caractères',

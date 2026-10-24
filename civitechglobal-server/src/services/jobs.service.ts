@@ -875,9 +875,15 @@ export async function setApplicationOutcome(
         where: { jobId: application.job.id, outcome: 'ACCEPTED' },
       });
       if (hired >= application.job.openings) {
+        // Everyone still in the running, interviewees included: left out, they
+        // sat at "interview" on a role that had been filled.
         await tx.jobApplication.updateMany({
-          where: { jobId: application.job.id, id: { not: applicationId }, outcome: { in: ['PENDING', 'SHORTLISTED'] } },
-          data: { outcome: 'DECLINED' },
+          where: {
+            jobId: application.job.id,
+            id: { not: applicationId },
+            outcome: { in: ['PENDING', 'SHORTLISTED', 'INTERVIEW'] },
+          },
+          data: { outcome: 'DECLINED', outcomeChangedAt: new Date() },
         });
         await tx.jobPost.update({
           where: { id: application.job.id },
