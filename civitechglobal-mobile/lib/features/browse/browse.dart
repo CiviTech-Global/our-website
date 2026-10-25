@@ -318,7 +318,9 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   late Map<String, String> _params = {
     'sort': widget.sorts.first.$1,
     ...widget.initial,
-  }..removeWhere((_, v) => v.isEmpty);
+    // The web's addresses carry the search as ?q= (useListControls).
+    'search': ?widget.initial['q'],
+  }..removeWhere((k, v) => v.isEmpty || k == 'q');
 
   BrowseQuery get _query =>
       BrowseQuery(widget.path, {..._params, ...widget.fixed});
@@ -572,11 +574,11 @@ class _Results extends ConsumerWidget {
         child: Center(child: GirihSpinner()),
       );
       if (tiles) {
-        // As many as fit at about 170 points each, fewer when the text is
+        // As many as fit at about 140 points each, fewer when the text is
         // large: a cover is only useful while its title still fits under it.
         final width = MediaQuery.sizeOf(context).width - padding.horizontal;
         final scale = MediaQuery.textScalerOf(context).scale(1);
-        final per = (width / (170 * scale)).floor().clamp(1, 4);
+        final per = (width / (140 * scale)).floor().clamp(1, 4);
         final rows = (page.items.length / per).ceil();
         return SliverPadding(
           padding: padding,
@@ -677,7 +679,6 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
     final s = ref.watch(stringsProvider);
     final j = s.jobs;
     final geo = ref.watch(geoNamesProvider).value ?? GeoNames.empty();
-    final language = ref.watch(l10nProvider).language;
     final text = Theme.of(context).textTheme;
 
     Widget section(String title, Widget child) => Column(
@@ -767,7 +768,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
               Expanded(
                 child: TextFormField(
                   key: ValueKey((key, _cleared)),
-                  initialValue: localDigits(_p[key] ?? '', language),
+                  initialValue: _p[key] ?? '',
                   keyboardType: TextInputType.number,
                   textDirection: TextDirection.ltr,
                   inputFormatters: [

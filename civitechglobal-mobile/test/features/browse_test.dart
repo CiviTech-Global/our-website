@@ -27,7 +27,10 @@ final _geo = GeoNames.fromJson(
 );
 
 void main() {
-  Future<FakeServer> pump(WidgetTester tester) async {
+  Future<FakeServer> pump(
+    WidgetTester tester, {
+    Map<String, String> initial = const {},
+  }) async {
     final server = FakeServer((o) async {
       return (
         200,
@@ -74,6 +77,7 @@ void main() {
             searchHint: 'Search',
             sorts: const [('newest', 'Newest')],
             countText: '{count} books',
+            initial: initial,
             emptyText: 'None',
             filters: (_) => const [
               TextFilter('Author', 'author'),
@@ -139,5 +143,13 @@ void main() {
     expect(find.text('Hedayat'), findsNothing);
     await apply(tester);
     expect(server.requests.last.queryParameters.containsKey('author'), isFalse);
+  });
+
+  testWidgets("a link's ?q= is the search, as on the web", (tester) async {
+    final server = await pump(tester, initial: {'q': 'Hedayat'});
+    final first = server.requests.first.queryParameters;
+    expect(first['search'], 'Hedayat');
+    expect(first.containsKey('q'), isFalse);
+    expect(find.text('Hedayat'), findsOneWidget);
   });
 }

@@ -57,6 +57,9 @@ const appPaths = <String>{
   '/dashboard/project-alerts',
   '/dashboard/services',
   '/dashboard/service-orders',
+  '/books',
+  '/dashboard/books',
+  '/dashboard/book-purchases',
 };
 
 /// Sections whose every page is a screen in the app.
@@ -73,6 +76,8 @@ const appPrefixes = <String>[
   '/freelance-services/',
   '/dashboard/projects/',
   '/dashboard/services/',
+  '/books/',
+  '/dashboard/books/',
 ];
 
 /// [path] without the website's language prefix: '/en/blog' is '/blog', and

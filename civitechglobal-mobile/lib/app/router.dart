@@ -14,6 +14,9 @@ import '../features/account/recovery_screens.dart';
 import '../features/account/register_screen.dart';
 import '../features/account/security_screen.dart';
 import '../features/blog/blog.dart';
+import '../features/books/book_screens.dart';
+import '../features/books/my_books_screens.dart';
+import '../features/books/sell_book_screen.dart';
 import '../features/company/about_screen.dart';
 import '../features/company/experts_screen.dart';
 import '../features/company/services_screen.dart';
@@ -263,6 +266,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/dashboard/books',
+        builder: (_, state) => MyBooksScreen(
+          requests: state.uri.queryParameters['tab'] == 'requests',
+        ),
+        routes: [
+          GoRoute(path: 'sell', builder: (_, _) => const SellBookScreen()),
+          GoRoute(
+            path: ':id/edit',
+            builder: (_, state) =>
+                SellBookScreen(offerId: state.pathParameters['id']),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/dashboard/book-purchases',
+        builder: (_, _) => const BookPurchasesScreen(),
+      ),
+      GoRoute(
         path: '/dashboard/company',
         builder: (_, _) => const MyCompanyScreen(),
       ),
@@ -424,6 +445,25 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: ':code',
             builder: (_, state) =>
                 ProjectScreen(code: state.pathParameters['code']!),
+          ),
+        ],
+      ),
+      // The book market, a shelf's page and a book by its code; 'shelf'
+      // is never a code.
+      GoRoute(
+        path: '/books',
+        builder: (_, state) =>
+            BookBoardScreen(initial: state.uri.queryParameters),
+        routes: [
+          GoRoute(
+            path: 'shelf/:shelf',
+            builder: (_, state) =>
+                BookBoardScreen(shelfSlug: state.pathParameters['shelf']),
+          ),
+          GoRoute(
+            path: ':code',
+            builder: (_, state) =>
+                BookScreen(code: state.pathParameters['code']!),
           ),
         ],
       ),

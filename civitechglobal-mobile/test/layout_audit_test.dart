@@ -23,6 +23,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api_client_test.dart' show FakeServer, MemoryTokens;
+import 'support/book_fakes.dart';
 import 'support/freelance_fakes.dart';
 
 /// Every screen, in every place it can be squeezed.
@@ -117,6 +118,11 @@ const _screens = [
   '/freelancers',
   '/freelance-services',
   '/freelance-services/SVLONG01',
+  '/books',
+  '/books/shelf/b-literature',
+  '/books/shelf/nowhere',
+  '/books/BKLONG01',
+  '/books/missing',
 ];
 
 /// Screens a member sees: audited signed in only.
@@ -142,6 +148,11 @@ const _memberScreens = [
   '/dashboard/services',
   '/dashboard/services/new',
   '/dashboard/service-orders?side=seller',
+  '/dashboard/books',
+  '/dashboard/books?tab=requests',
+  '/dashboard/books/sell',
+  '/dashboard/books/of4/edit',
+  '/dashboard/book-purchases',
   '/jobs?q=react&workArrangement=REMOTE',
   // Signed in, the apply section has its own states (here: not verified).
   '/jobs/LONG1#apply',
@@ -262,6 +273,9 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     'createdAt': '2026-10-05T10:00:00Z',
   };
   if (freelanceFake(o.path, o.queryParameters) case final answer?) {
+    return answer;
+  }
+  if (bookFake(o.path, o.queryParameters) case final answer?) {
     return answer;
   }
   return switch (o.path) {

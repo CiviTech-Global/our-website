@@ -262,7 +262,9 @@ async function legacyColumns(bookId: string, offer: Pick<OfferInput, 'grade' | '
     pageCount: book.pageCount,
     condition: offer.grade === 'NEW' ? ('NEW' as const) : ('USED' as const),
     price: offer.price,
-    currency: book.currency,
+    // A copy is priced in toman whatever the cover says: the book's currency
+    // is its cover price's, which may be pounds for an imported book.
+    currency: 'IRT',
     negotiable: offer.negotiable ?? false,
     province: offer.province ?? null,
     city: offer.city ?? null,

@@ -130,7 +130,9 @@ function OfferRow({ offer }: { offer: OwnOffer }) {
   const [editing, setEditing] = useState(false);
   const book = offer.book;
   const live = offer.moderationStatus === 'APPROVED';
-  const editable = offer.moderationStatus === 'DRAFT' || offer.moderationStatus === 'REJECTED';
+  // What the server takes back to review (moderation.ts AUTHOR_EDITABLE): a
+  // rejected copy is final; one sent back for changes goes again.
+  const editable = offer.moderationStatus === 'DRAFT' || offer.moderationStatus === 'CHANGES_REQUESTED';
   const waiting = offer.requests.REQUESTED ?? 0;
   const accepted = offer.requests.ACCEPTED ?? 0;
 
@@ -199,7 +201,7 @@ function OfferRow({ offer }: { offer: OwnOffer }) {
             )}
             {accepted > 0 && <span>{t.bookshop.accepted}: {formatNumber(accepted, locale)}</span>}
           </p>
-          {offer.moderationStatus === 'REJECTED' && offer.reviewNote && (
+          {(offer.moderationStatus === 'REJECTED' || offer.moderationStatus === 'CHANGES_REQUESTED') && offer.reviewNote && (
             <p className="mt-2 rounded-lg bg-brand-red-50 p-2 text-sm text-brand-red-800 dark:bg-brand-red-900/20 dark:text-brand-red-300">{offer.reviewNote}</p>
           )}
         </div>
@@ -210,12 +212,14 @@ function OfferRow({ offer }: { offer: OwnOffer }) {
               {t.bookshop.quickEdit}
             </Button>
           )}
-          <Link to={`/dashboard/books/${offer.id}/edit`}>
-            <Button variant="ghost" size="sm" className="w-full">
-              <Pencil className="size-4" aria-hidden="true" />
-              {t.common.edit}
-            </Button>
-          </Link>
+          {editable && (
+            <Link to={`/dashboard/books/${offer.id}/edit`}>
+              <Button variant="ghost" size="sm" className="w-full">
+                <Pencil className="size-4" aria-hidden="true" />
+                {t.common.edit}
+              </Button>
+            </Link>
+          )}
           {editable && (
             <Button size="sm" isLoading={submit.isPending} disabled={offer.photos.length === 0} onClick={() => void send()}>
               <Send className="size-4" aria-hidden="true" />
