@@ -261,7 +261,7 @@ class _PostingCard extends ConsumerWidget {
       if (p.workArrangement != 'ONSITE') m.label(p.workArrangement),
       if (p.seniority case final level?) j.seniorityLevels.label(level),
       ?salaryText(p, s, language),
-    ].where((part) => part.isNotEmpty).join(' · ');
+    ].where((part) => part.isNotEmpty).join(factSep(language));
     final applicants = pipeline?.total ?? job.applicationCount;
     final unseen = pipeline?.unseen ?? 0;
 
@@ -292,7 +292,7 @@ class _PostingCard extends ConsumerWidget {
               job.code,
               if (job.createdAt case final at?)
                 formatDate(at.toLocal(), language),
-            ].join(' · '),
+            ].join(factSep(language)),
             style: text.bodySmall?.copyWith(color: c.ink2),
           ),
           if (facts.isNotEmpty)

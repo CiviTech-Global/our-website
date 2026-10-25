@@ -206,7 +206,7 @@ class _ApplicationCard extends ConsumerWidget {
       ?a.companyName,
       a.jobCode,
       if (a.createdAt case final at?) formatDate(at.toLocal(), language),
-    ].join(' · ');
+    ].join(factSep(language));
 
     return SoftSurface(
       padding: const EdgeInsets.all(16),
@@ -341,9 +341,20 @@ class ReviewNote extends ConsumerWidget {
 /// employer, shortlisted, interview, decision. "Has anyone even looked?"
 /// answered at a glance, and a no said as plainly as a yes.
 class StageTracker extends ConsumerWidget {
-  const StageTracker(this.application, {super.key});
+  StageTracker(OwnApplication application, {super.key})
+    : outcome = application.outcome,
+      seenAt = application.employerSeenAt;
 
-  final OwnApplication application;
+  /// A proposal's stages read the same way: sent, seen, shortlisted,
+  /// interview, decision.
+  const StageTracker.of({
+    required this.outcome,
+    required this.seenAt,
+    super.key,
+  });
+
+  final String outcome;
+  final DateTime? seenAt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -351,11 +362,10 @@ class StageTracker extends ConsumerWidget {
     final j = s.jobs;
     final c = BaghColors.of(context);
     final text = Theme.of(context).textTheme;
-    final outcome = application.outcome;
     final declined = outcome == 'DECLINED';
     final reached = [
       true,
-      application.employerSeenAt != null || outcome != 'PENDING',
+      seenAt != null || outcome != 'PENDING',
       const {'SHORTLISTED', 'INTERVIEW', 'ACCEPTED'}.contains(outcome),
       outcome == 'INTERVIEW' || outcome == 'ACCEPTED',
       outcome == 'ACCEPTED' || declined,
@@ -568,7 +578,7 @@ class _ReviseSheetState extends ConsumerState<_ReviseSheet> {
               chooseLabel: m.cv,
               rulesText: widget.application.cvOriginalName == null
                   ? s.join.fileRules
-                  : '${widget.application.cvOriginalName} · ${s.join.fileRules}',
+                  : '${widget.application.cvOriginalName}${factSep(language)}${s.join.fileRules}',
               removeLabel: s.join.removeFile,
               tooManyText: s.join.errFileBig,
               tooBigText: s.join.errFileBig,

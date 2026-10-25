@@ -21,6 +21,12 @@ import '../features/company/showcase.dart';
 import '../features/company/team_screen.dart';
 import '../features/contact/contact_screen.dart';
 import '../features/explore/explore_screen.dart';
+import '../features/freelance/client_screens.dart';
+import '../features/freelance/freelancer_screens.dart';
+import '../features/freelance/project_board.dart';
+import '../features/freelance/project_screen.dart';
+import '../features/freelance/seller_screens.dart';
+import '../features/freelance/services_screens.dart';
 import '../features/help/help_centre_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/inbox/inbox_screen.dart';
@@ -102,6 +108,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       if (path == '/dashboard/notifications') {
         return '/inbox?tab=notifications';
+      }
+      // A notice about a project's proposals opens its inbox, as the web
+      // opens it in place with ?open=<id>.
+      if (path == '/dashboard/projects') {
+        if (state.uri.queryParameters['open'] case final id?
+            when id.isNotEmpty) {
+          return '/dashboard/projects/${Uri.encodeComponent(id)}/inbox';
+        }
       }
       // The member home is the Me tab.
       if (path == '/dashboard') return '/me';
@@ -191,6 +205,62 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/dashboard/projects',
+        builder: (_, _) => const ClientProjectsScreen(),
+        routes: [
+          GoRoute(path: 'new', builder: (_, _) => const PostProjectScreen()),
+          GoRoute(
+            path: ':id/edit',
+            builder: (_, state) =>
+                PostProjectScreen(projectId: state.pathParameters['id']),
+          ),
+          // The app's own page; on the web the inbox opens in place.
+          GoRoute(
+            path: ':id/inbox',
+            builder: (_, state) =>
+                ProjectInboxScreen(projectId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/dashboard/bids',
+        builder: (_, _) => const MyProposalsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/awards',
+        builder: (_, _) => const AwardsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/invites',
+        builder: (_, _) => const ProjectInvitesScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/saved-projects',
+        builder: (_, _) => const SavedProjectsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/project-alerts',
+        builder: (_, _) => const ProjectAlertsScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/services',
+        builder: (_, _) => const MyServicesScreen(),
+        routes: [
+          GoRoute(path: 'new', builder: (_, _) => const ServiceEditorScreen()),
+          GoRoute(
+            path: ':id/edit',
+            builder: (_, state) =>
+                ServiceEditorScreen(serviceId: state.pathParameters['id']),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/dashboard/service-orders',
+        builder: (_, state) => ServiceOrdersScreen(
+          side: state.uri.queryParameters['side'] ?? 'buyer',
+        ),
       ),
       GoRoute(
         path: '/dashboard/company',
@@ -339,6 +409,43 @@ final routerProvider = Provider<GoRouter>((ref) {
       // The job board, its landing addresses, and a posting by its code.
       // The landing paths come first: 'in', 'category' and 'country' are
       // never codes.
+      GoRoute(
+        path: '/projects',
+        builder: (_, state) =>
+            ProjectBoardScreen(initial: state.uri.queryParameters),
+        routes: [
+          GoRoute(
+            path: 'category/:category',
+            builder: (_, state) => ProjectBoardScreen(
+              categorySlug: state.pathParameters['category'],
+            ),
+          ),
+          GoRoute(
+            path: ':code',
+            builder: (_, state) =>
+                ProjectScreen(code: state.pathParameters['code']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/freelancers',
+        builder: (_, _) => TalentScreen(
+          onInvite: (context, row) =>
+              showInviteSheet(context, username: row.username),
+        ),
+      ),
+      GoRoute(
+        path: '/freelance-services',
+        builder: (_, state) =>
+            ServiceCatalogScreen(initial: state.uri.queryParameters),
+        routes: [
+          GoRoute(
+            path: ':code',
+            builder: (_, state) =>
+                ServiceScreen(code: state.pathParameters['code']!),
+          ),
+        ],
+      ),
       GoRoute(
         path: '/jobs',
         builder: (_, state) =>

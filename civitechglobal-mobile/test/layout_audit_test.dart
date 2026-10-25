@@ -23,6 +23,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api_client_test.dart' show FakeServer, MemoryTokens;
+import 'support/freelance_fakes.dart';
 
 /// Every screen, in every place it can be squeezed.
 ///
@@ -110,6 +111,12 @@ const _screens = [
   '/companies/civic',
   '/companies/plain',
   '/companies/missing',
+  '/projects',
+  '/projects/category/web',
+  '/projects/PRLONG01',
+  '/freelancers',
+  '/freelance-services',
+  '/freelance-services/SVLONG01',
 ];
 
 /// Screens a member sees: audited signed in only.
@@ -123,6 +130,18 @@ const _memberScreens = [
   '/dashboard/jobs/new',
   '/dashboard/jobs/own2/edit',
   '/dashboard/company',
+  '/dashboard/projects',
+  '/dashboard/projects/new',
+  '/dashboard/projects/op2/edit',
+  '/dashboard/projects/op1/inbox',
+  '/dashboard/bids',
+  '/dashboard/awards',
+  '/dashboard/invites',
+  '/dashboard/saved-projects',
+  '/dashboard/project-alerts',
+  '/dashboard/services',
+  '/dashboard/services/new',
+  '/dashboard/service-orders?side=seller',
   '/jobs?q=react&workArrangement=REMOTE',
   // Signed in, the apply section has its own states (here: not verified).
   '/jobs/LONG1#apply',
@@ -242,6 +261,9 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     'readAt': null,
     'createdAt': '2026-10-05T10:00:00Z',
   };
+  if (freelanceFake(o.path, o.queryParameters) case final answer?) {
+    return answer;
+  }
   return switch (o.path) {
     // A member who plays every part, with something waiting in each.
     '/market/me/workspace' => (
@@ -1128,7 +1150,14 @@ void main() {
         // rest twice over, and the member screens signed out.
         final member = _memberScreens.contains(target);
         final changes =
-            member || ['/', '/me', '/inbox', '/jobs'].contains(target);
+            member ||
+            [
+              '/',
+              '/me',
+              '/inbox',
+              '/jobs',
+              '/projects/PRLONG01',
+            ].contains(target);
         if (signedIn ? !changes : member) continue;
         testWidgets('$target ${signedIn ? '(signed in) ' : ''}fits: $where', (
           tester,

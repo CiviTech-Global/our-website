@@ -350,7 +350,7 @@ class _Ticket extends ConsumerWidget {
                   spacing: 4,
                   children: [
                     Text(
-                      '${s.contact.staffReply} · ${date(r['createdAt'])}',
+                      '${s.contact.staffReply}${factSep(language)}${date(r['createdAt'])}',
                       style: BaghType.weight(
                         text.labelMedium!,
                         700,

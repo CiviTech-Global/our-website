@@ -336,7 +336,7 @@ class _ConsultationResultState extends ConsumerState<_ConsultationResult> {
     final windows = [
       for (final w in (r['availability'] as List? ?? const []))
         if (w is Map)
-          '${_date(w['day'], language)} · ${s.consult.parts.label('${w['part']}')}',
+          '${_date(w['day'], language)}${factSep(language)}${s.consult.parts.label('${w['part']}')}',
     ];
     return SoftSurface(
       child: Column(
@@ -576,7 +576,7 @@ class _ProposalViewState extends ConsumerState<ProposalView> {
                     if (m['price'] != null) money(m['price']),
                     if ((m['description'] as String?)?.isNotEmpty ?? false)
                       '${m['description']}',
-                  ].join(' · '),
+                  ].join(factSep(language)),
             ]),
           ContentSection(
             title: p.estimate,

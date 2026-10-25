@@ -276,11 +276,13 @@ class _RequestRow extends ConsumerWidget {
             TextSpan(
               children: [
                 if (row.label != null && kind != null)
-                  TextSpan(text: '$kind · '),
+                  TextSpan(text: '$kind${factSep(language)}'),
                 // The code reads left to right in any language.
                 TextSpan(text: _ltr(row.code)),
                 if (row.createdAt case final at?)
-                  TextSpan(text: ' · ${formatDate(at, language)}'),
+                  TextSpan(
+                    text: '${factSep(language)}${formatDate(at, language)}',
+                  ),
               ],
             ),
             style: text.bodySmall?.copyWith(color: c.ink2),

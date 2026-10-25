@@ -127,7 +127,7 @@ class BlogIndexScreen extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${post.dateLabel} · ${s.blog.minutes.fill({'n': localDigits(post.minutes, language), 'count': localDigits(post.minutes, language)})}',
+                          '${post.dateLabel}${factSep(language)}${s.blog.minutes.fill({'n': localDigits(post.minutes, language), 'count': localDigits(post.minutes, language)})}',
                           style: text.bodySmall,
                         ),
                       ],
@@ -178,7 +178,7 @@ class BlogPostScreen extends ConsumerWidget {
             title: '${p['title']}',
             subtitle: '${p['description']}',
             eyebrow:
-                '${p['dateLabel'] ?? ''} · ${s.blog.minutes.fill({'n': localDigits(p['readingMinutes'] ?? 1, language), 'count': localDigits(p['readingMinutes'] ?? 1, language)})}',
+                '${p['dateLabel'] ?? ''}${factSep(language)}${s.blog.minutes.fill({'n': localDigits(p['readingMinutes'] ?? 1, language), 'count': localDigits(p['readingMinutes'] ?? 1, language)})}',
             children: [
               const SizedBox(height: BaghSpace.gutter),
               MarkdownBlocks(blocks),

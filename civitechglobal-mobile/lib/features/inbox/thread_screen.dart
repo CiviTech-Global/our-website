@@ -201,7 +201,7 @@ class _Messages extends ConsumerWidget {
                   ),
                   if (m.createdAt case final at?)
                     Text(
-                      '${formatDate(at, language)} · '
+                      '${formatDate(at, language)}${factSep(language)}'
                       '${formatTime(at, language)}',
                       style: text.labelSmall?.copyWith(
                         color: ink.withValues(alpha: 0.75),

@@ -652,7 +652,7 @@ class _StepBar extends ConsumerWidget {
           ],
         ),
         Text(
-          '${localDigits(step + 1, language)} / ${localDigits(titles.length, language)} · ${titles[step]}',
+          '${localDigits(step + 1, language)} / ${localDigits(titles.length, language)}${factSep(language)}${titles[step]}',
           style: BaghType.weight(text.titleMedium!, 750),
         ),
       ],

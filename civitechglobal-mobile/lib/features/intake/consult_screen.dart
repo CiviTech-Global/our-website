@@ -257,7 +257,7 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                           DropdownMenuItem(
                             value: e.slug,
                             child: Text(
-                              '${e.fullName} · ${e.headline}',
+                              '${e.fullName}${factSep(language)}${e.headline}',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

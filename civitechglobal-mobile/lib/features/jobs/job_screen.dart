@@ -396,7 +396,7 @@ class _Header extends ConsumerWidget {
               if (job.featured) _Pill(s.market.featuredBadge, tone: 1),
               if (job.responsiveRate case final rate?)
                 _Pill(
-                  '${j.responsiveEmployer} · ${j.responsiveHint.fill({'rate': localDigits((rate * 100).round(), language)})}',
+                  '${j.responsiveEmployer}${factSep(language)}${j.responsiveHint.fill({'rate': localDigits((rate * 100).round(), language)})}',
                   tone: 0,
                 ),
             ],

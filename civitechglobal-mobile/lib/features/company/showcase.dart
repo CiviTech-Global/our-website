@@ -202,7 +202,10 @@ class _OrganizationCard extends ConsumerWidget {
                   children: [
                     Text(org.name, style: text.titleMedium),
                     if (facts.isNotEmpty)
-                      Text(facts.join(' · '), style: text.bodySmall),
+                      Text(
+                        facts.join(factSep(language)),
+                        style: text.bodySmall,
+                      ),
                   ],
                 ),
               ),
@@ -221,7 +224,7 @@ class _OrganizationCard extends ConsumerWidget {
                   Text('«$q»', style: text.bodyMedium),
                   if (org.quoteAuthor case final a? when a.isNotEmpty)
                     Text(
-                      [a, ?org.quoteRole].join(' · '),
+                      [a, ?org.quoteRole].join(factSep(language)),
                       style: BaghType.weight(
                         text.labelMedium!,
                         700,

@@ -80,3 +80,7 @@ TextDirection textDirectionOf(String text, TextDirection fallback) {
   if (letter == null) return fallback;
   return _isRtl(letter.runes.first) ? TextDirection.rtl : TextDirection.ltr;
 }
+
+/// Between facts on one line: the Persian comma in Persian, where a middle
+/// dot beside a digit reads as a zero ("۲ · ۳" as "۲۰۳"), the dot elsewhere.
+String factSep(String language) => language == 'fa' ? '، ' : ' · ';

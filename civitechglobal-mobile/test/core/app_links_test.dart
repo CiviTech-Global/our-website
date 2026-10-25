@@ -61,6 +61,8 @@ void main() {
     expect(isAppPath('/proposal/preview/abc'), isFalse);
     expect(isAppPath('/experts/sara'), isTrue);
     expect(isAppPath('/jobs/Q8HJYZRFGN'), isTrue);
-    expect(isAppPath('/projects'), isFalse);
+    expect(isAppPath('/projects/P7YJ3A28J9'), isTrue);
+    // Staff screens stay on the website.
+    expect(isAppPath('/admin'), isFalse);
   });
 }
