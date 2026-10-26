@@ -3,6 +3,20 @@ import 'package:civitech_global_flutter/core/format.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('the update key goes to Cafe Bazaar only once it is an https link', () {
+    Capabilities caps(Object? downloads) => Capabilities.fromJson({
+      'mobile': {'downloads': downloads},
+    });
+    expect(
+      caps({'bazaar': 'https://cafebazaar.ir/app/x'}).bazaarUrl,
+      'https://cafebazaar.ir/app/x',
+    );
+    expect(caps({'bazaar': null}).bazaarUrl, isNull);
+    expect(caps({'bazaar': 'http://cafebazaar.ir/app/x'}).bazaarUrl, isNull);
+    expect(caps(null).bazaarUrl, isNull);
+    expect(const Capabilities().bazaarUrl, isNull);
+  });
+
   group('compareVersions', () {
     test('compares numerically, not as text', () {
       expect(compareVersions('1.10.0', '1.9.3'), 1);

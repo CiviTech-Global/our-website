@@ -67,6 +67,22 @@ void main() {
             expect(contrast(tint.ink, tint.fill), greaterThanOrEqualTo(4.5));
           }
         });
+
+        // Colours used for text beyond the inks: the primary for every link
+        // and text key, quiet text on the fill blocks (notes, summaries), and
+        // a tint's ink straight on a surface (a discount, a free-delivery
+        // line). Glass panes are checked above.
+        if (!c.glass) {
+          test('the other colours text is set in read as text', () {
+            expect(contrast(c.primary, c.surface), greaterThanOrEqualTo(4.5));
+            expect(contrast(c.primary, c.ground), greaterThanOrEqualTo(4.5));
+            expect(contrast(c.ink2, c.fill), greaterThanOrEqualTo(4.5));
+            expect(contrast(c.ink2, c.ground), greaterThanOrEqualTo(4.5));
+            for (final tint in c.tints) {
+              expect(contrast(tint.ink, c.surface), greaterThanOrEqualTo(4.5));
+            }
+          });
+        }
       });
     }
   }

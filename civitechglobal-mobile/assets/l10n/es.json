@@ -2733,6 +2733,25 @@
   "emptyHint": "Mientras no haya ninguna, un vendedor no puede clasificar su producto.",
   "depthHint": "Las categorías tienen como máximo dos niveles."
  },
+ "appDownload": {
+  "title": "La aplicación de Rayan Tamaddon Jahan Gostar",
+  "subtitle": "Todo lo que haces en la web, en tu teléfono Android: solicitudes de proyecto, empleo, trabajo freelance, el mercado de libros y el mercado local.",
+  "storesTitle": "Consíguela en una tienda",
+  "bazaar": "Consíguela en Cafe Bazaar",
+  "myket": "Consíguela en Myket",
+  "apkTitle": "Descarga directa",
+  "apkIntro": "¿No usas una tienda? Descarga la aplicación firmada desde esta web.",
+  "apkArm64": "Descargar para la mayoría de teléfonos",
+  "apkArm64Hint": "Teléfonos de 64 bits: casi todos los de los últimos años.",
+  "apkArmV7": "Descargar para teléfonos más antiguos",
+  "apkArmV7Hint": "Teléfonos de 32 bits: prueba esta si la primera no se instala.",
+  "installTitle": "Instalar el archivo descargado",
+  "install1": "Abre el archivo.",
+  "install2": "Si el teléfono lo pide, permite instalar desde este origen.",
+  "install3": "Toca «Instalar». La propia aplicación te avisa de las actualizaciones.",
+  "comingSoon": "La aplicación llegará pronto.",
+  "androidOnly": "Por ahora solo para Android."
+ },
  "mobile": {
   "tabHome": "Inicio",
   "tabExplore": "Explorar",

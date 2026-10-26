@@ -132,6 +132,18 @@ sms_provider: none
 push_provider: none
 pushe_app_id: ""
 
+# The Android app (civitechglobal-mobile/README.md, "Releasing"). Versions
+# are dotted (1.2.0); below the minimum the app asks to be updated and does
+# nothing else. Each link is https or a path on this site, empty until it is
+# live: the website's /app page and the app's update screen offer only what
+# is set.
+mobile_min_version: "1.0.0"
+mobile_latest_version: "1.0.0"
+mobile_bazaar_url: ""
+mobile_myket_url: ""
+mobile_apk_arm64_url: ""
+mobile_apk_armv7_url: ""
+
 otp_ttl_seconds: 300
 # Per-number cooldown. The API also rate-limits per caller; this bounds many
 # sources hitting one number, that bounds one source hitting many numbers.

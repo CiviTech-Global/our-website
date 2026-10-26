@@ -68,8 +68,27 @@ describe('capabilities', () => {
       expect.arrayContaining(['tradeMaster', 'tradeMasterOrders', 'jobsV2', 'projectsV2', 'booksV2']),
     );
     // A malformed value must not reach the app as a version to compare.
-    expect(body.mobile).toEqual({ minVersion: '1.2.0', latestVersion: '1.0.0' });
+    expect(body.mobile).toMatchObject({ minVersion: '1.2.0', latestVersion: '1.0.0' });
     delete process.env.MOBILE_MIN_VERSION;
     delete process.env.MOBILE_LATEST_VERSION;
+  });
+
+  it('publishes where the app can be had, and only safe links', async () => {
+    process.env.MOBILE_BAZAAR_URL = 'https://cafebazaar.ir/app/ir.rayantamaddonjahangostar.app';
+    process.env.MOBILE_MYKET_URL = 'http://myket.ir/app/x';
+    process.env.MOBILE_APK_ARM64_URL = '/downloads/rayan-1.0.0-arm64.apk';
+    process.env.MOBILE_APK_ARMV7_URL = 'javascript:alert(1)';
+
+    const body = (await get()) as { mobile: { downloads: Record<string, string | null> } };
+
+    expect(body.mobile.downloads).toEqual({
+      bazaar: 'https://cafebazaar.ir/app/ir.rayantamaddonjahangostar.app',
+      myket: null,
+      apkArm64: '/downloads/rayan-1.0.0-arm64.apk',
+      apkArmV7: null,
+    });
+    for (const key of ['MOBILE_BAZAAR_URL', 'MOBILE_MYKET_URL', 'MOBILE_APK_ARM64_URL', 'MOBILE_APK_ARMV7_URL']) {
+      delete process.env[key];
+    }
   });
 });

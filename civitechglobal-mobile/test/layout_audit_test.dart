@@ -1411,24 +1411,37 @@ void main() {
   for (final language in ['fa', 'en']) {
     for (final target in [..._screens, ..._memberScreens]) {
       final member = _memberScreens.contains(target);
-      testWidgets('$target is usable with TalkBack: $language', (tester) async {
-        final semantics = tester.ensureSemantics();
-        await _pump(
-          tester,
-          language: language,
-          size: const Size(412, 915),
-          textScale: 1,
-          palette: GardenPalette.pistachio,
-          mode: ThemeMode.light,
-          signedIn: member,
-          verified: _verifiedScreens.contains(target),
-        );
-        _open(tester, target);
-        await _settle(tester);
-        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-        semantics.dispose();
-      });
+      testWidgets(
+        '$target is usable with TalkBack and high contrast: $language',
+        (tester) async {
+          final semantics = tester.ensureSemantics();
+          // With the system's high-contrast text on, as many who use
+          // TalkBack have it.
+          tester.platformDispatcher.accessibilityFeaturesTestValue =
+              const FakeAccessibilityFeatures(highContrast: true);
+          addTearDown(
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+          );
+          await _pump(
+            tester,
+            language: language,
+            size: const Size(412, 915),
+            textScale: 1,
+            palette: GardenPalette.pistachio,
+            mode: ThemeMode.light,
+            signedIn: member,
+            verified: _verifiedScreens.contains(target),
+          );
+          _open(tester, target);
+          await _settle(tester);
+          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+          // Contrast is checked on the colours themselves (palette_test):
+          // the screenshot-based textContrastGuideline misreads thin,
+          // antialiased text and underlines, flagging 5.6:1 links as 2:1.
+          semantics.dispose();
+        },
+      );
     }
   }
 }

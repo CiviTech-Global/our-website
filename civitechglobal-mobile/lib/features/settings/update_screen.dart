@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/capabilities.dart';
 import '../../core/config.dart';
 import '../../design/palette.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/centered_scroll.dart';
 import '../../design/widgets/girih.dart';
 import '../../l10n/l10n.dart';
-
-/// Where the app is installed from. Cafe Bazaar first: the store most Android
-/// phones in Iran use. The website's download page covers everyone else.
-const _bazaar = 'https://cafebazaar.ir/app/ir.rayantamaddonjahangostar.app';
 
 /// Shown instead of the app when this build is below the server's version
 /// floor: it would only fail request after request, so it says so plainly.
@@ -55,15 +52,17 @@ class UpdateRequiredScreen extends ConsumerWidget {
   }
 }
 
-/// Opens the store page, or the website if no store app answers.
+/// Opens Cafe Bazaar, where most Android phones in Iran install from, once
+/// the server says the app is listed there; otherwise, or if no store app
+/// answers, the website's download page, which carries every other way.
 Future<void> openStore(WidgetRef ref) async {
-  final opened = await launchUrl(
-    Uri.parse(_bazaar),
-    mode: LaunchMode.externalApplication,
-  );
+  final bazaar = (await ref.read(capabilitiesProvider.future)).bazaarUrl;
+  final opened =
+      bazaar != null &&
+      await launchUrl(Uri.parse(bazaar), mode: LaunchMode.externalApplication);
   if (!opened) {
     await launchUrl(
-      AppConfig.website('/', ref.read(l10nProvider).language),
+      AppConfig.website('/app', ref.read(l10nProvider).language),
       mode: LaunchMode.externalApplication,
     );
   }

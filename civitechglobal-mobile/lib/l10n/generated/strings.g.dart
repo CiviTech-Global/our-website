@@ -49,6 +49,7 @@ class Strings extends L10nNode {
   StringsTrademaster get trademaster => StringsTrademaster(node("trademaster"));
   StringsDemo get demo => StringsDemo(node("demo"));
   StringsCategoryDesk get categoryDesk => StringsCategoryDesk(node("categoryDesk"));
+  StringsAppDownload get appDownload => StringsAppDownload(node("appDownload"));
   StringsMobile get mobile => StringsMobile(node("mobile"));
   StringsWork get work => StringsWork(node("work"));
   StringsBookshop get bookshop => StringsBookshop(node("bookshop"));
@@ -767,6 +768,28 @@ class StringsMobileFieldRules extends L10nNode {
   String get nationalIdCheck => string("nationalIdCheck");
   String get phoneFormat => string("phoneFormat");
   String get plateInvalid => string("plateInvalid");
+}
+
+class StringsAppDownload extends L10nNode {
+  const StringsAppDownload(super.raw);
+
+  String get title => string("title");
+  String get subtitle => string("subtitle");
+  String get storesTitle => string("storesTitle");
+  String get bazaar => string("bazaar");
+  String get myket => string("myket");
+  String get apkTitle => string("apkTitle");
+  String get apkIntro => string("apkIntro");
+  String get apkArm64 => string("apkArm64");
+  String get apkArm64Hint => string("apkArm64Hint");
+  String get apkArmV7 => string("apkArmV7");
+  String get apkArmV7Hint => string("apkArmV7Hint");
+  String get installTitle => string("installTitle");
+  String get install1 => string("install1");
+  String get install2 => string("install2");
+  String get install3 => string("install3");
+  String get comingSoon => string("comingSoon");
+  String get androidOnly => string("androidOnly");
 }
 
 class StringsCategoryDesk extends L10nNode {

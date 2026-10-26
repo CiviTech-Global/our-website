@@ -203,9 +203,9 @@ class _Messages extends ConsumerWidget {
                     Text(
                       '${formatDate(at, language)}${factSep(language)}'
                       '${formatTime(at, language)}',
-                      style: text.labelSmall?.copyWith(
-                        color: ink.withValues(alpha: 0.75),
-                      ),
+                      // Full ink: faded, it fell below 4.5:1 on one's own
+                      // (primary) bubble; the small size sets it apart.
+                      style: text.labelSmall?.copyWith(color: ink),
                     ),
                 ],
               ),

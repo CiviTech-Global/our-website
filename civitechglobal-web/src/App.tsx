@@ -39,6 +39,7 @@ const ThirdPartyLandingPage = lazy(() => import('@/pages/public/ThirdPartyLandin
 const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
 const ProposalDocumentPage = lazy(() => import('@/pages/public/ProposalDocumentPage'));
 const JoinUsPage = lazy(() => import('@/pages/public/JoinUsPage'));
+const AppDownloadPage = lazy(() => import('@/pages/public/AppDownloadPage'));
 const ProjectsPage = lazy(() => import('@/pages/admin/ProjectsPage'));
 const AdminResumesPage = lazy(() => import('@/pages/admin/ResumesPage'));
 const AdminResumeDetailPage = lazy(() => import('@/pages/admin/ResumeDetailPage'));
@@ -213,6 +214,14 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/join" element={<JoinUsPage />} />
+        <Route
+          path="/app"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AppDownloadPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/start-project"
           element={

@@ -130,6 +130,14 @@ services:
       PUSH_PROVIDER: "{{ push_provider }}"
       PUSHE_API_TOKEN: "{{ vault_pushe_api_token | default('') }}"
       PUSHE_APP_ID: "{{ pushe_app_id }}"
+      # The Android app: its version floor and latest release, and where it
+      # can be had (capabilities.routes.ts). Empty means not set yet.
+      MOBILE_MIN_VERSION: "{{ mobile_min_version }}"
+      MOBILE_LATEST_VERSION: "{{ mobile_latest_version }}"
+      MOBILE_BAZAAR_URL: "{{ mobile_bazaar_url }}"
+      MOBILE_MYKET_URL: "{{ mobile_myket_url }}"
+      MOBILE_APK_ARM64_URL: "{{ mobile_apk_arm64_url }}"
+      MOBILE_APK_ARMV7_URL: "{{ mobile_apk_armv7_url }}"
     deploy:
       resources:
         limits:

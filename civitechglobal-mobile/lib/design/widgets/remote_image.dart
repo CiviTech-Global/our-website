@@ -51,14 +51,33 @@ class RemoteImage extends StatelessWidget {
     );
     final image = url == null
         ? placeholder
-        : CachedNetworkImage(
-            imageUrl: url!,
-            width: width,
-            height: height,
-            fit: fit,
-            fadeInDuration: const Duration(milliseconds: 180),
-            placeholder: (_, _) => placeholder,
-            errorWidget: (_, _, _) => placeholder,
+        // Decoded at the size it is shown, not the size it was uploaded: a
+        // 1600-pixel photo in an 80-point tile is most of a low-end phone's
+        // image memory once a list has a few dozen of them.
+        : LayoutBuilder(
+            builder: (context, box) {
+              final w = width ?? box.maxWidth;
+              final h = height ?? box.maxHeight;
+              // Cropping to cover, a wide photo in a tall tile is cut to
+              // the tile's height: decode by the longer side, with room to
+              // spare, so the crop is never blurred.
+              final side = fit == BoxFit.cover && h.isFinite
+                  ? (w > h ? w : h) * 2
+                  : w;
+              final px = side * MediaQuery.devicePixelRatioOf(context);
+              // Uploads are at most 1600 pixels: past that, nothing to save.
+              final decode = px.isFinite && px < 1600 ? px.round() : null;
+              return CachedNetworkImage(
+                imageUrl: url!,
+                width: width,
+                height: height,
+                fit: fit,
+                memCacheWidth: decode,
+                fadeInDuration: const Duration(milliseconds: 180),
+                placeholder: (_, _) => placeholder,
+                errorWidget: (_, _, _) => placeholder,
+              );
+            },
           );
     return Semantics(
       image: true,

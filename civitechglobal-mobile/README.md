@@ -146,3 +146,56 @@ To try the whole path locally: run the server with `PUSH_PROVIDER=console`,
 and build with `--dart-define=PUSH_DEV_TOKEN=<any 8+ characters>`. The
 server log then shows `[console push]` with what each notification would
 have sent.
+
+## Performance
+
+Scrolling is measured on a real phone in profile mode with `flutter_driver`
+(`integration_test` needs androidx test libraries from Google's Maven, which
+the build machine cannot reach):
+
+```sh
+flutter drive --profile --target=test_driver/perf.dart \
+  --dart-define=API_BASE_URL=http://localhost:5000/api/v1
+```
+
+It opens the book board, the market listings, the project board and the job
+board by their website links, flings each up and down, and writes
+`build/<screen>.timeline_summary.json`. `flutter drive` takes the build number
+from `pubspec.yaml`, so raise it above the installed one for the run (Android
+refuses a downgrade) and put it back afterwards.
+
+Baseline, 26 October 2026, Galaxy S21 FE at 120 Hz: average frame build
+1.6–2.0 ms and raster 3.0–4.2 ms; no frame over 16.7 ms on any of the four
+screens; frames over 8.3 ms 2–4% on the picture boards and 9–11% on the text
+boards. Run it again on a low-end phone before a release.
+
+## Releasing
+
+The app is ready to ship once the server it talks to has the mobile changes.
+In order:
+
+1. **Deploy the server and web** (production is still on `e400753`). The app
+   needs the mobile token transport, the capabilities `mobile` block and the
+   API fixes made alongside the app; the web carries the `/app` download
+   page. `assetlinks.json` (for website links opening in the app) ships with
+   the web.
+2. **Build the release** with the upload key (`android/key.properties`):
+
+   ```sh
+   flutter build apk --release --split-per-abi --obfuscate \
+     --split-debug-info=build/symbols --build-number=<next>
+   ```
+
+   Keep `build/symbols` for reading crash reports. Raise the build number
+   above every one installed or uploaded before.
+3. **Publish the APKs on the website**: copy `app-arm64-v8a-release.apk` and
+   `app-armeabi-v7a-release.apk` to the web host (for example
+   `/downloads/rayan-<version>-arm64.apk`) and set `MOBILE_APK_ARM64_URL` and
+   `MOBILE_APK_ARMV7_URL` on the API. The `/app` page shows them at once.
+4. **Stores**: list the app on Cafe Bazaar and Myket (developer accounts,
+   listing text, screenshots, the privacy page), then set
+   `MOBILE_BAZAAR_URL` and `MOBILE_MYKET_URL`. The update screen opens
+   Cafe Bazaar once its link is set, the website's `/app` page until then.
+5. **Versions**: set `MOBILE_LATEST_VERSION` to the new version to suggest an
+   update to older installs, and `MOBILE_MIN_VERSION` only when an old build
+   can no longer work against the API.

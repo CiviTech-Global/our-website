@@ -21,7 +21,38 @@ function mobileVersions() {
     const value = process.env[key]?.trim();
     return value && /^[0-9]+[.][0-9]+[.][0-9]+$/.test(value) ? value : '1.0.0';
   };
-  return { minVersion: read('MOBILE_MIN_VERSION'), latestVersion: read('MOBILE_LATEST_VERSION') };
+  return {
+    minVersion: read('MOBILE_MIN_VERSION'),
+    latestVersion: read('MOBILE_LATEST_VERSION'),
+    downloads: mobileDownloads(),
+  };
+}
+
+/**
+ * Where the app can be had: the stores and the signed APKs on this site.
+ *
+ * From the environment too, so a release puts its files and store pages live
+ * without a code change. Only an https address or a path on this site is
+ * passed on; anything else is left out rather than linked.
+ */
+function mobileDownloads() {
+  const link = (key: string) => {
+    const value = process.env[key]?.trim();
+    if (!value) return null;
+    // A path on this site, but never "//host", which leaves it.
+    if (/^\/[^/]/.test(value)) return value;
+    try {
+      return new URL(value).protocol === 'https:' ? value : null;
+    } catch {
+      return null;
+    }
+  };
+  return {
+    bazaar: link('MOBILE_BAZAAR_URL'),
+    myket: link('MOBILE_MYKET_URL'),
+    apkArm64: link('MOBILE_APK_ARM64_URL'),
+    apkArmV7: link('MOBILE_APK_ARMV7_URL'),
+  };
 }
 
 /**

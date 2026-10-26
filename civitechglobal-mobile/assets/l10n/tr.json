@@ -2733,6 +2733,25 @@
   "emptyHint": "Kategori olmadan satıcı ürününü hiçbir yere yerleştiremez.",
   "depthHint": "Kategoriler en fazla iki düzey derinliğindedir."
  },
+ "appDownload": {
+  "title": "Rayan Tamaddon Jahan Gostar uygulaması",
+  "subtitle": "Web sitesinde yaptığınız her şey Android telefonunuzda: proje talepleri, iş ilanları, serbest çalışma, kitap pazarı ve yerel pazar.",
+  "storesTitle": "Bir mağazadan edinin",
+  "bazaar": "Cafe Bazaar’dan edinin",
+  "myket": "Myket’ten edinin",
+  "apkTitle": "Doğrudan indirin",
+  "apkIntro": "Mağaza kullanmıyor musunuz? İmzalı uygulamayı bu siteden indirin.",
+  "apkArm64": "Çoğu telefon için indir",
+  "apkArm64Hint": "64 bit telefonlar: son yılların neredeyse tüm telefonları.",
+  "apkArmV7": "Eski telefonlar için indir",
+  "apkArmV7Hint": "32 bit telefonlar: ilki kurulmazsa bunu deneyin.",
+  "installTitle": "İndirilen dosyayı kurma",
+  "install1": "Dosyayı açın.",
+  "install2": "Telefonunuz sorarsa bu kaynaktan kuruluma izin verin.",
+  "install3": "“Yükle”ye dokunun. Güncellemeleri uygulama size bildirir.",
+  "comingSoon": "Uygulama yakında yayında.",
+  "androidOnly": "Şimdilik yalnızca Android."
+ },
  "mobile": {
   "tabHome": "Ana sayfa",
   "tabExplore": "Keşfet",

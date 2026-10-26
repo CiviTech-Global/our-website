@@ -14,6 +14,7 @@ class Capabilities {
     this.features = const {},
     this.minVersion = '1.0.0',
     this.latestVersion = '1.0.0',
+    this.bazaarUrl,
   });
 
   factory Capabilities.fromJson(Map<String, Object?> json) {
@@ -31,6 +32,12 @@ class Capabilities {
       latestVersion: mobile is Map
           ? '${mobile['latestVersion'] ?? '1.0.0'}'
           : '1.0.0',
+      bazaarUrl: switch (mobile) {
+        {'downloads': {'bazaar': final String url}}
+            when url.startsWith('https://') =>
+          url,
+        _ => null,
+      },
     );
   }
 
@@ -39,6 +46,9 @@ class Capabilities {
   final Map<String, bool> features;
   final String minVersion;
   final String latestVersion;
+
+  /// The app's Cafe Bazaar page, once it is listed there.
+  final String? bazaarUrl;
 
   /// A module switch; off when the server did not mention it.
   bool feature(String name) => features[name] ?? false;

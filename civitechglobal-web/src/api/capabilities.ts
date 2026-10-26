@@ -6,6 +6,15 @@ export interface Capabilities {
   email: boolean;
   /** Whether it can deliver a text message to a real phone. */
   sms: boolean;
+  /** The Android app: where it can be had (each null until it is live). */
+  mobile?: {
+    downloads?: {
+      bazaar: string | null;
+      myket: string | null;
+      apkArm64: string | null;
+      apkArmV7: string | null;
+    };
+  };
 }
 
 /**
@@ -31,4 +40,22 @@ export function useCapabilities() {
   });
 
   return query.data ?? { email: true, sms: true };
+}
+
+/** Where the Android app can be had; null while asking. */
+export function useAppDownloads() {
+  const query = useQuery({
+    queryKey: ['capabilities'],
+    queryFn: async () => (await api.get<Capabilities>('/capabilities')).data,
+    staleTime: 5 * 60 * 1000,
+  });
+  if (!query.data) return null;
+  return (
+    query.data.mobile?.downloads ?? {
+      bazaar: null,
+      myket: null,
+      apkArm64: null,
+      apkArmV7: null,
+    }
+  );
 }
