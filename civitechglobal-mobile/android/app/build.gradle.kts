@@ -55,6 +55,18 @@ android {
         }
     }
 
+    /*
+     * Store the native libraries (the Flutter engine and the compiled app,
+     * ~22 MB together) compressed. Android's default leaves them raw so they
+     * load in place, which nearly doubles the download; on metered mobile data
+     * the smaller APK matters more than the few MB Android unpacks on install.
+     */
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("release")
