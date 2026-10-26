@@ -17,6 +17,39 @@ void main() {
     expect(const Capabilities().bazaarUrl, isNull);
   });
 
+  test(
+    'an update comes from the store that installed the app, never another',
+    () {
+      final caps = Capabilities.fromJson({
+        'mobile': {
+          'downloads': {
+            'bazaar': 'https://cafebazaar.ir/app/x',
+            'myket': 'https://myket.ir/app/x',
+          },
+        },
+      });
+      expect(caps.myketUrl, 'https://myket.ir/app/x');
+      expect(
+        caps.updateUrlFor('com.farsitel.bazaar'),
+        'https://cafebazaar.ir/app/x',
+      );
+      expect(
+        caps.updateUrlFor('ir.mservices.market'),
+        'https://myket.ir/app/x',
+      );
+      // Installed from the website, by adb, or from a store we are not in.
+      expect(caps.updateUrlFor(null), isNull);
+      expect(caps.updateUrlFor('com.android.vending'), isNull);
+      // Listed in one store only: a Myket copy must not be sent to Bazaar.
+      final bazaarOnly = Capabilities.fromJson({
+        'mobile': {
+          'downloads': {'bazaar': 'https://cafebazaar.ir/app/x'},
+        },
+      });
+      expect(bazaarOnly.updateUrlFor('ir.mservices.market'), isNull);
+    },
+  );
+
   group('compareVersions', () {
     test('compares numerically, not as text', () {
       expect(compareVersions('1.10.0', '1.9.3'), 1);

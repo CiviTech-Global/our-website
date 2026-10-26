@@ -15,6 +15,7 @@ class Capabilities {
     this.minVersion = '1.0.0',
     this.latestVersion = '1.0.0',
     this.bazaarUrl,
+    this.myketUrl,
   });
 
   factory Capabilities.fromJson(Map<String, Object?> json) {
@@ -32,12 +33,8 @@ class Capabilities {
       latestVersion: mobile is Map
           ? '${mobile['latestVersion'] ?? '1.0.0'}'
           : '1.0.0',
-      bazaarUrl: switch (mobile) {
-        {'downloads': {'bazaar': final String url}}
-            when url.startsWith('https://') =>
-          url,
-        _ => null,
-      },
+      bazaarUrl: _storeUrl(mobile, 'bazaar'),
+      myketUrl: _storeUrl(mobile, 'myket'),
     );
   }
 
@@ -50,8 +47,31 @@ class Capabilities {
   /// The app's Cafe Bazaar page, once it is listed there.
   final String? bazaarUrl;
 
+  /// The app's Myket page, once it is listed there.
+  final String? myketUrl;
+
+  /// Where an update comes from: the store this copy was installed from,
+  /// never another one. Both stores reject an app that sends people to a
+  /// rival store, and the same APK is uploaded to each, so the choice is
+  /// made on the phone from the installer Android reports. Null (a copy from
+  /// the website, or a store not listed yet) means the website's /app page.
+  String? updateUrlFor(String? installer) => switch (installer) {
+    'com.farsitel.bazaar' => bazaarUrl,
+    'ir.mservices.market' => myketUrl,
+    _ => null,
+  };
+
   /// A module switch; off when the server did not mention it.
   bool feature(String name) => features[name] ?? false;
+}
+
+/// A store page from the server's `mobile.downloads`, only when https.
+String? _storeUrl(Object? mobile, String store) {
+  final url = switch (mobile) {
+    {'downloads': final Map<Object?, Object?> downloads} => downloads[store],
+    _ => null,
+  };
+  return url is String && url.startsWith('https://') ? url : null;
 }
 
 /// Unknown capabilities read as "no", never as an error: the app must still
