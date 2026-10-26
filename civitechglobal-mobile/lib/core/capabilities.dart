@@ -51,15 +51,19 @@ class Capabilities {
   final String? myketUrl;
 
   /// Where an update comes from: the store this copy was installed from,
-  /// never another one. Both stores reject an app that sends people to a
-  /// rival store, and the same APK is uploaded to each, so the choice is
-  /// made on the phone from the installer Android reports. Null (a copy from
-  /// the website, or a store not listed yet) means the website's /app page.
-  String? updateUrlFor(String? installer) => switch (installer) {
-    'com.farsitel.bazaar' => bazaarUrl,
-    'ir.mservices.market' => myketUrl,
-    _ => null,
-  };
+  /// never another one. Both stores require that a copy they installed is
+  /// updated only through them and never points at another store or a
+  /// download, and the same APK is uploaded to each, so the choice is made
+  /// on the phone from the installer Android reports. A store's page for
+  /// [package] is at a fixed address, which the server may override. Null
+  /// (a copy from the website or adb) means the website's /app page.
+  String? updateUrlFor(String? installer, String package) =>
+      switch (installer) {
+        'com.farsitel.bazaar' =>
+          bazaarUrl ?? 'https://cafebazaar.ir/app/$package',
+        'ir.mservices.market' => myketUrl ?? 'https://myket.ir/app/$package',
+        _ => null,
+      };
 
   /// A module switch; off when the server did not mention it.
   bool feature(String name) => features[name] ?? false;

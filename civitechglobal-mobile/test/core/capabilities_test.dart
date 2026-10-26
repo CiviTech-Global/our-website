@@ -20,7 +20,23 @@ void main() {
   test(
     'an update comes from the store that installed the app, never another',
     () {
-      final caps = Capabilities.fromJson({
+      const pkg = 'ir.rayantamaddonjahangostar.app';
+      const unlisted = Capabilities();
+      // A store page is at a fixed address, so no server setting is needed.
+      expect(
+        unlisted.updateUrlFor('com.farsitel.bazaar', pkg),
+        'https://cafebazaar.ir/app/$pkg',
+      );
+      expect(
+        unlisted.updateUrlFor('ir.mservices.market', pkg),
+        'https://myket.ir/app/$pkg',
+      );
+      // Installed from the website, by adb, or by a store we are not in: the
+      // website, which is the only place that offers every way.
+      expect(unlisted.updateUrlFor(null, pkg), isNull);
+      expect(unlisted.updateUrlFor('com.android.vending', pkg), isNull);
+      // The server may name the pages; each store still gets only its own.
+      final listed = Capabilities.fromJson({
         'mobile': {
           'downloads': {
             'bazaar': 'https://cafebazaar.ir/app/x',
@@ -28,25 +44,15 @@ void main() {
           },
         },
       });
-      expect(caps.myketUrl, 'https://myket.ir/app/x');
+      expect(listed.myketUrl, 'https://myket.ir/app/x');
       expect(
-        caps.updateUrlFor('com.farsitel.bazaar'),
+        listed.updateUrlFor('com.farsitel.bazaar', pkg),
         'https://cafebazaar.ir/app/x',
       );
       expect(
-        caps.updateUrlFor('ir.mservices.market'),
+        listed.updateUrlFor('ir.mservices.market', pkg),
         'https://myket.ir/app/x',
       );
-      // Installed from the website, by adb, or from a store we are not in.
-      expect(caps.updateUrlFor(null), isNull);
-      expect(caps.updateUrlFor('com.android.vending'), isNull);
-      // Listed in one store only: a Myket copy must not be sent to Bazaar.
-      final bazaarOnly = Capabilities.fromJson({
-        'mobile': {
-          'downloads': {'bazaar': 'https://cafebazaar.ir/app/x'},
-        },
-      });
-      expect(bazaarOnly.updateUrlFor('ir.mservices.market'), isNull);
     },
   );
 

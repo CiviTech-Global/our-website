@@ -54,16 +54,15 @@ class UpdateRequiredScreen extends ConsumerWidget {
 }
 
 /// Opens the store this copy was installed from ([Capabilities.updateUrlFor]);
-/// for a copy from the website, or if the store app does not answer, the
-/// website's download page, which carries every other way.
+/// a copy from the website goes to the website's download page. A store
+/// install never falls back to that page: it offers APKs and other stores.
 Future<void> openStore(WidgetRef ref) async {
-  final installer = (await PackageInfo.fromPlatform()).installerStore;
+  final info = await PackageInfo.fromPlatform();
   final caps = await ref.read(capabilitiesProvider.future);
-  final store = caps.updateUrlFor(installer);
-  final opened =
-      store != null &&
-      await launchUrl(Uri.parse(store), mode: LaunchMode.externalApplication);
-  if (!opened) {
+  final store = caps.updateUrlFor(info.installerStore, info.packageName);
+  if (store != null) {
+    await launchUrl(Uri.parse(store), mode: LaunchMode.externalApplication);
+  } else {
     await launchUrl(
       AppConfig.website('/app', ref.read(l10nProvider).language),
       mode: LaunchMode.externalApplication,
