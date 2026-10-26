@@ -160,6 +160,11 @@ services:
     image: {{ image_web }}
     ports: !override
       - "127.0.0.1:{{ web_port }}:80"
+    # The app's APKs (nginx.conf, location /downloads/): a host directory so
+    # they stay out of the image and survive image pruning; read-only, the
+    # container only serves them.
+    volumes:
+      - "{{ mobile_downloads_dir }}:/usr/share/nginx/html/downloads:ro"
     deploy:
       resources:
         limits:

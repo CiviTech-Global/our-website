@@ -193,9 +193,13 @@ In order:
    (`useLegacyPackaging` in `android/app/build.gradle.kts`), so each APK is
    about 11 MB rather than 25 MB.
 3. **Publish the APKs on the website**: copy `app-arm64-v8a-release.apk` and
-   `app-armeabi-v7a-release.apk` to the web host (for example
-   `/downloads/rayan-<version>-arm64.apk`) and set `MOBILE_APK_ARM64_URL` and
-   `MOBILE_APK_ARMV7_URL` on the API. The `/app` page shows them at once.
+   `app-armeabi-v7a-release.apk` to `/var/www/civitech-downloads/` on the
+   host as `rayan-<version>-arm64.apk` and `rayan-<version>-armv7.apk`,
+   delete the previous version's files, and point `mobile_apk_arm64_url` /
+   `mobile_apk_armv7_url` (`civitech-deploy/group_vars/all/main.yml`) at
+   `/downloads/<file>`. The web container serves that folder read-only, so
+   no image rebuild is needed; the next playbook run passes the links to the
+   API and the `/app` page shows them.
 4. **Stores**: list the app on Cafe Bazaar and Myket (developer accounts,
    listing text, screenshots, the privacy page), then set
    `MOBILE_BAZAAR_URL` and `MOBILE_MYKET_URL`. The update screen opens

@@ -141,8 +141,12 @@ mobile_min_version: "1.0.0"
 mobile_latest_version: "1.0.0"
 mobile_bazaar_url: ""
 mobile_myket_url: ""
-mobile_apk_arm64_url: ""
-mobile_apk_armv7_url: ""
+# Signed APKs, copied into mobile_downloads_dir on the host before the deploy
+# that names them (a link to a missing file is a 404 on the /app page). Keep
+# only the current version there; the old files are dead weight.
+mobile_downloads_dir: /var/www/civitech-downloads
+mobile_apk_arm64_url: "/downloads/rayan-1.0.0-arm64.apk"
+mobile_apk_armv7_url: "/downloads/rayan-1.0.0-armv7.apk"
 
 otp_ttl_seconds: 300
 # Per-number cooldown. The API also rate-limits per caller; this bounds many

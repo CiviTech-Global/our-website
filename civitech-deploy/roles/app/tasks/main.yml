@@ -16,6 +16,17 @@
     group: "{{ app_group }}"
     mode: "0750"
 
+# The app's APKs, served by the web container from a read-only mount. Copied
+# here by hand at each app release (civitechglobal-mobile/README.md); world
+# readable because nginx in the container reads it as its own user.
+- name: Create the app downloads directory
+  ansible.builtin.file:
+    path: "{{ mobile_downloads_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Log in to GHCR
   community.docker.docker_login:
     registry_url: "{{ registry }}"
