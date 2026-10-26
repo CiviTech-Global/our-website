@@ -49,6 +49,8 @@ import '../features/jobs/job_board_screen.dart';
 import '../features/jobs/job_editor_screen.dart';
 import '../features/jobs/job_screen.dart';
 import '../features/jobs/seeker_screens.dart';
+import '../features/market/market_screens.dart';
+import '../features/market/my_shops_screens.dart';
 import '../features/me/me_screen.dart';
 import '../features/me/requests_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -119,6 +121,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             when id.isNotEmpty) {
           return '/dashboard/projects/${Uri.encodeComponent(id)}/inbox';
         }
+      }
+      // The web's "open a shop" key is the shops page with ?new=1.
+      if (path == '/dashboard/shops' &&
+          state.uri.queryParameters['new'] == '1') {
+        return '/dashboard/shops/new';
       }
       // The member home is the Me tab.
       if (path == '/dashboard') return '/me';
@@ -284,6 +291,44 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const BookPurchasesScreen(),
       ),
       GoRoute(
+        path: '/dashboard/shops',
+        builder: (_, _) => const MyShopsScreen(),
+        routes: [
+          GoRoute(path: 'new', builder: (_, _) => const ShopEditorScreen()),
+          GoRoute(
+            path: ':id/edit',
+            builder: (_, state) =>
+                ShopEditorScreen(shopId: state.pathParameters['id']),
+          ),
+          GoRoute(
+            path: ':id/products',
+            builder: (_, state) =>
+                ShopListingsScreen(shopId: state.pathParameters['id']!),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (_, state) =>
+                    ListingEditorScreen(shopId: state.pathParameters['id']!),
+              ),
+              GoRoute(
+                path: ':productId/edit',
+                builder: (_, state) => ListingEditorScreen(
+                  shopId: state.pathParameters['id']!,
+                  productId: state.pathParameters['productId'],
+                ),
+              ),
+              GoRoute(
+                path: ':productId/media',
+                builder: (_, state) => ListingMediaScreen(
+                  shopId: state.pathParameters['id']!,
+                  productId: state.pathParameters['productId']!,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
         path: '/dashboard/company',
         builder: (_, _) => const MyCompanyScreen(),
       ),
@@ -445,6 +490,45 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: ':code',
             builder: (_, state) =>
                 ProjectScreen(code: state.pathParameters['code']!),
+          ),
+        ],
+      ),
+      // The local market. The cart and orders stay on the website while
+      // buying is off there too.
+      GoRoute(
+        path: '/marketplace',
+        builder: (_, state) =>
+            ShopsScreen(home: true, initial: state.uri.queryParameters),
+        routes: [
+          GoRoute(path: 'map', builder: (_, _) => const MarketMapScreen()),
+          GoRoute(path: 'join', builder: (_, _) => const JoinMarketScreen()),
+          GoRoute(
+            path: 'shops',
+            builder: (_, state) =>
+                ShopsScreen(initial: state.uri.queryParameters),
+            routes: [
+              GoRoute(
+                path: ':slug',
+                builder: (_, state) => ShopScreen(
+                  slug: state.pathParameters['slug']!,
+                  kind: state.uri.queryParameters['kind'] ?? '',
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'products',
+            builder: (_, state) =>
+                ProductsScreen(initial: state.uri.queryParameters),
+            routes: [
+              GoRoute(
+                path: ':shop/:product',
+                builder: (_, state) => ProductScreen(
+                  shopSlug: state.pathParameters['shop']!,
+                  slug: state.pathParameters['product']!,
+                ),
+              ),
+            ],
           ),
         ],
       ),

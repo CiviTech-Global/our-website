@@ -10,6 +10,7 @@ import 'package:civitech_global_flutter/design/palette.dart';
 import 'package:civitech_global_flutter/design/widgets/bagh_key.dart';
 import 'package:civitech_global_flutter/features/account/security_screen.dart';
 import 'package:civitech_global_flutter/features/help/help_sheet.dart';
+import 'package:civitech_global_flutter/features/market/market_ui.dart';
 import 'package:civitech_global_flutter/features/profile/profile_data.dart';
 import 'package:civitech_global_flutter/features/start/modules.dart';
 import 'package:civitech_global_flutter/features/start/start_sheet.dart';
@@ -25,6 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/api_client_test.dart' show FakeServer, MemoryTokens;
 import 'support/book_fakes.dart';
 import 'support/freelance_fakes.dart';
+import 'support/market_fakes.dart';
 
 /// Every screen, in every place it can be squeezed.
 ///
@@ -123,6 +125,14 @@ const _screens = [
   '/books/shelf/nowhere',
   '/books/BKLONG01',
   '/books/missing',
+  '/marketplace',
+  '/marketplace/map',
+  '/marketplace/shops',
+  '/marketplace/shops/long-shop',
+  '/marketplace/shops/missing',
+  '/marketplace/products',
+  '/marketplace/products/long-shop/long-product',
+  '/marketplace/join',
 ];
 
 /// Screens a member sees: audited signed in only.
@@ -153,6 +163,13 @@ const _memberScreens = [
   '/dashboard/books/sell',
   '/dashboard/books/of4/edit',
   '/dashboard/book-purchases',
+  '/dashboard/shops',
+  '/dashboard/shops/new',
+  '/dashboard/shops/s1/edit',
+  '/dashboard/shops/s1/products',
+  '/dashboard/shops/s1/products/new',
+  '/dashboard/shops/s1/products/p1/edit',
+  '/dashboard/shops/s1/products/p1/media',
   '/jobs?q=react&workArrangement=REMOTE',
   // Signed in, the apply section has its own states (here: not verified).
   '/jobs/LONG1#apply',
@@ -276,6 +293,9 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     return answer;
   }
   if (bookFake(o.path, o.queryParameters) case final answer?) {
+    return answer;
+  }
+  if (marketFake(o.path, o.queryParameters) case final answer?) {
     return answer;
   }
   return switch (o.path) {
@@ -1049,6 +1069,8 @@ Future<void> _pump(
           ),
         ),
         updateNeedProvider.overrideWith((ref) async => UpdateNeed.none),
+        // Map tiles come from OpenStreetMap; the audit has no network.
+        showMapTilesProvider.overrideWithValue(false),
         mfaStatusProvider.overrideWith(
           (ref) async => (enabled: true, codesLeft: 2),
         ),
@@ -1383,6 +1405,32 @@ void main() {
       await _settle(tester);
     }
   });
+
+  // TalkBack and fingers: every tappable thing on every screen is at least
+  // 48 points square and says what it is, in Persian and in English.
+  for (final language in ['fa', 'en']) {
+    for (final target in [..._screens, ..._memberScreens]) {
+      final member = _memberScreens.contains(target);
+      testWidgets('$target is usable with TalkBack: $language', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await _pump(
+          tester,
+          language: language,
+          size: const Size(412, 915),
+          textScale: 1,
+          palette: GardenPalette.pistachio,
+          mode: ThemeMode.light,
+          signedIn: member,
+          verified: _verifiedScreens.contains(target),
+        );
+        _open(tester, target);
+        await _settle(tester);
+        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+        semantics.dispose();
+      });
+    }
+  }
 }
 
 /// A product with the longest shapes: long names and a question of every

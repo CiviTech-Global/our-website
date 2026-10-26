@@ -12,6 +12,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/remote_image.dart';
 import '../../design/widgets/sheet.dart';
 import '../../design/widgets/soft_surface.dart';
@@ -271,7 +272,7 @@ class _ServiceBodyState extends ConsumerState<_ServiceBody> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               if (v.sellerUsername case final user?)
-                InkWell(
+                InlineLink(
                   onTap: () => context.push('/profiles/$user'),
                   child: Text(
                     v.sellerName ?? user,

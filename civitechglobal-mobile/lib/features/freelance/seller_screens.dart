@@ -12,6 +12,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/list_picker.dart';
 import '../../design/widgets/soft_surface.dart';
@@ -406,7 +407,7 @@ class _OrderCard extends ConsumerWidget {
             style: text.bodySmall?.copyWith(color: c.ink2),
           ),
           if (o.counterparty case final user?)
-            InkWell(
+            InlineLink(
               onTap: () => context.push('/profiles/$user'),
               child: Text(
                 '${side == 'buyer' ? w.aboutSeller : w.aboutClient}: @$user',

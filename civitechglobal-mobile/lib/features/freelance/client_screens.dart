@@ -15,6 +15,7 @@ import '../../design/widgets/attachments_field.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/date_field.dart';
 import '../../design/widgets/home_leading.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/leave_guard.dart';
 import '../../design/widgets/list_picker.dart';
 import '../../design/widgets/sheet.dart';
@@ -791,7 +792,7 @@ class _BidCardState extends ConsumerState<_BidCard> {
         children: [
           // The amount under the name, not beside it: a large amount in a
           // large text left the name no room on a narrow phone.
-          InkWell(
+          InlineLink(
             onTap: b.username == null
                 ? null
                 : () => context.push('/profiles/${b.username}'),

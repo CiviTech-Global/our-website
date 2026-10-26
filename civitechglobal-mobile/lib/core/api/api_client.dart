@@ -178,7 +178,11 @@ class ApiClient {
       final response = await _dio.request<Object?>(
         path,
         data: body,
-        queryParameters: query?..removeWhere((_, v) => v == null),
+        // A copy: the caller's map may be constant, or reused for the next
+        // request, and is never this method's to change.
+        queryParameters: query == null
+            ? null
+            : {for (final MapEntry(:key, :value) in query.entries) key: ?value},
         options: Options(method: method),
       );
       final envelope = response.data;

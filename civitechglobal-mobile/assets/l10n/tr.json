@@ -2804,6 +2804,7 @@
   "agoLastMonth": "geçen ay",
   "agoMonths": "{n} ay önce",
   "showResults": "Sonuçları göster",
+  "kmShort": "{km} km",
   "noFileViewer": "Bu telefonda bu tür dosyayı açabilecek bir uygulama yok.",
   "hireConfirm": "{name} kişisine işe alındığı bildirilecek. Bu son kontenjansa ilan kapanır ve bekleyen diğer adaylara olumsuz yanıt gider.",
   "declineConfirm": "{name} kişisine başka biriyle devam ettiğiniz bildirilecek.",

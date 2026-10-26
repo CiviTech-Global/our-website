@@ -70,6 +70,10 @@ typedef BrowsePage = ({
   int page,
   int totalPages,
   int total,
+
+  /// The first page's whole answer, for what a list says beyond its rows
+  /// (the market's nearest match when a radius search is empty).
+  Map<String, Object?> meta,
 });
 
 /// One query's results, a page at a time; the next page loads as the list
@@ -100,6 +104,7 @@ class BrowseController extends AsyncNotifier<BrowsePage> {
             page: _int(map['page']) ?? page,
             totalPages: _int(map['totalPages']) ?? 1,
             total: _int(map['total']) ?? 0,
+            meta: map.cast<String, Object?>(),
           );
         },
       );
@@ -125,6 +130,7 @@ class BrowseController extends AsyncNotifier<BrowsePage> {
         page: next.page,
         totalPages: next.totalPages,
         total: next.total,
+        meta: current.meta,
       ));
     } finally {
       _loadingMore = false;
@@ -250,6 +256,7 @@ class BrowseScreen extends ConsumerStatefulWidget {
     required this.itemBuilder,
     required this.emptyText,
     required this.countText,
+    this.emptyBuilder,
     this.subtitle,
     this.helpId,
     this.fixed = const {},
@@ -274,6 +281,10 @@ class BrowseScreen extends ConsumerStatefulWidget {
   final Widget Function(BuildContext context, Map<String, Object?> row)
   itemBuilder;
   final String emptyText;
+
+  /// In place of [emptyText] when it returns something: an empty answer
+  /// that can say more (how far the nearest match is).
+  final Widget? Function(BuildContext context, BrowsePage page)? emptyBuilder;
 
   /// The count over the results, with a {count} to fill: each list says
   /// what it counts.
@@ -494,8 +505,9 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                               for (final (value, label) in widget.sorts)
                                 PopupMenuItem(value: value, child: Text(label)),
                             ],
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            // As tall as a finger needs, whatever the text.
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 spacing: 4,
@@ -528,6 +540,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                 itemBuilder: widget.itemBuilder,
                 grid: widget.grid,
                 tiles: widget.tiles,
+                emptyBuilder: widget.emptyBuilder,
               ),
             ],
           ),
@@ -545,6 +558,7 @@ class _Results extends ConsumerWidget {
     required this.itemBuilder,
     required this.grid,
     required this.tiles,
+    this.emptyBuilder,
   });
 
   final AsyncValue<BrowsePage> results;
@@ -553,6 +567,7 @@ class _Results extends ConsumerWidget {
   final Widget Function(BuildContext, Map<String, Object?>) itemBuilder;
   final bool grid;
   final bool tiles;
+  final Widget? Function(BuildContext, BrowsePage)? emptyBuilder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -565,7 +580,11 @@ class _Results extends ConsumerWidget {
       if (page.items.isEmpty) {
         return SliverPadding(
           padding: padding,
-          sliver: SliverToBoxAdapter(child: EmptyNote(message: emptyText)),
+          sliver: SliverToBoxAdapter(
+            child:
+                emptyBuilder?.call(context, page) ??
+                EmptyNote(message: emptyText),
+          ),
         );
       }
       final more = page.page < page.totalPages;

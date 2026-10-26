@@ -2937,6 +2937,7 @@ const en: typeof fa = {
     agoLastMonth: 'last month',
     agoMonths: '{n} months ago',
     showResults: 'Show results',
+    kmShort: '{km} km',
     noFileViewer: 'Nothing on this phone opens this kind of file.',
     hireConfirm: '{name} will be told they are hired. If this fills the last opening, the posting closes and everyone still waiting is told no.',
     declineConfirm: '{name} will be told you are going ahead with someone else.',

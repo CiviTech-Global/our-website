@@ -72,6 +72,17 @@ ApiClient _client(FakeServer server, MemoryTokens tokens) {
 }
 
 void main() {
+  test('a query is read, never changed: a constant one works too', () async {
+    final server = FakeServer((o) async => (200, {'data': 1}));
+    final client = _client(server, MemoryTokens());
+    const empty = <String, Object?>{};
+    final mine = <String, Object?>{'a': '1', 'b': null};
+    await client.get<Object?>('/x', query: empty);
+    await client.get<Object?>('/y', query: mine);
+    expect(server.requests.last.queryParameters, {'a': '1'});
+    expect(mine, {'a': '1', 'b': null});
+  });
+
   test(
     'says it is the app, sends the token and the language, unwraps data',
     () async {

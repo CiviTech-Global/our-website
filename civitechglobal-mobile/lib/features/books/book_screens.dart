@@ -16,6 +16,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/list_picker.dart';
 import '../../design/widgets/remote_image.dart';
 import '../../design/widgets/sheet.dart';
@@ -770,7 +771,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                   ],
                 )
               else if (o.seller case final seller?) ...[
-                InkWell(
+                InlineLink(
                   onTap: () => context.push('/profiles/${seller.username}'),
                   child: Text(
                     '@${seller.username}',

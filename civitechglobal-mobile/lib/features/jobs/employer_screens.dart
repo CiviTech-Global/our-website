@@ -11,6 +11,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
@@ -654,7 +655,7 @@ class _ApplicantCardState extends ConsumerState<_ApplicantCard> {
               spacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                InkWell(
+                InlineLink(
                   onTap: () => context.push('/profiles/$username'),
                   child: Text(
                     '@$username',

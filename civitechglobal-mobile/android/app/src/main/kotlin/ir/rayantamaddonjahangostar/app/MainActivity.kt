@@ -1,14 +1,24 @@
 package ir.rayantamaddonjahangostar.app
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.media.ExifInterface
 import android.os.Build
+import android.os.CancellationSignal
+import android.os.Handler
+import android.os.Looper
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -53,6 +63,118 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "ir.rayantamaddonjahangostar.app/location")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "current" -> locate(result)
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    // ------------------------------------------------------------------
+    // Where the reader is, for "near me" in the local market.
+    //
+    // Android's own LocationManager rather than Google's fused provider: the
+    // play-services library cannot be fetched from where the app is built,
+    // and a coarse network fix is all a shop search needs. Asked for only
+    // when the reader presses "near me".
+    // ------------------------------------------------------------------
+
+    private var pendingLocation: MethodChannel.Result? = null
+
+    private fun hasLocationPermission() =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+
+    private fun locate(result: MethodChannel.Result) {
+        if (hasLocationPermission()) {
+            fix(result)
+            return
+        }
+        // One question at a time: a second press while the dialog is up
+        // answers the first.
+        pendingLocation?.error("denied", null, null)
+        pendingLocation = result
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+            LOCATION_REQUEST,
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != LOCATION_REQUEST) return
+        val result = pendingLocation ?: return
+        pendingLocation = null
+        if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            fix(result)
+        } else {
+            result.error("denied", null, null)
+        }
+    }
+
+    /** A recent fix if the phone has one, otherwise one fresh reading. */
+    @Suppress("MissingPermission")
+    private fun fix(result: MethodChannel.Result) {
+        val manager = getSystemService(LOCATION_SERVICE) as LocationManager
+        val providers = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
+            .filter { runCatching { manager.isProviderEnabled(it) }.getOrDefault(false) }
+        if (providers.isEmpty()) {
+            // Location is switched off on the phone.
+            result.error("unavailable", null, null)
+            return
+        }
+        val recent = providers
+            .mapNotNull { runCatching { manager.getLastKnownLocation(it) }.getOrNull() }
+            .filter { System.currentTimeMillis() - it.time < RECENT_MS }
+            .maxByOrNull { it.time }
+        if (recent != null) {
+            result.success(mapOf("latitude" to recent.latitude, "longitude" to recent.longitude))
+            return
+        }
+
+        val handler = Handler(Looper.getMainLooper())
+        var answered = false
+        fun answer(location: Location?) {
+            if (answered) return
+            answered = true
+            if (location == null) {
+                result.error("unavailable", null, null)
+            } else {
+                result.success(mapOf("latitude" to location.latitude, "longitude" to location.longitude))
+            }
+        }
+        val provider = providers.first()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val cancel = CancellationSignal()
+            handler.postDelayed({
+                cancel.cancel()
+                answer(null)
+            }, TIMEOUT_MS)
+            manager.getCurrentLocation(provider, cancel, mainExecutor) { answer(it) }
+        } else {
+            val listener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    manager.removeUpdates(this)
+                    answer(location)
+                }
+
+                @Deprecated("Deprecated in Java")
+                override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) {}
+            }
+            handler.postDelayed({
+                manager.removeUpdates(listener)
+                answer(null)
+            }, TIMEOUT_MS)
+            @Suppress("DEPRECATION")
+            manager.requestSingleUpdate(provider, listener, Looper.getMainLooper())
+        }
     }
 
     /**
@@ -146,6 +268,14 @@ class MainActivity : FlutterActivity() {
     }
 
     private companion object {
+        const val LOCATION_REQUEST = 41
+
+        /** A fix this fresh is good enough for "near me": shops do not move. */
+        const val RECENT_MS = 5 * 60 * 1000L
+
+        /** Long enough for a cold network fix, short enough not to stare at a spinner. */
+        const val TIMEOUT_MS = 10_000L
+
         const val MAX_EDGE = 1600
         const val MAX_IMAGE_BYTES = 300 * 1024
         val QUALITY_STEPS = intArrayOf(82, 72, 62, 50, 40)

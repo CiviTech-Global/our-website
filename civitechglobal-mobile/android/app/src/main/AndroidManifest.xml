@@ -3,6 +3,9 @@
          in the debug and profile manifests, so a release build would install
          fine and then fail every request. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- "Near me" in the local market: a coarse fix is enough for a shop
+         search, and it is asked for only when the reader presses the key. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -100,6 +103,14 @@
                 <data android:path="/dashboard/books"/>
                 <data android:pathPrefix="/dashboard/books/"/>
                 <data android:path="/dashboard/book-purchases"/>
+                <data android:path="/marketplace"/>
+                <data android:path="/marketplace/join"/>
+                <data android:path="/marketplace/shops"/>
+                <data android:pathPrefix="/marketplace/shops/"/>
+                <data android:path="/marketplace/products"/>
+                <data android:pathPrefix="/marketplace/products/"/>
+                <data android:path="/dashboard/shops"/>
+                <data android:pathPrefix="/dashboard/shops/"/>
                 <data android:pathPrefix="/jobs/"/>
                 <data android:path="/companies"/>
                 <data android:pathPrefix="/companies/"/>
@@ -163,6 +174,14 @@
                 <data android:path="/en/dashboard/books"/>
                 <data android:pathPrefix="/en/dashboard/books/"/>
                 <data android:path="/en/dashboard/book-purchases"/>
+                <data android:path="/en/marketplace"/>
+                <data android:path="/en/marketplace/join"/>
+                <data android:path="/en/marketplace/shops"/>
+                <data android:pathPrefix="/en/marketplace/shops/"/>
+                <data android:path="/en/marketplace/products"/>
+                <data android:pathPrefix="/en/marketplace/products/"/>
+                <data android:path="/en/dashboard/shops"/>
+                <data android:pathPrefix="/en/dashboard/shops/"/>
                 <data android:pathPrefix="/en/jobs/"/>
                 <data android:path="/en/companies"/>
                 <data android:pathPrefix="/en/companies/"/>
@@ -226,6 +245,14 @@
                 <data android:path="/tr/dashboard/books"/>
                 <data android:pathPrefix="/tr/dashboard/books/"/>
                 <data android:path="/tr/dashboard/book-purchases"/>
+                <data android:path="/tr/marketplace"/>
+                <data android:path="/tr/marketplace/join"/>
+                <data android:path="/tr/marketplace/shops"/>
+                <data android:pathPrefix="/tr/marketplace/shops/"/>
+                <data android:path="/tr/marketplace/products"/>
+                <data android:pathPrefix="/tr/marketplace/products/"/>
+                <data android:path="/tr/dashboard/shops"/>
+                <data android:pathPrefix="/tr/dashboard/shops/"/>
                 <data android:pathPrefix="/tr/jobs/"/>
                 <data android:path="/tr/companies"/>
                 <data android:pathPrefix="/tr/companies/"/>
@@ -289,6 +316,14 @@
                 <data android:path="/de/dashboard/books"/>
                 <data android:pathPrefix="/de/dashboard/books/"/>
                 <data android:path="/de/dashboard/book-purchases"/>
+                <data android:path="/de/marketplace"/>
+                <data android:path="/de/marketplace/join"/>
+                <data android:path="/de/marketplace/shops"/>
+                <data android:pathPrefix="/de/marketplace/shops/"/>
+                <data android:path="/de/marketplace/products"/>
+                <data android:pathPrefix="/de/marketplace/products/"/>
+                <data android:path="/de/dashboard/shops"/>
+                <data android:pathPrefix="/de/dashboard/shops/"/>
                 <data android:pathPrefix="/de/jobs/"/>
                 <data android:path="/de/companies"/>
                 <data android:pathPrefix="/de/companies/"/>
@@ -352,6 +387,14 @@
                 <data android:path="/fr/dashboard/books"/>
                 <data android:pathPrefix="/fr/dashboard/books/"/>
                 <data android:path="/fr/dashboard/book-purchases"/>
+                <data android:path="/fr/marketplace"/>
+                <data android:path="/fr/marketplace/join"/>
+                <data android:path="/fr/marketplace/shops"/>
+                <data android:pathPrefix="/fr/marketplace/shops/"/>
+                <data android:path="/fr/marketplace/products"/>
+                <data android:pathPrefix="/fr/marketplace/products/"/>
+                <data android:path="/fr/dashboard/shops"/>
+                <data android:pathPrefix="/fr/dashboard/shops/"/>
                 <data android:pathPrefix="/fr/jobs/"/>
                 <data android:path="/fr/companies"/>
                 <data android:pathPrefix="/fr/companies/"/>
@@ -415,6 +458,14 @@
                 <data android:path="/es/dashboard/books"/>
                 <data android:pathPrefix="/es/dashboard/books/"/>
                 <data android:path="/es/dashboard/book-purchases"/>
+                <data android:path="/es/marketplace"/>
+                <data android:path="/es/marketplace/join"/>
+                <data android:path="/es/marketplace/shops"/>
+                <data android:pathPrefix="/es/marketplace/shops/"/>
+                <data android:path="/es/marketplace/products"/>
+                <data android:pathPrefix="/es/marketplace/products/"/>
+                <data android:path="/es/dashboard/shops"/>
+                <data android:pathPrefix="/es/dashboard/shops/"/>
                 <data android:pathPrefix="/es/jobs/"/>
                 <data android:path="/es/companies"/>
                 <data android:pathPrefix="/es/companies/"/>

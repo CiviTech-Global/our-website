@@ -2768,6 +2768,7 @@ const es: PartialTranslations = {
     agoLastMonth: 'el mes pasado',
     agoMonths: 'hace {n} meses',
     showResults: 'Mostrar resultados',
+    kmShort: '{km} km',
     noFileViewer: 'Ninguna aplicación de este teléfono abre este tipo de archivo.',
     hireConfirm: 'Avisaremos a {name} de que ha sido contratado/a. Si con esto se cubre la última vacante, la oferta se cierra y el resto de candidatos en espera recibe un no.',
     declineConfirm: 'Avisaremos a {name} de que sigues adelante con otra persona.',

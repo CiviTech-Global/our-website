@@ -9,6 +9,7 @@ import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/sheet.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../design/widgets/thousands_formatter.dart';
@@ -701,7 +702,7 @@ class BookRequestCard extends ConsumerWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text('${seller ? b.buyer : b.seller}:', style: small),
-                InkWell(
+                InlineLink(
                   onTap: () => context.push('/profiles/${who.username}'),
                   child: Text(
                     '@${who.username}',

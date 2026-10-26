@@ -23,8 +23,12 @@ Future<T?> showBaghSheet<T>(
   useRootNavigator: true,
   isScrollControlled: isScrollControlled,
   useSafeArea: useSafeArea,
-  builder: (context) =>
-      framed ? SheetFrame(child: builder(context)) : builder(context),
+  // Clear of the system navigation bar: a sheet's last key sat under the
+  // gesture bar on a phone with one.
+  builder: (context) => SafeArea(
+    top: false,
+    child: framed ? SheetFrame(child: builder(context)) : builder(context),
+  ),
 );
 
 /// A sheet's surface: frosted glass with a handle in the glass style, the

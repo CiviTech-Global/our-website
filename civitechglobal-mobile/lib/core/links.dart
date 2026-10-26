@@ -60,6 +60,11 @@ const appPaths = <String>{
   '/books',
   '/dashboard/books',
   '/dashboard/book-purchases',
+  '/marketplace',
+  '/marketplace/join',
+  '/marketplace/shops',
+  '/marketplace/products',
+  '/dashboard/shops',
 };
 
 /// Sections whose every page is a screen in the app.
@@ -78,6 +83,9 @@ const appPrefixes = <String>[
   '/dashboard/services/',
   '/books/',
   '/dashboard/books/',
+  '/marketplace/shops/',
+  '/marketplace/products/',
+  '/dashboard/shops/',
 ];
 
 /// [path] without the website's language prefix: '/en/blog' is '/blog', and
@@ -121,6 +129,22 @@ Future<void> openLink(BuildContext context, WidgetRef ref, String href) async {
   if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
+}
+
+/// A web page outside the app (a shop's site, directions), in the browser.
+/// Only http(s), for the same reason as [openLink].
+Future<void> openExternal(String href) async {
+  final uri = Uri.tryParse(href);
+  if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+}
+
+/// The phone's dialer with [phone] typed in; the reader still presses call.
+Future<void> openTel(String phone) async {
+  final digits = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+  if (digits.isEmpty) return;
+  await launchUrl(Uri(scheme: 'tel', path: digits));
 }
 
 /// An asset the API serves (photos, logos, covers), as an absolute URL:
