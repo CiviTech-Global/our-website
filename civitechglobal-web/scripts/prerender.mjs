@@ -64,6 +64,7 @@ const PAGES = [
   // module page it belongs to. They are in the sitemap for crawlers that run
   // scripts.
   '/help',
+  '/privacy',
 ];
 
 /**

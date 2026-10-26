@@ -74,7 +74,9 @@ export function FuturisticFooter() {
               <h4 className="mb-3 text-sm font-semibold text-text-primary">{t.footer.legal}</h4>
               <ul className="flex flex-col gap-2 text-sm text-text-secondary">
                 <li>
-                  <span className="cursor-default opacity-70">{t.footer.privacy}</span>
+                  <Link to="/privacy" className="hover:text-brand-green-500">
+                    {t.footer.privacy}
+                  </Link>
                 </li>
                 <li>
                   <span className="cursor-default opacity-70">{t.footer.terms}</span>

@@ -40,6 +40,7 @@ const StartProjectPage = lazy(() => import('./pages/public/StartProjectPage'));
 const ProposalDocumentPage = lazy(() => import('@/pages/public/ProposalDocumentPage'));
 const JoinUsPage = lazy(() => import('@/pages/public/JoinUsPage'));
 const AppDownloadPage = lazy(() => import('@/pages/public/AppDownloadPage'));
+const PrivacyPage = lazy(() => import('@/pages/public/PrivacyPage'));
 const ProjectsPage = lazy(() => import('@/pages/admin/ProjectsPage'));
 const AdminResumesPage = lazy(() => import('@/pages/admin/ResumesPage'));
 const AdminResumeDetailPage = lazy(() => import('@/pages/admin/ResumeDetailPage'));
@@ -219,6 +220,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <AppDownloadPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <PrivacyPage />
             </Suspense>
           }
         />
