@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { Github, Globe, Linkedin, MessageCircle, UserRound } from 'lucide-react';
+import { Globe, MessageCircle, UserRound } from 'lucide-react';
+import { Github, Linkedin } from '@/components/ui/BrandIcons';
 import { expertPhotoSrc, usePublicExperts, type Expert } from '@/api/consult';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';

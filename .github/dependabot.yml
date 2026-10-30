@@ -4,6 +4,11 @@ updates:
     directory: "/civitechglobal-server"
     schedule:
       interval: "weekly"
+    # typescript-eslint, which the lint step runs on, supports TypeScript below
+    # 6.1. Lift this when it supports 7.
+    ignore:
+      - dependency-name: "typescript"
+        versions: [">=6.1.0"]
     groups:
       dev-dependencies:
         dependency-type: "development"
@@ -13,6 +18,11 @@ updates:
     directory: "/civitechglobal-web"
     schedule:
       interval: "weekly"
+    # typescript-eslint, which the lint step runs on, supports TypeScript below
+    # 6.1. Lift this when it supports 7.
+    ignore:
+      - dependency-name: "typescript"
+        versions: [">=6.1.0"]
     groups:
       dev-dependencies:
         dependency-type: "development"
