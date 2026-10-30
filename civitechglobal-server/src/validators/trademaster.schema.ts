@@ -132,12 +132,12 @@ const webUrl = z
  * pinned to the equator.
  */
 const latitude = z
-  .number({ invalid_type_error: 'عرض جغرافیایی نامعتبر است' })
+  .number({ error: 'عرض جغرافیایی نامعتبر است' })
   .finite('عرض جغرافیایی نامعتبر است')
   .min(-90, 'عرض جغرافیایی نامعتبر است')
   .max(90, 'عرض جغرافیایی نامعتبر است');
 const longitude = z
-  .number({ invalid_type_error: 'طول جغرافیایی نامعتبر است' })
+  .number({ error: 'طول جغرافیایی نامعتبر است' })
   .finite('طول جغرافیایی نامعتبر است')
   .min(-180, 'طول جغرافیایی نامعتبر است')
   .max(180, 'طول جغرافیایی نامعتبر است');

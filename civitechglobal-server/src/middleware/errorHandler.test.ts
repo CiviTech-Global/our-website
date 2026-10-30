@@ -62,6 +62,14 @@ describe('errorHandler', () => {
     expect(captureException).toHaveBeenCalledOnce();
   });
 
+  it('answers an update of a missing row with 404, and does not report it', () => {
+    captureException.mockClear();
+    const res = run(Object.assign(new Error('Record to update not found'), { code: 'P2025' }));
+
+    expect(res.statusCode).toBe(404);
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
   it('leaves AppError untouched', () => {
     const res = run(new AppError('Not found', 404));
     expect(res.statusCode).toBe(404);

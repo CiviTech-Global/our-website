@@ -1,22 +1,22 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodType, ZodError } from 'zod';
 
 export interface ValidationTarget {
-  body?: ZodSchema;
-  query?: ZodSchema;
-  params?: ZodSchema;
+  body?: ZodType;
+  query?: ZodType;
+  params?: ZodType;
 }
 
 function formatErrors(error: ZodError) {
-  return error.errors.map((e) => ({ path: e.path.join('.'), message: e.message }));
+  return error.issues.map((e) => ({ path: e.path.join('.'), message: e.message }));
 }
 
 function validationError(message: string, errors: ReturnType<typeof formatErrors>) {
   return Object.assign(new Error(message), { statusCode: 400, errors });
 }
 
-export function validate(schemaOrTarget: ZodSchema | ValidationTarget) {
-  const target: ValidationTarget = schemaOrTarget instanceof ZodSchema ? { body: schemaOrTarget } : schemaOrTarget;
+export function validate(schemaOrTarget: ZodType | ValidationTarget) {
+  const target: ValidationTarget = schemaOrTarget instanceof ZodType ? { body: schemaOrTarget } : schemaOrTarget;
 
   return (req: Request, _res: Response, next: NextFunction) => {
     if (target.body) {

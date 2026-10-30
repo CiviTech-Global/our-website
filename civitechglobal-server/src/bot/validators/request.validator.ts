@@ -38,7 +38,7 @@ export const citySchema = z
   .pipe(z.string().min(2, 'نام شهر باید حداقل ۲ کاراکتر باشد.').max(100, 'نام شهر نباید بیشتر از ۱۰۰ کاراکتر باشد.'));
 
 export const preferredContactTimeSchema = z.enum(PREFERRED_CONTACT_TIMES, {
-  errorMap: () => ({ message: 'زمان تماس نامعتبر است.' }),
+  error: 'زمان تماس نامعتبر است.',
 });
 
 export const notesSchema = z

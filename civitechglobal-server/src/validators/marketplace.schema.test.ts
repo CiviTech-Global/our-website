@@ -31,7 +31,7 @@ describe('documentKindsSchema', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       // The index, so the caller can tell which of the files was wrong.
-      expect(result.error.errors[0].path).toEqual([1]);
+      expect(result.error.issues[0].path).toEqual([1]);
     }
   });
 
@@ -54,7 +54,7 @@ describe('verificationSchema', () => {
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toContain('address');
+      expect(result.error.issues[0].message).toContain('address');
     }
   });
 

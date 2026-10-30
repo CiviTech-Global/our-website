@@ -52,7 +52,7 @@ export const submitRequestSchema = z.object({
   // Answers are shaped per product, so they cannot be typed here. The real
   // validation happens in validateAnswers() against the product's field list;
   // this only bounds the payload so a malformed body fails cheaply.
-  answers: z.record(z.unknown()),
+  answers: z.record(z.string(), z.unknown()),
   email: z.string().email('ایمیل نامعتبر است').max(200).optional().nullable(),
 });
 

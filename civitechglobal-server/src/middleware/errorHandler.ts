@@ -52,6 +52,14 @@ export function notFoundHandler(req: Request, _res: Response, next: NextFunction
 }
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
+  // Prisma's "the row to update is not there": a colleague deleted it, or the
+  // id was never real. That is a 404 and nobody's outage, so it goes through
+  // as one and is neither reported nor logged as an error.
+  if ((err as { code?: unknown }).code === 'P2025') {
+    errorHandler(new AppError('یافت نشد.', 404), _req, res, _next);
+    return;
+  }
+
   // Echoed on every failure so a user can quote it and it can be found in the
   // logs. Set on the response rather than in the body: it belongs to the
   // request, not to the error, and this way it is present on 500s too.
@@ -96,7 +104,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     res.status(400).json({
       success: false,
       message: 'Validation failed',
-      errors: err.errors.map((issue) => ({
+      errors: err.issues.map((issue) => ({
         path: issue.path.join('.'),
         message: issue.message,
       })),
