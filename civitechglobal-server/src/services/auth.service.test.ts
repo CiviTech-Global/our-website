@@ -108,6 +108,7 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock('../config/redis.js', () => ({ redis: mocks.redis }));
+vi.mock('./push-devices.service.js', () => ({ forgetDevices: vi.fn(async () => {}) }));
 vi.mock('../database/prisma/repositories/user.repository.js', () => ({ userRepository: mocks.userRepository }));
 vi.mock('../database/prisma/repositories/refresh-token.repository.js', () => ({
   refreshTokenRepository: mocks.refreshTokenRepository,
