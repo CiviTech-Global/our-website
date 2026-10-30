@@ -52,6 +52,11 @@ jobs:
         working-directory: civitechglobal-server
         run: npm ci
 
+      - name: Generate the Prisma client
+        # Since Prisma 7 installing no longer does this.
+        working-directory: civitechglobal-server
+        run: npx prisma generate
+
       - name: Audit dependencies
         working-directory: civitechglobal-server
         run: npm audit --audit-level=high
