@@ -318,7 +318,7 @@ export default function ProjectDetailPage() {
                 setComposerOpen(false);
                 refetch();
               } catch (err) {
-                throw new Error(apiMessage(err, t.common.error));
+                throw new Error(apiMessage(err, t.common.error), { cause: err });
               }
             }}
           />

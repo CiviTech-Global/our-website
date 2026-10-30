@@ -1,13 +1,12 @@
 import 'dotenv/config';
-import { PrismaClient, type Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import { hashPassword } from './utils/password.js';
 import { generateSecurePassword } from './utils/passwordPolicy.js';
 import { CATALOG, CATALOG_VERSION, CATEGORIES } from './insurance/catalog/index.js';
 import { ALL_PERMISSIONS } from './auth/permissions.js';
 import { features } from './config/features.js';
-
-const prisma = new PrismaClient();
+import { prisma } from './config/database.js';
 
 function emailHash(email: string): string {
   return createHash('sha256').update(email.trim().toLowerCase()).digest('hex');

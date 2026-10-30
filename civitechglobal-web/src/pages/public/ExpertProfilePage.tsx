@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router';
-import { Github, Globe, Linkedin, MessageCircle, UserRound } from 'lucide-react';
+import { Globe, MessageCircle, UserRound } from 'lucide-react';
+import { Github, Linkedin } from '@/components/ui/BrandIcons';
 import { expertPhotoSrc, usePublicExpert } from '@/api/consult';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { CANONICAL_ORIGIN, useDocumentTitle } from '@/lib/documentTitle';
