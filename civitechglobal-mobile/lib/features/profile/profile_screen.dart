@@ -458,6 +458,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               onTap: () =>
                                   context.push('/dashboard/verification'),
                             ),
+                            if (ref
+                                    .watch(capabilitiesProvider)
+                                    .value
+                                    ?.feature('projectsV2') ??
+                                false)
+                              ListTile(
+                                leading: const Icon(Icons.badge_outlined),
+                                title: Text(s.work.freelancerProfileTitle),
+                                trailing: Icon(forward),
+                                onTap: () => context.push(
+                                  '/dashboard/profile/freelancer',
+                                ),
+                              ),
                             ListTile(
                               leading: const Icon(Icons.lock_outline_rounded),
                               title: Text(s.dashboard.securityTitle),

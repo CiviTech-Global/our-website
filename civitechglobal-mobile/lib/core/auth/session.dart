@@ -137,6 +137,27 @@ class SessionController extends AsyncNotifier<AuthUser?> {
     }
   }
 
+  /// A new password from inside the account. The server ends every other
+  /// session and renews this one, so the new tokens are adopted here.
+  Future<void> changePassword(String current, String next) async => _adopt(
+    await _api.post<Object?>(
+      '/auth/change-password',
+      body: {'currentPassword': current, 'newPassword': next},
+    ),
+  );
+
+  /// Closes the account for good. The server ends every session and forgets
+  /// every phone; this one drops its tokens.
+  Future<void> deleteAccount({required String password, String? code}) async {
+    await _api.post<Object?>(
+      '/auth/delete-account',
+      body: {'password': password, 'code': ?code},
+    );
+    await ref.read(pushRegistrarProvider).unregister();
+    await _api.tokens.clear();
+    state = const AsyncData(null);
+  }
+
   Future<void> reload() async => state = AsyncData(await _me());
 
   /// Saves the account's own name and phone (`PUT /auth/me`), and shows the

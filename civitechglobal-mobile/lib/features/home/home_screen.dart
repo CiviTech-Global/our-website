@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
+import '../../core/geo.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/bagh_key.dart';
@@ -84,6 +86,7 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 10),
           SoftSurface(child: Text(s.home.missionBody, style: text.bodyLarge)),
           const SizedBox(height: BaghSpace.section),
+          const _BoardStats(),
           Text(s.home.whatWeDoTitle, style: text.titleLarge),
           const SizedBox(height: 10),
           for (final (i, (title, body)) in [
@@ -224,6 +227,81 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The boards in four numbers (`GET /market/stats`), as the website's home
+/// shows them above its featured listings.
+final _boardStatsProvider = FutureProvider.autoDispose<Map<String, int>>(
+  (ref) => ref
+      .read(apiClientProvider)
+      .get(
+        '/market/stats',
+        parse: (d) => {
+          for (final e in (d! as Map).entries)
+            '${e.key}': (e.value as num?)?.toInt() ?? 0,
+        },
+      ),
+);
+
+class _BoardStats extends ConsumerWidget {
+  const _BoardStats();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(_boardStatsProvider).value;
+    // Nothing to say until the numbers arrive, or if they never do.
+    if (stats == null) return const SizedBox.shrink();
+    final s = ref.watch(stringsProvider);
+    final language = ref.watch(l10nProvider).language;
+    final c = BaghColors.of(context);
+    final text = Theme.of(context).textTheme;
+    final items = [
+      (stats['openJobs'], s.market.statOpenJobs),
+      (stats['openProjects'], s.market.statOpenProjects),
+      (stats['awardsGiven'], s.market.statAwards),
+      (stats['verifiedUsers'], s.market.statVerifiedUsers),
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: BaghSpace.section),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final width = (box.maxWidth - 10) / 2;
+          return Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final (i, (value, label)) in items.indexed)
+                SizedBox(
+                  width: width,
+                  child: SoftSurface(
+                    tint: moduleTint(c, i),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 2,
+                      children: [
+                        Text(
+                          groupedNumber('${value ?? 0}', language),
+                          style: BaghType.weight(
+                            text.headlineSmall!,
+                            800,
+                          ).copyWith(color: moduleTint(c, i).ink),
+                        ),
+                        Text(
+                          label,
+                          style: text.labelMedium?.copyWith(
+                            color: moduleTint(c, i).ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

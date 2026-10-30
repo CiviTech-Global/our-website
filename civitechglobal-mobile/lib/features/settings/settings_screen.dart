@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/config.dart';
 import '../../core/format.dart';
 import '../../core/settings.dart';
 import '../../design/haptics.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
 import '../../design/widgets/home_leading.dart';
+import '../../design/widgets/inline_link.dart';
 import '../../design/widgets/pressable.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
@@ -133,6 +136,23 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: BaghSpace.section),
+            // The policy lives on the website, in every language, and is
+            // the same page the store listings point at.
+            Center(
+              child: InlineLink(
+                onTap: () => launchUrl(
+                  AppConfig.website('/privacy', language),
+                  mode: LaunchMode.inAppBrowserView,
+                ),
+                child: Text(
+                  s.footer.privacy,
+                  style: text.bodyMedium?.copyWith(
+                    color: BaghColors.of(context).primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
             Center(
               child: Text(
                 '${s.mobile.version} ${localDigits(ref.watch(_versionProvider).value ?? '', language)}',

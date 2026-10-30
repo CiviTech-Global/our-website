@@ -41,7 +41,7 @@ lib/
   core/       API client and session, settings, capabilities, formats, telemetry
   design/     Bagh Ravan: palettes, tokens, theme, springs, haptics, widgets
   l10n/       translations (generated accessors in l10n/generated/)
-  features/   one folder per area: account, home, explore, inbox, me, help, ...
+  features/   one folder per area: account, home, explore, inbox, me, staff, ...
 ```
 
 Design rules, palettes and the phase plan: the plan of record (Bagh Ravan
@@ -202,7 +202,7 @@ In order:
    API and the `/app` page shows them.
 4. **Stores**: list the app on Cafe Bazaar and Myket (developer accounts,
    listing text, screenshots, the privacy page), then set
-   `MOBILE_BAZAAR_URL` and `MOBILE_MYKET_URL`. The update screen opens
+   `MOBILE_BAZAAR_URL`, `MOBILE_MYKET_URL` and `MOBILE_PLAY_URL`. The update screen opens
    Cafe Bazaar once its link is set, the website's `/app` page until then.
 5. **Versions**: set `MOBILE_LATEST_VERSION` to the new version to suggest an
    update to older installs, and `MOBILE_MIN_VERSION` only when an old build

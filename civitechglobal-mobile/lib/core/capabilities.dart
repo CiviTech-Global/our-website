@@ -16,6 +16,7 @@ class Capabilities {
     this.latestVersion = '1.0.0',
     this.bazaarUrl,
     this.myketUrl,
+    this.playUrl,
   });
 
   factory Capabilities.fromJson(Map<String, Object?> json) {
@@ -35,6 +36,7 @@ class Capabilities {
           : '1.0.0',
       bazaarUrl: _storeUrl(mobile, 'bazaar'),
       myketUrl: _storeUrl(mobile, 'myket'),
+      playUrl: _storeUrl(mobile, 'play'),
     );
   }
 
@@ -50,10 +52,13 @@ class Capabilities {
   /// The app's Myket page, once it is listed there.
   final String? myketUrl;
 
+  /// The app's Google Play page, once it is listed there.
+  final String? playUrl;
+
   /// Where an update comes from: the store this copy was installed from,
   /// never another one. Both stores require that a copy they installed is
   /// updated only through them and never points at another store or a
-  /// download, and the same APK is uploaded to each, so the choice is made
+  /// download, and the same build is uploaded to each, so the choice is made
   /// on the phone from the installer Android reports. A store's page for
   /// [package] is at a fixed address, which the server may override. Null
   /// (a copy from the website or adb) means the website's /app page.
@@ -62,6 +67,8 @@ class Capabilities {
         'com.farsitel.bazaar' =>
           bazaarUrl ?? 'https://cafebazaar.ir/app/$package',
         'ir.mservices.market' => myketUrl ?? 'https://myket.ir/app/$package',
+        'com.android.vending' =>
+          playUrl ?? 'https://play.google.com/store/apps/details?id=$package',
         _ => null,
       };
 

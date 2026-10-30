@@ -31,10 +31,17 @@ void main() {
         unlisted.updateUrlFor('ir.mservices.market', pkg),
         'https://myket.ir/app/$pkg',
       );
+      expect(
+        unlisted.updateUrlFor('com.android.vending', pkg),
+        'https://play.google.com/store/apps/details?id=$pkg',
+      );
       // Installed from the website, by adb, or by a store we are not in: the
       // website, which is the only place that offers every way.
       expect(unlisted.updateUrlFor(null, pkg), isNull);
-      expect(unlisted.updateUrlFor('com.android.vending', pkg), isNull);
+      expect(
+        unlisted.updateUrlFor('com.sec.android.app.samsungapps', pkg),
+        isNull,
+      );
       // The server may name the pages; each store still gets only its own.
       final listed = Capabilities.fromJson({
         'mobile': {

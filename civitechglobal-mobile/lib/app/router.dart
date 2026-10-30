@@ -10,6 +10,7 @@ import '../core/settings.dart';
 import '../core/telemetry.dart';
 import '../features/account/login_screen.dart';
 import '../features/account/mfa_screen.dart';
+import '../features/account/password_screens.dart';
 import '../features/account/recovery_screens.dart';
 import '../features/account/register_screen.dart';
 import '../features/account/security_screen.dart';
@@ -53,11 +54,13 @@ import '../features/market/market_screens.dart';
 import '../features/market/my_shops_screens.dart';
 import '../features/me/me_screen.dart';
 import '../features/me/requests_screen.dart';
+import '../features/profile/freelancer_card_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/public_profile_screen.dart';
 import '../features/profile/verification_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/staff/staff_screens.dart';
 import '../l10n/l10n.dart';
 import 'shell.dart';
 
@@ -138,11 +141,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Screens that need an account send a signed-out visitor to sign in
       // and back again afterwards.
       final session = ref.read(sessionProvider);
-      const private = ['/me/security', '/dashboard'];
+      const private = ['/me/security', '/dashboard', '/staff'];
       if (!session.isLoading &&
           session.value == null &&
           private.any(path.startsWith)) {
         return Uri(path: '/login', queryParameters: {'from': path}).toString();
+      }
+      // The server refuses a member anyway; this keeps them off an empty desk.
+      if (path.startsWith('/staff') && !(session.value?.isStaff ?? true)) {
+        return '/me';
       }
       return null;
     },
@@ -180,6 +187,29 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/me/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(
+        path: '/staff',
+        builder: (_, _) => const StaffHomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'q/:queue',
+            builder: (_, state) =>
+                StaffQueueScreen(queueKey: state.pathParameters['queue']!),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => StaffItemScreen(
+                  queueKey: state.pathParameters['queue']!,
+                  id: state.pathParameters['id']!,
+                  row: state.extra is Map<String, Object?>
+                      ? state.extra! as Map<String, Object?>
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
         path: '/dashboard/requests',
         builder: (_, _) => const RequestsScreen(),
@@ -335,6 +365,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/dashboard/profile',
         builder: (_, _) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: 'freelancer',
+            builder: (_, _) => const FreelancerCardScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: '/dashboard/verification',
@@ -360,6 +396,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'two-factor',
             builder: (_, _) => const TwoFactorSetupScreen(),
+          ),
+          GoRoute(
+            path: 'password',
+            builder: (_, _) => const ChangePasswordScreen(),
+          ),
+          GoRoute(
+            path: 'delete',
+            builder: (_, _) => const DeleteAccountScreen(),
           ),
         ],
       ),

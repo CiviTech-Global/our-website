@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/auth/session.dart';
-import '../../core/config.dart';
 import '../../core/format.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
@@ -214,12 +212,9 @@ class MeScreen extends ConsumerWidget {
                   if (user?.isStaff ?? false)
                     row(
                       Icons.admin_panel_settings_outlined,
-                      s.mobile.staffPanelOnWeb,
-                      hint: s.mobile.staffPanelOnWebHint,
-                      () => launchUrl(
-                        AppConfig.website('/admin', language),
-                        mode: LaunchMode.externalApplication,
-                      ),
+                      s.app.adminPanel,
+                      hint: s.app.adminOverviewDescription,
+                      () => context.push('/staff'),
                     ),
                 ],
               ),

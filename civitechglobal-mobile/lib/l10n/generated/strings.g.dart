@@ -688,6 +688,10 @@ class StringsMobile extends L10nNode {
   String get inboxSignedOut => string("inboxSignedOut");
   String get meSignedOutTitle => string("meSignedOutTitle");
   String get meSignedOutBody => string("meSignedOutBody");
+  String get staffProposalsOnWeb => string("staffProposalsOnWeb");
+  String get staffItemMissing => string("staffItemMissing");
+  String get staffOpenFile => string("staffOpenFile");
+  String get staffDetails => string("staffDetails");
   String get staffPanelOnWeb => string("staffPanelOnWeb");
   String get staffPanelOnWebHint => string("staffPanelOnWebHint");
   String get settingsTitle => string("settingsTitle");
@@ -778,6 +782,7 @@ class StringsAppDownload extends L10nNode {
   String get storesTitle => string("storesTitle");
   String get bazaar => string("bazaar");
   String get myket => string("myket");
+  String get play => string("play");
   String get apkTitle => string("apkTitle");
   String get apkIntro => string("apkIntro");
   String get apkArm64 => string("apkArm64");
@@ -2082,6 +2087,13 @@ class StringsWorkspace extends L10nNode {
   String get confirmPassword => string("confirmPassword");
   String get passwordMismatch => string("passwordMismatch");
   String get changePassword => string("changePassword");
+  String get deleteTitle => string("deleteTitle");
+  String get deleteHint => string("deleteHint");
+  String get deleteBlocked => string("deleteBlocked");
+  String get deleteConfirm => string("deleteConfirm");
+  String get deleteButton => string("deleteButton");
+  String get deleteStaffNote => string("deleteStaffNote");
+  String get accountDeleted => string("accountDeleted");
   String get passwordChanged => string("passwordChanged");
 }
 
@@ -2670,6 +2682,12 @@ class StringsAccess extends L10nMap {
   String get permissionsSaved => string("permissionsSaved");
   String get deactivate => string("deactivate");
   String get deactivated => string("deactivated");
+  String get makeStaff => string("makeStaff");
+  String get makeCustomer => string("makeCustomer");
+  String get roleChanged => string("roleChanged");
+  String get reactivate => string("reactivate");
+  String get reactivatedDone => string("reactivatedDone");
+  String get deletedByOwner => string("deletedByOwner");
   String get deactivatedDone => string("deactivatedDone");
   String get superAdminNote => string("superAdminNote");
   String get customerNote => string("customerNote");

@@ -27,6 +27,7 @@ import 'core/api_client_test.dart' show FakeServer, MemoryTokens;
 import 'support/book_fakes.dart';
 import 'support/freelance_fakes.dart';
 import 'support/market_fakes.dart';
+import 'support/staff_fakes.dart';
 
 /// Every screen, in every place it can be squeezed.
 ///
@@ -179,6 +180,21 @@ const _memberScreens = [
   '/dashboard/messages/b/t1',
   '/dashboard/messages/a/t2',
   '/dashboard/messages/x/t1',
+  '/me/security',
+  '/me/security/password',
+  '/me/security/delete',
+  '/dashboard/profile/freelancer',
+  '/staff',
+  '/staff/q/insurance',
+  '/staff/q/insurance/r1',
+  '/staff/q/projects/p1',
+  '/staff/q/resumes/c1',
+  '/staff/q/verification/v1',
+  '/staff/q/jobPosts',
+  '/staff/q/jobPosts/j1',
+  '/staff/q/freelanceProjects/f1',
+  '/staff/q/tradeMasterShops/sh1',
+  '/staff/q/tradeMasterProducts/pr1',
 ];
 
 /// Member screens audited as a verified account: forms that need one.
@@ -293,6 +309,9 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
     return answer;
   }
   if (bookFake(o.path, o.queryParameters) case final answer?) {
+    return answer;
+  }
+  if (staffFake(o.path, o.queryParameters) case final answer?) {
     return answer;
   }
   if (marketFake(o.path, o.queryParameters) case final answer?) {

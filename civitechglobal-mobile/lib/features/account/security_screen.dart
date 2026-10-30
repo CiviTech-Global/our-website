@@ -116,6 +116,23 @@ class SecurityScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 12,
                 children: [
+                  Text(s.workspace.changePassword, style: text.titleMedium),
+                  Text(s.workspace.securityHint),
+                  BaghKey(
+                    label: s.workspace.changePassword,
+                    kind: BaghKeyKind.outline,
+                    expand: true,
+                    onPressed: () => context.push('/me/security/password'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BaghSpace.gutter),
+            SoftSurface(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 12,
+                children: [
                   Text(s.dashboard.signOutEverywhere, style: text.titleMedium),
                   Text(s.dashboard.signOutEverywhereHint),
                   BaghKey(
@@ -134,6 +151,22 @@ class SecurityScreen extends ConsumerWidget {
                       );
                       context.go('/me');
                     },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BaghSpace.gutter),
+            SoftSurface(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 12,
+                children: [
+                  Text(s.workspace.deleteTitle, style: text.titleMedium),
+                  BaghKey(
+                    label: s.workspace.deleteTitle,
+                    kind: BaghKeyKind.outline,
+                    expand: true,
+                    onPressed: () => context.push('/me/security/delete'),
                   ),
                 ],
               ),
