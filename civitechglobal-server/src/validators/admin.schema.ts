@@ -47,7 +47,8 @@ export const setPermissionsSchema = z.object({
 });
 
 export const updateUserRoleSchema = z.object({
-  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN']),
+  // Not SUPER_ADMIN: there is one, from the seed (see admin.service).
+  role: z.enum(['USER', 'ADMIN']),
 });
 
 export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;

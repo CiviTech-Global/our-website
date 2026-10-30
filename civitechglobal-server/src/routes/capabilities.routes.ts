@@ -50,6 +50,7 @@ function mobileDownloads() {
   return {
     bazaar: link('MOBILE_BAZAAR_URL'),
     myket: link('MOBILE_MYKET_URL'),
+    play: link('MOBILE_PLAY_URL'),
     apkArm64: link('MOBILE_APK_ARM64_URL'),
     apkArmV7: link('MOBILE_APK_ARMV7_URL'),
   };

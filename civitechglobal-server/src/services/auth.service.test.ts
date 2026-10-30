@@ -104,7 +104,7 @@ const mocks = vi.hoisted(() => {
     refreshTokens.length = 0;
   }
 
-  return { redis, userRepository, refreshTokenRepository, reset };
+  return { redis, userRepository, refreshTokenRepository, reset, usersById };
 });
 
 vi.mock('../config/redis.js', () => ({ redis: mocks.redis }));
@@ -148,6 +148,21 @@ describe('auth.service', () => {
       expect(result.user.email).toBe('new.user@example.com');
       expect(result.accessToken).toEqual(expect.any(String));
       expect(result.refreshToken).toEqual(expect.any(String));
+    });
+
+    it('will not reopen a deactivated account, with its role, for whoever types the address', async () => {
+      const { user } = await register({
+        email: 'closed.admin@example.com',
+        password: STRONG_PASSWORD,
+        firstName: 'A',
+        lastName: 'B',
+      });
+      Object.assign(mocks.usersById.get(user.id), { role: 'ADMIN', deletedAt: new Date() });
+
+      await expect(
+        register({ email: 'closed.admin@example.com', password: STRONG_PASSWORD, firstName: 'C', lastName: 'D' }),
+      ).rejects.toThrow('Email already registered');
+      expect(mocks.usersById.get(user.id).firstName).toBe('A');
     });
 
     it('rejects registering the same email twice', async () => {

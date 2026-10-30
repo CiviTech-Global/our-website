@@ -107,3 +107,24 @@ export function useDeactivateUser() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 }
+
+/** Customer ↔ staff. The super admin's role is not changed from here. */
+export function useUpdateUserRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; role: 'USER' | 'ADMIN' }) => {
+      await api.patch(`/admin/users/${input.id}/role`, { role: input.role });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
+  });
+}
+
+export function useReactivateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.patch(`/admin/users/${id}/reactivate`, {});
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
+  });
+}

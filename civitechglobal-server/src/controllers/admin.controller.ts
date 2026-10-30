@@ -23,7 +23,7 @@ export async function getRoles(_req: Request, res: Response, next: NextFunction)
 
 export async function updateUserRole(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const user = await adminService.updateUserRole(req.params.id as string, req.body.role);
+    const user = await adminService.updateUserRole(req.params.id as string, req.body.role, req.user!.userId);
     successResponse(res, user, 'User role updated');
   } catch (error) {
     next(error);
@@ -43,6 +43,15 @@ export async function deactivateUser(req: Request, res: Response, next: NextFunc
   try {
     const user = await adminService.deactivateUser(req.params.id as string);
     successResponse(res, user, 'User deactivated');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function reactivateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const user = await adminService.reactivateUser(req.params.id as string);
+    successResponse(res, user, 'User reactivated');
   } catch (error) {
     next(error);
   }

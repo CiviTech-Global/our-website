@@ -1,21 +1,28 @@
 import { PageHeader } from '@/components/app/PageHeader';
 import { SegmentedControl } from '@/components/app/SegmentedControl';
 import { useState, type FormEvent } from 'react';
-import { Building2 } from 'lucide-react';
-import { usePlaceCompanyOffer, useProjectQueue, useReviewProject } from '@/api/marketplace';
+import { Building2, Eye } from 'lucide-react';
+import {
+  reviewFileUrls,
+  usePlaceCompanyOffer,
+  useProjectForReview,
+  useProjectQueue,
+  useReviewProject,
+} from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { formatDate } from '@/i18n/utils';
-import { moderationVariant } from '@/lib/marketplace';
+import { formatRange, moderationVariant } from '@/lib/marketplace';
 import { ReviewActions } from '@/components/marketplace/ReviewActions';
 import { ListingOpsPanel } from '@/components/admin/ListingOpsPanel';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FilePreview } from '@/components/ui/FilePreview';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
@@ -49,6 +56,7 @@ export default function ProjectQueuePage() {
     filters: { status: 'PENDING_REVIEW' },
   });
   const [offerFor, setOfferFor] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const { data, isLoading } = useProjectQueue({
     page: controls.page,
@@ -111,9 +119,18 @@ export default function ProjectQueuePage() {
                 </Badge>
               </div>
 
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setOpenId(openId === row.id ? null : row.id)}
+                >
+                  {openId === row.id ? t.common.close : t.market.review}
+                </Button>
                 <ListingOpsPanel kind="project" id={row.id} featured={row.featured} />
               </div>
+
+              {openId === row.id && <ProjectBrief id={row.id} />}
 
               {row.moderationStatus === 'APPROVED' ? (
                 <div className="mt-4">
@@ -142,6 +159,61 @@ export default function ProjectQueuePage() {
       )}
 
       {offerFor && <CompanyOfferModal projectId={offerFor} onClose={() => setOfferFor(null)} />}
+    </div>
+  );
+}
+
+/** The project itself. The queue row carries only its title. */
+function ProjectBrief({ id }: { id: string }) {
+  const { t, locale } = useLocale();
+  const { data, isLoading } = useProjectForReview(id);
+  const [previewing, setPreviewing] = useState<{ url: string; filename: string } | null>(null);
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex justify-center py-6">
+        <Spinner label={t.common.loading} />
+      </div>
+    );
+  }
+
+  const budget = data.budgetUnknown ? null : formatRange(data.budgetMin, data.budgetMax, locale, t);
+
+  return (
+    <div className="mt-4 border-t border-app-border-light pt-4">
+      {budget && <Badge variant="success">{budget}</Badge>}
+      <p className="mt-3 whitespace-pre-line text-body leading-6 text-app-text">{data.description}</p>
+
+      {data.skills.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {data.skills.map((skill) => (
+            <Badge key={skill}>{skill}</Badge>
+          ))}
+        </div>
+      )}
+
+      {data.attachments.length > 0 && (
+        <ul className="mt-3 flex flex-col gap-1.5">
+          {data.attachments.map((file) => (
+            <li key={file.id}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  setPreviewing({ url: reviewFileUrls.projectAttachment(file.id), filename: file.originalName })
+                }
+              >
+                <Eye className="size-4" aria-hidden="true" />
+                {file.originalName}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {previewing && (
+        <FilePreview url={previewing.url} filename={previewing.filename} onClose={() => setPreviewing(null)} />
+      )}
     </div>
   );
 }

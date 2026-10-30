@@ -84,6 +84,7 @@ describe('capabilities', () => {
     expect(body.mobile.downloads).toEqual({
       bazaar: 'https://cafebazaar.ir/app/ir.rayantamaddonjahangostar.app',
       myket: null,
+      play: null,
       apkArm64: '/downloads/rayan-1.0.0-arm64.apk',
       apkArmV7: null,
     });

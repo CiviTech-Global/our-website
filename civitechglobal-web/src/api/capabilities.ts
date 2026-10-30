@@ -11,6 +11,7 @@ export interface Capabilities {
     downloads?: {
       bazaar: string | null;
       myket: string | null;
+      play: string | null;
       apkArm64: string | null;
       apkArmV7: string | null;
     };
@@ -54,6 +55,7 @@ export function useAppDownloads() {
     query.data.mobile?.downloads ?? {
       bazaar: null,
       myket: null,
+      play: null,
       apkArm64: null,
       apkArmV7: null,
     }

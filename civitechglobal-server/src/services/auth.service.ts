@@ -49,7 +49,7 @@ async function checkLockout(email: string): Promise<void> {
   }
 }
 
-async function recordFailedAttempt(email: string): Promise<void> {
+export async function recordFailedAttempt(email: string): Promise<void> {
   const key = lockoutKey(email);
   const count = await redis.incr(key);
   if (count === 1) {
@@ -145,38 +145,25 @@ export async function register(input: RegisterInput) {
 
   // `emailHash` is unique at the DB level, so a soft-deleted row with the
   // same email still occupies it. Only an *active* conflicting row should
-  // block registration; a soft-deleted one is reactivated instead of
-  // leaving the address permanently squatted.
+  // block registration, and so does a deactivated one: staff closed it, and
+  // reopening it here would hand its role and its history to whoever typed the
+  // address. Only the super admin brings one back (admin.service). An account
+  // its owner deleted is no obstacle: its address was replaced when it closed.
   const existing = await userRepository.findFirst({ where: { emailHash } });
-  if (existing && !existing.deletedAt) throw new AppError('Email already registered', 409);
+  if (existing) throw new AppError('Email already registered', 409);
 
   const password = await hashPassword(input.password);
 
-  const user = existing
-    ? await userRepository.update({
-        where: { id: existing.id },
-        data: {
-          email: normalizeEmail(input.email),
-          password,
-          firstName: input.firstName,
-          lastName: input.lastName,
-          deletedAt: null,
-          // Invalidate any tokens issued before this account was
-          // soft-deleted / before this reactivation.
-          tokenVersion: { increment: 1 },
-        },
-        select: userResponseFields(),
-      })
-    : await userRepository.create({
-        data: {
-          email: normalizeEmail(input.email),
-          emailHash,
-          password,
-          firstName: input.firstName,
-          lastName: input.lastName,
-        },
-        select: userResponseFields(),
-      });
+  const user = await userRepository.create({
+    data: {
+      email: normalizeEmail(input.email),
+      emailHash,
+      password,
+      firstName: input.firstName,
+      lastName: input.lastName,
+    },
+    select: userResponseFields(),
+  });
 
   const tokens = await issueTokenPair(user);
   return { user, ...tokens };

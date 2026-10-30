@@ -26,6 +26,7 @@ export default function AppDownloadPage() {
         [
           [links.bazaar, d.bazaar],
           [links.myket, d.myket],
+          [links.play, d.play],
         ] as const
       ).filter(([href]) => href)
     : [];

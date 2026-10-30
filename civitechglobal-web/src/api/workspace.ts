@@ -120,3 +120,27 @@ export function useChangePassword() {
     },
   });
 }
+
+// --- Closing the account ---------------------------------------------------------
+
+export interface DeletionStatus {
+  activeContracts: number;
+  booksInHandOver: number;
+  canDelete: boolean;
+}
+
+export function useDeletionStatus(enabled = true) {
+  return useQuery({
+    queryKey: ['auth', 'deletion'],
+    queryFn: async () => (await api.get<DeletionStatus>('/auth/me/deletion')).data,
+    enabled,
+  });
+}
+
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async (input: { password: string; code?: string }) => {
+      await api.post('/auth/delete-account', input);
+    },
+  });
+}

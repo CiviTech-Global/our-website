@@ -139,8 +139,9 @@ pushe_app_id: ""
 # is set.
 mobile_min_version: "1.0.0"
 mobile_latest_version: "1.0.0"
-mobile_bazaar_url: ""
+mobile_bazaar_url: "https://cafebazaar.ir/app/ir.rayantamaddonjahangostar.app"
 mobile_myket_url: ""
+mobile_play_url: ""
 # Signed APKs, copied into mobile_downloads_dir on the host before the deploy
 # that names them (a link to a missing file is a 404 on the /app page). Keep
 # only the current version there; the old files are dead weight.

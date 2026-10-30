@@ -58,6 +58,12 @@ const mfaCode = z.string().trim().min(6).max(20);
 
 export const mfaCodeSchema = z.object({ code: mfaCode });
 
+/** Closing one's own account: the password always, the second factor when it is on. */
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, 'Password is required').max(200),
+  code: mfaCode.optional(),
+});
+
 export const mfaVerifySchema = z.object({
   challengeToken: z.string().trim().min(1),
   code: mfaCode,

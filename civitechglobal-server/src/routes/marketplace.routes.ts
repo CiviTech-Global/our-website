@@ -1077,6 +1077,14 @@ router.get(
   }),
 );
 
+router.get(
+  '/admin/projects/:id',
+  ...canModerateFreelance,
+  wrap(async (req, res) => {
+    successResponse(res, serialize(await freelance.getProjectForReview(param(req, 'id'))));
+  }),
+);
+
 router.post(
   '/admin/projects/:id/review',
   ...canModerateFreelance,

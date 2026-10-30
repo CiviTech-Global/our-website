@@ -22,7 +22,7 @@ export interface PrivacyPolicy {
 
 const en: PrivacyPolicy = {
   title: 'Privacy policy',
-  updated: 'Last updated: 26 October 2026',
+  updated: 'Last updated: 30 October 2026',
   intro:
     'This policy explains what Rayan Tamaddon Jahan Gostar (CiviTech Global) collects when you use this website and our Android app, why, who can see it, and what you can do about it. The website and the app are the same service and follow the same rules.',
   sections: [
@@ -76,7 +76,7 @@ const en: PrivacyPolicy = {
       body: [
         [
           'You can see and edit your profile, and remove your postings and listings, at any time.',
-          'You can ask us for a copy of your information, or ask us to close your account and delete it, through the contact page. We will do so within 30 days, except what the law requires us to keep.',
+          'You can delete your account yourself, on the website (Profile) or in the app (Settings): your account details, identity documents, CVs and photos are erased at once, your listings are closed, and so are the requests saved in your account. A request you sent through a public form and did not save to your account cannot be safely matched to you, so ask us through the contact page to erase it, or for a copy of your information; we do either within 30 days. We keep only what the law requires us to.',
           'You can withdraw the app\'s location permission at any time in your phone\'s settings.',
         ],
       ],
@@ -102,7 +102,7 @@ const en: PrivacyPolicy = {
 
 const fa: PrivacyPolicy = {
   title: 'سیاست حریم خصوصی',
-  updated: 'آخرین به‌روزرسانی: ۴ آبان ۱۴۰۵',
+  updated: 'آخرین به‌روزرسانی: ۸ آبان ۱۴۰۵',
   intro:
     'این صفحه توضیح می‌دهد که رایان تمدن جهان گستر (CiviTech Global) هنگام استفادهٔ شما از این وب‌سایت و برنامهٔ اندروید ما چه اطلاعاتی گردآوری می‌کند، برای چه، چه کسانی آن را می‌بینند و شما چه اختیاری دارید. وب‌سایت و برنامه یک خدمت‌اند و از یک قاعده پیروی می‌کنند.',
   sections: [
@@ -156,7 +156,7 @@ const fa: PrivacyPolicy = {
       body: [
         [
           'هر زمان می‌توانید نمایهٔ خود را ببینید و ویرایش کنید و آگهی‌هایتان را بردارید.',
-          'از راه صفحهٔ تماس می‌توانید رونوشتی از اطلاعاتتان بخواهید، یا بخواهید حسابتان بسته و اطلاعاتش پاک شود. ظرف ۳۰ روز این کار را انجام می‌دهیم، مگر آنچه قانون نگهداری‌اش را الزام کرده باشد.',
+          'حسابتان را خودتان می‌توانید حذف کنید، در وب‌سایت (نمایه) یا در برنامه (تنظیمات): اطلاعات حساب، مدارک هویتی، رزومه‌ها و تصاویرتان همان لحظه پاک، آگهی‌هایتان بسته و درخواست‌های ذخیره‌شده در حسابتان نیز پاک می‌شود. درخواستی که از فرم عمومی فرستاده و در حسابتان ذخیره نکرده‌اید با اطمینان قابل تطبیق با شما نیست؛ برای پاک کردن آن یا دریافت رونوشتی از اطلاعاتتان از راه صفحهٔ تماس بخواهید تا ظرف ۳۰ روز انجام دهیم. تنها آنچه قانون نگهداری‌اش را الزام کرده باشد نگه می‌داریم.',
           'هر زمان می‌توانید اجازهٔ موقعیت مکانی برنامه را از تنظیمات گوشی پس بگیرید.',
         ],
       ],
@@ -182,7 +182,7 @@ const fa: PrivacyPolicy = {
 
 const de: PrivacyPolicy = {
   title: 'Datenschutzerklärung',
-  updated: 'Zuletzt aktualisiert: 26. Oktober 2026',
+  updated: 'Zuletzt aktualisiert: 30. Oktober 2026',
   intro:
     'Diese Erklärung beschreibt, welche Daten Rayan Tamaddon Jahan Gostar (CiviTech Global) erhebt, wenn Sie diese Website und unsere Android-App nutzen, wozu, wer sie sehen kann und welche Möglichkeiten Sie haben. Website und App sind derselbe Dienst und folgen denselben Regeln.',
   sections: [
@@ -236,7 +236,7 @@ const de: PrivacyPolicy = {
       body: [
         [
           'Sie können Ihr Profil jederzeit einsehen und bearbeiten und Ihre Anzeigen entfernen.',
-          'Über die Kontaktseite können Sie eine Kopie Ihrer Daten anfordern oder verlangen, dass Ihr Konto geschlossen und gelöscht wird. Wir erledigen das innerhalb von 30 Tagen, ausgenommen Daten, die wir gesetzlich aufbewahren müssen.',
+          'Sie können Ihr Konto selbst löschen, auf der Website (Profil) oder in der App (Einstellungen): Ihre Kontodaten, Ausweisdokumente, Lebensläufe und Fotos werden sofort gelöscht, Ihre Anzeigen geschlossen und die in Ihrem Konto gespeicherten Anfragen ebenfalls gelöscht. Eine über ein öffentliches Formular gesendete, nicht im Konto gespeicherte Anfrage lässt sich Ihnen nicht sicher zuordnen. Bitten Sie uns über die Kontaktseite um ihre Löschung oder um eine Kopie Ihrer Daten; wir erledigen beides innerhalb von 30 Tagen. Wir bewahren nur auf, was das Gesetz verlangt.',
           'Sie können der App die Standortberechtigung jederzeit in den Einstellungen Ihres Telefons entziehen.',
         ],
       ],
@@ -262,7 +262,7 @@ const de: PrivacyPolicy = {
 
 const fr: PrivacyPolicy = {
   title: 'Politique de confidentialité',
-  updated: 'Dernière mise à jour : 26 octobre 2026',
+  updated: 'Dernière mise à jour : 30 octobre 2026',
   intro:
     'Cette politique explique ce que Rayan Tamaddon Jahan Gostar (CiviTech Global) collecte lorsque vous utilisez ce site et notre application Android, pourquoi, qui peut le voir et ce que vous pouvez y faire. Le site et l\'application forment un seul service et suivent les mêmes règles.',
   sections: [
@@ -316,7 +316,7 @@ const fr: PrivacyPolicy = {
       body: [
         [
           'Vous pouvez consulter et modifier votre profil, et retirer vos annonces, à tout moment.',
-          'Par la page de contact, vous pouvez demander une copie de vos informations, ou la fermeture et la suppression de votre compte. Nous le faisons sous 30 jours, sauf ce que la loi nous oblige à conserver.',
+          'Vous pouvez supprimer votre compte vous-même, sur le site (Profil) ou dans l\'application (Réglages) : les données de votre compte, pièces d\'identité, CV et photos sont effacés immédiatement, vos annonces fermées et les demandes enregistrées dans votre compte effacées. Une demande envoyée par un formulaire public et non enregistrée dans votre compte ne peut pas vous être attribuée avec certitude : demandez-nous par la page de contact de l\'effacer, ou d\'obtenir une copie de vos informations ; nous le faisons sous 30 jours. Nous ne conservons que ce que la loi exige.',
           'Vous pouvez retirer à tout moment l\'autorisation de localisation de l\'application dans les réglages de votre téléphone.',
         ],
       ],
@@ -342,7 +342,7 @@ const fr: PrivacyPolicy = {
 
 const es: PrivacyPolicy = {
   title: 'Política de privacidad',
-  updated: 'Última actualización: 26 de octubre de 2026',
+  updated: 'Última actualización: 30 de octubre de 2026',
   intro:
     'Esta política explica qué recoge Rayan Tamaddon Jahan Gostar (CiviTech Global) cuando usa este sitio web y nuestra aplicación para Android, para qué, quién puede verlo y qué puede hacer usted al respecto. El sitio y la aplicación son el mismo servicio y siguen las mismas reglas.',
   sections: [
@@ -396,7 +396,7 @@ const es: PrivacyPolicy = {
       body: [
         [
           'Puede ver y editar su perfil, y retirar sus anuncios, en cualquier momento.',
-          'Desde la página de contacto puede pedir una copia de su información, o que cerremos su cuenta y la eliminemos. Lo haremos en un plazo de 30 días, salvo lo que la ley nos obligue a conservar.',
+          'Puede eliminar su cuenta usted mismo, en el sitio web (Perfil) o en la aplicación (Ajustes): los datos de su cuenta, documentos de identidad, currículos y fotos se borran al instante, sus anuncios se cierran y las solicitudes guardadas en su cuenta también se borran. Una solicitud enviada por un formulario público y no guardada en su cuenta no se puede asociar a usted con seguridad: pídanos desde la página de contacto que la borremos, o una copia de su información; lo hacemos en un plazo de 30 días. Solo conservamos lo que la ley exige.',
           'Puede retirar el permiso de ubicación de la aplicación en cualquier momento desde los ajustes de su teléfono.',
         ],
       ],
@@ -422,7 +422,7 @@ const es: PrivacyPolicy = {
 
 const tr: PrivacyPolicy = {
   title: 'Gizlilik politikası',
-  updated: 'Son güncelleme: 26 Ekim 2026',
+  updated: 'Son güncelleme: 30 Ekim 2026',
   intro:
     'Bu politika, Rayan Tamaddon Jahan Gostar\'ın (CiviTech Global) bu web sitesini ve Android uygulamamızı kullandığınızda hangi bilgileri topladığını, neden topladığını, kimlerin görebildiğini ve sizin neler yapabileceğinizi açıklar. Web sitesi ve uygulama aynı hizmettir ve aynı kurallara uyar.',
   sections: [
@@ -476,7 +476,7 @@ const tr: PrivacyPolicy = {
       body: [
         [
           'Profilinizi istediğiniz zaman görüntüleyip düzenleyebilir, ilanlarınızı kaldırabilirsiniz.',
-          'İletişim sayfasından bilgilerinizin bir kopyasını isteyebilir ya da hesabınızın kapatılıp silinmesini talep edebilirsiniz. Bunu, yasanın saklamamızı zorunlu kıldıkları dışında, 30 gün içinde yaparız.',
+          'Hesabınızı web sitesinde (Profil) ya da uygulamada (Ayarlar) kendiniz silebilirsiniz: hesap bilgileriniz, kimlik belgeleriniz, özgeçmişleriniz ve fotoğraflarınız hemen silinir, ilanlarınız kapatılır ve hesabınızda kayıtlı talepler de silinir. Herkese açık bir formdan gönderip hesabınıza kaydetmediğiniz bir talep güvenle size eşleştirilemez; silinmesini ya da bilgilerinizin bir kopyasını iletişim sayfasından isteyin, 30 gün içinde yaparız. Yalnızca yasanın zorunlu kıldığını saklarız.',
           'Uygulamanın konum iznini istediğiniz zaman telefonunuzun ayarlarından geri alabilirsiniz.',
         ],
       ],

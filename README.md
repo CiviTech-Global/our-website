@@ -5,7 +5,7 @@ Persian-first civic technology platform. Monorepo containing the public site, us
 ## Structure
 
 - `civitechglobal-web/` — React 19 + Vite + Tailwind v4 frontend (public site, user dashboard, admin panel)
-- `civitechglobal-mobile/` — Flutter app for Android and iOS (early: identity, tooling and CI are set; see its README)
+- `civitechglobal-mobile/` — Flutter app for Android (member features plus the staff desk's daily queues; see its README)
 - `civitechglobal-server/` — Express API + Fastify/grammY Telegram bot + Prisma/PostgreSQL
 - `agent-roster/` — Claude Code subagent persona library used as dev tooling for this project
 - `scripts/` — generator scripts for `agent-roster/`

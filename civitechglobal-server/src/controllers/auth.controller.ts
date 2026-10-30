@@ -3,6 +3,7 @@ import { canSendEmail } from '../services/email/index.js';
 import * as authService from '../services/auth.service.js';
 import * as recoveryService from '../services/account-recovery.service.js';
 import * as mfaService from '../services/mfa.service.js';
+import * as accountDeletion from '../services/account-deletion.service.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { successResponse } from '../utils/apiResponse.js';
 import { env } from '../config/env.js';
@@ -195,6 +196,30 @@ export async function logoutAll(req: Request, res: Response, next: NextFunction)
     await authService.revokeAllUserRefreshTokens(req.user!.userId);
     clearSessionCookie(req, res);
     successResponse(res, null, 'Logged out of all sessions');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** Whether the account can be closed now, and what to finish first if not. */
+export async function deletionStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const blockers = await accountDeletion.deletionBlockers(req.user!.userId);
+    successResponse(res, { ...blockers, canDelete: blockers.activeContracts === 0 && blockers.booksInHandOver === 0 });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/** The member closes their own account. Every session ends with it. */
+export async function deleteAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await accountDeletion.deleteOwnAccount(req.user!.userId, {
+      password: req.body.password as string,
+      code: req.body.code as string | undefined,
+    });
+    clearSessionCookie(req, res);
+    successResponse(res, null, 'حساب شما حذف شد.');
   } catch (error) {
     next(error);
   }

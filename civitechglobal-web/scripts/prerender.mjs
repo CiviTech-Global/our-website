@@ -65,6 +65,9 @@ const PAGES = [
   // scripts.
   '/help',
   '/privacy',
+  // The app's download page. Its links come from the API after load; the
+  // prerendered copy carries the title and description for link previews.
+  '/app',
 ];
 
 /**

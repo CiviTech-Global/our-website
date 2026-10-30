@@ -25,3 +25,7 @@ docker-compose.override.yml
 # Client-uploaded project attachments. Real documents, often under NDA, and
 # the server writes them here in development (UPLOAD_DIR). Never committed.
 civitechglobal-server/storage/
+
+# The Android upload (signing) key, Ansible-vault encrypted. Kept out of git
+# because this repository is public; the deploy never reads it.
+civitech-deploy/android-signing.vault.yml

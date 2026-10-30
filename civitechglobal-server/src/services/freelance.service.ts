@@ -982,6 +982,20 @@ export async function listProjectsForReview(query: {
   return toPage(items, total, query.page, query.pageSize);
 }
 
+/** Everything a reviewer needs to judge a project, which the queue row is too thin for. */
+export async function getProjectForReview(projectId: string) {
+  const project = await prisma.freelanceProject.findUnique({
+    where: { id: projectId },
+    include: {
+      author: { select: { id: true, email: true, firstName: true, lastName: true } },
+      attachments: { select: { id: true, originalName: true, sizeBytes: true } },
+    },
+  });
+
+  if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
+  return project;
+}
+
 /** One project attachment, for a reviewer to look at. */
 export async function getAttachmentForReview(attachmentId: string) {
   const attachment = await prisma.freelanceAttachment.findUnique({

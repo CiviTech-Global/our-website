@@ -31,6 +31,7 @@ import type {
   ProfilePayload,
   ProjectPayload,
   ProjectQueueRow,
+  ProjectReviewDetail,
   PublicBookDetail,
   PublicBookSummary,
   PublicJobDetail,
@@ -986,6 +987,14 @@ export function useProjectQueue(query: QueueQuery) {
       });
       return res.data;
     },
+  });
+}
+
+export function useProjectForReview(id: string | undefined) {
+  return useQuery({
+    queryKey: ['market', 'admin', 'project', id],
+    queryFn: async () => (await api.get<ProjectReviewDetail>(`/market/admin/projects/${id!}`)).data,
+    enabled: Boolean(id),
   });
 }
 

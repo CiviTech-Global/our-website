@@ -6,7 +6,9 @@ import {
   useCreateAdmin,
   useDeactivateUser,
   usePermissionCatalogue,
+  useReactivateUser,
   useSetUserPermissions,
+  useUpdateUserRole,
 } from '@/api/admin';
 import { apiMessage } from '@/lib/apiMessage';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -185,6 +187,8 @@ function AccountCard({
   const { showToast } = useToast();
   const setPermissions = useSetUserPermissions();
   const deactivate = useDeactivateUser();
+  const reactivate = useReactivateUser();
+  const changeRole = useUpdateUserRole();
 
   const [draft, setDraft] = useState<Permission[] | null>(null);
   const current = draft ?? account.permissions;
@@ -194,6 +198,16 @@ function AccountCard({
   // it would be a lie about what it can reach.
   const isSuperAdmin = account.role === 'SUPER_ADMIN';
   const isCustomer = account.role === 'USER';
+  const deletedByOwner = account.email.endsWith('@deleted.invalid');
+
+  async function run(action: () => Promise<unknown>, done: string) {
+    try {
+      await action();
+      showToast(done, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
 
   async function save() {
     try {
@@ -275,24 +289,51 @@ function AccountCard({
                   {t.common.cancel}
                 </Button>
               )}
-              {account.isActive !== false && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  isLoading={deactivate.isPending}
-                  onClick={async () => {
-                    try {
-                      await deactivate.mutateAsync(account.id);
-                      showToast(t.access.deactivatedDone, 'success');
-                    } catch (error) {
-                      showToast(apiMessage(error, t.common.error), 'error');
-                    }
-                  }}
-                >
-                  {t.access.deactivate}
-                </Button>
-              )}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Standing: customer or staff, active or not. Any account but the super
+          admin's and the viewer's own; one its owner deleted has nothing left
+          to restore. */}
+      {canEdit && !isSuperAdmin && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-app-border-light pt-4">
+          {deletedByOwner ? (
+            <Badge variant="default">{t.access.deletedByOwner}</Badge>
+          ) : account.isActive === false ? (
+            <Button
+              type="button"
+              variant="outline"
+              isLoading={reactivate.isPending}
+              onClick={() => run(() => reactivate.mutateAsync(account.id), t.access.reactivatedDone)}
+            >
+              {t.access.reactivate}
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                isLoading={changeRole.isPending}
+                onClick={() =>
+                  run(
+                    () => changeRole.mutateAsync({ id: account.id, role: isCustomer ? 'ADMIN' : 'USER' }),
+                    t.access.roleChanged,
+                  )
+                }
+              >
+                {isCustomer ? t.access.makeStaff : t.access.makeCustomer}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                isLoading={deactivate.isPending}
+                onClick={() => run(() => deactivate.mutateAsync(account.id), t.access.deactivatedDone)}
+              >
+                {t.access.deactivate}
+              </Button>
+            </>
           )}
         </div>
       )}

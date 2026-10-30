@@ -15,8 +15,8 @@
  *   `s.common.save` the way the web reads `t.common.save`, and a renamed key
  *   fails to compile instead of rendering nothing.
  * - civitechglobal-mobile/assets/help/manifest.json and <locale>.json: the
- *   public and member guides. Staff guides stay on the web, as the app has no
- *   staff screens.
+ *   public and member guides. Staff guides stay on the web, as the app's staff
+ *   desk covers only the daily queues.
  * - civitechglobal-mobile/assets/blog/index.json and one file per article:
  *   the blog, parsed into the same blocks the web renders.
  *

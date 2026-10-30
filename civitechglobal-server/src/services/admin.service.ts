@@ -68,13 +68,22 @@ export async function getRoles() {
 /** Updates a user's role, then revokes every outstanding refresh token /
  * bumps tokenVersion so previously issued access tokens (which embed the
  * old role/permissions) stop being trusted immediately. */
-export async function updateUserRole(userId: string, role: Role) {
+export async function updateUserRole(userId: string, role: Role, actorId?: string) {
   const existing = await userRepository.findUnique({ where: { id: userId } });
   if (!existing || existing.deletedAt) throw new AppError('User not found', 404);
+  // The same line createAdmin draws: there is one super admin and it comes
+  // from the seed. Nobody is promoted to it, nobody is demoted from it, and
+  // nobody changes their own standing from this page.
+  if (role === 'SUPER_ADMIN' || existing.role === 'SUPER_ADMIN') {
+    throw new AppError('نقش مدیر ارشد از این‌جا تغییر نمی‌کند.', 403);
+  }
+  if (actorId && actorId === userId) throw new AppError('نقش خودتان را نمی‌توانید تغییر دهید.', 403);
 
   const user = await userRepository.update({
     where: { id: userId },
-    data: { role },
+    // A customer holds no modules; leaving them on would hand them straight
+    // back the day the account is promoted again.
+    data: role === 'USER' ? { role, permissions: [] } : { role },
     select: { id: true, email: true, role: true, permissions: true, updatedAt: true },
   });
 
@@ -117,6 +126,7 @@ export async function updateUserAdminRole(userId: string, adminRoleId: string | 
 export async function deactivateUser(userId: string) {
   const existing = await userRepository.findUnique({ where: { id: userId } });
   if (!existing || existing.deletedAt) throw new AppError('User not found', 404);
+  if (existing.role === 'SUPER_ADMIN') throw new AppError('حساب مدیر ارشد غیرفعال نمی‌شود.', 403);
 
   const user = await userRepository.update({
     where: { id: userId },
@@ -126,6 +136,27 @@ export async function deactivateUser(userId: string) {
 
   await revokeAllUserRefreshTokens(userId);
   return user;
+}
+
+/**
+ * Undoes deactivateUser. Sessions stay ended; the person signs in again.
+ *
+ * An account its owner deleted is not a deactivated one: its email is a
+ * placeholder and everything that identified the person is gone, so there is
+ * nothing to bring back and it is refused.
+ */
+export async function reactivateUser(userId: string) {
+  const existing = await userRepository.findUnique({ where: { id: userId } });
+  if (!existing || !existing.deletedAt) throw new AppError('User not found', 404);
+  if (existing.email.endsWith('@deleted.invalid')) {
+    throw new AppError('این حساب را صاحبش حذف کرده و بازگشت‌پذیر نیست.', 409);
+  }
+
+  return userRepository.update({
+    where: { id: userId },
+    data: { deletedAt: null },
+    select: { id: true, email: true, deletedAt: true },
+  });
 }
 
 // ---------------------------------------------------------------------------

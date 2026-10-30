@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { MfaSettings } from '@/components/account/MfaSettings';
 import { SecuritySettings } from '@/components/account/SecuritySettings';
+import { DeleteAccount } from '@/components/account/DeleteAccount';
 import { PublicProfileForm } from '@/components/account/PublicProfileForm';
 import { FreelancerProfileForm } from '@/components/work/FreelancerProfileForm';
 import { features } from '@/lib/features';
@@ -132,6 +133,10 @@ export default function ProfilePage() {
             {t.dashboard.signOutEverywhere}
           </Button>
         </Card>
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.12}>
+        <DeleteAccount />
       </AnimatedSection>
     </div>
   );

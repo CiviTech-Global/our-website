@@ -83,6 +83,39 @@ describe('admin.service privilege-escalation paths', () => {
     await expect(adminService.updateUserRole('user-1', 'ADMIN')).rejects.toThrow('User not found');
   });
 
+  it('updateUserRole never makes or unmakes a super admin', async () => {
+    await expect(adminService.updateUserRole('user-1', 'SUPER_ADMIN')).rejects.toMatchObject({ statusCode: 403 });
+    mocks.usersById.get('user-1').role = 'SUPER_ADMIN';
+    await expect(adminService.updateUserRole('user-1', 'USER')).rejects.toMatchObject({ statusCode: 403 });
+    expect(mocks.revokeAllUserRefreshTokens).not.toHaveBeenCalled();
+  });
+
+  it("updateUserRole refuses to change the caller's own role", async () => {
+    await expect(adminService.updateUserRole('user-1', 'ADMIN', 'user-1')).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it('updateUserRole drops the modules of an admin returned to customer', async () => {
+    Object.assign(mocks.usersById.get('user-1'), { role: 'ADMIN', permissions: ['leads'] });
+    const result = await adminService.updateUserRole('user-1', 'USER', 'boss');
+    expect(result).toMatchObject({ role: 'USER', permissions: [] });
+  });
+
+  it('deactivateUser leaves the super admin alone', async () => {
+    mocks.usersById.get('user-1').role = 'SUPER_ADMIN';
+    await expect(adminService.deactivateUser('user-1')).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it('reactivateUser brings back a deactivated account', async () => {
+    mocks.usersById.get('user-1').deletedAt = new Date();
+    const result = await adminService.reactivateUser('user-1');
+    expect(result.deletedAt).toBeNull();
+  });
+
+  it('reactivateUser refuses an account its owner deleted', async () => {
+    Object.assign(mocks.usersById.get('user-1'), { deletedAt: new Date(), email: 'deleted+user-1@deleted.invalid' });
+    await expect(adminService.reactivateUser('user-1')).rejects.toMatchObject({ statusCode: 409 });
+  });
+
   it('deactivateUser soft-deletes and revokes every outstanding session', async () => {
     const result = await adminService.deactivateUser('user-1');
 

@@ -15,6 +15,7 @@ import {
   resetPasswordSchema,
   updateProfileSchema,
   mfaCodeSchema,
+  deleteAccountSchema,
   mfaVerifySchema,
   verifyEmailSchema,
 } from '../validators/auth.schema.js';
@@ -88,6 +89,16 @@ router.post(
 );
 
 router.get('/me', authenticate, authController.getMe);
+// Closing the account: what still blocks it, then the act itself. Rate limited
+// like a credential, because the password and code are guesses all the same.
+router.get('/me/deletion', authenticate, authController.deletionStatus);
+router.post(
+  '/delete-account',
+  authenticate,
+  credentialRateLimiter,
+  validate(deleteAccountSchema),
+  authController.deleteAccount,
+);
 router.put('/me', authenticate, validate(updateProfileSchema), authController.updateMe);
 
 export default router;

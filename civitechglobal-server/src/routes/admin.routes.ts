@@ -60,6 +60,12 @@ router.patch(
   validate({ params: cuidParamSchema }),
   adminController.deactivateUser,
 );
+router.patch(
+  '/users/:id/reactivate',
+  authorize('SUPER_ADMIN'),
+  validate({ params: cuidParamSchema }),
+  adminController.reactivateUser,
+);
 
 // Client identities — the (email, phone) pair shared by the project and CV
 // intakes. Reading one is ordinary admin work; changing its standing is not.

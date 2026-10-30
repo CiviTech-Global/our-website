@@ -660,6 +660,17 @@ export interface ApplicationQueueRow {
   job: { id: string; code: string; title: string; companyName: string | null; description: string };
 }
 
+/** What a reviewer reads before judging a project. */
+export interface ProjectReviewDetail extends ProjectQueueRow {
+  description: string;
+  skills: string[];
+  budgetMin: string | null;
+  budgetMax: string | null;
+  budgetUnknown: boolean;
+  currency: string;
+  attachments: Array<{ id: string; originalName: string; sizeBytes: number }>;
+}
+
 export interface ProjectQueueRow {
   id: string;
   code: string;
