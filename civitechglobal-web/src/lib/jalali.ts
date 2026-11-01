@@ -108,7 +108,7 @@ function gregorianToJulianDay(gy: number, gm: number, gd: number): number {
 }
 
 function julianDayToGregorian(jdn: number): GregorianDate {
-  let j = jdn + 32044;
+  const j = jdn + 32044;
   const g = Math.floor(j / 146097);
   const dg = j % 146097;
   const c = Math.floor(((Math.floor(dg / 36524) + 1) * 3) / 4);
@@ -121,7 +121,6 @@ function julianDayToGregorian(jdn: number): GregorianDate {
   const m = Math.floor((da * 5 + 308) / 153) - 2;
   const d = da - Math.floor(((m + 4) * 153) / 5) + 122;
 
-  j = 0;
   return {
     gy: y - 4800 + Math.floor((m + 2) / 12),
     gm: ((m + 2) % 12) + 1,

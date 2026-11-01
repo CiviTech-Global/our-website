@@ -1,4 +1,5 @@
-import { Github, Globe, Linkedin, Mail, UserRound } from 'lucide-react';
+import { Globe, Mail, UserRound } from 'lucide-react';
+import { Github, Linkedin } from '@/components/ui/BrandIcons';
 import { photoSrc, useTeam, type TeamMember } from '@/api/team';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';

@@ -32,9 +32,11 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router'],
-          query: ['@tanstack/react-query'],
+        manualChunks(id) {
+          const vendor = ['react', 'react-dom', 'react-router', 'scheduler'];
+          if (vendor.some((name) => id.includes(`/node_modules/${name}/`))) return 'vendor';
+          if (id.includes('/node_modules/@tanstack/')) return 'query';
+          return undefined;
         },
       },
     },

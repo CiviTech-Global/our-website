@@ -1,7 +1,8 @@
 import { ProjectGallery } from '@/components/showcase/ProjectGallery';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { Code2, ExternalLink, FolderKanban, Github, Star } from 'lucide-react';
+import { Code2, ExternalLink, FolderKanban, Star } from 'lucide-react';
+import { Github } from '@/components/ui/BrandIcons';
 import {
   showcaseImageSrc,
   usePublicProjects,

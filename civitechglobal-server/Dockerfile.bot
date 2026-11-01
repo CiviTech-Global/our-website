@@ -1,9 +1,10 @@
 # --- Build stage ---
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 RUN npm ci --no-audit --no-fund
 
 COPY tsconfig.json ./
@@ -12,21 +13,23 @@ RUN npx prisma generate
 RUN npm run build
 
 # --- Production dependencies stage ---
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 RUN npm ci --omit=dev --no-audit --no-fund
 RUN npx prisma generate
 
 # --- Runtime stage ---
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup -S app && adduser -S app -G app
 
 COPY --from=deps --chown=app:app /app/node_modules ./node_modules
 COPY --from=deps --chown=app:app /app/prisma ./prisma
+COPY --from=deps --chown=app:app /app/prisma.config.ts ./
 COPY --from=build --chown=app:app /app/dist ./dist
 COPY --chown=app:app package*.json ./
 
