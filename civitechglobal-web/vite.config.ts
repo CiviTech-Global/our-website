@@ -33,7 +33,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (/node_modules[\/](react|react-dom|react-router|scheduler)[\/]/.test(id)) return 'vendor';
+          if (/node_modules/(react|react-dom|react-router|scheduler)//.test(id)) return 'vendor';
           if (id.includes('@tanstack')) return 'query';
           return undefined;
         },
