@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Copy, ShieldCheck, ShieldOff } from 'lucide-react';
 import {
   useBeginMfaEnrolment,
@@ -24,9 +25,9 @@ import { Spinner } from '@/components/ui/Spinner';
  * it. Without that, anyone whose app silently failed to save the secret locks
  * themselves out.
  *
- * The secret is shown as text rather than a QR code. Rendering a QR needs a
- * library, and a pastable otpauth:// link plus a typed secret works in every
- * authenticator — it is the less pretty answer that costs the bundle nothing.
+ * The QR code is drawn here in the browser, so the secret goes to no outside
+ * service. The typed key and the otpauth:// link stay beside it, for someone
+ * enrolling on the phone that holds the authenticator, with nothing to scan.
  */
 export function MfaSettings() {
   const { t } = useLocale();
@@ -185,6 +186,11 @@ export function MfaSettings() {
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-body text-app-text-3">{t.auth.mfaStep1}</p>
+            {otpauth && (
+              <div className="mt-3 w-fit rounded-lg bg-white p-3">
+                <QRCodeSVG value={otpauth} size={168} level="M" title={t.auth.mfaStep1} />
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <code className="ltr select-all break-all rounded bg-app-fill px-3 py-2 font-mono text-body tracking-wider text-app-text">
                 {secret}

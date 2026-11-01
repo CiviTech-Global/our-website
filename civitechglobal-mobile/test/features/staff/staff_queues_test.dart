@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:civitech_global_flutter/features/staff/staff_collections.dart';
 import 'package:civitech_global_flutter/features/staff/staff_queues.dart';
 import 'package:civitech_global_flutter/features/staff/staff_screens.dart';
 import 'package:civitech_global_flutter/l10n/generated/strings.g.dart';
@@ -61,6 +62,32 @@ void main() {
     )!.describe(staffRows['freelanceProjects']!, s, 'en');
     expect(project.texts, isNotEmpty);
     expect(project.files.single.$2, '/market/admin/project-attachments/fa1');
+  });
+
+  test('every setup page can be found by its key, with a form to fill', () {
+    for (final c in [...staffCollections, ...staffTools]) {
+      expect(staffCollection(c.key), same(c));
+      expect(c.fields, isNotEmpty, reason: c.key);
+      // A label the dictionary lacks shows the raw key.
+      for (final f in c.fields) {
+        expect(f.label(s).trim(), isNotEmpty, reason: '${c.key}.${f.key}');
+        expect(f.label(s), isNot(equals(f.key)), reason: '${c.key}.${f.key}');
+      }
+    }
+  });
+
+  test('a section keeps its members out of a row of its own parent', () {
+    final category = staffCollection('product-categories')!;
+    final parent = category.fields.firstWhere((f) => f.key == 'parentId');
+    final options = parent.choices!(
+      s,
+      [
+        {'id': 'a', 'name': 'A'},
+        {'id': 'b', 'name': 'B'},
+      ],
+      {'id': 'a'},
+    );
+    expect(options.map((o) => o.$1), ['', 'b']);
   });
 
   group('workQueues', () {

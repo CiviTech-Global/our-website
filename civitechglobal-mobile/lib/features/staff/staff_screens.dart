@@ -18,10 +18,13 @@ import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
 import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/soft_surface.dart';
+import '../../design/widgets/thousands_formatter.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import '../browse/browse.dart';
 import '../intake/track_screen.dart' show StatusPill;
+import 'staff_extras.dart';
+import 'staff_proposal_screen.dart';
 import 'staff_queues.dart';
 
 /// What waits in the queues this person may work:
@@ -129,7 +132,7 @@ class StaffHomeScreen extends ConsumerWidget {
                             ListTile(
                               leading: Icon(q.icon),
                               title: Text(q.label(s)),
-                              subtitle: q.key == 'services'
+                              subtitle: q.key == 'services' && total == 0
                                   ? null
                                   : Text(
                                       '${s.app.waiting}: ${localDigits(open, language)}'
@@ -157,6 +160,11 @@ class StaffHomeScreen extends ConsumerWidget {
                 );
               },
             ),
+            const StaffDeskMenu(),
+            if (ref.watch(workloadProvider).value case final workload?) ...[
+              const SizedBox(height: BaghSpace.gutter),
+              StaffActivity(workload: workload),
+            ],
             const SizedBox(height: BaghSpace.gutter),
             SoftSurface(
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -276,6 +284,50 @@ final staffImageProvider = FutureProvider.autoDispose.family<List<int>, String>(
   (ref, path) async => (await ref.read(apiClientProvider).download(path)).bytes,
 );
 
+/// One picture from a staff route, or an icon if it will not load.
+class StaffImageTile extends ConsumerWidget {
+  const StaffImageTile({
+    required this.path,
+    required this.size,
+    required this.label,
+    super.key,
+  });
+
+  final String path;
+  final double size;
+  final String label;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = BaghColors.of(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: size,
+        height: size,
+        color: c.pane,
+        alignment: Alignment.center,
+        child: ref
+            .watch(staffImageProvider(path))
+            .when(
+              loading: () => const GirihSpinner(),
+              error: (_, _) => const Icon(Icons.broken_image_outlined),
+              data: (bytes) => Image.memory(
+                Uint8List.fromList(bytes),
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                cacheWidth: (size * 3).round(),
+                semanticLabel: label,
+                errorBuilder: (_, _, _) =>
+                    const Icon(Icons.broken_image_outlined),
+              ),
+            ),
+      ),
+    );
+  }
+}
+
 /// The pictures staff are judging, side by side. One that will not load says
 /// so with an icon: a missing picture is itself something to review.
 class _StaffImages extends ConsumerWidget {
@@ -386,6 +438,10 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
   );
   final _reviewNote = TextEditingController();
   final _reply = TextEditingController();
+  final _suggested = TextEditingController();
+  late final _matchedRole = TextEditingController(
+    text: widget.row['matchedRole'] as String? ?? '',
+  );
   bool _busy = false;
   String? _opening;
   String? _error;
@@ -409,6 +465,8 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
     _note.dispose();
     _reviewNote.dispose();
     _reply.dispose();
+    _suggested.dispose();
+    _matchedRole.dispose();
     super.dispose();
   }
 
@@ -460,6 +518,8 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
               if (note.isNotEmpty) 'reviewNote': note,
               if (_note.text.trim().isNotEmpty)
                 'internalNote': _note.text.trim(),
+              if (plainDigits(_suggested.text).isNotEmpty)
+                'suggestedAmount': plainDigits(_suggested.text),
             },
           ),
       s.market.reviewed,
@@ -474,6 +534,8 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
       'status': _status,
       // An emptied note is sent as empty, so clearing it sticks.
       ?action.noteKey: note,
+      if (action.matchedRole && _matchedRole.text.trim().isNotEmpty)
+        'matchedRole': _matchedRole.text.trim(),
     };
     final path = action.updatePath(widget.id);
     return _run(
@@ -627,6 +689,14 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
             ),
           ),
         ],
+        if (q.key == 'projects') ...[
+          const SizedBox(height: BaghSpace.gutter),
+          StaffProposals(requestId: widget.id, row: widget.row),
+        ],
+        if (q.assign != null || q.schedule != null || q.ops != null) ...[
+          const SizedBox(height: BaghSpace.gutter),
+          StaffItemExtras(queue: q, id: widget.id, row: widget.row),
+        ],
         const SizedBox(height: BaghSpace.gutter),
         SoftSurface(
           padding: const EdgeInsets.all(20),
@@ -667,6 +737,14 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
       maxLines: 6,
       decoration: InputDecoration(labelText: s.market.reviewNoteLabel),
     ),
+    if (a.suggestsAmount)
+      TextField(
+        controller: _suggested,
+        keyboardType: TextInputType.number,
+        textDirection: TextDirection.ltr,
+        inputFormatters: const [ThousandsFormatter()],
+        decoration: InputDecoration(labelText: s.market.suggestedAmount),
+      ),
     TextField(
       controller: _note,
       minLines: 1,
@@ -702,6 +780,14 @@ class _StaffItemState extends ConsumerState<_StaffItem> {
       ],
       onChanged: (value) => setState(() => _status = value ?? _status),
     ),
+    if (a.matchedRole)
+      TextField(
+        controller: _matchedRole,
+        decoration: InputDecoration(
+          labelText: s.join.matchedRole,
+          helperText: s.join.matchedRoleHint,
+        ),
+      ),
     if (a.noteKey != null)
       TextField(
         controller: _note,

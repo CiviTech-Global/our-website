@@ -48,6 +48,7 @@ export type QueueKey =
   | 'applications'
   | 'freelanceProjects'
   | 'bids'
+  | 'services'
   | 'books'
   | 'consultations'
   | 'disputes'

@@ -60,12 +60,19 @@ sealed class StaffAction {
 
 /// Approve, ask for changes, or reject (`POST <path>/review`).
 class ModerationAction extends StaffAction {
-  const ModerationAction(this.reviewPath, {this.decisions = _all});
+  const ModerationAction(
+    this.reviewPath, {
+    this.decisions = _all,
+    this.suggestsAmount = false,
+  });
 
   static const _all = ['APPROVED', 'CHANGES_REQUESTED', 'REJECTED'];
 
   final String Function(String id) reviewPath;
   final List<String> decisions;
+
+  /// A bid's review can also say what the work looks worth.
+  final bool suggestsAmount;
 }
 
 /// A new status, with the queue's own note field when it has one.
@@ -75,6 +82,7 @@ class StatusAction extends StaffAction {
     this.method = 'patch',
     this.noteKey,
     this.replyPath,
+    this.matchedRole = false,
   });
 
   final String Function(String id) updatePath;
@@ -87,7 +95,30 @@ class StatusAction extends StaffAction {
 
   /// Contact messages are answered from the desk: `POST <path>`.
   final String Function(String id)? replyPath;
+
+  /// A CV can name the role it was matched to.
+  final bool matchedRole;
 }
+
+/// Who is dealing with an item.
+class StaffAssign {
+  const StaffAssign(this.path, {this.sendsStatus = false});
+
+  final String Function(String id) path;
+
+  /// The CV update takes the status with everything else.
+  final bool sendsStatus;
+}
+
+/// When somebody is to be called or met.
+class StaffSchedule {
+  const StaffSchedule(this.path);
+
+  final String Function(String id) path;
+}
+
+/// What can be done to a published listing: feature it, extend its deadline.
+enum StaffOps { job, project, service }
 
 class StaffQueue {
   const StaffQueue({
@@ -107,6 +138,9 @@ class StaffQueue {
     this.note,
     this.webPath,
     this.webNote,
+    this.assign,
+    this.schedule,
+    this.ops,
   });
 
   /// The workload's name for it (GET /admin/dashboard/workload).
@@ -141,6 +175,14 @@ class StaffQueue {
   /// The page on the website for what the app leaves there.
   final String Function(String id)? webPath;
   final String Function(Strings s)? webNote;
+
+  final StaffAssign? assign;
+  final StaffSchedule? schedule;
+  final StaffOps? ops;
+
+  /// The item itself, for the queue whose detail wraps it.
+  StaffRow itemOf(StaffRow row) =>
+      (row['request'] as Map?)?.cast<String, Object?>() ?? row;
 
   String statusOf(StaffRow row) =>
       currentStatus?.call(row) ??
@@ -279,6 +321,8 @@ final List<StaffQueue> staffQueues = [
       );
     },
     action: StatusAction((id) => '/requests/$id/status', method: 'put'),
+    assign: StaffAssign((id) => '/requests/$id/assign'),
+    schedule: StaffSchedule((id) => '/requests/$id/callback'),
   ),
   StaffQueue(
     key: 'projects',
@@ -300,8 +344,6 @@ final List<StaffQueue> staffQueues = [
     searchHint: (s) => s.proposal.searchRequests,
     detailPath: (id) => '/projects/admin/requests/$id',
     note: (r) => r['internalNotes']?.toString(),
-    webPath: (id) => '/admin/projects/$id',
-    webNote: (s) => s.mobile.staffProposalsOnWeb,
     describe: (r, s, lang) => StaffItemView(
       title: _s(r['title']),
       subtitle: [
@@ -375,7 +417,9 @@ final List<StaffQueue> staffQueues = [
       action: StatusAction(
         (id) => '/resumes/admin/$id',
         noteKey: 'internalNotes',
+        matchedRole: true,
       ),
+      assign: StaffAssign((id) => '/resumes/admin/$id', sendsStatus: true),
     ),
   StaffQueue(
     key: 'messages',
@@ -450,6 +494,8 @@ final List<StaffQueue> staffQueues = [
       (id) => '/consult/admin/requests/$id',
       noteKey: 'staffNote',
     ),
+    assign: StaffAssign((id) => '/consult/admin/requests/$id'),
+    schedule: StaffSchedule((id) => '/consult/admin/requests/$id'),
   ),
   StaffQueue(
     key: 'verification',
@@ -541,6 +587,7 @@ final List<StaffQueue> staffQueues = [
       texts: _nonEmpty([(s.market.description, _s(r['description']))]),
     ),
     action: ModerationAction((id) => '/market/admin/jobs/$id/review'),
+    ops: StaffOps.job,
   ),
   StaffQueue(
     key: 'applications',
@@ -629,6 +676,7 @@ final List<StaffQueue> staffQueues = [
       ],
     ),
     action: ModerationAction((id) => '/market/admin/projects/$id/review'),
+    ops: StaffOps.project,
   ),
   StaffQueue(
     key: 'bids',
@@ -680,7 +728,10 @@ final List<StaffQueue> staffQueues = [
         ]),
       );
     },
-    action: ModerationAction((id) => '/market/admin/bids/$id/review'),
+    action: ModerationAction(
+      (id) => '/market/admin/bids/$id/review',
+      suggestsAmount: true,
+    ),
   ),
   StaffQueue(
     key: 'books',
@@ -750,6 +801,7 @@ final List<StaffQueue> staffQueues = [
       ],
     ),
     action: ModerationAction((id) => '/work/admin/services/$id/review'),
+    ops: StaffOps.service,
   ),
   StaffQueue(
     key: 'tradeMasterShops',

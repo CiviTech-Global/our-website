@@ -218,6 +218,7 @@ export function AdminLayout() {
               to: '/admin/services-queue',
               label: t.work.serviceQueueTitle,
               icon: <Layers />,
+              count: open('services'),
             }),
           ],
         },

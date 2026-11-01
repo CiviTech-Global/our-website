@@ -58,6 +58,7 @@ export type QueueKey =
   | 'jobPosts'
   | 'applications'
   | 'freelanceProjects'
+  | 'services'
   | 'bids'
   | 'books'
   | 'consultations'
@@ -266,15 +267,17 @@ export async function getWorkload(principal: Principal, now = new Date()): Promi
   if (can(PERMISSIONS.freelance)) {
     tasks.push(
       (async () => {
-        const [projects, bids] = await Promise.all([
+        const [projects, bids, services] = await Promise.all([
           pair(
             prisma.freelanceProject.count({ where: { moderationStatus: 'PENDING_REVIEW' } }),
             prisma.freelanceProject.count(),
           ),
           pair(prisma.projectBid.count({ where: { moderationStatus: 'PENDING_REVIEW' } }), prisma.projectBid.count()),
+          pair(prisma.service.count({ where: { moderationStatus: 'PENDING_REVIEW' } }), prisma.service.count()),
         ]);
         queues.freelanceProjects = projects;
         queues.bids = bids;
+        queues.services = services;
       })(),
     );
   }

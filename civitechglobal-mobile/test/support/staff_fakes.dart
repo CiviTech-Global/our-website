@@ -23,6 +23,28 @@ Map<String, Object?> _page(List<Map<String, Object?>> items) => {
   },
 };
 
+const _account = {
+  'id': 'u2',
+  'firstName': 'Maryam-Alexandra',
+  'lastName': 'Ahmadi-Khorasani',
+  'email': 'maryam.ahmadi.long.address@example.com',
+  'role': 'ADMIN',
+  'permissions': ['messages'],
+  'createdAt': '2026-10-20T08:00:00Z',
+  'isActive': false,
+};
+
+const _customer = {
+  'id': 'u3',
+  'firstName': 'Maryam-Alexandra',
+  'lastName': 'Ahmadi-Khorasani',
+  'email': 'maryam.ahmadi.long.address@example.com',
+  'role': 'USER',
+  'permissions': <String>[],
+  'createdAt': '2026-10-20T08:00:00Z',
+  'isActive': true,
+};
+
 /// One row per queue, keyed as the workload names them.
 const staffRows = <String, Map<String, Object?>>{
   'insurance': {
@@ -299,18 +321,205 @@ const staffRows = <String, Map<String, Object?>>{
   if (list != null) return (200, _page([staffRows[list]!]));
 
   return switch (path) {
+    '/admin/users' => (200, _page(const [_account, _customer])),
+    '/admin/roles' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'r1',
+            'name': 'Support and customer care',
+            'permissions': ['messages', 'insurance'],
+          },
+        ],
+      },
+    ),
+    '/admin/permissions' => (
+      200,
+      {
+        'data': {
+          'permissions': ['projects', 'resumes', 'insurance', 'messages'],
+        },
+      },
+    ),
+    '/market/admin/analytics' => (
+      200,
+      {
+        'data': {
+          'queues': {
+            'jobs': {'PENDING_REVIEW': 2, 'APPROVED': 40},
+          },
+          'awards': {'total': 12000, 'openDisputes': 1, 'completionRate': 0.82},
+          'featured': {'jobs': 3, 'projects': 2},
+          'reviewSpeedHours': {'jobs': 4.5, 'projects': null},
+          'topSkills': [
+            {'value': 'Distributed systems engineering', 'total': 1200},
+          ],
+          'topCategories': <Object?>[],
+        },
+      },
+    ),
+    '/market/admin/disputes' => (
+      200,
+      {
+        'data': [
+          {
+            'awardId': 'aw1',
+            'kind': 'project',
+            'listing': {'code': 'X', 'title': _long},
+            'disputeReason': _long,
+          },
+        ],
+      },
+    ),
+    '/market/admin/audit' => (
+      200,
+      _page([
+        {
+          'id': 'au1',
+          'action': 'project.deadline_extended',
+          'targetType': 'FreelanceProject',
+          'targetId': 'cmvh1iwih01h0vc3opbfiocg3',
+          'createdAt': '2026-10-20T08:00:00Z',
+          'actor': _person,
+        },
+      ]),
+    ),
+    '/team/admin' => (
+      200,
+      {
+        'data': {
+          'sections': [
+            {
+              'id': 'se1',
+              'name': 'Engineering and delivery',
+              'description': _long,
+            },
+          ],
+          'members': [
+            {
+              'id': 'te1',
+              'name': 'Maryam-Alexandra Ahmadi-Khorasani',
+              'title': 'Principal software architect and engineering lead',
+              'bio': _long,
+              'sectionId': 'se1',
+              'published': false,
+            },
+          ],
+        },
+      },
+    ),
+    '/consult/admin/experts' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'ex1',
+            'fullName': 'Maryam-Alexandra Ahmadi-Khorasani',
+            'headline': 'Principal software architect and engineering lead',
+            'specialities': ['Architecture', 'Security'],
+            'languages': ['fa', 'en'],
+            'published': true,
+          },
+        ],
+      },
+    ),
+    '/showcase/admin/organizations' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'or1',
+            'name': 'Sazman-e Fanavari-ye Ettelaat-e Shahrvandi-ye Iran',
+            'industry': 'Public sector and civic technology',
+            'published': true,
+          },
+        ],
+      },
+    ),
+    '/showcase/admin/projects' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'sp1',
+            'title': 'A customer portal with long-running approval workflows',
+            'summary': _long,
+            'status': 'LAUNCHED',
+            'technologies': ['Flutter', 'PostgreSQL'],
+            'published': true,
+          },
+        ],
+      },
+    ),
+    '/trademaster/admin/categories' ||
+    '/trademaster/admin/business-categories' => (
+      200,
+      {
+        'data': [
+          {
+            'id': 'ca1',
+            'name': 'Handicrafts and traditional arts of the region',
+            'slug': 'handicrafts-and-traditional-arts',
+            'active': false,
+          },
+        ],
+      },
+    ),
+    '/jobs/admin/companies' => (
+      200,
+      _page([
+        {
+          'id': 'co1',
+          'name': 'Sazman-e Fanavari-ye Ettelaat',
+          'hidden': true,
+          'owner': _person,
+        },
+      ]),
+    ),
+    '/bookshop/admin/catalog' => (
+      200,
+      _page([
+        {
+          'id': 'bk1',
+          'title': 'A very long book title that wraps on a narrow phone',
+          'authors': ['Maryam-Alexandra Ahmadi-Khorasani'],
+          'translators': <String>[],
+          'tags': <String>[],
+        },
+      ]),
+    ),
     '/admin/dashboard/workload' => (
       200,
       {
         'data': {
-          'permissions': <String>[],
+          'permissions': const [
+            'users',
+            'analytics',
+            'experts',
+            'showcase',
+            'trademaster',
+            'jobs',
+            'books',
+          ],
           'queues': {
             for (final key in staffRows.keys)
               if (key != 'services')
                 key: {'open': key == 'insurance' ? 1200 : 3, 'total': 45000},
           },
-          'recent': <Object?>[],
-          'trend': <Object?>[],
+          'recent': [
+            {
+              'kind': 'insurance',
+              'id': 'r1',
+              'title': 'Maryam-Alexandra Ahmadi-Khorasani',
+              'status': 'NEW',
+              'createdAt': '2026-10-20T08:00:00Z',
+            },
+          ],
+          'trend': [
+            for (var i = 0; i < 14; i++)
+              {'day': '2026-10-${i + 10}', 'count': i % 5},
+          ],
         },
       },
     ),

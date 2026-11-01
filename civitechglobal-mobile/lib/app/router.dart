@@ -60,6 +60,9 @@ import '../features/profile/public_profile_screen.dart';
 import '../features/profile/verification_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/staff/staff_collection_screens.dart';
+import '../features/staff/staff_people_screens.dart';
+import '../features/staff/staff_proposal_screen.dart';
 import '../features/staff/staff_screens.dart';
 import '../l10n/l10n.dart';
 import 'shell.dart';
@@ -192,12 +195,71 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const StaffHomeScreen(),
         routes: [
           GoRoute(
+            path: 'users',
+            builder: (_, _) => const StaffUsersScreen(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (_, _) => const StaffCreateAdminScreen(),
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => StaffUserScreen(
+                  id: state.pathParameters['id']!,
+                  row: state.extra is Map<String, Object?>
+                      ? state.extra! as Map<String, Object?>
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(path: 'roles', builder: (_, _) => const StaffRolesScreen()),
+          GoRoute(
+            path: 'manage/:collection',
+            builder: (_, state) => StaffCollectionScreen(
+              collection: state.pathParameters['collection']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (_, state) => StaffCollectionFormScreen(
+                  collection: state.pathParameters['collection']!,
+                ),
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => StaffCollectionFormScreen(
+                  collection: state.pathParameters['collection']!,
+                  row: state.extra is Map<String, Object?>
+                      ? state.extra! as Map<String, Object?>
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'analytics',
+            builder: (_, _) => const StaffAnalyticsScreen(),
+          ),
+          GoRoute(path: 'audit', builder: (_, _) => const StaffAuditScreen()),
+          GoRoute(
             path: 'q/:queue',
             builder: (_, state) =>
                 StaffQueueScreen(queueKey: state.pathParameters['queue']!),
             routes: [
               GoRoute(
                 path: ':id',
+                routes: [
+                  GoRoute(
+                    path: 'proposal',
+                    builder: (_, state) => StaffProposalScreen(
+                      requestId: state.pathParameters['id']!,
+                      draft: state.extra is Map<String, Object?>
+                          ? state.extra! as Map<String, Object?>
+                          : null,
+                    ),
+                  ),
+                ],
                 builder: (_, state) => StaffItemScreen(
                   queueKey: state.pathParameters['queue']!,
                   id: state.pathParameters['id']!,
