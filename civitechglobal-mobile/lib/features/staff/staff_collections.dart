@@ -60,6 +60,7 @@ class StaffCollection {
     this.canCreate = true,
     this.createOnly = false,
     this.mergePath,
+    this.addLabel,
   });
 
   final String key;
@@ -95,6 +96,9 @@ class StaffCollection {
   final bool Function(StaffRow row)? hidden;
 
   final bool canCreate;
+
+  /// What the list's add button says; a category desk's words by default.
+  final String Function(Strings s)? addLabel;
 
   /// A form with no list: the desk opens it straight away.
   final bool createOnly;
@@ -155,8 +159,10 @@ StaffCollection _organizations(
   String kind,
   IconData icon,
   String Function(Strings s) label,
+  String Function(Strings s) addLabel,
 ) => StaffCollection(
   key: key,
+  addLabel: addLabel,
   permission: 'showcase',
   icon: icon,
   label: label,
@@ -230,6 +236,7 @@ StaffCollection _organizations(
 final List<StaffCollection> staffCollections = [
   StaffCollection(
     key: 'team',
+    addLabel: (s) => s.team.addMember,
     permission: null,
     icon: Icons.groups_outlined,
     label: (s) => s.team.adminTitle,
@@ -267,6 +274,7 @@ final List<StaffCollection> staffCollections = [
   ),
   StaffCollection(
     key: 'team-sections',
+    addLabel: (s) => s.team.addSection,
     permission: null,
     icon: Icons.account_tree_outlined,
     label: (s) => s.team.sectionsTitle,
@@ -293,6 +301,7 @@ final List<StaffCollection> staffCollections = [
   ),
   StaffCollection(
     key: 'experts',
+    addLabel: (s) => s.experts.addExpert,
     permission: 'experts',
     icon: Icons.school_outlined,
     label: (s) => s.experts.adminTitle,
@@ -356,15 +365,18 @@ final List<StaffCollection> staffCollections = [
     'CUSTOMER',
     Icons.handshake_outlined,
     (s) => s.showcase.adminCustomersTitle,
+    (s) => s.showcase.addCustomer,
   ),
   _organizations(
     'partners',
     'PARTNER',
     Icons.diversity_3_outlined,
     (s) => s.showcase.adminPartnersTitle,
+    (s) => s.showcase.addPartner,
   ),
   StaffCollection(
     key: 'portfolio',
+    addLabel: (s) => s.showcase.addProject,
     permission: 'showcase',
     icon: Icons.collections_bookmark_outlined,
     label: (s) => s.showcase.adminProjectsTitle,

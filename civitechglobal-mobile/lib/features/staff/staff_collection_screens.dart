@@ -126,7 +126,7 @@ class _StaffCollectionScreenState extends ConsumerState<StaffCollectionScreen> {
         actions: [
           if (c.canCreate)
             IconButton(
-              tooltip: s.categoryDesk.add,
+              tooltip: c.addLabel?.call(s) ?? s.categoryDesk.add,
               icon: const Icon(Icons.add_rounded),
               onPressed: () => context.push('/staff/manage/${c.key}/new'),
             ),
@@ -737,36 +737,51 @@ class _StaffShotsEditorState extends ConsumerState<StaffShotsEditor> {
         if (shots.isEmpty) Text(sc.galleryEmpty),
         for (final (i, shot) in shots.indexed)
           Row(
-            spacing: 8,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 12,
             children: [
               StaffImageTile(
                 path: '${shot['url']}',
-                size: 64,
+                size: 72,
                 label: '${shot['caption'] ?? ''}',
               ),
+              // The caption gets the width; the controls sit under it.
               Expanded(
-                child: Text(
-                  '${shot['caption'] ?? '—'}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${shot['caption'] ?? '—'}',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: sc.moveUp,
+                          onPressed: i == 0 || _busy
+                              ? null
+                              : () => _move(shots, i, -1),
+                          icon: const Icon(Icons.arrow_upward_rounded),
+                        ),
+                        IconButton(
+                          tooltip: sc.moveDown,
+                          onPressed: i == shots.length - 1 || _busy
+                              ? null
+                              : () => _move(shots, i, 1),
+                          icon: const Icon(Icons.arrow_downward_rounded),
+                        ),
+                        IconButton(
+                          tooltip: sc.removeShot,
+                          onPressed: _busy
+                              ? null
+                              : () => _remove('${shot['id']}'),
+                          icon: const Icon(Icons.delete_outline_rounded),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-              IconButton(
-                tooltip: sc.moveUp,
-                onPressed: i == 0 || _busy ? null : () => _move(shots, i, -1),
-                icon: const Icon(Icons.arrow_upward_rounded),
-              ),
-              IconButton(
-                tooltip: sc.moveDown,
-                onPressed: i == shots.length - 1 || _busy
-                    ? null
-                    : () => _move(shots, i, 1),
-                icon: const Icon(Icons.arrow_downward_rounded),
-              ),
-              IconButton(
-                tooltip: sc.removeShot,
-                onPressed: _busy ? null : () => _remove('${shot['id']}'),
-                icon: const Icon(Icons.delete_outline_rounded),
               ),
             ],
           ),

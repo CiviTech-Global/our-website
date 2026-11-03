@@ -551,7 +551,9 @@ class _ProposalViewState extends ConsumerState<ProposalView> {
             children: [
               Text(p.title, style: text.titleLarge),
               StatusPill(
-                status == 'SENT' ? p.awaiting : p.statuses.label(status),
+                status == 'SENT'
+                    ? p.awaiting
+                    : p.proposalStatuses.label(status),
                 tone: requestStatusTone(status),
               ),
             ],

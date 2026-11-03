@@ -164,5 +164,11 @@ void main() {
     expect(find.text('Build the portal'), findsOneWidget);
     expect(find.text(_strings.proposal.accept), findsNothing);
     expect(find.text(_strings.proposal.cannotAnswer), findsNothing);
+    // A draft is named as one, not by its code.
+    expect(
+      find.text(_strings.proposal.proposalStatuses.label('DRAFT')),
+      findsOneWidget,
+    );
+    expect(find.text('DRAFT'), findsNothing);
   });
 }

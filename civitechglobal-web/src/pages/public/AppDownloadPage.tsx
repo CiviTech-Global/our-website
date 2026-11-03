@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { bazaarLink } from '@/lib/storeLinks';
 
 /**
  * Where the Android app can be had: the stores, and the signed APKs on this
@@ -16,7 +17,7 @@ import { useDocumentTitle } from '@/lib/documentTitle';
  * sends people here when no store answers.
  */
 export default function AppDownloadPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const d = t.appDownload;
   useDocumentTitle(d.title, { description: d.subtitle });
   const links = useAppDownloads();
@@ -82,7 +83,7 @@ export default function AppDownloadPage() {
             {stores.map(([href, label]) => (
               <a
                 key={label}
-                href={href!}
+                href={bazaarLink(href!, locale)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={button}
