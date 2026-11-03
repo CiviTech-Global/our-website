@@ -4,13 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../design/haptics.dart';
+import '../../design/tokens.dart';
+import '../../design/widgets/async_view.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/date_field.dart';
+import '../../design/widgets/home_leading.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../design/widgets/thousands_formatter.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
-import '../intake/track_screen.dart' show StatusPill;
+import '../intake/track_screen.dart' show ProposalView, StatusPill;
 import 'staff_queues.dart' show StaffRow;
 import 'staff_screens.dart' show staffDetailProvider, workloadProvider;
 
@@ -86,6 +89,14 @@ class _StaffProposalsState extends ConsumerState<StaffProposals> {
                 ),
                 StatusPill(s.proposal.proposalStatuses.label('${p['status']}')),
               ],
+            ),
+            BaghKey(
+              label: s.proposal.previewDocument,
+              kind: BaghKeyKind.outline,
+              expand: true,
+              onPressed: () => context.push(
+                '/staff/q/projects/${widget.requestId}/proposal/${p['id']}',
+              ),
             ),
             if (p['status'] == 'DRAFT') ...[
               BaghKey(
@@ -335,6 +346,64 @@ class _StaffProposalScreenState extends ConsumerState<StaffProposalScreen> {
           expand: true,
         ),
       ],
+    );
+  }
+}
+
+/// The document a proposal will be, addressed by its id: the only way to read
+/// a draft as the client will before sending it.
+final staffProposalDocumentProvider = FutureProvider.autoDispose
+    .family<StaffRow, String>(
+      (ref, id) => ref
+          .read(apiClientProvider)
+          .get(
+            '/projects/admin/proposals/$id/document',
+            parse: (d) => (d! as Map).cast<String, Object?>(),
+          ),
+    );
+
+/// A proposal as its client will see it, with nothing to answer.
+class StaffProposalPreviewScreen extends ConsumerWidget {
+  const StaffProposalPreviewScreen({required this.proposalId, super.key});
+
+  final String proposalId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    return Scaffold(
+      appBar: AppBar(
+        leading: homeLeading(context),
+        title: Text(s.proposal.previewDocument),
+      ),
+      body: SafeArea(
+        top: false,
+        child: AsyncView(
+          value: ref.watch(staffProposalDocumentProvider(proposalId)),
+          onRetry: () =>
+              ref.invalidate(staffProposalDocumentProvider(proposalId)),
+          data: (doc) {
+            final proposal = (doc['proposal'] as Map?)?.cast<String, Object?>();
+            if (proposal == null) {
+              return EmptyNote(message: s.proposal.docNotFound);
+            }
+            return ListView(
+              padding: BaghLayout.readablePadding(
+                context,
+                bottom: BaghSpace.section * 2,
+              ),
+              children: [
+                ProposalView(
+                  proposal: proposal,
+                  trackingCode: '${doc['trackingCode'] ?? ''}',
+                  onAnswered: () {},
+                  preview: true,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }

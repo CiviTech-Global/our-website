@@ -12,7 +12,11 @@ import '../../design/widgets/girih.dart';
 import '../../design/widgets/kinetic_words.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
+import '../freelance/freelance_data.dart' show ProjectSummary;
+import '../freelance/freelance_ui.dart' show ProjectCard;
 import '../help/help_sheet.dart';
+import '../jobs/job_card.dart' show JobCard;
+import '../jobs/jobs_data.dart' show JobSummary;
 import '../start/modules.dart';
 import '../start/start_sheet.dart';
 
@@ -87,6 +91,7 @@ class HomeScreen extends ConsumerWidget {
           SoftSurface(child: Text(s.home.missionBody, style: text.bodyLarge)),
           const SizedBox(height: BaghSpace.section),
           const _BoardStats(),
+          const _Featured(),
           Text(s.home.whatWeDoTitle, style: text.titleLarge),
           const SizedBox(height: 10),
           for (final (i, (title, body)) in [
@@ -302,6 +307,86 @@ class _BoardStats extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Staff-picked listings, newest filling empty slots (`GET /market/featured`):
+/// the website's home window onto the boards.
+final _featuredProvider =
+    FutureProvider.autoDispose<(List<JobSummary>, List<ProjectSummary>)>(
+      (ref) => ref
+          .read(apiClientProvider)
+          .get(
+            '/market/featured',
+            parse: (d) {
+              final m = (d! as Map).cast<String, Object?>();
+              List<Map<String, Object?>> rows(String key) => [
+                for (final r in (m[key] as List? ?? const []))
+                  if (r is Map) r.cast<String, Object?>(),
+              ];
+              return (
+                [for (final j in rows('jobs')) JobSummary.fromJson(j)],
+                [for (final p in rows('projects')) ProjectSummary.fromJson(p)],
+              );
+            },
+          ),
+    );
+
+class _Featured extends ConsumerStatefulWidget {
+  const _Featured();
+
+  @override
+  ConsumerState<_Featured> createState() => _FeaturedState();
+}
+
+class _FeaturedState extends ConsumerState<_Featured> {
+  bool _jobs = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final featured = ref.watch(_featuredProvider).value;
+    // Like the numbers above it: nothing to show until there is something.
+    if (featured == null) return const SizedBox.shrink();
+    final (jobs, projects) = featured;
+    if (jobs.isEmpty && projects.isEmpty) return const SizedBox.shrink();
+    final s = ref.watch(stringsProvider);
+    final showJobs = projects.isEmpty || (_jobs && jobs.isNotEmpty);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: BaghSpace.section),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 10,
+        children: [
+          if (jobs.isNotEmpty && projects.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              children: [
+                ChoiceChip(
+                  label: Text(s.market.featuredJobsTab),
+                  selected: showJobs,
+                  onSelected: (_) => setState(() => _jobs = true),
+                ),
+                ChoiceChip(
+                  label: Text(s.market.featuredProjectsTab),
+                  selected: !showJobs,
+                  onSelected: (_) => setState(() => _jobs = false),
+                ),
+              ],
+            )
+          else
+            Text(
+              jobs.isNotEmpty
+                  ? s.market.featuredJobsTab
+                  : s.market.featuredProjectsTab,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          if (showJobs)
+            for (final job in jobs) JobCard(job: job, compact: true)
+          else
+            for (final project in projects) ProjectCard(project: project),
+        ],
       ),
     );
   }

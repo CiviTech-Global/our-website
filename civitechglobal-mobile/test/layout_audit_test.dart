@@ -215,6 +215,7 @@ const _memberScreens = [
   '/staff/manage/book-catalog',
   '/staff/manage/open-shop/new',
   '/staff/q/projects/p1/proposal',
+  '/staff/q/projects/p1/proposal/pp1',
 ];
 
 /// Member screens audited as a verified account: forms that need one.
@@ -692,6 +693,31 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
           'reviewedAt': '2026-10-02T10:00:00Z',
           'reviewNote': long,
           'documents': <Object>[],
+        },
+      },
+    ),
+    // The home's featured listings. Projects come as sparse as the server
+    // sends them there: no id, no category object, no client.
+    '/market/featured' => (
+      200,
+      {
+        'data': {
+          'jobs': [_longJob, _plainJob],
+          'projects': [
+            {
+              'code': 'FEAT1',
+              'title': _longJob['title'],
+              'companyName': _longJob['companyName'],
+              'category': 'Software development and long-running workflows',
+              'budgetMin': '700000000',
+              'budgetMax': '1500000000',
+              'budgetUnknown': false,
+              'currency': 'IRT',
+              'featured': true,
+              '_count': {'bids': 12},
+              'authorProfile': null,
+            },
+          ],
         },
       },
     ),

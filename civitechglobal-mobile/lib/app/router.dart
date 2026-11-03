@@ -258,6 +258,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                           ? state.extra! as Map<String, Object?>
                           : null,
                     ),
+                    routes: [
+                      GoRoute(
+                        path: ':proposalId',
+                        builder: (_, state) => StaffProposalPreviewScreen(
+                          proposalId: state.pathParameters['proposalId']!,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
                 builder: (_, state) => StaffItemScreen(
