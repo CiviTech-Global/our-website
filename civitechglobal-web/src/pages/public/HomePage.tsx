@@ -10,9 +10,12 @@ import {
   Smartphone,
   UserPlus,
   Sprout,
+  Store,
   Users,
 } from 'lucide-react';
+import { useAppDownloads } from '@/api/capabilities';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { BAZAAR_APP_URL, bazaarLink } from '@/lib/storeLinks';
 import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTitle';
 import { organizationSchema, websiteSchema } from '@/lib/structuredData';
 import { LOCALE_TAGS } from '@/i18n/locales';
@@ -58,6 +61,11 @@ export default function HomePage() {
   });
   const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
 
+  // The server's store link once it answers; the known one until then, so the
+  // prerendered hero carries it. A server with no Bazaar link hides it.
+  const downloads = useAppDownloads();
+  const bazaar = downloads ? downloads.bazaar : BAZAAR_APP_URL;
+
   const features = [
     { icon: Code2, title: t.home.feature0Title, desc: t.home.feature0Desc, glow: 'red' as const },
     { icon: Smartphone, title: t.home.feature1Title, desc: t.home.feature1Desc, glow: 'green' as const },
@@ -96,6 +104,22 @@ export default function HomePage() {
               </Button>
             </Link>
           </div>
+          {bazaar && (
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <a
+                href={bazaarLink(bazaar, locale)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-surface-inverse px-4 py-2.5 text-sm font-medium text-text-inverse transition hover:opacity-90"
+              >
+                <Store className="size-4" aria-hidden="true" />
+                {t.appDownload.bazaar}
+              </a>
+              <Link to="/app" className="text-sm font-medium text-brand-600 hover:underline">
+                {t.appDownload.title}
+              </Link>
+            </div>
+          )}
         </AnimatedSection>
         <AnimatedSection delay={0.1}>
           <HeroMotif />

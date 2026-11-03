@@ -435,12 +435,16 @@ class ProposalView extends ConsumerStatefulWidget {
     required this.proposal,
     required this.trackingCode,
     required this.onAnswered,
+    this.preview = false,
     super.key,
   });
 
   final Map<String, Object?> proposal;
   final String trackingCode;
   final VoidCallback onAnswered;
+
+  /// Staff reading it as the client will, before sending: no way to answer.
+  final bool preview;
 
   @override
   ConsumerState<ProposalView> createState() => _ProposalViewState();
@@ -547,7 +551,9 @@ class _ProposalViewState extends ConsumerState<ProposalView> {
             children: [
               Text(p.title, style: text.titleLarge),
               StatusPill(
-                status == 'SENT' ? p.awaiting : p.statuses.label(status),
+                status == 'SENT'
+                    ? p.awaiting
+                    : p.proposalStatuses.label(status),
                 tone: requestStatusTone(status),
               ),
             ],
@@ -616,8 +622,12 @@ class _ProposalViewState extends ConsumerState<ProposalView> {
                 ),
             ],
           ),
-          const SizedBox(height: BaghSpace.section),
-          if (_answered != null || status == 'ACCEPTED' || status == 'DECLINED')
+          if (!widget.preview) const SizedBox(height: BaghSpace.section),
+          if (widget.preview)
+            const SizedBox.shrink()
+          else if (_answered != null ||
+              status == 'ACCEPTED' ||
+              status == 'DECLINED')
             FormMessage(
               (_answered ?? status) == 'ACCEPTED'
                   ? p.thanksAccepted

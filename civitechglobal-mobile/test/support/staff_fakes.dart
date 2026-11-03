@@ -13,6 +13,32 @@ const _person = {
   'email': 'maryam.ahmadi.long.address@example.com',
 };
 
+/// A draft as long as real ones get: every list filled, every price set.
+const Map<String, Object?> _proposal = {
+  'id': 'pp1',
+  'status': 'DRAFT',
+  'scopeSummary': _long,
+  'deliverables': [_long, 'A second, shorter deliverable'],
+  'assumptions': [_long],
+  'exclusions': [_long],
+  'priceMin': '700000000',
+  'priceLikely': '1100000000',
+  'priceMax': '1500000000',
+  'currency': 'IRT',
+  'timelineWeeksMin': 8,
+  'timelineWeeksMax': 14,
+  'validUntil': '2026-12-31T00:00:00Z',
+  'message': _long,
+  'milestones': [
+    {
+      'title': 'Discovery and a clickable prototype of every approval step',
+      'description': _long,
+      'durationDays': 21,
+      'price': '300000000',
+    },
+  ],
+};
+
 Map<String, Object?> _page(List<Map<String, Object?>> items) => {
   'data': {
     'items': items,
@@ -83,6 +109,7 @@ const staffRows = <String, Map<String, Object?>>{
     'attachments': [
       {'id': 'a1', 'originalName': 'requirements-final-version-3.pdf'},
     ],
+    'proposals': [_proposal],
   },
   'resumes': {
     'id': 'c1',
@@ -321,6 +348,17 @@ const staffRows = <String, Map<String, Object?>>{
   if (list != null) return (200, _page([staffRows[list]!]));
 
   return switch (path) {
+    '/projects/admin/proposals/pp1/document' => (
+      200,
+      {
+        'data': {
+          'trackingCode': 'PROJLONG01',
+          'title': staffRows['projects']!['title'],
+          'status': 'PROPOSAL_SENT',
+          'proposal': _proposal,
+        },
+      },
+    ),
     '/admin/users' => (200, _page(const [_account, _customer])),
     '/admin/roles' => (
       200,
@@ -448,6 +486,16 @@ const staffRows = <String, Map<String, Object?>>{
             'status': 'LAUNCHED',
             'technologies': ['Flutter', 'PostgreSQL'],
             'published': true,
+            'screenshots': [
+              {
+                'id': 'sh1',
+                'url': '/showcase/admin/shot/sh1',
+                'caption':
+                    'The approval queue, with a long caption that '
+                    'has to wrap or be cut short beside its buttons',
+              },
+              {'id': 'sh2', 'url': '/showcase/admin/shot/sh2', 'caption': null},
+            ],
           },
         ],
       },

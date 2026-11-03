@@ -97,6 +97,10 @@ export async function getFeatured(): Promise<{
     budgetUnknown: true,
     currency: true,
     featured: true,
+    // What the app's project card needs to say: without it an hourly rate
+    // reads as a fixed price.
+    pricingType: true,
+    urgent: true,
     authorId: true,
     _count: { select: { bids: { where: { moderationStatus: 'APPROVED' as const } } } },
   } as const;

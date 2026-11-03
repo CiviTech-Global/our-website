@@ -126,7 +126,7 @@ class _StaffCollectionScreenState extends ConsumerState<StaffCollectionScreen> {
         actions: [
           if (c.canCreate)
             IconButton(
-              tooltip: s.categoryDesk.add,
+              tooltip: c.addLabel?.call(s) ?? s.categoryDesk.add,
               icon: const Icon(Icons.add_rounded),
               onPressed: () => context.push('/staff/manage/${c.key}/new'),
             ),
@@ -523,6 +523,11 @@ class _StaffCollectionFormScreenState
           loading: _busy,
           expand: true,
         ),
+        // A gallery belongs to a saved project: it is added once it exists.
+        if (row != null && c.key == 'portfolio') ...[
+          const Divider(),
+          StaffShotsEditor(row: row),
+        ],
         if (row != null && c.mergePath != null) ...[
           const Divider(),
           Text(s.bookshop.mergeHint),
@@ -558,6 +563,254 @@ class _StaffCollectionFormScreenState
             onPressed: _delete,
             expand: true,
           ),
+      ],
+    );
+  }
+}
+
+/// A portfolio project's screenshots: add several at once with their
+/// captions, move them, take one away. Each change is saved as it is made,
+/// apart from the project's own form, as on the web.
+class StaffShotsEditor extends ConsumerStatefulWidget {
+  const StaffShotsEditor({required this.row, super.key});
+
+  final StaffRow row;
+
+  @override
+  ConsumerState<StaffShotsEditor> createState() => _StaffShotsEditorState();
+}
+
+class _StaffShotsEditorState extends ConsumerState<StaffShotsEditor> {
+  static const _max = 12;
+  static const _key = 'portfolio';
+
+  final List<(PreparedImage, TextEditingController)> _pending = [];
+  bool _busy = false;
+  String? _error;
+
+  String get _projectId => '${widget.row['id']}';
+
+  @override
+  void dispose() {
+    for (final (_, caption) in _pending) {
+      caption.dispose();
+    }
+    super.dispose();
+  }
+
+  /// The freshest copy of this project's pictures: the list once it has been
+  /// read again after a change, the row the form was opened with until then.
+  List<StaffRow> _shots() {
+    final c = staffCollection(_key)!;
+    final data = ref.watch(collectionDataProvider(_key)).value;
+    final row = data == null
+        ? widget.row
+        : c
+              .rows(data)
+              .firstWhere(
+                (r) => '${r['id']}' == _projectId,
+                orElse: () => widget.row,
+              );
+    return [
+      for (final s in (row['screenshots'] as List? ?? const []))
+        if (s is Map) s.cast<String, Object?>(),
+    ];
+  }
+
+  Future<void> _run(Future<void> Function() action, String done) async {
+    if (_busy) return;
+    final s = ref.read(stringsProvider);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await action();
+      await ref.read(hapticsProvider).success();
+      ref.invalidate(collectionDataProvider(_key));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(done)));
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = describeError(s, e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _pick(int room) async {
+    final s = ref.read(stringsProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final picked = await FilePicker.pickFiles(type: FileType.image);
+    if (picked.isEmpty) return;
+    var refused = false;
+    for (final file in picked.take(room - _pending.length)) {
+      try {
+        final ready = await prepareImage(file.xFile.path, file.name);
+        if (!mounted) return;
+        setState(() => _pending.add((ready, TextEditingController())));
+      } on ImageNotReady {
+        refused = true;
+      }
+    }
+    if (refused) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(s.upload.errors.unreadableImage)),
+      );
+    }
+  }
+
+  Future<void> _upload() {
+    final s = ref.read(stringsProvider);
+    final batch = List.of(_pending);
+    return _run(() async {
+      await ref
+          .read(apiClientProvider)
+          .upload<Object?>(
+            '/showcase/admin/projects/$_projectId/shots',
+            method: 'POST',
+            form: () => FormData.fromMap({
+              'shots': [
+                for (final (image, _) in batch)
+                  MultipartFile.fromBytes(
+                    image.bytes,
+                    filename: image.name,
+                    contentType: DioMediaType('image', 'webp'),
+                  ),
+              ],
+              'captions': jsonEncode([
+                for (final (_, caption) in batch)
+                  caption.text.trim().isEmpty ? null : caption.text.trim(),
+              ]),
+            }),
+          );
+      if (!mounted) return;
+      setState(() {
+        for (final (_, caption) in batch) {
+          caption.dispose();
+        }
+        _pending.clear();
+      });
+    }, s.showcase.shotsAdded);
+  }
+
+  Future<void> _move(List<StaffRow> shots, int index, int by) {
+    final s = ref.read(stringsProvider);
+    final ids = [for (final shot in shots) '${shot['id']}'];
+    final moved = ids.removeAt(index);
+    ids.insert(index + by, moved);
+    return _run(
+      () => ref
+          .read(apiClientProvider)
+          .post<Object?>(
+            '/showcase/admin/projects/$_projectId/shots/reorder',
+            body: {'ids': ids},
+          ),
+      s.showcase.saved,
+    );
+  }
+
+  Future<void> _remove(String id) {
+    final s = ref.read(stringsProvider);
+    return _run(
+      () => ref
+          .read(apiClientProvider)
+          .delete<Object?>('/showcase/admin/shots/$id'),
+      s.showcase.shotRemoved,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    final sc = s.showcase;
+    final text = Theme.of(context).textTheme;
+    final shots = _shots();
+    final room = _max - shots.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 12,
+      children: [
+        Text(sc.gallery, style: text.titleMedium),
+        if (shots.isEmpty) Text(sc.galleryEmpty),
+        for (final (i, shot) in shots.indexed)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 12,
+            children: [
+              StaffImageTile(
+                path: '${shot['url']}',
+                size: 72,
+                label: '${shot['caption'] ?? ''}',
+              ),
+              // The caption gets the width; the controls sit under it.
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${shot['caption'] ?? '—'}',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: sc.moveUp,
+                          onPressed: i == 0 || _busy
+                              ? null
+                              : () => _move(shots, i, -1),
+                          icon: const Icon(Icons.arrow_upward_rounded),
+                        ),
+                        IconButton(
+                          tooltip: sc.moveDown,
+                          onPressed: i == shots.length - 1 || _busy
+                              ? null
+                              : () => _move(shots, i, 1),
+                          icon: const Icon(Icons.arrow_downward_rounded),
+                        ),
+                        IconButton(
+                          tooltip: sc.removeShot,
+                          onPressed: _busy
+                              ? null
+                              : () => _remove('${shot['id']}'),
+                          icon: const Icon(Icons.delete_outline_rounded),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        for (final (image, caption) in _pending)
+          TextField(
+            controller: caption,
+            decoration: InputDecoration(
+              labelText: '${sc.shotCaption} · ${image.name}',
+              helperText: sc.shotCaptionHint,
+            ),
+          ),
+        if (room > 0) ...[
+          Text(sc.shotLimit.fill({'count': room - _pending.length})),
+          if (_pending.length < room)
+            BaghKey(
+              label: sc.addShots,
+              kind: BaghKeyKind.outline,
+              expand: true,
+              onPressed: _busy ? null : () => _pick(room),
+            ),
+        ],
+        if (_pending.isNotEmpty)
+          BaghKey(
+            label: s.common.save,
+            expand: true,
+            loading: _busy,
+            onPressed: _upload,
+          ),
+        if (_error != null) FormMessage(_error!),
       ],
     );
   }
