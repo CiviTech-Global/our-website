@@ -213,24 +213,29 @@ class StaffActivity extends ConsumerWidget {
   }
 }
 
-/// The staff who can take an item: every account but the customers.
+/// The staff who can take an item: every active account but the customers.
+/// Asked for by role, so members never crowd staff off the one page read.
 final assignableStaffProvider =
-    FutureProvider.autoDispose<List<(String, String)>>(
-      (ref) => ref
-          .read(apiClientProvider)
-          .get(
-            '/admin/users',
-            query: const {'page': 1, 'limit': 100},
-            parse: (d) => [
-              for (final u in ((d! as Map)['items'] as List? ?? const []))
-                if (u is Map && u['role'] != 'USER' && u['isActive'] != false)
-                  (
-                    '${u['id']}',
-                    '${u['firstName'] ?? ''} ${u['lastName'] ?? ''}'.trim(),
-                  ),
-            ],
-          ),
-    );
+    FutureProvider.autoDispose<List<(String, String)>>((ref) async {
+      final api = ref.read(apiClientProvider);
+      Future<List<(String, String)>> byRole(String role) => api.get(
+        '/admin/users',
+        query: {'page': 1, 'limit': 100, 'role': role, 'status': 'active'},
+        parse: (d) => [
+          for (final u in ((d! as Map)['items'] as List? ?? const []))
+            if (u is Map && u['role'] != 'USER' && u['isActive'] != false)
+              (
+                '${u['id']}',
+                '${u['firstName'] ?? ''} ${u['lastName'] ?? ''}'.trim(),
+              ),
+        ],
+      );
+      final [admins, supers] = await Future.wait([
+        byRole('ADMIN'),
+        byRole('SUPER_ADMIN'),
+      ]);
+      return [...admins, ...supers];
+    });
 
 /// What an item takes besides its decision or status: who owns it, when to
 /// call, and what can be done to it once it is published.
@@ -277,8 +282,9 @@ class _StaffItemExtrasState extends ConsumerState<StaffItemExtras> {
     super.dispose();
   }
 
-  Future<void> _run(Future<void> Function() action, String done) async {
-    if (_busy) return;
+  /// Whether the change was saved.
+  Future<bool> _run(Future<void> Function() action, String done) async {
+    if (_busy) return false;
     final s = ref.read(stringsProvider);
     setState(() {
       _busy = true;
@@ -295,18 +301,21 @@ class _StaffItemExtrasState extends ConsumerState<StaffItemExtras> {
           context,
         ).showSnackBar(SnackBar(content: Text(done)));
       }
+      return true;
     } catch (e) {
       if (mounted) setState(() => _error = describeError(s, e));
+      return false;
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _assign(String? id) {
+  Future<void> _assign(String? id) async {
     final s = ref.read(stringsProvider);
     final a = q.assign!;
+    final before = _owner;
     setState(() => _owner = id);
-    return _run(
+    final saved = await _run(
       () => _api.patch<Object?>(
         a.path(widget.id),
         body: {
@@ -316,6 +325,8 @@ class _StaffItemExtrasState extends ConsumerState<StaffItemExtras> {
       ),
       s.admin.assignUpdated,
     );
+    // Show what is actually stored, not the choice that failed.
+    if (!saved && mounted) setState(() => _owner = before);
   }
 
   Future<void> _schedule(DateTime? day) async {
@@ -329,22 +340,25 @@ class _StaffItemExtrasState extends ConsumerState<StaffItemExtras> {
       if (time == null) return;
       when = DateTime(day.year, day.month, day.day, time.hour, time.minute);
     }
+    if (!mounted) return;
+    final before = _when;
     setState(() => _when = when);
-    await _run(
+    final saved = await _run(
       () => _api.patch<Object?>(
         q.schedule!.path(widget.id),
         body: {'scheduledAt': when?.toUtc().toIso8601String()},
       ),
       when == null ? s.admin.callbackCleared : s.admin.callbackUpdated,
     );
+    if (!saved && mounted) setState(() => _when = before);
   }
 
   String get _kind => q.ops == StaffOps.job ? 'jobs' : 'projects';
 
-  Future<void> _toggleFeatured() {
+  Future<void> _toggleFeatured() async {
     final s = ref.read(stringsProvider);
     final next = !_featured;
-    return _run(() async {
+    await _run(() async {
       if (q.ops == StaffOps.service) {
         await _api.patch<Object?>(
           '/work/admin/services/${widget.id}/featured',
@@ -359,11 +373,11 @@ class _StaffItemExtrasState extends ConsumerState<StaffItemExtras> {
     }, next ? s.ops.featured : s.ops.unfeatured);
   }
 
-  Future<void> _extend() {
+  Future<void> _extend() async {
     final s = ref.read(stringsProvider);
     final closes = _closesAt;
-    if (closes == null) return Future.value();
-    return _run(
+    if (closes == null) return;
+    await _run(
       () => _api.post<Object?>(
         '/market/admin/$_kind/${widget.id}/extend',
         body: {'closesAt': closes.toUtc().toIso8601String()},
@@ -372,12 +386,12 @@ class _StaffItemExtrasState extends ConsumerState<StaffItemExtras> {
     );
   }
 
-  Future<void> _placeOffer() {
+  Future<void> _placeOffer() async {
     final s = ref.read(stringsProvider);
     final amount = plainDigits(_offerAmount.text);
     final message = _offerMessage.text.trim();
-    if (amount.isEmpty || message.isEmpty) return Future.value();
-    return _run(
+    if (amount.isEmpty || message.isEmpty) return;
+    await _run(
       () => _api.post<Object?>(
         '/market/admin/projects/${widget.id}/company-offer',
         body: {
