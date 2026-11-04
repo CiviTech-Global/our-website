@@ -29,3 +29,7 @@ civitechglobal-server/storage/
 # The Android upload (signing) key, Ansible-vault encrypted. Kept out of git
 # because this repository is public; the deploy never reads it.
 civitech-deploy/android-signing.vault.yml
+
+# Private business strategy, roadmap and implementation notes. Kept out of
+# git because this repository is public.
+business-systems/
