@@ -22,6 +22,7 @@ import resumeRoutes from './resume.routes.js';
 import trackRoutes from './track.routes.js';
 import sitemapRoutes from './sitemap.routes.js';
 import pushRoutes from './push.routes.js';
+import billingRoutes from './billing.routes.js';
 
 const router = Router();
 
@@ -92,6 +93,8 @@ router.use('/work', workRoutes);
 // purchase requests and their threads. Every route answers 404 unless
 // FEATURE_BOOKS_V2 is on.
 router.use('/bookshop', bookshopRoutes);
+
+router.use('/billing', billingRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper

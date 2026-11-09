@@ -12,6 +12,7 @@ import {
   type ReviewDecision,
 } from './moderation.js';
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
+import { assertRoomFor } from './billing/gates.js';
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
 import { searchWhere } from './list-search.js';
@@ -211,13 +212,15 @@ export async function updateBook(
 export async function submitBook(userId: string, bookId: string) {
   const book = await prisma.bookListing.findFirst({
     where: { id: bookId, sellerId: userId },
-    select: { moderationStatus: true, coverStoredName: true },
+    select: { moderationStatus: true, coverStoredName: true, postedByCompany: true },
   });
   if (!book) throw new AppError('این آگهی پیدا نشد.', 404);
   assertSubmittable(book.moderationStatus);
   if (!book.coverStoredName) {
     throw new AppError('برای ارسال آگهی، تصویر جلد کتاب لازم است.', 400);
   }
+  // The company's own shelf is not on anybody's plan.
+  if (!book.postedByCompany) await assertRoomFor('user.book_listings', userId, bookId);
 
   return prisma.bookListing.update({
     where: { id: bookId },

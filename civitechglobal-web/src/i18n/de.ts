@@ -1,6 +1,7 @@
 import type { PartialTranslations } from './merge';
 import work from './work/de';
 import bookshop from './bookshop/de';
+import plans from './plans/de';
 
 /**
  * Deutsch.
@@ -82,6 +83,7 @@ const de: PartialTranslations = {
     books: 'Büchermarkt',
     consult: 'Beratung',
     experts: 'Expertenclub',
+    pricing: 'Tarife und Preise',
     blog: 'Blog',
     localMarket: 'Lokaler Markt',
     cart: 'Warenkorb',
@@ -2122,6 +2124,8 @@ const de: PartialTranslations = {
       experts: 'Expertenclub',
       consultations: 'Beratungsanfragen',
       'marketplace-ops': 'Marktplatz-Betrieb',
+      billing: 'Tarife und Preise',
+      accounts: 'Konten für Unternehmen und Experten eröffnen',
       showcase: 'Schaufenster (Kunden, Partner, Projekte)',
     },
   },
@@ -2829,6 +2833,7 @@ const de: PartialTranslations = {
   },
   work,
   bookshop,
+  plans,
 };
 
 export default de;

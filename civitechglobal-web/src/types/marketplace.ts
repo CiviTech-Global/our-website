@@ -216,6 +216,10 @@ export interface PublicProfile {
   /** Skill tags. Absent from servers older than the skills field. */
   skills?: string[];
   website: string | null;
+  githubUrl?: string | null;
+  linkedinUrl?: string | null;
+  /** Their consultant page in the experts club, when published. */
+  expertSlug?: string | null;
   companyName: string | null;
   verified: boolean;
   ratingAvg: number;
@@ -251,6 +255,8 @@ export interface ProfilePayload {
   headline?: string;
   bio?: string;
   website?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
   skills?: string[];
 }
 

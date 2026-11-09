@@ -215,6 +215,16 @@ async function seedBookTaxonomy(): Promise<void> {
   console.log(`Book categories: ${await syncBookTaxonomy()} added.`);
 }
 
+/**
+ * Plan features and their limits, from catalog/plan-catalog.ts. Prices are
+ * never seeded: staff set them, and re-seeding leaves them as they are.
+ */
+async function seedPlans(): Promise<void> {
+  const { seedPlanCatalog } = await import('./services/billing/catalog.service.js');
+  const result = await seedPlanCatalog();
+  console.log(`Plans: ${result.features} features, ${result.levels} levels.`);
+}
+
 async function main(): Promise<void> {
   console.log('Seeding database...');
   await seedSuperAdmin();
@@ -223,6 +233,7 @@ async function main(): Promise<void> {
   await seedJobTaxonomy();
   await seedWorkTaxonomy();
   await seedBookTaxonomy();
+  await seedPlans();
   console.log('Seeding complete.');
 }
 

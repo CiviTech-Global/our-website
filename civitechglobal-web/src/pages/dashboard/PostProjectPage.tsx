@@ -1,3 +1,4 @@
+import { PostAsSelect } from '@/components/billing/PostAsSelect';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, ArrowRight, Check, Plus, Save, Send, Trash2, X } from 'lucide-react';
@@ -196,6 +197,8 @@ export default function PostProjectPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [progress, setProgress] = useState<number | null>(null);
   const [savedId, setSavedId] = useState<string | null>(id ?? null);
+  /** The shop it is posted as, chosen before the first save; see PostAsSelect. */
+  const [postAs, setPostAs] = useState('');
 
   useDocumentTitle(id ? t.work.editProjectTitle : t.work.wizardTitle);
 
@@ -226,7 +229,11 @@ export default function PostProjectPage() {
       if (projectId) {
         await update.mutateAsync({ id: projectId, payload });
       } else {
-        const created = await create.mutateAsync({ payload, attachments: files, onProgress: setProgress });
+        const created = await create.mutateAsync({
+          payload: { ...payload, ...(postAs ? { postAsBusinessId: postAs } : {}) },
+          attachments: files,
+          onProgress: setProgress,
+        });
         projectId = created.id;
         setSavedId(created.id);
       }
@@ -475,6 +482,7 @@ export default function PostProjectPage() {
               `${t.work.descriptionHint} ${formatNumber(draft.description.trim().length, locale)} / 10,000`,
             )}
             <p className="rounded-xl bg-surface-muted p-3 text-sm text-text-secondary">{t.work.descriptionTips}</p>
+            {!savedId && <PostAsSelect value={postAs} onChange={setPostAs} />}
             {!savedId && (
               <FormField label={t.work.attachmentsLabel} htmlFor="p-files">
                 <input

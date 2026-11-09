@@ -24,13 +24,18 @@ describe('isPasswordValid (backend policy: 12+, upper, lower, digit, special)', 
 });
 
 describe('loginSchema', () => {
-  it('rejects an invalid email', () => {
-    const result = loginSchema.safeParse({ email: 'not-an-email', password: 'x' });
+  it('requires something to sign in with', () => {
+    const result = loginSchema.safeParse({ email: '   ', password: 'x' });
     expect(result.success).toBe(false);
   });
 
-  it('accepts valid credentials shape', () => {
+  it('accepts an email address', () => {
     const result = loginSchema.safeParse({ email: 'user@example.com', password: 'anything' });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a username, which accounts opened by staff are often given', () => {
+    const result = loginSchema.safeParse({ email: 'acme.hr', password: 'anything' });
     expect(result.success).toBe(true);
   });
 });
@@ -41,6 +46,7 @@ describe('registerSchema', () => {
     lastName: 'Lovelace',
     email: 'ada@example.com',
     password: 'Str0ng!Passw0rd',
+    accountKind: 'INDIVIDUAL' as const,
   };
 
   it('rejects mismatched password confirmation', () => {
@@ -54,5 +60,20 @@ describe('registerSchema', () => {
   it('accepts matching, policy-compliant passwords', () => {
     const result = registerSchema.safeParse({ ...base, confirmPassword: base.password });
     expect(result.success).toBe(true);
+  });
+
+  it('asks a company for its name and an eleven-digit national id', () => {
+    const company = { ...base, confirmPassword: base.password, accountKind: 'COMPANY' as const };
+
+    const missing = registerSchema.safeParse(company);
+    expect(missing.success).toBe(false);
+    if (!missing.success) {
+      const paths = missing.error.issues.map((issue) => issue.path[0]);
+      expect(paths).toEqual(expect.arrayContaining(['companyName', 'companyNationalId']));
+    }
+
+    // Persian digits are what a Persian keyboard types.
+    const complete = registerSchema.safeParse({ ...company, companyName: 'Acme', companyNationalId: '۱۰۱۰۰۱۲۳۴۵۶' });
+    expect(complete.success).toBe(true);
   });
 });

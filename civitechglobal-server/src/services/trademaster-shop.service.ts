@@ -13,6 +13,7 @@ import {
   type ReviewDecision,
 } from './moderation.js';
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
+import { assertRoomFor } from './billing/gates.js';
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
@@ -56,8 +57,12 @@ export { slugify, MAX_RADIUS_KM };
  * somebody stood behind it.
  */
 
-/** How many shops one account may run. */
-const MAX_SHOPS_PER_OWNER = 5;
+/**
+ * How many shops one account may hold, drafts included. An anti-spam ceiling
+ * only: how many may be open is the Business plan's `business.shops`, checked
+ * when a shop is submitted or reopened.
+ */
+const MAX_SHOPS_PER_OWNER = 20;
 
 /**
  * The most shops one map request returns.
@@ -506,6 +511,7 @@ export async function submitShop(userId: string, shopId: string) {
   if (!shop.businessCategoryId) {
     throw new AppError('برای ارسال فروشگاه، انتخاب صنف لازم است.', 400);
   }
+  await assertRoomFor('business.shops', userId, shop.id);
 
   return prisma.business.update({
     where: { id: shop.id },
@@ -575,6 +581,7 @@ export async function reopenShop(userId: string, shopId: string) {
   if (shop.state !== 'CLOSED') {
     throw new AppError('این فروشگاه بسته نیست.', 409);
   }
+  await assertRoomFor('business.shops', userId, shop.id);
 
   return prisma.business.update({
     where: { id: shop.id },

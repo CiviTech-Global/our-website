@@ -6,6 +6,8 @@ import { searchWhere } from './list-search.js';
 import { generateTrackingCode } from './insurance-request.service.js';
 import { assertReviewable, assertSubmittable, reviewPatch, type ReviewDecision } from './moderation.js';
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
+import { assertRoomFor, chargeUser } from './billing/gates.js';
+import { randomUUID } from 'node:crypto';
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
@@ -54,7 +56,8 @@ export interface ServiceInput {
   extras?: Array<{ title: string; price: bigint; extraDays: number }>;
 }
 
-const MAX_SERVICES = 20;
+/** Drafts included; an anti-spam ceiling. How many may be live is the User plan's. */
+const MAX_SERVICES = 40;
 const MAX_IMAGES = 6;
 
 /**
@@ -222,6 +225,7 @@ export async function submitService(ownerId: string, serviceId: string) {
   const service = await requireOwnService(ownerId, serviceId);
   assertSubmittable(service.moderationStatus);
   await assertVerified(ownerId);
+  await assertRoomFor('user.service_listings', ownerId, serviceId);
   return prisma.service.update({
     where: { id: serviceId },
     data: { moderationStatus: 'PENDING_REVIEW', submittedAt: new Date() },
@@ -232,6 +236,8 @@ export async function submitService(ownerId: string, serviceId: string) {
 /** Paused: off the catalogue, nothing lost — for a seller who is busy or away. */
 export async function setServiceState(ownerId: string, serviceId: string, state: 'ACTIVE' | 'PAUSED') {
   await requireOwnService(ownerId, serviceId);
+  // Resuming puts it back on the catalogue, which takes a live slot.
+  if (state === 'ACTIVE') await assertRoomFor('user.service_listings', ownerId, serviceId);
   return prisma.service.update({ where: { id: serviceId }, data: { state }, select: { id: true, state: true } });
 }
 
@@ -651,8 +657,13 @@ export async function placeOrder(buyerId: string, serviceId: string, input: Orde
   const open = await prisma.serviceOrder.count({ where: { serviceId, buyerId, status: 'REQUESTED' } });
   if (open > 0) throw new AppError('سفارش قبلی شما برای این خدمت هنوز منتظر پاسخ فروشنده است.', 409);
 
+  // See book-market createRequest: counted under the id the order will have.
+  const orderId = randomUUID();
+  await chargeUser(buyerId, 'user.service_requests', orderId);
+
   const order = await prisma.serviceOrder.create({
     data: {
+      id: orderId,
       code: generateTrackingCode(),
       serviceId,
       buyerId,

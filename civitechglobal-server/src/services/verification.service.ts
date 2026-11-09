@@ -187,12 +187,15 @@ export async function getOwnVerification(userId: string) {
  * simply refusing.
  */
 export async function assertVerified(userId: string): Promise<void> {
-  const record = await prisma.userVerification.findUnique({
-    where: { userId },
-    select: { status: true },
-  });
+  const [record, user] = await Promise.all([
+    prisma.userVerification.findUnique({ where: { userId }, select: { status: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { staffVouchedAt: true } }),
+  ]);
 
   if (record?.status === 'APPROVED') return;
+  // An account staff opened for somebody they met — an expert, a company — and
+  // handed the credentials to. The desk is the check, as for a staff-opened shop.
+  if (user?.staffVouchedAt) return;
 
   const message =
     record?.status === 'PENDING'

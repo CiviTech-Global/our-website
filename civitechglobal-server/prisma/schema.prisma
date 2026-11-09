@@ -187,6 +187,27 @@ model User {
   /// Free text, ~1000 chars max (validated in the service layer).
   bio            String?
   website        String?
+  /// Professional links shown on the public profile so the other side can
+  /// read somebody's work before trusting them. No email: people talk through
+  /// the platform's own channels, never around them.
+  githubUrl      String?   @map("github_url")
+  linkedinUrl    String?   @map("linkedin_url")
+
+  /// A person, or a registered company (a legal entity) acting through the
+  /// person who operates the account. Company accounts post jobs and projects
+  /// under the Company plan; see services/billing.
+  accountKind AccountKind @default(INDIVIDUAL) @map("account_kind")
+
+  /// Set when staff opened this account and handed its credentials over — for
+  /// an expert or a company the desk met in person. Staff vouching stands in
+  /// for identity verification, as it does for a staff-opened shop.
+  staffVouchedAt   DateTime? @map("staff_vouched_at")
+  staffVouchedById String?   @map("staff_vouched_by_id")
+
+  /// The consultant profile this account edits, when it has one.
+  expertProfile Expert? @relation("ExpertAccount")
+
+  planSubscriptions PlanSubscription[]
 
   /// Staff-controlled circuit breaker: a paused user cannot post, apply, bid
   /// or message, but their existing listings stay readable. Pausing hides the
@@ -1451,6 +1472,11 @@ model JobPost {
   companyId String?  @map("company_id")
   company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
+  /// Posted by one of the author's shops rather than by them personally. It
+  /// then counts against the Business plan, not the personal one.
+  businessId String?   @map("business_id")
+  business   Business? @relation("BusinessJobPosts", fields: [businessId], references: [id], onDelete: SetNull)
+
   savedBy SavedJob[]
 
   // ---- Moderation ---------------------------------------------------------
@@ -1494,6 +1520,7 @@ model JobPost {
   @@index([featured, state])
   @@index([jobCategoryId])
   @@index([companyId])
+  @@index([businessId])
   @@index([country])
   @@map("job_posts")
 }
@@ -1579,6 +1606,13 @@ model FreelanceProject {
   /// an individual should not be pitched an agency without having agreed to it.
   openToCompanyOffer Boolean @default(true) @map("open_to_company_offer")
 
+  /// Posted by one of the author's shops, or by the author's company. Decides
+  /// which plan the post counts against; see services/billing.
+  businessId String?   @map("business_id")
+  business   Business? @relation("BusinessProjects", fields: [businessId], references: [id], onDelete: SetNull)
+  companyId  String?   @map("company_id")
+  company    Company?  @relation("CompanyProjects", fields: [companyId], references: [id], onDelete: SetNull)
+
   moderationStatus ModerationStatus @default(DRAFT) @map("moderation_status")
   submittedAt      DateTime?        @map("submitted_at")
   reviewedAt       DateTime?        @map("reviewed_at")
@@ -1663,6 +1697,8 @@ model FreelanceProject {
   @@index([state, publishedAt])
   @@index([authorId])
   @@index([featured, state])
+  @@index([businessId])
+  @@index([companyId])
   @@map("freelance_projects")
 }
 
@@ -2232,6 +2268,22 @@ model Expert {
   displayOrder Int     @default(0) @map("display_order")
   published    Boolean @default(true)
 
+  /// The member account that edits this profile. Null for a profile staff
+  /// keep on somebody's behalf. SetNull: closing the account must not erase
+  /// the requests that named them.
+  userId String? @unique @map("user_id")
+  user   User?   @relation("ExpertAccount", fields: [userId], references: [id], onDelete: SetNull)
+
+  /// What an hour of consultation costs, in feeCurrency. Required before a
+  /// profile that takes consultations is published.
+  hourlyFee   BigInt? @map("hourly_fee")
+  feeCurrency String  @default("IRT") @map("fee_currency")
+
+  /// Where a self-submitted profile is on its way to the club. Profiles staff
+  /// write are APPROVED from the start.
+  moderationStatus ModerationStatus @default(APPROVED) @map("moderation_status")
+  reviewNote       String?          @map("review_note")
+
   requests ConsultationRequest[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -2422,6 +2474,9 @@ model Business {
 
   products Product[]
   orders   Order[]
+
+  jobPosts          JobPost[]          @relation("BusinessJobPosts")
+  freelanceProjects FreelanceProject[] @relation("BusinessProjects")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2814,8 +2869,18 @@ model OrderItem {
 model PaymentIntent {
   id String @id @default(cuid())
 
-  orderId String @map("order_id")
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// What the money is for. ORDER rows have orderId; SUBSCRIPTION rows have
+  /// subscriptionId. A database CHECK keeps the pair honest.
+  purpose PaymentPurpose @default(ORDER)
+
+  orderId String? @map("order_id")
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?           @map("subscription_id")
+  subscription   PlanSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  /// Who paid. Scopes confirmation to them, as buyerId does for orders.
+  payerUserId String? @map("payer_user_id")
 
   /// 'sandbox' today. 'zarinpal' when that lands.
   driver String
@@ -2839,6 +2904,7 @@ model PaymentIntent {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([orderId, status])
+  @@index([subscriptionId])
   @@map("payment_intents")
 }
 
@@ -3003,7 +3069,12 @@ model Company {
   /// Staff took it down. The owner still sees and edits it.
   hidden Boolean @default(false)
 
-  jobs JobPost[]
+  /// «شناسهٔ ملی» of the legal entity. Unique: one company, one account.
+  nationalId String? @unique @map("national_id")
+
+  jobs              JobPost[]
+  projects          FreelanceProject[] @relation("CompanyProjects")
+  planSubscriptions PlanSubscription[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -3560,4 +3631,230 @@ model BookRequest {
   @@index([sellerId, status])
   @@index([listingId])
   @@map("book_requests")
+}
+
+// ---------------------------------------------------------------------------
+// Plans and limits
+//
+// What a member may do, by tier. Three kinds of holder, matching the three
+// sheets of the pricing workbook:
+//
+//   USER      a person's own activity: applying, bidding, requesting to buy,
+//             listing books and service packages, posting as themselves.
+//   BUSINESS  a shop owner's activity across all their shops: how many shops,
+//             how many products live, jobs and projects posted as a shop.
+//             Held by the owner's account, not by one shop.
+//   COMPANY   a registered company's jobs and projects. Held by the company.
+//
+// A tier is a set of levels, one per feature, and every level has its own
+// monthly price; a tier's price is the sum of its levels. A custom tier is a
+// subscription whose items come from different tiers. Items freeze the limit
+// and the price at purchase, so editing the catalogue never changes what
+// somebody already bought.
+//
+// Browsing, insurance and asking us to build software are never limited and
+// have no feature here.
+// ---------------------------------------------------------------------------
+
+enum PlanSubject {
+  USER
+  BUSINESS
+  COMPANY
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  PREMIUM
+  VIP
+}
+
+/// How a limit counts.
+enum PlanLimitKind {
+  /// How many may be live at the same time. Closing one frees a slot.
+  STOCK
+  /// How many in the last 30 days.
+  MONTHLY
+  /// How many ever. The free tier's "only the very first one".
+  LIFETIME
+}
+
+enum PlanSubscriptionStatus {
+  /// Created at checkout; nothing is granted until the payment is verified.
+  PENDING_PAYMENT
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PlanSubscriptionSource {
+  PURCHASE
+  /// Given by staff: a founding member, a compensation, a staff-opened account.
+  STAFF_GRANT
+}
+
+enum PaymentPurpose {
+  ORDER
+  SUBSCRIPTION
+}
+
+/// One limited thing, e.g. "job applications per month".
+model PlanFeature {
+  id String @id @default(cuid())
+
+  /// Stable code the services call, e.g. 'user.project_bids'. An interface:
+  /// renaming one is a data migration.
+  key     String      @unique
+  subject PlanSubject
+
+  name   String
+  nameEn String? @map("name_en")
+
+  sortOrder Int @default(0) @map("sort_order")
+
+  levels PlanFeatureLevel[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([subject, sortOrder])
+  @@map("plan_features")
+}
+
+/// One feature at one tier: how many, how they count, and the monthly price.
+model PlanFeatureLevel {
+  id String @id @default(cuid())
+
+  featureId String      @map("feature_id")
+  feature   PlanFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  tier PlanTier
+  kind PlanLimitKind
+
+  /// Null means unlimited.
+  limit    Int?
+  /// When set, what this level allows stays live only this many days after
+  /// publication — the free tier's first post, live for 45 days.
+  liveDays Int? @map("live_days")
+
+  /// Monthly price in Iranian Toman. Null: not on sale yet. Set by staff.
+  priceIrt  BigInt?  @map("price_irt")
+  /// Monthly price for buyers outside Iran. Not purchasable until set.
+  priceUsdt Decimal? @map("price_usdt") @db.Decimal(12, 2)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([featureId, tier])
+  @@map("plan_feature_levels")
+}
+
+/// A tier (or a custom mix) bought, or granted, for a number of months.
+model PlanSubscription {
+  id String @id @default(cuid())
+
+  /// Quotable reference, as on orders.
+  code String @unique
+
+  subject PlanSubject
+
+  /// USER and BUSINESS are held by an account; COMPANY by a company. A CHECK
+  /// constraint keeps exactly the right one set.
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String?  @map("company_id")
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  status PlanSubscriptionStatus @default(PENDING_PAYMENT)
+  source PlanSubscriptionSource
+
+  /// The tier bought whole, or null for a custom mix.
+  tier   PlanTier?
+  months Int
+
+  /// Set on activation, never at checkout: the paid period starts when the
+  /// money is confirmed, not when somebody was sent to the gateway.
+  startsAt DateTime? @map("starts_at")
+  endsAt   DateTime? @map("ends_at")
+
+  /// Frozen at checkout, after any period discount.
+  total    BigInt
+  currency String @default("IRT")
+
+  grantedById String? @map("granted_by_id")
+  note        String?
+
+  items    PlanSubscriptionItem[]
+  payments PaymentIntent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, subject, status, endsAt])
+  @@index([companyId, status, endsAt])
+  @@index([status, createdAt])
+  @@map("plan_subscriptions")
+}
+
+/// One feature inside a subscription, frozen at purchase.
+model PlanSubscriptionItem {
+  id String @id @default(cuid())
+
+  subscriptionId String           @map("subscription_id")
+  subscription   PlanSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  featureKey String        @map("feature_key")
+  tier       PlanTier
+  kind       PlanLimitKind
+  limit      Int?
+  liveDays   Int?          @map("live_days")
+
+  monthlyPrice BigInt @map("monthly_price")
+
+  @@unique([subscriptionId, featureKey])
+  @@map("plan_subscription_items")
+}
+
+/// One counted action: a post submitted, a bid placed, a request sent.
+///
+/// A row per action rather than a counter, so "the last 30 days" and "ever"
+/// are both one count, and a moderated item that is refused can give its unit
+/// back. Unique on (feature, subject) so resubmitting the same post after
+/// changes were requested is not counted twice.
+model PlanUsage {
+  id String @id @default(cuid())
+
+  /// 'u:<userId>', 'b:<ownerUserId>' or 'c:<companyId>'.
+  holderKey  String @map("holder_key")
+  featureKey String @map("feature_key")
+  /// The job, project, bid, order or request that used it.
+  subjectId  String @map("subject_id")
+
+  /// Copied from the level that allowed it; see PlanFeatureLevel.liveDays.
+  liveDays Int? @map("live_days")
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  /// Given back: the item was refused by staff.
+  releasedAt DateTime? @map("released_at")
+
+  @@unique([featureKey, subjectId])
+  @@index([holderKey, featureKey, createdAt])
+  @@map("plan_usage")
+}
+
+/// Every time a limit was reached, for the limit-hit and upgrade rates.
+model PlanQuotaEvent {
+  id String @id @default(cuid())
+
+  holderKey  String @map("holder_key")
+  featureKey String @map("feature_key")
+  /// BLOCKED when enforced; WOULD_BLOCK while limits are only being measured.
+  outcome    String
+  limit      Int?
+  used       Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([featureKey, outcome, createdAt])
+  @@index([holderKey, createdAt])
+  @@map("plan_quota_events")
 }

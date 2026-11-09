@@ -39,6 +39,7 @@ export async function authorProfileSummary(
       headline: true,
       deletedAt: true,
       marketplacePaused: true,
+      staffVouchedAt: true,
       verification: { select: { status: true } },
     },
   });
@@ -54,7 +55,7 @@ export async function authorProfileSummary(
   return {
     username: user.username,
     headline: user.headline,
-    verified: user.verification?.status === 'APPROVED',
+    verified: user.verification?.status === 'APPROVED' || Boolean(user.staffVouchedAt),
     ratingAvg: aggregate._avg.rating ?? 0,
     ratingCount: aggregate._count._all,
   };
@@ -68,6 +69,8 @@ export interface ProfileInput {
   headline?: string;
   bio?: string;
   website?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
   skills?: string[];
 }
 
@@ -163,7 +166,7 @@ export async function getOwnStats(userId: string) {
 export async function getOwnProfile(userId: string) {
   return prisma.user.findUnique({
     where: { id: userId },
-    select: { username: true, headline: true, bio: true, website: true, skills: true },
+    select: { username: true, headline: true, bio: true, website: true, githubUrl: true, linkedinUrl: true, skills: true },
   });
 }
 
@@ -176,9 +179,11 @@ export async function updateOwnProfile(userId: string, input: ProfileInput) {
       headline: input.headline === undefined ? undefined : clear(input.headline),
       bio: input.bio === undefined ? undefined : clear(input.bio),
       website: input.website === undefined ? undefined : clear(input.website),
+      githubUrl: input.githubUrl === undefined ? undefined : clear(input.githubUrl),
+      linkedinUrl: input.linkedinUrl === undefined ? undefined : clear(input.linkedinUrl),
       skills: input.skills,
     },
-    select: { username: true, headline: true, bio: true, website: true, skills: true },
+    select: { username: true, headline: true, bio: true, website: true, githubUrl: true, linkedinUrl: true, skills: true },
   });
 }
 
@@ -216,6 +221,10 @@ export interface PublicProfile {
   bio: string | null;
   skills: string[];
   website: string | null;
+  githubUrl: string | null;
+  linkedinUrl: string | null;
+  /** A consultant profile in the club, when this person has a published one. */
+  expertSlug: string | null;
   companyName: string | null;
   verified: boolean;
   ratingAvg: number;
@@ -266,6 +275,10 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
       bio: true,
       skills: true,
       website: true,
+      githubUrl: true,
+      linkedinUrl: true,
+      staffVouchedAt: true,
+      expertProfile: { select: { slug: true, published: true, moderationStatus: true } },
       createdAt: true,
       verification: { select: { status: true, companyName: true } },
     },
@@ -407,9 +420,15 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
     bio: user.bio,
     skills: user.skills,
     website: user.website,
+    githubUrl: user.githubUrl,
+    linkedinUrl: user.linkedinUrl,
+    expertSlug:
+      user.expertProfile?.published && user.expertProfile.moderationStatus === 'APPROVED'
+        ? user.expertProfile.slug
+        : null,
     companyName:
       user.verification?.status === 'APPROVED' ? (user.verification.companyName ?? null) : null,
-    verified: user.verification?.status === 'APPROVED',
+    verified: user.verification?.status === 'APPROVED' || Boolean(user.staffVouchedAt),
     ratingAvg: aggregate._avg.rating ?? 0,
     ratingCount: aggregate._count._all,
     joinedAt: user.createdAt,
@@ -432,6 +451,7 @@ export async function authorProfileSummaries(
       id: true,
       username: true,
       headline: true,
+      staffVouchedAt: true,
       verification: { select: { status: true } },
     },
   });
@@ -452,7 +472,7 @@ export async function authorProfileSummaries(
       {
         username: user.username as string,
         headline: user.headline,
-        verified: user.verification?.status === 'APPROVED',
+        verified: user.verification?.status === 'APPROVED' || Boolean(user.staffVouchedAt),
         ratingAvg: ratingByUser.get(user.id)?.avg ?? 0,
         ratingCount: ratingByUser.get(user.id)?.count ?? 0,
       },

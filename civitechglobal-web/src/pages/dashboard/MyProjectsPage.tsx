@@ -1,6 +1,7 @@
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
+import { PostAsSelect } from '@/components/billing/PostAsSelect';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Building2, Pencil, Plus, Users } from 'lucide-react';
@@ -91,6 +92,7 @@ export default function MyProjectsPage() {
    * edit, null while the form is shut.
    */
   const [editing, setEditing] = useState<OwnProject | 'new' | null>(null);
+  const [postAs, setPostAs] = useState('');
   const [openBids, setOpenBids] = useState<string | null>(null);
 
   const isVerified = verification?.status === 'APPROVED';
@@ -166,7 +168,12 @@ export default function MyProjectsPage() {
 
     upload.start(attachments);
     try {
-      await create.mutateAsync({ payload, attachments, onProgress: upload.onProgress });
+      await create.mutateAsync({
+        payload: { ...payload, ...(postAs ? { postAsBusinessId: postAs } : {}) },
+        attachments,
+        onProgress: upload.onProgress,
+      });
+      setPostAs('');
       upload.done();
       setEditing(null);
       showToast(t.market.draftCreated, 'success');
@@ -336,6 +343,7 @@ export default function MyProjectsPage() {
         title={editing === 'new' ? t.market.newProject : t.market.editProject}
       >
         <form className="flex flex-col gap-4" onSubmit={handleSave}>
+          {editing === 'new' && <PostAsSelect value={postAs} onChange={setPostAs} />}
           <FormField label={t.market.title} htmlFor="projectTitle">
             <Input
               id="projectTitle"

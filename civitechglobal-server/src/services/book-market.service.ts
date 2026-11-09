@@ -5,6 +5,8 @@ import { toPage } from '../utils/page.js';
 import { generateTrackingCode } from './insurance-request.service.js';
 import { assertAuthorEditable, assertSubmittable, PUBLIC_LISTING_WHERE } from './moderation.js';
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
+import { assertRoomFor, chargeUser } from './billing/gates.js';
+import { randomUUID } from 'node:crypto';
 import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
@@ -322,7 +324,7 @@ export async function createOffer(userId: string, input: OfferInput, photos: Inc
 async function requireOwnOffer(userId: string, offerId: string) {
   const offer = await prisma.bookListing.findFirst({
     where: { id: offerId, sellerId: userId },
-    select: { id: true, moderationStatus: true, bookId: true, title: true, state: true, quantity: true },
+    select: { id: true, moderationStatus: true, bookId: true, title: true, state: true, quantity: true, postedByCompany: true },
   });
   if (!offer) throw new AppError('این آگهی پیدا نشد.', 404);
   return offer;
@@ -410,6 +412,7 @@ export async function submitOffer(userId: string, offerId: string) {
   assertSubmittable(offer.moderationStatus);
   const photos = await prisma.bookListingPhoto.count({ where: { listingId: offerId } });
   if (photos === 0) throw new AppError('برای ارسال آگهی دست‌کم یک عکس از خود کتاب لازم است.', 400);
+  if (!offer.postedByCompany) await assertRoomFor('user.book_listings', userId, offerId);
   return prisma.bookListing.update({
     where: { id: offerId },
     data: { moderationStatus: 'PENDING_REVIEW', submittedAt: new Date() },
@@ -420,6 +423,9 @@ export async function submitOffer(userId: string, offerId: string) {
 export async function setOfferOpen(userId: string, offerId: string, open: boolean) {
   const offer = await requireOwnOffer(userId, offerId);
   if (open && offer.quantity < 1) throw new AppError('موجودی این آگهی صفر است؛ ابتدا تعداد را به‌روز کنید.', 409);
+  if (open && offer.state !== 'OPEN' && !offer.postedByCompany) {
+    await assertRoomFor('user.book_listings', userId, offerId);
+  }
   return prisma.bookListing.update({
     where: { id: offerId },
     data: { state: open ? 'OPEN' : 'CLOSED' },
@@ -863,8 +869,14 @@ export async function createRequest(buyerId: string, offerId: string, input: Req
   });
   if (open > 0) throw new AppError('درخواست قبلی شما برای این کتاب هنوز باز است.', 409);
 
+  // Counted under the id the request is about to be given, so the use and the
+  // request are the same thing in the records.
+  const requestId = randomUUID();
+  await chargeUser(buyerId, 'user.book_requests', requestId);
+
   const request = await prisma.bookRequest.create({
     data: {
+      id: requestId,
       code: generateTrackingCode(),
       listingId: offerId,
       buyerId,

@@ -13,12 +13,31 @@ import { TextArea } from '@/components/ui/TextArea';
 import { Button } from '@/components/ui/Button';
 import { features } from '@/lib/features';
 
+const hostLink = (host: string) =>
+  z.union([
+    z.literal(''),
+    z
+      .string()
+      .trim()
+      .url()
+      .refine((value) => {
+        try {
+          const name = new URL(value).hostname.toLowerCase().replace(/^www./, '');
+          return name === host || name.endsWith(`.${host}`);
+        } catch {
+          return false;
+        }
+      }),
+  ]);
+
 const publicProfileSchema = z.object({
   headline: z.string().trim().max(120).optional(),
   bio: z.string().trim().max(1000).optional(),
   website: z
     .union([z.literal(''), z.string().trim().url()])
     .optional(),
+  githubUrl: hostLink('github.com').optional(),
+  linkedinUrl: hostLink('linkedin.com').optional(),
   skills: z.string().max(1500).optional(),
 });
 
@@ -51,7 +70,7 @@ export function PublicProfileForm() {
     formState: { errors, isSubmitting },
   } = useForm<PublicProfileValues>({
     resolver: zodResolver(publicProfileSchema),
-    defaultValues: { headline: '', bio: '', website: '', skills: '' },
+    defaultValues: { headline: '', bio: '', website: '', githubUrl: '', linkedinUrl: '', skills: '' },
   });
 
   // The query resolves after mount; adopt its values as the form defaults.
@@ -61,6 +80,8 @@ export function PublicProfileForm() {
         headline: profile.headline ?? '',
         bio: profile.bio ?? '',
         website: profile.website ?? '',
+        githubUrl: profile.githubUrl ?? '',
+        linkedinUrl: profile.linkedinUrl ?? '',
         skills: (profile.skills ?? []).join('، '),
       });
     }
@@ -74,6 +95,8 @@ export function PublicProfileForm() {
         headline: values.headline?.trim() ?? '',
         bio: values.bio?.trim() ?? '',
         website: values.website?.trim() ?? '',
+        githubUrl: values.githubUrl?.trim() ?? '',
+        linkedinUrl: values.linkedinUrl?.trim() ?? '',
         // Only where the field is shown: sending [] from a form without it
         // would wipe the skills somebody set elsewhere.
         ...(features.jobsV2 ? { skills: splitSkills(values.skills) } : {}),
@@ -116,6 +139,18 @@ export function PublicProfileForm() {
             {...register('website')}
           />
         </FormField>
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-1 text-body font-medium text-app-text">{t.plans.linksTitle}</legend>
+          <p className="text-label text-app-text-4">{t.plans.linksHint}</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label={t.plans.linkedin} htmlFor="linkedinUrl" error={errors.linkedinUrl ? t.common.error : undefined}>
+              <Input id="linkedinUrl" type="url" dir="ltr" className="ltr text-start" placeholder="https://linkedin.com/in/…" invalid={!!errors.linkedinUrl} {...register('linkedinUrl')} />
+            </FormField>
+            <FormField label={t.plans.github} htmlFor="githubUrl" error={errors.githubUrl ? t.common.error : undefined}>
+              <Input id="githubUrl" type="url" dir="ltr" className="ltr text-start" placeholder="https://github.com/…" invalid={!!errors.githubUrl} {...register('githubUrl')} />
+            </FormField>
+          </div>
+        </fieldset>
         {features.jobsV2 && (
           <FormField label={t.jobs.skillsLabel} htmlFor="skills" hint={t.jobs.skillsHint} error={errors.skills?.message}>
             <Input id="skills" placeholder="React, Node.js, SQL" invalid={!!errors.skills} {...register('skills')} />

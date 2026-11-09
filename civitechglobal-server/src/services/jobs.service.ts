@@ -21,6 +21,16 @@ import { assertJobCategoryUsable, jobCategoryScope } from './job-taxonomy.servic
 import { companySummarySelect, employerResponsiveness, presentCompanySummary } from './company.service.js';
 import { notifyMatchingAlerts } from './job-seeker.service.js';
 import { JOB_CARD_SELECT, presentJobCards } from './job-cards.service.js';
+import {
+  applicationSubject,
+  chargePost,
+  chargeUser,
+  earlier,
+  liveUntilFor,
+  releasePost,
+  releaseUser,
+  shopToPostAs,
+} from './billing/gates.js';
 
 /**
  * The job board.
@@ -88,23 +98,28 @@ async function companyNameFor(userId: string): Promise<string | null> {
   return verification?.kind === 'COMPANY' ? (verification.companyName ?? null) : null;
 }
 
-export async function createJob(userId: string, input: JobInput) {
+export async function createJob(userId: string, { postAsBusinessId, ...input }: JobInput & { postAsBusinessId?: string }) {
   await assertVerified(userId);
   await assertMarketplaceAllowed(userId);
   if (input.jobCategoryId) await assertJobCategoryUsable(input.jobCategoryId);
 
+  // Posted as one of the author's shops: the shop's name, and its plan.
+  const shop = postAsBusinessId ? await shopToPostAs(userId, postAsBusinessId) : null;
+
   // The company page, when the employer has one: the posting links to it, and
   // says its name rather than the one on the verification.
-  const company = features.jobsV2
-    ? await prisma.company.findUnique({ where: { ownerId: userId }, select: { id: true, name: true } })
-    : null;
+  const company =
+    features.jobsV2 && !shop
+      ? await prisma.company.findUnique({ where: { ownerId: userId }, select: { id: true, name: true } })
+      : null;
 
   return prisma.jobPost.create({
     data: {
       code: generateTrackingCode(),
       authorId: userId,
-      companyName: company?.name ?? (await companyNameFor(userId)),
+      companyName: shop?.name ?? company?.name ?? (await companyNameFor(userId)),
       companyId: company?.id ?? null,
+      businessId: shop?.id ?? null,
       ...input,
       skills: input.skills ?? [],
       // Created as a draft: writing an advert and publishing it are separate
@@ -181,6 +196,9 @@ export async function submitJob(userId: string, jobId: string) {
   const job = await requireOwnJob(userId, jobId);
   assertSubmittable(job.moderationStatus);
   await assertVerified(userId);
+  // Counted at submission, not at draft: drafts are always free. A
+  // resubmission after changes were asked for is the same post, not a new one.
+  await chargePost('job', jobId);
 
   return prisma.jobPost.update({
     where: { id: jobId },
@@ -587,6 +605,10 @@ export async function apply(
     throw new AppError('پیش‌تر برای این آگهی درخواست داده‌اید.', 409);
   }
 
+  // One unit per (job, applicant): applying again after withdrawing is the
+  // same application, and withdrawing does not give the unit back.
+  await chargeUser(userId, 'user.job_applications', applicationSubject(jobId, userId));
+
   // On the new board an application goes straight to the verified employer,
   // the way every major board works; staff still review the postings, and act
   // on reports. Off, it waits for a reviewer as it always has.
@@ -960,17 +982,26 @@ export async function reviewJob(
 ) {
   const job = await prisma.jobPost.findUnique({
     where: { id: jobId },
-    select: { id: true, authorId: true, title: true, moderationStatus: true, publishedAt: true },
+    select: { id: true, authorId: true, title: true, moderationStatus: true, publishedAt: true, closesAt: true },
   });
   if (!job) throw new AppError('این آگهی پیدا نشد.', 404);
 
   assertReviewable(job.moderationStatus);
 
+  const patch = reviewPatch(decision, reviewer, notes, job.publishedAt);
+  // A post allowed by the free tier's first-post level stays up for a fixed
+  // number of days from its first publication, whatever closing date it asked for.
+  const liveUntil =
+    decision === 'APPROVED' && !job.publishedAt ? await liveUntilFor('job', jobId, new Date()) : null;
+
   const updated = await prisma.jobPost.update({
     where: { id: jobId },
-    data: reviewPatch(decision, reviewer, notes, job.publishedAt),
+    data: { ...patch, ...(liveUntil ? { closesAt: earlier(job.closesAt, liveUntil) } : {}) },
     select: { id: true, moderationStatus: true, publishedAt: true },
   });
+
+  // A refused post gives its unit back; one sent back for changes keeps it.
+  if (decision === 'REJECTED') await releasePost('job', jobId);
 
   // Saved searches hear about a posting once: when it first goes live, not on
   // every later re-approval after an edit.
@@ -1006,6 +1037,7 @@ export async function reviewApplication(
     where: { id: applicationId },
     select: {
       id: true,
+      jobId: true,
       applicantId: true,
       moderationStatus: true,
       job: { select: { title: true } },
@@ -1024,6 +1056,10 @@ export async function reviewApplication(
     data: patch,
     select: { id: true, moderationStatus: true },
   });
+
+  if (decision === 'REJECTED') {
+    await releaseUser('user.job_applications', applicationSubject(application.jobId, application.applicantId));
+  }
 
   notifySafely(application.applicantId, {
     type: 'application.reviewed',

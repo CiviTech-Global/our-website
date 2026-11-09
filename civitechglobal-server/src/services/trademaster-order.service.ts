@@ -393,7 +393,8 @@ export async function confirmPayment(reference: string, buyerId?: string) {
     // the gateway already believes, so it is not a way to pay for a stranger's
     // order — but it is a way to learn that an order exists and what happened
     // to it, and that is nobody else's business.
-    where: { reference, ...(buyerId ? { order: { buyerId } } : {}) },
+    // ORDER only: a subscription payment is confirmed by the billing service.
+    where: { reference, purpose: 'ORDER', ...(buyerId ? { order: { buyerId } } : {}) },
     select: {
       id: true,
       driver: true,
@@ -402,7 +403,8 @@ export async function confirmPayment(reference: string, buyerId?: string) {
       order: { select: { id: true, code: true, status: true, businessId: true, buyerId: true } },
     },
   });
-  if (!intent) throw new AppError('این پرداخت پیدا نشد.', 404);
+  if (!intent?.order) throw new AppError('این پرداخت پیدا نشد.', 404);
+  const order = intent.order;
 
   if (intent.status === 'SUCCEEDED') {
     return { status: intent.status, orderId: intent.orderId };
@@ -426,15 +428,15 @@ export async function confirmPayment(reference: string, buyerId?: string) {
     // order paid — with its stock already released — or drag one the seller
     // has since moved back to PAID.
     const { count } = await prisma.order.updateMany({
-      where: { id: intent.order.id, status: 'AWAITING_PAYMENT' },
+      where: { id: order.id, status: 'AWAITING_PAYMENT' },
       data: { status: 'PAID', paidAt: new Date() },
     });
 
     if (count === 1) {
-      notifySafely(intent.order.buyerId, {
+      notifySafely(order.buyerId, {
         type: 'order.paid',
         title: 'پرداخت انجام شد',
-        body: intent.order.code,
+        body: order.code,
         link: '/dashboard/orders',
       });
     } else {
@@ -442,7 +444,7 @@ export async function confirmPayment(reference: string, buyerId?: string) {
       // here can send it back, so it is written where staff will see it rather
       // than lost: the order keeps its status and gains a note.
       await prisma.order.update({
-        where: { id: intent.order.id },
+        where: { id: order.id },
         data: { internalNote: `پرداخت ${reference} پس از لغو سفارش تأیید شد؛ نیاز به بازپرداخت.` },
       });
     }

@@ -5,6 +5,7 @@ import {
   useAdminExperts,
   useDeleteExpert,
   useReorderExperts,
+  useReviewExpert,
   useSaveExpert,
   type AdminExpert,
   type ExpertPayload,
@@ -16,6 +17,7 @@ import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
 import { toPersianDigits } from '@/i18n/utils';
+import { fill, toman } from '@/lib/planFormat';
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -43,9 +45,15 @@ const EMPTY = {
   linkedinUrl: '',
   githubUrl: '',
   websiteUrl: '',
+  hourlyFee: '',
   acceptsConsultations: true,
   featured: false,
   published: true,
+  // A member account for the expert, opened here and handed over. Optional.
+  accountEmail: '',
+  accountPassword: '',
+  accountUsername: '',
+  accountPhone: '',
 };
 
 /**
@@ -108,9 +116,14 @@ export default function AdminExpertsPage() {
       linkedinUrl: expert.linkedinUrl ?? '',
       githubUrl: expert.githubUrl ?? '',
       websiteUrl: expert.websiteUrl ?? '',
+      hourlyFee: expert.hourlyFee ?? '',
       acceptsConsultations: expert.acceptsConsultations,
       featured: expert.featured,
       published: expert.published,
+      accountEmail: '',
+      accountPassword: '',
+      accountUsername: '',
+      accountPhone: '',
     });
     setPhoto(null);
     setEditing(expert);
@@ -137,9 +150,20 @@ export default function AdminExpertsPage() {
       linkedinUrl: values.linkedinUrl.trim() || undefined,
       githubUrl: values.githubUrl.trim() || undefined,
       websiteUrl: values.websiteUrl.trim() || undefined,
+      hourlyFee: values.hourlyFee.trim(),
       acceptsConsultations: values.acceptsConsultations,
       featured: values.featured,
       published: values.published,
+      ...(values.accountEmail.trim()
+        ? {
+            account: {
+              email: values.accountEmail.trim(),
+              password: values.accountPassword,
+              username: values.accountUsername.trim() || undefined,
+              phone: values.accountPhone.trim() || undefined,
+            },
+          }
+        : {}),
     };
 
     upload.start(photo);
@@ -155,6 +179,19 @@ export default function AdminExpertsPage() {
       setEditing(null);
     } catch (error) {
       showToast(upload.fail(error).message, 'error');
+    }
+  }
+
+  const review = useReviewExpert();
+
+  async function decide(id: string, decision: 'APPROVED' | 'REJECTED') {
+    const reviewNote = decision === 'REJECTED' ? window.prompt(t.plans.rejectReason)?.trim() : undefined;
+    if (decision === 'REJECTED' && !reviewNote) return;
+    try {
+      await review.mutateAsync({ id, decision, reviewNote });
+      showToast(t.consult.saved, 'success');
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
     }
   }
 
@@ -284,16 +321,38 @@ export default function AdminExpertsPage() {
                       <Badge>{t.experts.listedOnly}</Badge>
                     )}
                     {!expert.published && <Badge variant="danger">{t.experts.fieldPublished}</Badge>}
+                    {expert.moderationStatus !== 'APPROVED' && (
+                      <Badge variant={expert.moderationStatus === 'REJECTED' ? 'danger' : 'warning'}>
+                        {t.plans.expertStatuses[expert.moderationStatus]}
+                      </Badge>
+                    )}
                   </div>
                   <p className="mt-0.5 text-body text-app-text-3">{expert.headline}</p>
                   <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr font-mono">/experts/{expert.slug}</span>
                     {' · '}
                     {t.experts.requestCount.replace('{count}', number(expert._count.requests))}
+                    {expert.hourlyFee && ` · ${fill(t.plans.feePerHour, { amount: toman(expert.hourlyFee, locale) })}`}
+                    {expert.account && ` · ${fill(t.plans.expertHasAccount, { name: expert.account.username ?? expert.account.email })}`}
                   </p>
+                  {expert.reviewNote && <p className="mt-0.5 text-label text-app-text-4">{t.plans.reviewNote}: {expert.reviewNote}</p>}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
+                  {expert.moderationStatus === 'PENDING_REVIEW' && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => void decide(expert.id, 'APPROVED')}
+                        isLoading={review.isPending}
+                      >
+                        {t.plans.approveExpert}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => void decide(expert.id, 'REJECTED')}>
+                        {t.plans.rejectExpert}
+                      </Button>
+                    </>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => openEdit(expert)}>
                     {t.common.edit}
                   </Button>
@@ -435,6 +494,38 @@ export default function AdminExpertsPage() {
               />
             </FormField>
           </div>
+
+          <FormField label={t.plans.hourlyFee} htmlFor="expert-fee" hint={t.plans.hourlyFeeHint}>
+            <Input
+              id="expert-fee"
+              inputMode="numeric"
+              dir="ltr"
+              className="ltr w-56 text-start"
+              value={values.hourlyFee}
+              onChange={(e) => set('hourlyFee')(e.target.value.replace(/[^0-9]/g, ''))}
+            />
+          </FormField>
+
+          {(editing === 'new' || (editing !== null && !editing.account)) && (
+            <fieldset className="flex flex-col gap-3 rounded-lg border border-app-border p-3">
+              <legend className="px-1 text-body font-medium text-app-text">{t.plans.expertAccount}</legend>
+              <p className="text-label text-app-text-4">{t.plans.expertAccountHint}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FormField label={t.plans.email} htmlFor="expert-account-email">
+                  <Input id="expert-account-email" type="email" dir="ltr" className="ltr text-start" value={values.accountEmail} onChange={(e) => set('accountEmail')(e.target.value)} />
+                </FormField>
+                <FormField label={t.plans.password} htmlFor="expert-account-password" hint={t.auth.passwordHint}>
+                  <Input id="expert-account-password" type="text" autoComplete="new-password" dir="ltr" className="ltr text-start" value={values.accountPassword} onChange={(e) => set('accountPassword')(e.target.value)} />
+                </FormField>
+                <FormField label={t.plans.username} htmlFor="expert-account-username">
+                  <Input id="expert-account-username" dir="ltr" className="ltr text-start" value={values.accountUsername} onChange={(e) => set('accountUsername')(e.target.value)} />
+                </FormField>
+                <FormField label={t.plans.phone} htmlFor="expert-account-phone">
+                  <Input id="expert-account-phone" type="tel" dir="ltr" className="ltr text-start" placeholder="09…" value={values.accountPhone} onChange={(e) => set('accountPhone')(e.target.value)} />
+                </FormField>
+              </div>
+            </fieldset>
+          )}
 
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 text-body text-app-text">

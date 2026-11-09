@@ -25,6 +25,8 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock('../config/database.js', () => ({ prisma: mocks.prisma }));
+// Plan limits have their own suite (billing/*.test.ts); here they always allow.
+vi.mock('./billing/gates.js', () => ({ assertRoomFor: async () => undefined, chargeUser: async () => undefined }));
 vi.mock('./attachment.service.js', () => ({
   IMAGE_EXTENSIONS: ['png', 'jpg', 'webp'],
   storeFiles: mocks.storeFiles,

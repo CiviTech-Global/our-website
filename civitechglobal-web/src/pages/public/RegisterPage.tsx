@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useDocumentTitle } from '@/lib/documentTitle';
-import { resolveI18nKey } from '@/i18n/utils';
+import { resolveI18nKey, toLatinDigits } from '@/i18n/utils';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { registerSchema, type RegisterFormValues } from '@/lib/validation';
@@ -35,13 +35,23 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { accountKind: 'INDIVIDUAL' },
+  });
+  const isCompany = watch('accountKind') === 'COMPANY';
 
   async function onSubmit(values: RegisterFormValues) {
     setServerError(null);
     try {
-      const user = await registerUser(values);
+      const { confirmPassword: _confirm, ...payload } = values;
+      const user = await registerUser(
+        payload.accountKind === 'COMPANY'
+          ? { ...payload, companyNationalId: toLatinDigits(payload.companyNationalId ?? '') }
+          : { ...payload, companyName: undefined, companyNationalId: undefined },
+      );
       const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
       navigate(from ?? (isAdmin ? '/admin' : '/dashboard'), { replace: true });
     } catch {
@@ -53,6 +63,33 @@ export default function RegisterPage() {
   return (
     <AuthCard title={t.auth.registerTitle} subtitle={t.auth.registerSubtitle}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+        <fieldset className="flex flex-wrap gap-4">
+          <legend className="mb-2 text-sm font-medium text-text-primary">{t.plans.accountKind}</legend>
+          <label className="flex items-center gap-2 text-sm text-text-primary">
+            <input type="radio" value="INDIVIDUAL" {...register('accountKind')} />
+            {t.plans.kindIndividual}
+          </label>
+          <label className="flex items-center gap-2 text-sm text-text-primary">
+            <input type="radio" value="COMPANY" {...register('accountKind')} />
+            {t.plans.kindCompany}
+          </label>
+        </fieldset>
+        {isCompany && (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <FormField label={t.plans.companyName} htmlFor="companyName" error={resolveI18nKey(t, errors.companyName?.message)}>
+              <Input id="companyName" autoComplete="organization" invalid={!!errors.companyName} {...register('companyName')} />
+            </FormField>
+            <FormField
+              label={t.plans.companyNationalId}
+              htmlFor="companyNationalId"
+              hint={!errors.companyNationalId ? t.plans.companyNationalIdHint : undefined}
+              error={resolveI18nKey(t, errors.companyNationalId?.message)}
+            >
+              <Input id="companyNationalId" inputMode="numeric" dir="ltr" className="ltr text-start" invalid={!!errors.companyNationalId} {...register('companyNationalId')} />
+            </FormField>
+          </div>
+        )}
+        {isCompany && <p className="text-xs text-text-secondary">{t.plans.representativeHint}</p>}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <FormField label={t.auth.firstName} htmlFor="firstName" error={resolveI18nKey(t, errors.firstName?.message)}>
             <Input id="firstName" autoComplete="given-name" invalid={!!errors.firstName} {...register('firstName')} />

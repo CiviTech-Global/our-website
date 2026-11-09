@@ -42,7 +42,12 @@ export interface CompanyImages {
 /** What a company page shows of itself, and what a posting carries of it. */
 export const PUBLIC_COMPANY_WHERE: Prisma.CompanyWhereInput = {
   hidden: false,
-  owner: { deletedAt: null, marketplacePaused: false, verification: { status: 'APPROVED' } },
+  owner: {
+    deletedAt: null,
+    marketplacePaused: false,
+    // Verified by documents, or opened by staff who met the company.
+    OR: [{ verification: { status: 'APPROVED' } }, { staffVouchedAt: { not: null } }],
+  },
 };
 
 // The summary a job row carries, in a module of its own so job-cards can use
@@ -60,7 +65,7 @@ async function storeImage(file: IncomingFile | null) {
  * Persian letters are kept — slugify keeps any script — so a company called
  * «رایان تمدن» is reachable as itself rather than as a transliteration.
  */
-async function freeSlug(name: string): Promise<string> {
+export async function freeSlug(name: string): Promise<string> {
   const base = slugify(name) || 'company';
   for (let attempt = 0; attempt < 50; attempt += 1) {
     const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
@@ -99,6 +104,15 @@ export async function saveOwnCompany(userId: string, input: CompanyInput, images
     where: { ownerId: userId },
     select: { id: true, logoStoredName: true, coverStoredName: true },
   });
+
+  // A company page is a registered company's, not a person's: new ones only
+  // for company accounts. Pages made before that rule keep working.
+  if (!existing) {
+    const owner = await prisma.user.findUnique({ where: { id: userId }, select: { accountKind: true } });
+    if (owner?.accountKind !== 'COMPANY') {
+      throw new AppError('صفحهٔ شرکت فقط برای حساب‌های شرکتی (شخص حقوقی) است.', 403);
+    }
+  }
 
   const logo = await storeImage(images.logo);
   const cover = await storeImage(images.cover);

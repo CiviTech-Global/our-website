@@ -127,10 +127,34 @@ export const verificationSchema = z
  * The public profile fields. All optional — clearing a field is setting it to
  * an empty string, which the service normalises back to null.
  */
+/**
+ * A link to a profile on one particular site. Checked against the host, so a
+ * "GitHub" link that goes somewhere else is refused rather than shown under
+ * a GitHub icon. http(s) only.
+ */
+export function profileLink(host: string, message: string) {
+  return z
+    .string()
+    .trim()
+    .max(300)
+    .url(message)
+    .refine((value) => {
+      try {
+        const url = new URL(value);
+        const name = url.hostname.toLowerCase().replace(/^www\./, '');
+        return (url.protocol === 'https:' || url.protocol === 'http:') && (name === host || name.endsWith(`.${host}`));
+      } catch {
+        return false;
+      }
+    }, message);
+}
+
 export const profileSchema = z.object({
   headline: trimmed(120).optional(),
   bio: trimmed(1000).optional(),
   website: z.union([z.literal(''), z.string().trim().url('نشانی معتبر نیست')]).optional(),
+  githubUrl: z.union([z.literal(''), profileLink('github.com', 'نشانی گیت‌هاب معتبر نیست')]).optional(),
+  linkedinUrl: z.union([z.literal(''), profileLink('linkedin.com', 'نشانی لینکدین معتبر نیست')]).optional(),
   /** What the person can do, as tags — matched against a job's skills. Each once. */
   skills: z
     .array(z.string().trim().min(1).max(40))
@@ -232,7 +256,13 @@ function salaryInOrder(
   }
 }
 
-export const jobSchema = z.object(jobFields).superRefine((value, ctx) => {
+/**
+ * Posting as one of the author's own shops. Only at creation: which plan a
+ * post counts against is decided once, not edited afterwards.
+ */
+const postAsBusinessId = z.string().trim().min(1).max(40).optional();
+
+export const jobSchema = z.object({ ...jobFields, postAsBusinessId }).superRefine((value, ctx) => {
   salaryInOrder(value, ctx);
   ageInOrder(value, ctx);
   // A new posting that has already closed would never be seen by anybody.
@@ -349,7 +379,7 @@ function budgetInOrder(value: { budgetMin?: bigint | null; budgetMax?: bigint | 
   }
 }
 
-export const projectSchema = z.object(projectFields).superRefine((value, ctx) => {
+export const projectSchema = z.object({ ...projectFields, postAsBusinessId }).superRefine((value, ctx) => {
   budgetInOrder(value, ctx);
   // Weekly hours only mean something when the work is paid by the hour.
   if (value.pricingType === 'FIXED' && value.weeklyHours) {

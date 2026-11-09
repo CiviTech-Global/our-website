@@ -1,6 +1,7 @@
 import type { PartialTranslations } from './merge';
 import work from './work/tr';
 import bookshop from './bookshop/tr';
+import plans from './plans/tr';
 
 /**
  * Türkçe.
@@ -92,6 +93,7 @@ const tr: PartialTranslations = {
     books: 'Kitap pazarı',
     consult: 'Danışmanlık',
     experts: 'Uzmanlar kulübü',
+    pricing: 'Planlar ve fiyatlar',
     blog: 'Blog',
     localMarket: 'Yerel Pazar',
     cart: 'Sepet',
@@ -2132,6 +2134,8 @@ const tr: PartialTranslations = {
       experts: 'Uzmanlar kulübü',
       consultations: 'Danışmanlık talepleri',
       'marketplace-ops': 'Pazar yeri işlemleri',
+      billing: 'Planlar ve fiyatlar',
+      accounts: 'Şirketler ve uzmanlar için hesap açma',
       showcase: 'Vitrin (müşteriler, ortaklar, projeler)',
     },
   },
@@ -2839,6 +2843,7 @@ const tr: PartialTranslations = {
   },
   work,
   bookshop,
+  plans,
 };
 
 export default tr;

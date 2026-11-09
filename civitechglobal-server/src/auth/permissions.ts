@@ -90,6 +90,18 @@ export const PERMISSIONS = {
    * refused shop whose products nobody on that desk could take down.
    */
   tradeMaster: 'trademaster',
+
+  /**
+   * Plans and prices: setting what each tier costs, granting a plan to a
+   * member or a company, reading who bought what. Money, so its own key.
+   */
+  billing: 'billing',
+
+  /**
+   * Opening member accounts on somebody's behalf — a company, an expert — and
+   * handing over the credentials. Not staff accounts: those stay with `users`.
+   */
+  accounts: 'accounts',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
