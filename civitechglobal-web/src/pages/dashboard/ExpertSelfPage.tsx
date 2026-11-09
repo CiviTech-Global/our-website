@@ -8,6 +8,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
+import { prepareImage } from '@/lib/prepareImage';
 import { OWN_EXPERT_PHOTO_PATH, useOwnExpert, useSaveOwnExpert } from '@/api/consult';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -81,6 +82,28 @@ export default function ExpertSelfPage() {
   const { data: expert, isLoading } = useOwnExpert();
   const save = useSaveOwnExpert();
   const [photo, setPhoto] = useState<File | null>(null);
+  /** A preview of the re-encoded photo, never of the raw file the input handed us. */
+  const [preview, setPreview] = useState<string | null>(null);
+
+  // Re-encoded and shrunk in the browser before upload, as the cover fields do:
+  // the server keeps photos small, and the preview shows exactly what is sent.
+  async function pickPhoto(file: File | undefined) {
+    if (!file) return;
+    try {
+      const prepared = await prepareImage(file);
+      setPhoto(prepared.file);
+      setPreview((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return URL.createObjectURL(prepared.file);
+      });
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
 
   const {
     register,
@@ -147,6 +170,7 @@ export default function ExpertSelfPage() {
         photo,
       });
       setPhoto(null);
+      setPreview(null);
       showToast(result.moderationStatus === 'PENDING_REVIEW' ? p.expertSubmitted : p.expertSaved, 'success');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
@@ -196,8 +220,8 @@ export default function ExpertSelfPage() {
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <div className="size-20 shrink-0 overflow-hidden rounded-full border border-app-border bg-app-well">
-              {photo ? (
-                <img src={URL.createObjectURL(photo)} alt="" className="size-full object-cover" />
+              {preview ? (
+                <img src={preview} alt="" className="size-full object-cover" />
               ) : (
                 <StaffImage
                   path={expert?.photoUrl ? OWN_EXPERT_PHOTO_PATH : null}
@@ -212,7 +236,7 @@ export default function ExpertSelfPage() {
               )}
             </div>
             <FormField label={p.expertPhoto} htmlFor="photo">
-              <Input id="photo" type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
+              <Input id="photo" type="file" accept="image/*" onChange={(e) => void pickPhoto(e.target.files?.[0])} />
             </FormField>
           </div>
 
