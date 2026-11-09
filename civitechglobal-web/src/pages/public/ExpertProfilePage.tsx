@@ -7,6 +7,7 @@ import { CANONICAL_ORIGIN, useDocumentTitle } from '@/lib/documentTitle';
 import { breadcrumbSchema } from '@/lib/structuredData';
 import { localeHref } from '@/i18n/localePath';
 import { toPersianDigits } from '@/i18n/utils';
+import { fill, toman } from '@/lib/planFormat';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -117,6 +118,9 @@ export default function ExpertProfilePage() {
                   locale === 'fa' ? toPersianDigits(years) : String(years),
                 )}
               </Badge>
+            )}
+            {expert.acceptsConsultations && expert.hourlyFee && (
+              <Badge variant="info">{fill(t.plans.feePerHour, { amount: toman(expert.hourlyFee, locale) })}</Badge>
             )}
           </div>
 

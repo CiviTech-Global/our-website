@@ -90,6 +90,22 @@ export function activeDriver(): PaymentDriver {
   // days to the first version of this mistake — see the note on
   // CANONICAL_ORIGIN in the web bundle.
   const name = (process.env.PAYMENT_DRIVER ?? '').trim().toLowerCase() || 'sandbox';
+
+  // The sandbox marks everything paid. In production that would hand out
+  // plans for nothing, so it is refused there — at request time rather than at
+  // boot, because a site with no gateway yet is still a working site; it just
+  // cannot take money. PAYMENT_ALLOW_SANDBOX exists for a staging deploy that
+  // runs in production mode on purpose.
+  if (
+    name === 'sandbox' &&
+    process.env.NODE_ENV === 'production' &&
+    (process.env.PAYMENT_ALLOW_SANDBOX ?? '').trim().toLowerCase() !== 'true'
+  ) {
+    throw new AppError('پرداخت آنلاین هنوز فعال نشده است. به‌زودی امکان خرید فراهم می‌شود.', 503, undefined, {
+      code: 'PAYMENTS_UNAVAILABLE',
+    });
+  }
+
   const driver = DRIVERS[name];
   if (!driver) {
     // Louder than falling back to the sandbox: a deployment that meant to take

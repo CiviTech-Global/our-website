@@ -59,3 +59,23 @@ describe('the payment driver registry', () => {
     expect(() => driverByName('gone')).toThrow(/Unknown payment driver/);
   });
 });
+
+describe('the sandbox in production', () => {
+  it('is refused, so nothing can be had for free', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('PAYMENT_DRIVER', '');
+    expect(() => activeDriver()).toThrow(AppError);
+    try {
+      activeDriver();
+    } catch (error) {
+      expect((error as AppError).statusCode).toBe(503);
+      expect((error as AppError).code).toBe('PAYMENTS_UNAVAILABLE');
+    }
+  });
+
+  it('is allowed where a production-mode staging deploy asks for it', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('PAYMENT_ALLOW_SANDBOX', 'true');
+    expect(activeDriver()).toBe(sandboxDriver);
+  });
+});

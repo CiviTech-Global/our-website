@@ -852,6 +852,8 @@ export function useOwnProfile(enabled = true) {
         headline: string | null;
         bio: string | null;
         website: string | null;
+        githubUrl?: string | null;
+        linkedinUrl?: string | null;
         skills?: string[];
       }>(
         '/market/me/profile',

@@ -13,6 +13,8 @@ import { MAX_FILE_BYTES, openStoredFile } from '../services/attachment.service.j
 import { serveStoredFile } from '../services/file-response.js';
 import * as experts from '../services/experts.service.js';
 import * as consultations from '../services/consultation.service.js';
+import { memberAccountSchema } from '../validators/accounts.schema.js';
+import { profileLink } from '../validators/marketplace.schema.js';
 
 /**
  * The club of experts, and the consultations they give.
@@ -60,20 +62,48 @@ const requestSchema = z.object({
     .max(6),
 });
 
-const expertSchema = z.object({
-  fullName: trimmed(120).min(2, 'نام الزامی است'),
-  headline: trimmed(160).min(2, 'عنوان الزامی است'),
-  slug: trimmed(80).optional(),
+/** Toman per hour. Blank clears it; the service decides whether it may be blank. */
+const hourlyFee = z
+  .preprocess(
+    (value) => (value === '' || value === null ? null : value),
+    z.coerce.bigint().positive('هزینه باید بیشتر از صفر باشد').max(10_000_000_000n, 'هزینه بیش از حد است').nullable(),
+  )
+  .optional();
+
+const githubLink = z.union([z.literal(''), profileLink('github.com', 'نشانی گیت‌هاب معتبر نیست')]).optional();
+const linkedinLink = z.union([z.literal(''), profileLink('linkedin.com', 'نشانی لینکدین معتبر نیست')]).optional();
+
+/** What an expert may change on their own profile. */
+const ownExpertSchema = z.object({
+  fullName: trimmed(120).min(2, 'نام الزامی است').optional(),
+  headline: trimmed(160).min(2, 'عنوان الزامی است').optional(),
   bio: trimmed(4000).optional(),
   specialities: z.array(trimmed(60)).max(20).optional(),
   languages: z.array(trimmed(40)).max(10).optional(),
   yearsExperience: z.coerce.number().int().min(0).max(70).nullable().optional(),
-  linkedinUrl: optionalUrl,
-  githubUrl: optionalUrl,
+  linkedinUrl: linkedinLink,
+  githubUrl: githubLink,
   websiteUrl: optionalUrl,
+  hourlyFee,
   acceptsConsultations: z.coerce.boolean().optional(),
+});
+
+const expertSchema = ownExpertSchema.extend({
+  fullName: trimmed(120).min(2, 'نام الزامی است'),
+  headline: trimmed(160).min(2, 'عنوان الزامی است'),
+  slug: trimmed(80).optional(),
   featured: z.coerce.boolean().optional(),
   published: z.coerce.boolean().optional(),
+  /**
+   * A member account to open for the expert, whose credentials staff hand
+   * over. On create, or on an existing profile that has none yet.
+   */
+  account: memberAccountSchema.partial({ firstName: true, lastName: true }).optional(),
+});
+
+const expertReviewSchema = z.object({
+  decision: z.enum(['APPROVED', 'REJECTED']),
+  reviewNote: trimmed(1000).optional(),
 });
 
 const staffUpdateSchema = z.object({
@@ -146,6 +176,40 @@ router.get(
   })
 );
 
+// --- Members: their own consultant profile ---------------------------------
+
+router.get(
+  '/me/expert',
+  authenticate,
+  wrap(async (req, res) => {
+    successResponse(res, await experts.getOwnExpert(req.user!.userId));
+  })
+);
+
+router.get(
+  '/me/expert/photo',
+  authenticate,
+  wrap(async (req, res) => {
+    const image = await experts.getOwnPhoto(req.user!.userId);
+    serveStoredFile(res, await openStoredFile(image.storedName), { ...image, disposition: 'inline' });
+  })
+);
+
+router.put(
+  '/me/expert',
+  authenticate,
+  upload.single('photo'),
+  wrap(async (req, res) => {
+    const input = ownExpertSchema.parse(payloadOf(req));
+    const result = await experts.saveOwnExpert(req.user!.userId, input as never, fileOf(req));
+    successResponse(
+      res,
+      result,
+      result.moderationStatus === 'PENDING_REVIEW' ? 'پروفایل برای بررسی ارسال شد.' : 'ذخیره شد.',
+    );
+  })
+);
+
 // --- Public: asking for a consultation -------------------------------------
 
 router.post(
@@ -202,8 +266,12 @@ router.post(
   ...canEditExperts,
   upload.single('photo'),
   wrap(async (req, res) => {
-    const input = expertSchema.parse(payloadOf(req));
-    successResponse(res, await experts.createExpert(input as never, fileOf(req)), 'ذخیره شد.', 201);
+    const { account, ...input } = expertSchema.parse(payloadOf(req));
+    const created = await experts.createExpert(input as never, fileOf(req), {
+      staffId: req.user!.userId,
+      account: account as never,
+    });
+    successResponse(res, created, 'ذخیره شد.', 201);
   })
 );
 
@@ -212,8 +280,23 @@ router.patch(
   ...canEditExperts,
   upload.single('photo'),
   wrap(async (req, res) => {
-    const input = expertSchema.partial().parse(payloadOf(req));
-    successResponse(res, await experts.updateExpert(param(req, 'id'), input as never, fileOf(req)), 'ذخیره شد.');
+    const { account, ...input } = expertSchema.partial().parse(payloadOf(req));
+    const updated = await experts.updateExpert(param(req, 'id'), input as never, fileOf(req), {
+      staffId: req.user!.userId,
+      account: account as never,
+    });
+    successResponse(res, updated, 'ذخیره شد.');
+  })
+);
+
+/** A profile a member submitted: publish it, or send it back with a reason. */
+router.post(
+  '/admin/experts/:id/review',
+  ...canEditExperts,
+  validate({ body: expertReviewSchema }),
+  wrap(async (req, res) => {
+    const { decision, reviewNote } = req.body as z.infer<typeof expertReviewSchema>;
+    successResponse(res, await experts.reviewExpert(param(req, 'id'), decision, reviewNote), 'ثبت شد.');
   })
 );
 

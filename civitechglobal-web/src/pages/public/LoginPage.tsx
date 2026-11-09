@@ -140,8 +140,8 @@ export default function LoginPage() {
   return (
     <AuthCard title={t.auth.loginTitle} subtitle={t.auth.loginSubtitle}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-        <FormField label={t.auth.email} htmlFor="email" error={resolveI18nKey(t, errors.email?.message)}>
-          <Input id="email" type="email" autoComplete="email" invalid={!!errors.email} {...register('email')} />
+        <FormField label={t.plans.loginIdentifier} htmlFor="email" error={resolveI18nKey(t, errors.email?.message)}>
+          <Input id="email" type="text" dir="ltr" className="ltr text-start" autoComplete="username" invalid={!!errors.email} {...register('email')} />
         </FormField>
         <FormField label={t.auth.password} htmlFor="password" error={resolveI18nKey(t, errors.password?.message)}>
           <Input

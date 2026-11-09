@@ -26,6 +26,16 @@ import {
 } from './project-cards.service.js';
 import { assertWorkCategoryUsable, workCategoryScope } from './work-taxonomy.service.js';
 import { notifyMatchingProjectAlerts } from './project-work.service.js';
+import {
+  bidSubject,
+  chargePost,
+  chargeUser,
+  earlier,
+  liveUntilFor,
+  releasePost,
+  releaseUser,
+  shopToPostAs,
+} from './billing/gates.js';
 
 /**
  * The freelance board.
@@ -86,12 +96,21 @@ async function companyNameFor(userId: string): Promise<string | null> {
 
 export async function createProject(
   userId: string,
-  input: ProjectInput,
+  { postAsBusinessId, ...input }: ProjectInput & { postAsBusinessId?: string },
   attachments: IncomingFile[],
 ) {
   await assertVerified(userId);
   await assertMarketplaceAllowed(userId);
   if (input.workCategoryId) await assertWorkCategoryUsable(input.workCategoryId);
+
+  // As one of the author's shops, or — for a company account — as the company.
+  const shop = postAsBusinessId ? await shopToPostAs(userId, postAsBusinessId) : null;
+  const company = shop
+    ? null
+    : await prisma.company.findFirst({
+        where: { ownerId: userId, owner: { accountKind: 'COMPANY' } },
+        select: { id: true, name: true },
+      });
 
   const stored = attachments.length > 0 ? await storeFiles(attachments) : [];
 
@@ -100,7 +119,9 @@ export async function createProject(
       data: {
         code: generateTrackingCode(),
         authorId: userId,
-        companyName: await companyNameFor(userId),
+        companyName: shop?.name ?? company?.name ?? (await companyNameFor(userId)),
+        businessId: shop?.id ?? null,
+        companyId: company?.id ?? null,
         ...input,
         skills: input.skills ?? [],
         moderationStatus: 'DRAFT',
@@ -138,6 +159,7 @@ export async function submitProject(userId: string, projectId: string) {
   const project = await requireOwnProject(userId, projectId);
   assertSubmittable(project.moderationStatus);
   await assertVerified(userId);
+  await chargePost('project', projectId);
 
   return prisma.freelanceProject.update({
     where: { id: projectId },
@@ -482,6 +504,9 @@ export async function placeBid(
     select: { id: true },
   });
   if (existing) throw new AppError('پیش‌تر برای این پروژه پیشنهاد داده‌اید.', 409);
+
+  // Bids are metered: it is what keeps a client's inbox worth reading.
+  await chargeUser(userId, 'user.project_bids', bidSubject(projectId, userId));
 
   const stored = attachment ? (await storeFiles([attachment]))[0] : null;
 
@@ -859,17 +884,26 @@ export async function reviewProject(
 ) {
   const project = await prisma.freelanceProject.findUnique({
     where: { id: projectId },
-    select: { id: true, authorId: true, title: true, moderationStatus: true, publishedAt: true },
+    select: { id: true, authorId: true, title: true, moderationStatus: true, publishedAt: true, closesAt: true },
   });
   if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
 
   assertReviewable(project.moderationStatus);
 
+  // See reviewJob: the free first post is live for a fixed number of days.
+  const liveUntil =
+    decision === 'APPROVED' && !project.publishedAt ? await liveUntilFor('project', projectId, new Date()) : null;
+
   const updated = await prisma.freelanceProject.update({
     where: { id: projectId },
-    data: reviewPatch(decision, reviewer, notes, project.publishedAt),
+    data: {
+      ...reviewPatch(decision, reviewer, notes, project.publishedAt),
+      ...(liveUntil ? { closesAt: earlier(project.closesAt, liveUntil) } : {}),
+    },
     select: { id: true, moderationStatus: true, publishedAt: true },
   });
+
+  if (decision === 'REJECTED') await releasePost('project', projectId);
 
   // First publication only: an edit approved again is not news.
   if (features.projectsV2 && decision === 'APPROVED' && !project.publishedAt) {
@@ -911,6 +945,7 @@ export async function reviewBid(
     where: { id: bidId },
     select: {
       id: true,
+      projectId: true,
       bidderId: true,
       moderationStatus: true,
       project: { select: { title: true } },
@@ -927,6 +962,10 @@ export async function reviewBid(
     data: { ...patch, suggestedAmount: notes.suggestedAmount },
     select: { id: true, moderationStatus: true, suggestedAmount: true },
   });
+
+  if (decision === 'REJECTED' && bid.bidderId) {
+    await releaseUser('user.project_bids', bidSubject(bid.projectId, bid.bidderId));
+  }
 
   if (bid.bidderId) {
     notifySafely(bid.bidderId, {

@@ -33,15 +33,40 @@ export interface Expert {
   linkedinUrl: string | null;
   githubUrl: string | null;
   websiteUrl: string | null;
+  /** Toman per hour, as a string (BigInt on the server). */
+  hourlyFee: string | null;
+  feeCurrency: string;
+  /** The expert's member profile, when they have an account. */
+  username: string | null;
   acceptsConsultations: boolean;
   featured: boolean;
   photoUrl: string | null;
 }
 
+export type ExpertModeration = 'DRAFT' | 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' | 'REJECTED';
+
 export interface AdminExpert extends Expert {
   published: boolean;
   displayOrder: number;
+  moderationStatus: ExpertModeration;
+  reviewNote: string | null;
+  account: { id: string; username: string | null; email: string } | null;
   _count: { requests: number };
+}
+
+/** The signed-in expert's own profile, whatever its state. */
+export interface OwnExpert extends Expert {
+  published: boolean;
+  moderationStatus: ExpertModeration;
+  reviewNote: string | null;
+}
+
+/** A member account staff open for the expert and hand over. */
+export interface ExpertAccountPayload {
+  email: string;
+  password: string;
+  username?: string;
+  phone?: string;
 }
 
 export interface ExpertPayload {
@@ -55,10 +80,15 @@ export interface ExpertPayload {
   linkedinUrl?: string;
   githubUrl?: string;
   websiteUrl?: string;
+  /** Toman per hour; empty clears it. */
+  hourlyFee?: string;
   acceptsConsultations?: boolean;
   featured?: boolean;
   published?: boolean;
+  account?: ExpertAccountPayload;
 }
+
+export type OwnExpertPayload = Omit<ExpertPayload, 'slug' | 'featured' | 'published' | 'account'>;
 
 export interface AvailabilityWindow {
   /** yyyy-mm-dd */
@@ -238,6 +268,42 @@ export function useReorderExperts() {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.adminExperts }),
   });
 }
+
+export function useReviewExpert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; decision: 'APPROVED' | 'REJECTED'; reviewNote?: string }) => {
+      const { id, ...body } = input;
+      await api.post(`/consult/admin/experts/${id}/review`, body);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.adminExperts });
+      void qc.invalidateQueries({ queryKey: keys.experts });
+    },
+  });
+}
+
+// --- Members: their own consultant profile ----------------------------------
+
+export function useOwnExpert(enabled = true) {
+  return useQuery({
+    queryKey: ['consult', 'me', 'expert'],
+    queryFn: async () => (await api.get<OwnExpert | null>('/consult/me/expert')).data,
+    enabled,
+  });
+}
+
+export function useSaveOwnExpert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { payload: OwnExpertPayload; photo?: File | null }) =>
+      (await api.upload<{ id: string; slug: string; moderationStatus: ExpertModeration }>('PUT', '/consult/me/expert', multipart(input.payload, input.photo))).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['consult', 'me', 'expert'] }),
+  });
+}
+
+/** The signed-in expert's own photo, which the public route will not serve before approval. */
+export const OWN_EXPERT_PHOTO_PATH = '/consult/me/expert/photo';
 
 // --- Staff: the queue ------------------------------------------------------
 

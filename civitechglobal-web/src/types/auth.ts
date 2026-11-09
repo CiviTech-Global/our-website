@@ -10,6 +10,8 @@ export interface AuthUser {
   permissions: string[];
   /** Whether the address has been confirmed by following an emailed link. */
   emailVerified?: boolean;
+  /** A person, or a registered company acting through this account. */
+  accountKind?: 'INDIVIDUAL' | 'COMPANY';
 }
 
 export interface AuthResponse {
@@ -44,6 +46,9 @@ export interface RegisterPayload {
   password: string;
   firstName: string;
   lastName: string;
+  accountKind?: 'INDIVIDUAL' | 'COMPANY';
+  companyName?: string;
+  companyNationalId?: string;
 }
 
 export interface UpdateProfilePayload {

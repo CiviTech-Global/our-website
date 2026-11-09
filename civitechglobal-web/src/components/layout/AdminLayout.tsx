@@ -33,6 +33,8 @@ import {
   UsersRound,
   Layers,
   Library,
+  BadgeDollarSign,
+  KeyRound,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -278,6 +280,8 @@ export function AdminLayout() {
             // The club is editorial too, but its own permission: who we vouch
             // for is a different decision from which logos are on the wall.
             ...when(can('experts'), { to: '/admin/experts', label: t.experts.adminTitle, icon: <UserRound /> }),
+            // Companies and experts the desk met in person, with credentials handed over.
+            ...when(can('accounts'), { to: '/admin/accounts', label: t.plans.adminAccountsTitle, icon: <KeyRound /> }),
             // Super admin only, and not a grantable permission: who represents
             // the company on its own page is not a module of work to delegate.
             ...when(isSuper, { to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound /> }),
@@ -298,6 +302,11 @@ export function AdminLayout() {
             { to: '/admin/users', label: t.admin.users, icon: <Users /> },
             { to: '/admin/roles', label: t.admin.roles, icon: <Shield /> }
           ),
+        },
+        {
+          id: 'billing',
+          label: t.plans.adminPlansTitle,
+          items: when(can('billing'), { to: '/admin/plans', label: t.plans.adminPlansTitle, icon: <BadgeDollarSign /> }),
         },
         {
           id: 'system',

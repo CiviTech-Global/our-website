@@ -47,6 +47,7 @@ const PAGES = [
   '/books',
   '/consult',
   '/experts',
+  '/pricing',
   '/portfolio',
   '/customers',
   '/partners',

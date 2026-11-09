@@ -73,6 +73,7 @@ function userResponseFields() {
     tokenVersion: true,
     phone: true,
     emailVerified: true,
+    accountKind: true,
     createdAt: true,
   } as const;
 }
@@ -141,6 +142,23 @@ async function issueTokenPair(user: {
 }
 
 export async function register(input: RegisterInput) {
+  if (input.accountKind === 'COMPANY') {
+    // A company and the account that operates it, together. Verified later
+    // with the registration documents, like any other account.
+    const { createCompanyAccount } = await import('./accounts.service.js');
+    const created = await createCompanyAccount(
+      {
+        account: { email: input.email, password: input.password, firstName: input.firstName, lastName: input.lastName },
+        companyName: input.companyName ?? '',
+        nationalId: input.companyNationalId ?? '',
+      },
+      null,
+    );
+    const user = await userRepository.findUnique({ where: { id: created.user.id }, select: userResponseFields() });
+    if (!user) throw new AppError('Registration failed', 500);
+    const tokens = await issueTokenPair(user);
+    return { user, ...tokens };
+  }
   const emailHash = emailLookupHash(input.email);
 
   // `emailHash` is unique at the DB level, so a soft-deleted row with the
@@ -239,8 +257,10 @@ export async function issueSessionFor(userId: string) {
 export async function login(input: LoginInput) {
   await checkLockout(input.email);
 
-  const emailHash = emailLookupHash(input.email);
-  const user = await userRepository.findFirst({ where: { emailHash } });
+  // An address has an @; a username cannot. One field, two lookups.
+  const user = input.email.includes('@')
+    ? await userRepository.findFirst({ where: { emailHash: emailLookupHash(input.email) } })
+    : await userRepository.findFirst({ where: { username: input.email } });
 
   // Same generic message and same code path whether the email is unknown,
   // the account is soft-deleted, or the password is wrong, to avoid leaking

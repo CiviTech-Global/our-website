@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
@@ -11,6 +11,7 @@ import { preloadLocale } from '@/i18n/dictionaries';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastViewport } from '@/components/ui/Toast';
 import { LanguageChoiceDialog } from '@/components/layout/LanguageChoiceDialog';
+import { QuotaPrompt, announceQuotaExceeded } from '@/components/billing/QuotaPrompt';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { installErrorReporter } from '@/lib/errorReporter';
 import { installAnalytics } from '@/lib/analytics';
@@ -53,6 +54,9 @@ const { locale: initialLocale } = splitLocalePath(window.location.pathname);
  * prettier syntax here would drop browsers this audience actually uses.
  */
 const queryClient = new QueryClient({
+  // Any action refused for a plan limit, wherever it was taken, offers the
+  // upgrade. Pages still show their own error toast; this adds the way out.
+  mutationCache: new MutationCache({ onError: announceQuotaExceeded }),
   defaultOptions: {
     queries: {
       retry: 1,
@@ -73,6 +77,7 @@ void preloadLocale(initialLocale).then(() => {
                 <AuthProvider>
                   <ErrorBoundary>
                     <App />
+                    <QuotaPrompt />
                   </ErrorBoundary>
                 </AuthProvider>
               </BrowserRouter>

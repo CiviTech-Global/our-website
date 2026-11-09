@@ -1,4 +1,5 @@
 import { PageHeader } from '@/components/app/PageHeader';
+import { PostAsSelect } from '@/components/billing/PostAsSelect';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Eye, Pencil, Plus, Users } from 'lucide-react';
@@ -129,6 +130,8 @@ export default function MyJobsPage() {
    * two different things, and that an empty box is not a zero.
    */
   const [editing, setEditing] = useState<OwnJob | 'new' | null>(null);
+  /** A new posting's shop, when posted as one; see PostAsSelect. */
+  const [postAs, setPostAs] = useState('');
   const [openApplicants, setOpenApplicants] = useState<string | null>(null);
 
   const isVerified = verification?.status === 'APPROVED';
@@ -233,7 +236,9 @@ export default function MyJobsPage() {
           closesAt: payload.closesAt ?? undefined,
           salaryMin: payload.salaryMin ?? undefined,
           salaryMax: payload.salaryMax ?? undefined,
+          ...(postAs ? { postAsBusinessId: postAs } : {}),
         });
+        setPostAs('');
       }
 
       setEditing(null);
@@ -417,6 +422,7 @@ export default function MyJobsPage() {
         title={editing === 'new' ? t.market.newJob : t.market.editJob}
       >
         <form className="flex flex-col gap-4" onSubmit={handleSave}>
+          {editing === 'new' && <PostAsSelect value={postAs} onChange={setPostAs} />}
           <FormField label={t.market.title} htmlFor="title">
             <Input
               id="title"

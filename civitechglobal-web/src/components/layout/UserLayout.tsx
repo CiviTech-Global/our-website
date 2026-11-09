@@ -1,5 +1,7 @@
 import { Outlet } from 'react-router';
 import {
+  CreditCard,
+  Presentation,
   Bell,
   BellRing,
   Bookmark,
@@ -55,6 +57,8 @@ export function UserLayout() {
             { to: '/dashboard', label: t.dashboard.overview, icon: <LayoutDashboard />, end: true },
             { to: '/dashboard/profile', label: t.dashboard.profile, icon: <UserCircle /> },
             { to: '/dashboard/verification', label: t.market.verificationTitle, icon: <ShieldCheck /> },
+            { to: '/dashboard/billing', label: t.plans.navBilling, icon: <CreditCard /> },
+            { to: '/dashboard/expert', label: t.plans.navExpert, icon: <Presentation /> },
             { to: '/dashboard/requests', label: t.workspace.navRequests, icon: <ClipboardList /> },
           ],
         },

@@ -22,6 +22,7 @@ import { features } from '@/lib/features';
 
 type NavKey =
   | 'cart'
+  | 'pricing'
   | 'localMarket'
   | 'services'
   | 'startProject'
@@ -124,6 +125,7 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/contact', key: 'contact' },
     ],
   },
+  { to: '/pricing', key: 'pricing' },
   { to: '/track', key: 'track' },
 ];
 

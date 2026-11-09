@@ -1,6 +1,7 @@
 import type fa from './fa';
 import work from './work/en';
 import bookshop from './bookshop/en';
+import plans from './plans/en';
 
 const en: typeof fa = {
   common: {
@@ -73,6 +74,7 @@ const en: typeof fa = {
     books: 'Book market',
     consult: 'Consultation',
     experts: 'Club of experts',
+    pricing: 'Plans and pricing',
     team: 'Our team',
     home: 'Home',
     servicesMenu: 'Services',
@@ -825,6 +827,8 @@ const en: typeof fa = {
       experts: 'Club of experts',
       consultations: 'Consultation requests',
       'marketplace-ops': 'Marketplace operations',
+      billing: 'Plans and prices',
+      accounts: 'Opening accounts for companies and experts',
       showcase: 'Showcase (customers, partners, projects)',
     },
   },
@@ -3002,6 +3006,7 @@ const en: typeof fa = {
   },
   work,
   bookshop,
+  plans,
 };
 
 export default en;

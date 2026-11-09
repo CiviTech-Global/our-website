@@ -8,6 +8,7 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
 import { toPersianDigits } from '@/i18n/utils';
+import { fill, toman } from '@/lib/planFormat';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -173,6 +174,9 @@ function ExpertCard({ expert }: { expert: Expert }) {
                   locale === 'fa' ? toPersianDigits(years) : String(years),
                 )}
               </Badge>
+            )}
+            {expert.acceptsConsultations && expert.hourlyFee && (
+              <Badge variant="info">{fill(t.plans.feePerHour, { amount: toman(expert.hourlyFee, locale) })}</Badge>
             )}
           </div>
         </div>

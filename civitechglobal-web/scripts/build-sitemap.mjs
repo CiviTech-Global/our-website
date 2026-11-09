@@ -52,6 +52,7 @@ const PAGES = [
   { path: '/books', changefreq: 'daily', priority: '0.8' },
   { path: '/consult', changefreq: 'monthly', priority: '0.9' },
   { path: '/experts', changefreq: 'weekly', priority: '0.8' },
+  { path: '/pricing', changefreq: 'monthly', priority: '0.7' },
   { path: '/portfolio', changefreq: 'weekly', priority: '0.8' },
   { path: '/customers', changefreq: 'monthly', priority: '0.7' },
   { path: '/partners', changefreq: 'monthly', priority: '0.6' },

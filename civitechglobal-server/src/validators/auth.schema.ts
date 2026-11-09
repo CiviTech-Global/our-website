@@ -20,15 +20,38 @@ export const changePasswordSchema = z.object({
   newPassword: passwordSchema,
 });
 
-export const registerSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Invalid email address'),
-  password: passwordSchema,
-  firstName: z.string().trim().min(1, 'First name is required').max(100),
-  lastName: z.string().trim().min(1, 'Last name is required').max(100),
-});
+export const registerSchema = z
+  .object({
+    email: z.string().trim().toLowerCase().email('Invalid email address'),
+    password: passwordSchema,
+    firstName: z.string().trim().min(1, 'First name is required').max(100),
+    lastName: z.string().trim().min(1, 'Last name is required').max(100),
+    /**
+     * A person, or a registered company (a legal entity). For a company the
+     * names above are the person operating the account.
+     */
+    accountKind: z.enum(['INDIVIDUAL', 'COMPANY']).default('INDIVIDUAL'),
+    companyName: z.string().trim().max(160).optional(),
+    companyNationalId: z.string().trim().max(20).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.accountKind !== 'COMPANY') return;
+    if (!value.companyName || value.companyName.length < 2) {
+      ctx.addIssue({ code: 'custom', path: ['companyName'], message: 'نام شرکت الزامی است' });
+    }
+    const digits = (value.companyNationalId ?? '').replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/\D/g, '');
+    if (!/^\d{11}$/.test(digits)) {
+      ctx.addIssue({ code: 'custom', path: ['companyNationalId'], message: 'شناسهٔ ملی شرکت باید ۱۱ رقم باشد' });
+    }
+  });
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Invalid email address'),
+  /**
+   * An email address, or a username. Named `email` because every client
+   * already sends it under that name; accounts staff open are handed a
+   * username as often as an address.
+   */
+  email: z.string().trim().toLowerCase().min(1, 'Email or username is required').max(254),
   password: z.string().min(1, 'Password is required'),
 });
 

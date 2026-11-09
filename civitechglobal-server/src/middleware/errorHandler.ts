@@ -6,12 +6,26 @@ import { Sentry } from '../config/sentry.js';
 export class AppError extends Error {
   statusCode: number;
   errors?: Array<{ path: string; message: string }>;
+  /**
+   * A stable machine code for errors a client reacts to rather than just
+   * shows — e.g. QUOTA_EXCEEDED opens the upgrade sheet. The message stays
+   * human and translatable; the code is the interface.
+   */
+  code?: string;
+  data?: unknown;
 
-  constructor(message: string, statusCode: number, errors?: Array<{ path: string; message: string }>) {
+  constructor(
+    message: string,
+    statusCode: number,
+    errors?: Array<{ path: string; message: string }>,
+    extra?: { code?: string; data?: unknown },
+  ) {
     super(message);
     this.name = 'AppError';
     this.statusCode = statusCode;
     this.errors = errors;
+    this.code = extra?.code;
+    this.data = extra?.data;
   }
 }
 
@@ -90,6 +104,8 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
   if (err instanceof AppError) {
     const response: Record<string, unknown> = { success: false, message: err.message };
     if (err.errors) response.errors = err.errors;
+    if (err.code) response.code = err.code;
+    if (err.data !== undefined) response.data = err.data;
     res.status(err.statusCode).json(response);
     return;
   }

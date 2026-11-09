@@ -65,6 +65,12 @@ const VolunteerPage = lazy(() => import('@/pages/public/VolunteerPage'));
 const ConsultPage = lazy(() => import('@/pages/public/ConsultPage'));
 const ExpertsPage = lazy(() => import('@/pages/public/ExpertsPage'));
 const ExpertProfilePage = lazy(() => import('@/pages/public/ExpertProfilePage'));
+const PricingPage = lazy(() => import('@/pages/public/PricingPage'));
+const BillingPage = lazy(() => import('@/pages/dashboard/BillingPage'));
+const BillingReturnPage = lazy(() => import('@/pages/dashboard/BillingReturnPage'));
+const ExpertSelfPage = lazy(() => import('@/pages/dashboard/ExpertSelfPage'));
+const AdminPlansPage = lazy(() => import('@/pages/admin/PlansPage'));
+const AdminAccountsPage = lazy(() => import('@/pages/admin/AccountsPage'));
 const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
 const ShopsPage = lazy(() => import('@/pages/public/ShopsPage'));
 const MarketplaceHomePage = lazy(() => import('@/pages/public/MarketplaceHomePage'));
@@ -292,6 +298,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <ExpertProfilePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <PricingPage />
             </Suspense>
           }
         />
@@ -616,6 +630,30 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <VerificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="billing"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BillingPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="billing/return"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <BillingReturnPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="expert"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <ExpertSelfPage />
             </Suspense>
           }
         />
@@ -1044,6 +1082,26 @@ export default function App() {
             <RequirePermission permission="experts">
               <Suspense fallback={<RouteLoadingFallback />}>
                 <AdminExpertsPage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="plans"
+          element={
+            <RequirePermission permission="billing">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminPlansPage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="accounts"
+          element={
+            <RequirePermission permission="accounts">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminAccountsPage />
               </Suspense>
             </RequirePermission>
           }

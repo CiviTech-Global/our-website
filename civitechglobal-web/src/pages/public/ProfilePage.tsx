@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router';
-import { ArrowLeft, Briefcase, FileText, Globe } from 'lucide-react';
+import { ArrowLeft, Briefcase, FileText, Globe, Presentation } from 'lucide-react';
+import { Github, Linkedin } from '@/components/ui/BrandIcons';
 import { usePublicProfile } from '@/api/marketplace';
 import type { PublicProfile } from '@/types/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -94,17 +95,39 @@ export default function ProfilePage() {
                 {t.market.memberSince} {formatDate(profile.joinedAt, locale)}
               </span>
             </div>
-            {profile.website && (
-              <a
-                href={profile.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 text-sm text-brand-600 hover:underline"
-              >
-                <Globe className="size-3.5" aria-hidden="true" />
-                {profile.website}
-              </a>
-            )}
+            {/* Where their work can be read: the trust a stranger needs before
+                hiring, bidding or booking. Never an email — see above. */}
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              {profile.website && (
+                <a
+                  href={profile.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-brand-600 hover:underline"
+                >
+                  <Globe className="size-3.5" aria-hidden="true" />
+                  {profile.website}
+                </a>
+              )}
+              {profile.linkedinUrl && (
+                <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-600 hover:underline">
+                  <Linkedin className="size-3.5" aria-hidden="true" />
+                  {t.plans.linkedin}
+                </a>
+              )}
+              {profile.githubUrl && (
+                <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-600 hover:underline">
+                  <Github className="size-3.5" aria-hidden="true" />
+                  {t.plans.github}
+                </a>
+              )}
+              {profile.expertSlug && (
+                <Link to={`/experts/${profile.expertSlug}`} className="inline-flex items-center gap-1.5 text-brand-600 hover:underline">
+                  <Presentation className="size-3.5" aria-hidden="true" />
+                  {t.plans.navExpert}
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 

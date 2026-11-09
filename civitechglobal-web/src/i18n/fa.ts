@@ -1,5 +1,6 @@
 import work from './work/fa';
 import bookshop from './bookshop/fa';
+import plans from './plans/fa';
 
 const fa = {
   common: {
@@ -72,6 +73,7 @@ const fa = {
     books: 'بازار کتاب',
     consult: 'مشاوره',
     experts: 'باشگاه متخصصان',
+    pricing: 'پلن‌ها و قیمت‌ها',
     team: 'تیم ما',
     home: 'خانه',
     servicesMenu: 'خدمات',
@@ -825,6 +827,8 @@ const fa = {
       experts: 'باشگاه متخصصان',
       consultations: 'درخواست‌های مشاوره',
       'marketplace-ops': 'عملیات بازارگاه',
+      billing: 'پلن‌ها و قیمت‌ها',
+      accounts: 'ساخت حساب برای شرکت‌ها و کارشناسان',
       showcase: 'ویترین (مشتریان، شرکا و پروژه‌ها)',
     },
   },
@@ -2990,6 +2994,7 @@ const fa = {
   },
   work,
   bookshop,
+  plans,
 };
 
 export default fa;

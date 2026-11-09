@@ -7,6 +7,7 @@ import { generateTrackingCode } from './insurance-request.service.js';
 import { PUBLIC_LISTING_WHERE, assertReviewable, reviewPatch, type ReviewDecision } from './moderation.js';
 import { notifySafely } from './notifications.service.js';
 import { assertMarketplaceAllowed, assertVerified } from './verification.service.js';
+import { assertRoomFor } from './billing/gates.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
 import {
   MAX_RADIUS_CANDIDATES,
@@ -383,6 +384,8 @@ export async function submitProduct(userId: string, productId: string) {
 
   await assertMaySell(userId, product.business.openedById);
   await assertMarketplaceAllowed(userId);
+  // Items live across all the owner's shops, on the Business plan.
+  await assertRoomFor('business.items', userId, product.id);
 
   if (product.moderationStatus === 'CHANGES_REQUESTED') {
     return prisma.product.update({
@@ -459,6 +462,7 @@ export async function reopenProduct(userId: string, productId: string) {
   if (product.state !== 'CLOSED') {
     throw new AppError('این کالا بسته نیست.', 409);
   }
+  await assertRoomFor('business.items', userId, product.id);
 
   return prisma.product.update({
     where: { id: product.id },
