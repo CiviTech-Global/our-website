@@ -2,32 +2,38 @@
  * Every SMS this site sends, as a Kavenegar verify template.
  *
  * Iranian operators filter free-text bulk SMS, so each kind of message is a
- * template approved in the Kavenegar panel (Verify → templates) and sent with
- * verify/lookup. The `name` here must match the panel exactly; the `text` is
- * what to submit there. guides/kavenegar-templates.md is generated from this
- * list, so the two cannot drift.
+ * template approved by Kavenegar and sent with verify/lookup. The `name` here
+ * is the template's name at Kavenegar; the `text` is what was submitted.
+ * guides/kavenegar-templates.md is generated from this list, and
+ * `npm run sms:check -- --submit` submits it, so code, guide and account
+ * cannot drift.
  *
  * Rules the texts and tokens follow:
  *  - No links. Ever. The owner's rule, and the operators'. assertNoLink
  *    enforces it on every text and every token at send time.
- *  - Tokens carry no spaces (Kavenegar refuses them). Multi-word values are
- *    joined with a zero-width non-joiner, which Persian already uses inside
- *    words, so they read naturally.
- *  - Template names: English letters only, no spaces or underscores.
+ *  - A token is letters and digits only — Persian or English, no spaces, no
+ *    punctuation, no half-space (Kavenegar's rule for verify/lookup). So the
+ *    punctuation lives in the template text: a time is "ساعت %token:%token2",
+ *    sent as two numbers. assertTokens enforces it at send time.
+ *  - Every text contains %token (Kavenegar's rule). Names: English letters
+ *    only, no spaces or underscores.
  */
 
+export type TokenKey = 'token' | 'token2' | 'token3' | 'token10' | 'token20';
+
 export interface SmsTemplate {
-  /** The template name in the Kavenegar panel. */
+  /** The template name at Kavenegar. */
   name: string;
-  /** The text to submit for approval. %token, %token2, %token3 are filled in. */
+  /** The text submitted for approval. Placeholders are filled in at send time. */
   text: string;
   /** What each token carries, for the guide. */
-  tokens: Partial<Record<'token' | 'token2' | 'token3', string>>;
+  tokens: Partial<Record<TokenKey, string>>;
   /** Who receives it and when, for the guide. */
   purpose: string;
 }
 
 const SIGNATURE = 'رایان تمدن جهان گستر';
+const NOT_YOU = 'اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.';
 
 export const SMS_TEMPLATES = {
   // "۵ دقیقه" is OTP_TTL_SECONDS (300, also otp_ttl_seconds in the deploy).
@@ -40,32 +46,38 @@ export const SMS_TEMPLATES = {
   },
   passwordChanged: {
     name: 'civiPasswordChanged',
-    text: `${SIGNATURE}\nرمز عبور حساب کاربری شما در تاریخ %token ساعت %token2 تغییر کرد.\nاگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.`,
-    tokens: { token: 'date, e.g. 1405/08/25', token2: 'time, e.g. 14:30' },
-    purpose: 'The password was changed, or reset by SMS. Always sent to a verified phone.',
+    text: `${SIGNATURE}\nرمز عبور حساب کاربری شما امروز ساعت %token:%token2 تغییر کرد.\n${NOT_YOU}`,
+    tokens: { token: 'hour, e.g. 14', token2: 'minute, e.g. 30' },
+    purpose: 'The password was changed, or reset by SMS. Sent at once to a verified phone.',
   },
   twoStepOff: {
     name: 'civiTwoStepOff',
-    text: `${SIGNATURE}\nورود دومرحله‌ای حساب کاربری شما در تاریخ %token ساعت %token2 خاموش شد.\nاگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.`,
-    tokens: { token: 'date', token2: 'time' },
-    purpose: 'Two-step sign-in was turned off. Always sent to a verified phone.',
+    text: `${SIGNATURE}\nورود دومرحله‌ای حساب کاربری شما امروز ساعت %token:%token2 خاموش شد.\n${NOT_YOU}`,
+    tokens: { token: 'hour', token2: 'minute' },
+    purpose: 'Two-step sign-in was turned off. Sent at once to a verified phone.',
   },
   accountDeleted: {
     name: 'civiAccountDeleted',
-    text: `${SIGNATURE}\nحساب کاربری شما در تاریخ %token ساعت %token2 حذف شد.\nاگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.`,
-    tokens: { token: 'date', token2: 'time' },
-    purpose: 'The member deleted their account. Sent to the number the account had.',
+    text: `${SIGNATURE}\nحساب کاربری شما امروز ساعت %token:%token2 حذف شد.\n${NOT_YOU}`,
+    tokens: { token: 'hour', token2: 'minute' },
+    purpose: 'The member deleted their account. Sent at once to the number the account had.',
   },
   received: {
     name: 'civiReceived',
-    text: `${SIGNATURE}\nدرخواست شما برای %token2 ثبت شد.\nکد رهگیری: %token\nبا این کد می‌توانید در بخش «پیگیری درخواست» سایت، وضعیت درخواست خود را ببینید.`,
-    tokens: { token: 'tracking code', token2: 'بیمه، ساخت‌نرم‌افزار، مشاوره یا همکاری' },
+    text: `${SIGNATURE}\nدرخواست %token2 شما ثبت شد.\nکد رهگیری: %token\nبا این کد می‌توانید در بخش «پیگیری درخواست» سایت، وضعیت درخواست خود را ببینید.`,
+    tokens: { token: 'tracking code', token2: 'بیمه، پروژه، مشاوره or همکاری' },
     purpose: 'A visitor submitted a form: insurance, software project, consultation, CV.',
   },
   scheduled: {
     name: 'civiScheduled',
-    text: `${SIGNATURE}\nزمان %token3 شما با کارشناس ما تعیین شد:\nتاریخ %token، ساعت %token2\nاگر این زمان برایتان مناسب نیست، با پشتیبانی تماس بگیرید.`,
-    tokens: { token: 'date, e.g. 1405/08/25', token2: 'time, e.g. 14:30', token3: 'تماس or مشاوره' },
+    text: `${SIGNATURE}\nزمان %token20 شما با کارشناس ما تعیین شد:\nروز %token %token2، ساعت %token3:%token10\nاگر این زمان برایتان مناسب نیست، با پشتیبانی تماس بگیرید.`,
+    tokens: {
+      token: 'day of the month, e.g. 25',
+      token2: 'month, e.g. آبان',
+      token3: 'hour, e.g. 14',
+      token10: 'minute, e.g. 30',
+      token20: 'تماس or مشاوره',
+    },
     purpose: 'Staff set the time of an insurance callback or a consultation.',
   },
   proposalReady: {
@@ -82,9 +94,9 @@ export const SMS_TEMPLATES = {
   },
   account: {
     name: 'civiAccount',
-    text: `${SIGNATURE}\nحساب کاربری شما در سایت ما ساخته شد.\nنام کاربری: %token\nرمز عبور را حضوری از ما گرفته‌اید؛ بعد از اولین ورود، آن را تغییر دهید.`,
-    tokens: { token: 'username' },
-    purpose: 'Staff opened an account for a company or an expert. The password is never texted.',
+    text: `${SIGNATURE}\n%token گرامی، حساب کاربری شما در سایت ما ساخته شد.\nبا نام کاربری و رمز عبوری که حضوری از ما گرفته‌اید وارد شوید و بعد از اولین ورود، رمز را تغییر دهید.`,
+    tokens: { token: 'first name, one word' },
+    purpose: 'Staff opened an account for a company or an expert. Neither the username nor the password is texted.',
   },
   waiting: {
     name: 'civiWaiting',
@@ -102,14 +114,7 @@ export const SMS_TEMPLATES = {
 
 export type SmsKind = keyof typeof SMS_TEMPLATES;
 
-export interface SmsTokens {
-  token: string;
-  token2?: string;
-  token3?: string;
-}
-
-/** Joins words for a token: Kavenegar refuses spaces, and a ZWNJ reads as Persian does. */
-export const tokenWords = (...words: string[]) => words.join('‌');
+export type SmsTokens = { token: string } & Partial<Record<Exclude<TokenKey, 'token'>, string>>;
 
 /**
  * Anything that looks like a link: a scheme, www., or a domain-shaped word.
@@ -119,10 +124,20 @@ export const tokenWords = (...words: string[]) => words.join('‌');
  */
 const LINK = /(https?:|ftp:|www\.|[a-z0-9-]+\.(?:ir|com|net|org|io|me|app|co|info|xyz|link|site|online)\b|t\.me|wa\.me)/i;
 
+/** Letters and digits, any script; nothing else (Kavenegar's token rule). */
+const TOKEN = /^[\p{L}\p{M}\p{N}]{1,100}$/u;
+
 export class SmsLinkError extends Error {
   constructor(where: string) {
     super(`SMS refused: a link in ${where}`);
     this.name = 'SmsLinkError';
+  }
+}
+
+export class SmsTokenError extends Error {
+  constructor(where: string) {
+    super(`SMS refused: ${where} is not letters and digits only`);
+    this.name = 'SmsTokenError';
   }
 }
 
@@ -132,4 +147,18 @@ export function assertNoLink(kind: SmsKind, tokens: SmsTokens): void {
   for (const [key, value] of Object.entries(tokens)) {
     if (value !== undefined && LINK.test(value)) throw new SmsLinkError(`${kind}.${key}`);
   }
+}
+
+/** Throws if a token carries anything Kavenegar would refuse. */
+export function assertTokens(kind: SmsKind, tokens: SmsTokens): void {
+  for (const [key, value] of Object.entries(tokens)) {
+    if (value !== undefined && !TOKEN.test(value)) throw new SmsTokenError(`${kind}.${key}`);
+  }
+}
+
+/** The first word of a name, letters only: a greeting token Kavenegar accepts. */
+export function greetingName(name: string): string | null {
+  const first = name.trim().split(/\s+/)[0] ?? '';
+  const letters = first.replace(/[^\p{L}\p{M}]/gu, '');
+  return letters || null;
 }

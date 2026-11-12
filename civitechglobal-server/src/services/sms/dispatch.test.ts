@@ -41,9 +41,9 @@ const logged = () => (mocks.create.mock.calls.at(-1) as unknown as [{ data: Reco
 
 describe('sending', () => {
   it('sends through the template named in the catalogue and records the cost', async () => {
-    const outcome = await sendSms('received', { phone: '+98 912 000 0000' }, { token: 'AB12CD34', token2: 'x' });
+    const outcome = await sendSms('received', { phone: '+98 912 000 0000' }, { token: 'AB12CD34', token2: 'بیمه' });
     expect(outcome).toEqual({ status: 'SENT', messageId: '991', cost: 1180 });
-    expect(mocks.sendTemplate).toHaveBeenCalledWith('09120000000', 'civiReceived', { token: 'AB12CD34', token2: 'x' });
+    expect(mocks.sendTemplate).toHaveBeenCalledWith('09120000000', 'civiReceived', { token: 'AB12CD34', token2: 'بیمه' });
     expect(logged()).toMatchObject({ kind: 'received', status: 'SENT', cost: 1180, providerMessageId: '991' });
     // The log holds a hash, never the number.
     expect(JSON.stringify(logged())).not.toContain('0912');
@@ -71,6 +71,12 @@ describe('refusing', () => {
     expect(mocks.sendTemplate).not.toHaveBeenCalled();
   });
 
+  it('never sends a token Kavenegar would refuse', async () => {
+    const outcome = await sendSms('received', { phone: '09120000000' }, { token: 'AB12', token2: '14:30' });
+    expect(outcome).toMatchObject({ status: 'SKIPPED', reason: expect.stringContaining('letters and digits') });
+    expect(mocks.sendTemplate).not.toHaveBeenCalled();
+  });
+
   it('skips a number that is not an Iranian mobile', async () => {
     expect((await sendSms('received', { phone: '021-1234' }, { token: 'AB12' })).status).toBe('SKIPPED');
     expect(mocks.incr).not.toHaveBeenCalled();
@@ -92,8 +98,8 @@ describe('failing', () => {
 });
 
 describe('dates for a text', () => {
-  it('writes the Iranian date and Tehran time without spaces', () => {
+  it('gives the Iranian day and month and the Tehran time as plain parts', () => {
     // 16 Nov 2026 11:00 UTC is 25 Aban 1405, 14:30 in Tehran.
-    expect(smsDateTime(new Date('2026-11-16T11:00:00Z'))).toEqual({ date: '1405/08/25', time: '14:30' });
+    expect(smsDateTime(new Date('2026-11-16T11:00:00Z'))).toEqual({ day: '25', month: 'آبان', hour: '14', minute: '30' });
   });
 });

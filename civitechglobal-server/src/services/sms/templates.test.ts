@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SMS_TEMPLATES, SmsLinkError, assertNoLink, tokenWords, type SmsKind } from './templates.js';
+import { SMS_TEMPLATES, SmsLinkError, SmsTokenError, assertNoLink, assertTokens, greetingName, type SmsKind } from './templates.js';
 
 /**
  * The template list is what gets submitted to Kavenegar, so its rules are
@@ -46,15 +46,26 @@ describe('the link guard', () => {
     expect(() => assertNoLink('received', { token: 'AB12CD34', token2: value })).toThrow(SmsLinkError);
   });
 
-  it.each(['AB12CD34', '1405/08/25', '14:30', tokenWords('پیشنهاد', 'آماده', 'است'), 'acme.hr'])(
-    'lets %s through',
-    (value) => {
-      // A username like acme.hr has a dot but no domain ending, so it is not a link.
-      expect(() => assertNoLink('account', { token: value })).not.toThrow();
-    },
-  );
+  it.each(['AB12CD34', '14', 'آبان', 'acme.hr'])('lets %s through', (value) => {
+    // acme.hr has a dot but no domain ending, so it is not a link; the token
+    // rule below is what keeps it out of a text.
+    expect(() => assertNoLink('account', { token: value })).not.toThrow();
+  });
 
-  it('joins words without a space, which Kavenegar refuses', () => {
-    expect(tokenWords('درخواست', 'بیمه')).not.toMatch(/\s/);
+});
+
+describe('the token rule', () => {
+  it.each(['AB12CD34', '123456', '14', '30', 'آبان', 'بیمه', 'تأیید', 'محمد'])('accepts %s', (value) => {
+    expect(() => assertTokens('received', { token: value })).not.toThrow();
+  });
+
+  it.each(['1405/08/25', '14:30', 'two words', 'acme.hr', 'a-b', 'نرم‌افزار', ''])('refuses %j', (value) => {
+    expect(() => assertTokens('received', { token: value })).toThrow(SmsTokenError);
+  });
+
+  it('greets by the first word of a name, letters only', () => {
+    expect(greetingName('  محمد رضا ')).toBe('محمد');
+    expect(greetingName('Ali.')).toBe('Ali');
+    expect(greetingName('123')).toBeNull();
   });
 });

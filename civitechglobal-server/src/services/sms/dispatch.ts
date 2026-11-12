@@ -5,7 +5,15 @@ import { redis } from '../../config/redis.js';
 import { sha256Hex } from '../../utils/hash.js';
 import { normalizeIranMobile } from '../../utils/persian.js';
 import { canSendSms, smsProvider } from './index.js';
-import { SMS_TEMPLATES, SmsLinkError, assertNoLink, type SmsKind, type SmsTokens } from './templates.js';
+import {
+  SMS_TEMPLATES,
+  SmsLinkError,
+  SmsTokenError,
+  assertNoLink,
+  assertTokens,
+  type SmsKind,
+  type SmsTokens,
+} from './templates.js';
 
 /**
  * The one way a text leaves this site.
@@ -96,8 +104,9 @@ export async function sendSms(kind: SmsKind, target: SmsTarget, tokens: SmsToken
 
   try {
     assertNoLink(kind, tokens);
+    assertTokens(kind, tokens);
   } catch (error) {
-    if (error instanceof SmsLinkError) {
+    if (error instanceof SmsLinkError || error instanceof SmsTokenError) {
       logger.error({ kind }, error.message);
       return skip(error.message);
     }
@@ -167,20 +176,31 @@ export function smsMemberSafely(
 
 /** Now, as the date and time tokens of a security alert. */
 export function nowTokens(): SmsTokens {
-  const { date, time } = smsDateTime(new Date());
-  return { token: date, token2: time };
+  const { hour, minute } = smsDateTime(new Date());
+  return { token: hour, token2: minute };
 }
 
-/** Date and time in Tehran for a token: 1405/08/25 and 14:30, Latin digits, no spaces. */
-export function smsDateTime(when: Date): { date: string; time: string } {
-  const date = new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn', {
+/**
+ * A moment in Tehran as token parts: day 25, month آبان, hour 14, minute 30.
+ * Parts, not "1405/08/25" or "14:30": a token may hold only letters and
+ * digits, so the slash and the colon live in the template text.
+ */
+export function smsDateTime(when: Date): { day: string; month: string; hour: string; minute: string } {
+  const parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-latn', {
     timeZone: 'Asia/Tehran',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   })
     .formatToParts(when)
-    .reduce<Record<string, string>>((parts, part) => ({ ...parts, [part.type]: part.value }), {});
-  const time = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour: '2-digit', minute: '2-digit', hour12: false }).format(when);
-  return { date: `${date.year}/${date.month}/${date.day}`, time };
+    .reduce<Record<string, string>>((all, part) => ({ ...all, [part.type]: part.value }), {});
+  return { day: parts.day ?? '', month: parts.month ?? '', hour: parts.hour ?? '', minute: parts.minute ?? '' };
+}
+
+/** The tokens of civiScheduled: day, month, hour, minute and what was arranged. */
+export function scheduledTokens(when: Date, what: 'تماس' | 'مشاوره'): SmsTokens {
+  const { day, month, hour, minute } = smsDateTime(when);
+  return { token: day, token2: month, token3: hour, token10: minute, token20: what };
 }

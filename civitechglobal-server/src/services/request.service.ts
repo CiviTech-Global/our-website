@@ -1,4 +1,4 @@
-import { sendSmsSafely, smsDateTime } from './sms/dispatch.js';
+import { scheduledTokens, sendSmsSafely } from './sms/dispatch.js';
 import type { LeadStatus, Prisma, Role } from '@prisma/client';
 import { toPage } from '../utils/page.js';
 import { searchWhere } from './list-search.js';
@@ -128,8 +128,7 @@ export async function scheduleCallback(
   // A new or moved time is texted; clearing it is not news worth a text.
   const previous = (request as { callbackScheduledAt?: Date | null }).callbackScheduledAt ?? null;
   if (scheduledAt && previous?.getTime() !== scheduledAt.getTime()) {
-    const { date, time } = smsDateTime(scheduledAt);
-    sendSmsSafely('scheduled', { phone: request.phoneNumber }, { token: date, token2: time, token3: 'تماس' });
+    sendSmsSafely('scheduled', { phone: request.phoneNumber }, scheduledTokens(scheduledAt, 'تماس'));
   }
   return updated;
 }

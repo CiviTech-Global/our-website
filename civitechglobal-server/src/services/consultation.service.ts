@@ -1,4 +1,4 @@
-import { sendSmsSafely, smsDateTime } from './sms/dispatch.js';
+import { scheduledTokens, sendSmsSafely } from './sms/dispatch.js';
 import { notifySafely } from './notifications.service.js';
 import type { ConsultationStatus, DayPart, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
@@ -312,8 +312,7 @@ export async function updateForStaff(id: string, update: StaffUpdate, actorId: s
 
   // A new or moved time is texted to the person who asked.
   if (scheduledAt instanceof Date && existing.scheduledAt?.getTime() !== scheduledAt.getTime()) {
-    const { date, time } = smsDateTime(scheduledAt);
-    sendSmsSafely('scheduled', { phone: existing.phoneNumber }, { token: date, token2: time, token3: 'مشاوره' });
+    sendSmsSafely('scheduled', { phone: existing.phoneNumber }, scheduledTokens(scheduledAt, 'مشاوره'));
   }
   return updated;
 }

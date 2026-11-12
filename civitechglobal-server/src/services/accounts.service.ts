@@ -5,6 +5,7 @@ import { hashPassword } from '../utils/password.js';
 import { emailLookupHash } from './auth.service.js';
 import { freeSlug } from './company.service.js';
 import { sendSmsSafely } from './sms/dispatch.js';
+import { greetingName } from './sms/templates.js';
 import { normalizeIranMobile } from '../utils/persian.js';
 
 /**
@@ -78,9 +79,10 @@ export async function createMemberAccount(
  * is never texted. No username, no text — an email address in an SMS reads as
  * a link and is refused anyway.
  */
-export function announceStaffAccount(user: { id: string; username: string | null; phone: string | null }): void {
-  if (!user.username || !user.phone) return;
-  sendSmsSafely('account', { phone: user.phone, userId: user.id }, { token: user.username });
+export function announceStaffAccount(user: { id: string; firstName: string; phone: string | null }): void {
+  const name = greetingName(user.firstName);
+  if (!name || !user.phone) return;
+  sendSmsSafely('account', { phone: user.phone, userId: user.id }, { token: name });
 }
 
 export interface CompanyAccountInput {

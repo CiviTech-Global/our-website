@@ -1,5 +1,4 @@
 import { sendSmsSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
 import type { EngagementModel, ProjectRequestStatus, ProjectType, ProjectUrgency } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -90,7 +89,7 @@ export async function submitRequest(
         attachmentCount: stored.length,
       };
     });
-    sendSmsSafely('received', { phone }, { token: result.trackingCode, token2: tokenWords('ساخت', 'نرم‌افزار') });
+    sendSmsSafely('received', { phone }, { token: result.trackingCode, token2: 'پروژه' });
     return result;
   } catch (error) {
     // The rows are gone; the bytes would otherwise stay. Nothing references

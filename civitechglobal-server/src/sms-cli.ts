@@ -10,6 +10,8 @@ import { SMS_TEMPLATES } from './services/sms/templates.js';
  *   npm run sms:check                       account/info: remaining credit. Sends nothing.
  *   npm run sms:check -- --send 09121234567 one test code through SMS_OTP_TEMPLATE.
  *   npm run sms:check -- --templates        write guides/kavenegar-templates.md.
+ *   npm run sms:check -- --submit           submit every template the account lacks.
+ *   npm run sms:check -- --status           each template's approval status.
  *
  * Reads SMS_API_KEY and SMS_OTP_TEMPLATE from the environment (.env locally).
  * In production: docker exec civitech-api-1 node dist/sms-cli.js [--send 09…]
@@ -41,6 +43,79 @@ function templatesGuide(): string {
   return lines.join('\n');
 }
 
+type Row = Record<string, unknown>;
+const field = (row: Row, ...names: string[]) => {
+  for (const name of names) {
+    for (const key of Object.keys(row)) if (key.toLowerCase() === name.toLowerCase()) return row[key];
+  }
+  return undefined;
+};
+
+/** Every template on the account, across pages (verify/templatelist, 200 a page). */
+async function existingTemplates(api: KavenegarClient): Promise<Row[]> {
+  const all: Row[] = [];
+  for (let page = 1; page <= 10; page += 1) {
+    const entries = await api.call<Row[] | null>('verify', 'templatelist', { page: String(page) });
+    const rows = Array.isArray(entries) ? entries : [];
+    all.push(...rows);
+    if (rows.length < 200) break;
+  }
+  return all;
+}
+
+/**
+ * Submits each template in services/sms/templates.ts that the account does not
+ * have yet (verify/addtemplate): SMS only, no voice fallback, for a website.
+ * Skips names already there, so running it twice submits nothing twice.
+ * Approval is Kavenegar's; --status shows where each one stands.
+ */
+async function submitTemplates(api: KavenegarClient) {
+  const have = new Set((await existingTemplates(api)).map((row) => String(field(row, 'name') ?? '').toLowerCase()));
+  for (const template of Object.values(SMS_TEMPLATES)) {
+    if (have.has(template.name.toLowerCase())) {
+      console.log(`exists     ${template.name}`);
+      continue;
+    }
+    try {
+      const entry = await api.call<Row | Row[] | null>('verify', 'addtemplate', {
+        name: template.name,
+        sourceType: '0',
+        sendMethod: '1',
+        fallBackMethod: '3',
+        // Both required in practice, though the reference marks them optional:
+        // without a name Kavenegar answers 713, without the site address 402.
+        // The name must be Latin. Neither is part of any SMS text.
+        sourceName: 'RayanTamaddon',
+        sourceUrl: 'https://rayantamaddonjahangostar.ir',
+        textMessage: template.text,
+      });
+      const row = Array.isArray(entry) ? entry[0] : entry;
+      console.log(`submitted  ${template.name} (id ${String(row ? field(row, 'templateid', 'id') : '?')})`);
+    } catch (error) {
+      console.log(`FAILED     ${template.name}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+}
+
+/** Where each of our templates stands at Kavenegar (verify/gettemplate). */
+async function templateStatus(api: KavenegarClient) {
+  const rows = await existingTemplates(api);
+  for (const template of Object.values(SMS_TEMPLATES)) {
+    const row = rows.find((r) => String(field(r, 'name') ?? '').toLowerCase() === template.name.toLowerCase());
+    if (!row) {
+      console.log(`missing    ${template.name}`);
+      continue;
+    }
+    let status = field(row, 'approvalStatus');
+    const id = field(row, 'id', 'templateid');
+    if (status === undefined && id !== undefined) {
+      const detail = await api.call<Row | null>('verify', 'gettemplate', { id: String(id) });
+      status = detail ? field(detail, 'approvalStatus') : undefined;
+    }
+    console.log(`${String(status ?? 'unknown').padEnd(14)} ${template.name}`);
+  }
+}
+
 async function main() {
   if (process.argv.includes('--templates')) {
     const target = resolve(process.cwd(), '../guides/kavenegar-templates.md');
@@ -56,6 +131,15 @@ async function main() {
   const api = new KavenegarClient(key);
   const account = await api.accountInfo();
   console.log(`Key works. Remaining credit: ${account.remainCredit.toLocaleString('en-US')} Rials (${account.type ?? 'account'}).`);
+
+  if (process.argv.includes('--submit')) {
+    await submitTemplates(api);
+    return;
+  }
+  if (process.argv.includes('--status')) {
+    await templateStatus(api);
+    return;
+  }
 
   const sendIndex = process.argv.indexOf('--send');
   if (sendIndex === -1) return;

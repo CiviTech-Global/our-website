@@ -128,7 +128,7 @@ export class KavenegarClient {
    */
   async verifyLookup(
     receptor: string,
-    tokens: { token: string; token2?: string; token3?: string },
+    tokens: { token: string; token2?: string; token3?: string; token10?: string; token20?: string },
     template: string,
   ): Promise<{ messageId?: string; cost?: number }> {
     // Caught here rather than spent on a call: tokens may not contain spaces.
@@ -138,6 +138,8 @@ export class KavenegarClient {
     const params: Record<string, string> = { receptor, template, token: tokens.token };
     if (tokens.token2) params.token2 = tokens.token2;
     if (tokens.token3) params.token3 = tokens.token3;
+    if (tokens.token10) params.token10 = tokens.token10;
+    if (tokens.token20) params.token20 = tokens.token20;
 
     const send = () => this.call<Array<{ messageid?: number | string; cost?: number }>>('verify', 'lookup', params);
     let entries;

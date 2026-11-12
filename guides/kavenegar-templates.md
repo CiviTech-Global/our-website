@@ -25,42 +25,42 @@ Used for: Every one-time code: insurance form, account phone check, password res
 
 ## civiPasswordChanged
 
-Used for: The password was changed, or reset by SMS. Always sent to a verified phone. (kind `passwordChanged`)
+Used for: The password was changed, or reset by SMS. Sent at once to a verified phone. (kind `passwordChanged`)
 
 ```
 رایان تمدن جهان گستر
-رمز عبور حساب کاربری شما در تاریخ %token ساعت %token2 تغییر کرد.
+رمز عبور حساب کاربری شما امروز ساعت %token:%token2 تغییر کرد.
 اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.
 ```
 
-- `%token`: date, e.g. 1405/08/25
-- `%token2`: time, e.g. 14:30
+- `%token`: hour, e.g. 14
+- `%token2`: minute, e.g. 30
 
 ## civiTwoStepOff
 
-Used for: Two-step sign-in was turned off. Always sent to a verified phone. (kind `twoStepOff`)
+Used for: Two-step sign-in was turned off. Sent at once to a verified phone. (kind `twoStepOff`)
 
 ```
 رایان تمدن جهان گستر
-ورود دومرحله‌ای حساب کاربری شما در تاریخ %token ساعت %token2 خاموش شد.
+ورود دومرحله‌ای حساب کاربری شما امروز ساعت %token:%token2 خاموش شد.
 اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.
 ```
 
-- `%token`: date
-- `%token2`: time
+- `%token`: hour
+- `%token2`: minute
 
 ## civiAccountDeleted
 
-Used for: The member deleted their account. Sent to the number the account had. (kind `accountDeleted`)
+Used for: The member deleted their account. Sent at once to the number the account had. (kind `accountDeleted`)
 
 ```
 رایان تمدن جهان گستر
-حساب کاربری شما در تاریخ %token ساعت %token2 حذف شد.
+حساب کاربری شما امروز ساعت %token:%token2 حذف شد.
 اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.
 ```
 
-- `%token`: date
-- `%token2`: time
+- `%token`: hour
+- `%token2`: minute
 
 ## civiReceived
 
@@ -68,13 +68,13 @@ Used for: A visitor submitted a form: insurance, software project, consultation,
 
 ```
 رایان تمدن جهان گستر
-درخواست شما برای %token2 ثبت شد.
+درخواست %token2 شما ثبت شد.
 کد رهگیری: %token
 با این کد می‌توانید در بخش «پیگیری درخواست» سایت، وضعیت درخواست خود را ببینید.
 ```
 
 - `%token`: tracking code
-- `%token2`: بیمه، ساخت‌نرم‌افزار، مشاوره یا همکاری
+- `%token2`: بیمه، پروژه، مشاوره or همکاری
 
 ## civiScheduled
 
@@ -82,14 +82,16 @@ Used for: Staff set the time of an insurance callback or a consultation. (kind `
 
 ```
 رایان تمدن جهان گستر
-زمان %token3 شما با کارشناس ما تعیین شد:
-تاریخ %token، ساعت %token2
+زمان %token20 شما با کارشناس ما تعیین شد:
+روز %token %token2، ساعت %token3:%token10
 اگر این زمان برایتان مناسب نیست، با پشتیبانی تماس بگیرید.
 ```
 
-- `%token`: date, e.g. 1405/08/25
-- `%token2`: time, e.g. 14:30
-- `%token3`: تماس or مشاوره
+- `%token`: day of the month, e.g. 25
+- `%token2`: month, e.g. آبان
+- `%token3`: hour, e.g. 14
+- `%token10`: minute, e.g. 30
+- `%token20`: تماس or مشاوره
 
 ## civiProposalReady
 
@@ -117,16 +119,15 @@ Used for: Staff decided a CV: shortlisted, matched or declined. (kind `resumeUpd
 
 ## civiAccount
 
-Used for: Staff opened an account for a company or an expert. The password is never texted. (kind `account`)
+Used for: Staff opened an account for a company or an expert. Neither the username nor the password is texted. (kind `account`)
 
 ```
 رایان تمدن جهان گستر
-حساب کاربری شما در سایت ما ساخته شد.
-نام کاربری: %token
-رمز عبور را حضوری از ما گرفته‌اید؛ بعد از اولین ورود، آن را تغییر دهید.
+%token گرامی، حساب کاربری شما در سایت ما ساخته شد.
+با نام کاربری و رمز عبوری که حضوری از ما گرفته‌اید وارد شوید و بعد از اولین ورود، رمز را تغییر دهید.
 ```
 
-- `%token`: username
+- `%token`: first name, one word
 
 ## civiWaiting
 
