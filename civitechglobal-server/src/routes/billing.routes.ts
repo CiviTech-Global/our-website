@@ -12,6 +12,7 @@ import { getCatalog, setPrices } from '../services/billing/catalog.service.js';
 import * as subscriptions from '../services/billing/subscription.service.js';
 import { createCompanyAccount, listVouchedAccounts } from '../services/accounts.service.js';
 import { companyAccountSchema } from '../validators/accounts.schema.js';
+import { smsReport } from '../services/sms/report.js';
 
 /**
  * Plans: the public price list, a member's own billing, checkout through the
@@ -188,6 +189,16 @@ router.post(
   ...canBill,
   wrap(async (req, res) => {
     successResponse(res, await subscriptions.cancelForStaff(String(req.params.id)), 'لغو شد.');
+  }),
+);
+
+/** What texts have cost, per kind, and the latest sends. Money, so billing's key. */
+router.get(
+  '/admin/sms',
+  ...canBill,
+  validate({ query: z.object({ days: z.coerce.number().int().min(1).max(365).default(30) }) }),
+  wrap(async (req, res) => {
+    successResponse(res, await smsReport(Number(req.query.days)));
   }),
 );
 

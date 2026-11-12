@@ -54,6 +54,70 @@ class Strings extends L10nNode {
   StringsWork get work => StringsWork(node("work"));
   StringsBookshop get bookshop => StringsBookshop(node("bookshop"));
   StringsPlans get plans => StringsPlans(node("plans"));
+  StringsSms get sms => StringsSms(node("sms"));
+}
+
+class StringsSms extends L10nNode {
+  const StringsSms(super.raw);
+
+  String get phoneTitle => string("phoneTitle");
+  String get phoneIntro => string("phoneIntro");
+  String get phoneLabel => string("phoneLabel");
+  String get verified => string("verified");
+  String get notVerified => string("notVerified");
+  String get sendCode => string("sendCode");
+  String get codeLabel => string("codeLabel");
+  String get confirm => string("confirm");
+  String get codeSent => string("codeSent");
+  String get phoneVerified => string("phoneVerified");
+  String get changeNumber => string("changeNumber");
+  String get smsUnavailable => string("smsUnavailable");
+  String get optOutLabel => string("optOutLabel");
+  String get optOutHint => string("optOutHint");
+  String get saved => string("saved");
+  String get resetTitle => string("resetTitle");
+  String get resetIntro => string("resetIntro");
+  String get identifier => string("identifier");
+  String get sendResetCode => string("sendResetCode");
+  String get resetCodeSent => string("resetCodeSent");
+  String get newPassword => string("newPassword");
+  String get resetSubmit => string("resetSubmit");
+  String get resetDone => string("resetDone");
+  String get byEmail => string("byEmail");
+  String get noPhoneHint => string("noPhoneHint");
+  String get adminTitle => string("adminTitle");
+  String get adminIntro => string("adminIntro");
+  String get provider => string("provider");
+  String get canSendYes => string("canSendYes");
+  String get canSendNo => string("canSendNo");
+  String get memberAlertsOn => string("memberAlertsOn");
+  String get memberAlertsOff => string("memberAlertsOff");
+  String get dailyCap => string("dailyCap");
+  String get totalCost => string("totalCost");
+  String get kind => string("kind");
+  String get template => string("template");
+  String get sent => string("sent");
+  String get failed => string("failed");
+  String get skipped => string("skipped");
+  String get costRials => string("costRials");
+  String get recent => string("recent");
+  String get reason => string("reason");
+  String get when => string("when");
+  StringsSmsKinds get kinds => StringsSmsKinds(node("kinds"));
+  L10nMap get statuses => L10nMap(node("statuses"));
+}
+
+class StringsSmsKinds extends L10nNode {
+  const StringsSmsKinds(super.raw);
+
+  String get otp => string("otp");
+  String get security => string("security");
+  String get received => string("received");
+  String get scheduled => string("scheduled");
+  String get update => string("update");
+  String get account => string("account");
+  String get waiting => string("waiting");
+  String get verification => string("verification");
 }
 
 class StringsPlans extends L10nNode {

@@ -1,6 +1,7 @@
 import work from './work/fa';
 import bookshop from './bookshop/fa';
 import plans from './plans/fa';
+import sms from './sms/fa';
 
 const fa = {
   common: {
@@ -2995,6 +2996,7 @@ const fa = {
   work,
   bookshop,
   plans,
+  sms,
 };
 
 export default fa;

@@ -675,7 +675,7 @@ export async function apply(
 export async function withdrawApplication(userId: string, applicationId: string) {
   const application = await prisma.jobApplication.findUnique({
     where: { id: applicationId },
-    select: { id: true, applicantId: true, outcome: true },
+    select: { id: true, applicantId: true, outcome: true, job: { select: { authorId: true, title: true } } },
   });
   if (!application || application.applicantId !== userId) throw new AppError('این درخواست پیدا نشد.', 404);
   if (application.outcome === 'ACCEPTED' || application.outcome === 'DECLINED') {
@@ -683,11 +683,19 @@ export async function withdrawApplication(userId: string, applicationId: string)
   }
   if (application.outcome === 'WITHDRAWN') return { id: application.id, outcome: 'WITHDRAWN' as const };
 
-  return prisma.jobApplication.update({
+  const withdrawn = await prisma.jobApplication.update({
     where: { id: applicationId },
     data: { outcome: 'WITHDRAWN', outcomeChangedAt: new Date() },
     select: { id: true, outcome: true },
   });
+  // The employer's pipeline changed under them; they should not find out by looking.
+  notifySafely(application.job.authorId, {
+    type: 'application.withdrawn',
+    title: 'یک درخواست پس گرفته شد',
+    body: `یکی از متقاضیان «${application.job.title}» درخواست خود را پس گرفت.`,
+    link: '/dashboard/jobs',
+  });
+  return withdrawn;
 }
 
 /** The employer's own note on a candidate. Never shown to the applicant. */

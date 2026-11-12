@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { MfaSettings } from '@/components/account/MfaSettings';
 import { SecuritySettings } from '@/components/account/SecuritySettings';
+import { PhoneSettings } from '@/components/account/PhoneSettings';
 import { DeleteAccount } from '@/components/account/DeleteAccount';
 import { PublicProfileForm } from '@/components/account/PublicProfileForm';
 import { FreelancerProfileForm } from '@/components/work/FreelancerProfileForm';
@@ -96,6 +97,10 @@ export default function ProfilePage() {
           <FreelancerProfileForm />
         </AnimatedSection>
       )}
+
+      <AnimatedSection delay={0.048}>
+        <PhoneSettings />
+      </AnimatedSection>
 
       <AnimatedSection delay={0.05}>
         <SecuritySettings />

@@ -1,3 +1,5 @@
+import { sendSmsSafely } from './sms/dispatch.js';
+import { tokenWords } from './sms/templates.js';
 import type { EngagementModel, ProjectRequestStatus, ProjectType, ProjectUrgency } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -75,7 +77,7 @@ export async function submitRequest(
   const stored = await storeFiles(files);
 
   try {
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const identity = await resolveIdentity(tx, { email, phone });
       await assertWithinRateLimits(tx, identity);
 
@@ -88,6 +90,8 @@ export async function submitRequest(
         attachmentCount: stored.length,
       };
     });
+    sendSmsSafely('received', { phone }, { token: result.trackingCode, token2: tokenWords('درخواست', 'پروژه') });
+    return result;
   } catch (error) {
     // The rows are gone; the bytes would otherwise stay. Nothing references
     // them at this point, so they are pure litter.

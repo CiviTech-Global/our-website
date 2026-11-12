@@ -71,6 +71,7 @@ const BillingReturnPage = lazy(() => import('@/pages/dashboard/BillingReturnPage
 const ExpertSelfPage = lazy(() => import('@/pages/dashboard/ExpertSelfPage'));
 const AdminPlansPage = lazy(() => import('@/pages/admin/PlansPage'));
 const AdminAccountsPage = lazy(() => import('@/pages/admin/AccountsPage'));
+const AdminSmsPage = lazy(() => import('@/pages/admin/SmsPage'));
 const BooksPage = lazy(() => import('@/pages/public/BooksPage'));
 const ShopsPage = lazy(() => import('@/pages/public/ShopsPage'));
 const MarketplaceHomePage = lazy(() => import('@/pages/public/MarketplaceHomePage'));
@@ -1092,6 +1093,16 @@ export default function App() {
             <RequirePermission permission="billing">
               <Suspense fallback={<RouteLoadingFallback />}>
                 <AdminPlansPage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="sms"
+          element={
+            <RequirePermission permission="billing">
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AdminSmsPage />
               </Suspense>
             </RequirePermission>
           }

@@ -272,7 +272,7 @@ export async function grant(
   // A grant is free, so an unpriced level can be given.
   const q = await quote(input, { requirePrice: false });
   const now = new Date();
-  return prisma.planSubscription.create({
+  const created = await prisma.planSubscription.create({
     data: {
       code: generateTrackingCode(),
       ...holderData(holder),
@@ -289,17 +289,45 @@ export async function grant(
     },
     select: { id: true, code: true, status: true, startsAt: true, endsAt: true },
   });
+  const recipient = holder.subject === 'COMPANY' ? await companyOwner(holder.companyId) : holder.userId;
+  if (recipient) {
+    notifySafely(recipient, {
+      type: 'billing.granted',
+      title: 'یک پلن به شما اعطا شد',
+      body: `پلن ${created.code} از طرف پشتیبانی برای ${q.months} ماه فعال شد.`,
+      link: '/dashboard/billing',
+    });
+  }
+  return created;
+}
+
+async function companyOwner(companyId: string): Promise<string | null> {
+  const company = await prisma.company.findUnique({ where: { id: companyId }, select: { ownerId: true } });
+  return company?.ownerId ?? null;
 }
 
 export async function cancelForStaff(subscriptionId: string) {
-  const row = await prisma.planSubscription.findUnique({ where: { id: subscriptionId }, select: { status: true } });
+  const row = await prisma.planSubscription.findUnique({
+    where: { id: subscriptionId },
+    select: { status: true, code: true, userId: true, companyId: true },
+  });
   if (!row) throw new AppError('این اشتراک پیدا نشد.', 404);
   if (row.status === 'CANCELLED') return { id: subscriptionId, status: row.status };
-  return prisma.planSubscription.update({
+  const cancelled = await prisma.planSubscription.update({
     where: { id: subscriptionId },
     data: { status: 'CANCELLED' },
     select: { id: true, status: true },
   });
+  const recipient = row.userId ?? (row.companyId ? await companyOwner(row.companyId) : null);
+  if (recipient) {
+    notifySafely(recipient, {
+      type: 'billing.cancelled',
+      title: 'اشتراک شما لغو شد',
+      body: `اشتراک ${row.code} از طرف پشتیبانی لغو شد. برای پیگیری با پشتیبانی تماس بگیرید.`,
+      link: '/dashboard/billing',
+    });
+  }
+  return cancelled;
 }
 
 /** Marks lapsed subscriptions EXPIRED. Cosmetic: entitlements already ignore them. */

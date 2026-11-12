@@ -34,6 +34,7 @@ import {
   Layers,
   Library,
   BadgeDollarSign,
+  MessageSquareText,
   KeyRound,
 } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -306,7 +307,11 @@ export function AdminLayout() {
         {
           id: 'billing',
           label: t.plans.adminPlansTitle,
-          items: when(can('billing'), { to: '/admin/plans', label: t.plans.adminPlansTitle, icon: <BadgeDollarSign /> }),
+          items: when(
+            can('billing'),
+            { to: '/admin/plans', label: t.plans.adminPlansTitle, icon: <BadgeDollarSign /> },
+            { to: '/admin/sms', label: t.sms.adminTitle, icon: <MessageSquareText /> },
+          ),
         },
         {
           id: 'system',

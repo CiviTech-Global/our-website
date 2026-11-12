@@ -2,6 +2,7 @@ import type { PartialTranslations } from './merge';
 import work from './work/de';
 import bookshop from './bookshop/de';
 import plans from './plans/de';
+import sms from './sms/de';
 
 /**
  * Deutsch.
@@ -2834,6 +2835,7 @@ const de: PartialTranslations = {
   work,
   bookshop,
   plans,
+  sms,
 };
 
 export default de;

@@ -1,3 +1,4 @@
+import { notifySafely } from './notifications.service.js';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -335,9 +336,20 @@ export async function getOwnCompanyImage(userId: string, which: 'logo' | 'cover'
 
 /** Staff take a page down, or put it back. The owner keeps editing it either way. */
 export async function setCompanyHidden(id: string, hidden: boolean) {
-  const company = await prisma.company.findUnique({ where: { id }, select: { id: true } });
+  const company = await prisma.company.findUnique({ where: { id }, select: { id: true, ownerId: true, hidden: true } });
   if (!company) throw new AppError('این شرکت پیدا نشد.', 404);
-  return prisma.company.update({ where: { id }, data: { hidden }, select: { id: true, hidden: true } });
+  const updated = await prisma.company.update({ where: { id }, data: { hidden }, select: { id: true, hidden: true } });
+  if (company.hidden !== hidden) {
+    notifySafely(company.ownerId, {
+      type: hidden ? 'company.hidden' : 'company.shown',
+      title: hidden ? 'صفحهٔ شرکت شما پنهان شد' : 'صفحهٔ شرکت شما دوباره نمایش داده می‌شود',
+      body: hidden
+        ? 'پشتیبانی صفحهٔ شرکت شما را از دید عموم پنهان کرد. خودتان همچنان آن را می‌بینید؛ برای پیگیری با پشتیبانی تماس بگیرید.'
+        : 'صفحهٔ شرکت شما دوباره برای همه قابل مشاهده است.',
+      link: '/dashboard/company',
+    });
+  }
+  return updated;
 }
 
 /** The staff list, hidden pages included. */

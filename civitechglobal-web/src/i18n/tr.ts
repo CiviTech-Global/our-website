@@ -2,6 +2,7 @@ import type { PartialTranslations } from './merge';
 import work from './work/tr';
 import bookshop from './bookshop/tr';
 import plans from './plans/tr';
+import sms from './sms/tr';
 
 /**
  * Türkçe.
@@ -2844,6 +2845,7 @@ const tr: PartialTranslations = {
   work,
   bookshop,
   plans,
+  sms,
 };
 
 export default tr;

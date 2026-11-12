@@ -1,3 +1,5 @@
+import { smsMemberSafely } from './sms/dispatch.js';
+import { tokenWords } from './sms/templates.js';
 import { timingSafeEqual } from 'node:crypto';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -108,6 +110,7 @@ export async function disable(userId: string, code: string): Promise<void> {
     where: { id: userId },
     data: { mfaSecret: null, mfaEnabledAt: null, mfaRecoveryCodes: [] },
   });
+  smsMemberSafely(userId, 'security', 'security', { token: tokenWords('خاموش‌شدن', 'ورود', 'دومرحله‌ای') });
 }
 
 /**

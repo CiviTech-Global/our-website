@@ -1,3 +1,12 @@
+import { sendSmsSafely } from '../services/sms/dispatch.js';
+import { tokenWords } from '../services/sms/templates.js';
+
+/** Which CV statuses are a decision the applicant should hear, and in what words. */
+const RESUME_DECISION_WORDS: Partial<Record<string, string>> = {
+  SHORTLISTED: tokenWords('در', 'فهرست', 'کوتاه'),
+  MATCHED: tokenWords('برای', 'گفت‌وگو', 'انتخاب', 'شد'),
+  DECLINED: tokenWords('این', 'بار', 'انتخاب', 'نشد'),
+};
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { searchWhere } from '../services/list-search.js';
 import { toPage } from '../utils/page.js';
@@ -201,6 +210,10 @@ router.get('/admin/:id', async (req, res, next) => {
 router.patch('/admin/:id', validate(updateResumeStatusSchema), async (req, res, next) => {
   try {
     const input = req.body as z.infer<typeof updateResumeStatusSchema>;
+    const before = await prisma.resumeSubmission.findUnique({
+      where: { id: param(req, 'id') },
+      select: { status: true, phone: true, trackingCode: true },
+    });
     const updated = await prisma.resumeSubmission.update({
       where: { id: param(req, 'id') },
       data: {
@@ -214,6 +227,9 @@ router.patch('/admin/:id', validate(updateResumeStatusSchema), async (req, res, 
       },
       select: { id: true, status: true, matchedRole: true, assignedToId: true },
     });
+    // Only decisions are texted; moving a CV between internal piles is not news.
+    const word = input.status && input.status !== before?.status ? RESUME_DECISION_WORDS[input.status] : undefined;
+    if (word && before?.phone) sendSmsSafely('update', { phone: before.phone }, { token: before.trackingCode, token2: word });
     successResponse(res, updated, 'وضعیت به‌روزرسانی شد.');
   } catch (error) {
     next(error);
