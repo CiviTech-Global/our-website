@@ -1,5 +1,4 @@
-import { smsMemberSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
+import { nowTokens, smsMemberSafely } from './sms/dispatch.js';
 import { randomBytes } from 'node:crypto';
 import { sha256Hex } from '../utils/hash.js';
 import { redis } from '../config/redis.js';
@@ -370,7 +369,7 @@ export async function changePassword(userId: string, currentPassword: string, ne
     data: { password: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
   });
   await revokeAllUserRefreshTokens(userId);
-  smsMemberSafely(userId, 'security', 'security', { token: tokenWords('تغییر', 'رمز', 'عبور') });
+  smsMemberSafely(userId, 'passwordChanged', 'security', nowTokens());
   return issueSessionFor(userId);
 }
 

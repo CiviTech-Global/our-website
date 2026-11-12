@@ -111,10 +111,13 @@ class StringsSmsKinds extends L10nNode {
   const StringsSmsKinds(super.raw);
 
   String get otp => string("otp");
-  String get security => string("security");
+  String get passwordChanged => string("passwordChanged");
+  String get twoStepOff => string("twoStepOff");
+  String get accountDeleted => string("accountDeleted");
   String get received => string("received");
   String get scheduled => string("scheduled");
-  String get update => string("update");
+  String get proposalReady => string("proposalReady");
+  String get resumeUpdate => string("resumeUpdate");
   String get account => string("account");
   String get waiting => string("waiting");
   String get verification => string("verification");

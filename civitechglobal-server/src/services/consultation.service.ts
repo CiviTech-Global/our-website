@@ -1,5 +1,4 @@
 import { sendSmsSafely, smsDateTime } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
 import { notifySafely } from './notifications.service.js';
 import type { ConsultationStatus, DayPart, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
@@ -116,7 +115,7 @@ export async function createRequest(input: ConsultationInput, now = new Date()) 
   });
 
   logger.info({ requestId: created.id, topic: input.topic, expertId }, 'Consultation requested');
-  sendSmsSafely('received', { phone }, { token: created.trackingCode, token2: tokenWords('درخواست', 'مشاوره') });
+  sendSmsSafely('received', { phone }, { token: created.trackingCode, token2: 'مشاوره' });
   // An expert with an account hears that somebody asked for them by name.
   if (expertUserId) {
     notifySafely(expertUserId, {
@@ -314,7 +313,7 @@ export async function updateForStaff(id: string, update: StaffUpdate, actorId: s
   // A new or moved time is texted to the person who asked.
   if (scheduledAt instanceof Date && existing.scheduledAt?.getTime() !== scheduledAt.getTime()) {
     const { date, time } = smsDateTime(scheduledAt);
-    sendSmsSafely('scheduled', { phone: existing.phoneNumber }, { token: date, token2: time, token3: tokenWords('جلسه', 'مشاوره') });
+    sendSmsSafely('scheduled', { phone: existing.phoneNumber }, { token: date, token2: time, token3: 'مشاوره' });
   }
   return updated;
 }

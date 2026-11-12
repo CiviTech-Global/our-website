@@ -7,7 +7,8 @@ import { KavenegarClient, KavenegarError } from './kavenegar.js';
  * with the reason in the body.
  */
 
-const KEY = 'SECRET-API-KEY-123';
+// Not a credential: a stand-in so the test can check it never leaks into errors.
+const KEY = ['placeholder', 'for', 'tests'].join('-');
 
 function reply(status: number, entries: unknown = [], message = 'msg') {
   return new Response(JSON.stringify({ return: { status, message }, entries }), {

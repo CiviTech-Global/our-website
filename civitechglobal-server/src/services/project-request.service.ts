@@ -90,7 +90,7 @@ export async function submitRequest(
         attachmentCount: stored.length,
       };
     });
-    sendSmsSafely('received', { phone }, { token: result.trackingCode, token2: tokenWords('درخواست', 'پروژه') });
+    sendSmsSafely('received', { phone }, { token: result.trackingCode, token2: tokenWords('ساخت', 'نرم‌افزار') });
     return result;
   } catch (error) {
     // The rows are gone; the bytes would otherwise stay. Nothing references

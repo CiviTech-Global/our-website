@@ -1,5 +1,4 @@
 import { sendSmsSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
 import type { EngagementModel, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -201,7 +200,7 @@ export async function sendProposal(proposalId: string) {
     select: { trackingCode: true, phone: true },
   });
   if (request?.phone) {
-    sendSmsSafely('update', { phone: request.phone }, { token: request.trackingCode, token2: tokenWords('پیشنهاد', 'آماده', 'است') });
+    sendSmsSafely('proposalReady', { phone: request.phone }, { token: request.trackingCode });
   }
   return sent;
 }

@@ -18,22 +18,49 @@ Used for: Every one-time code: insurance form, account phone check, password res
 ```
 رایان تمدن جهان گستر
 کد تأیید شما: %token
-این کد را به هیچ‌کس ندهید.
+این کد تا ۵ دقیقه معتبر است. آن را به هیچ‌کس، حتی پشتیبانی ما، ندهید.
 ```
 
 - `%token`: the 6-digit code
 
-## civiSecurity
+## civiPasswordChanged
 
-Used for: Password changed or reset, two-step sign-in turned off, account deleted. Always sent to a verified phone. (kind `security`)
+Used for: The password was changed, or reset by SMS. Always sent to a verified phone. (kind `passwordChanged`)
 
 ```
 رایان تمدن جهان گستر
-هشدار امنیتی: %token در حساب شما انجام شد.
-اگر این کار شما نبوده، فوراً با پشتیبانی تماس بگیرید.
+رمز عبور حساب کاربری شما در تاریخ %token ساعت %token2 تغییر کرد.
+اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.
 ```
 
-- `%token`: what happened, e.g. تغییر‌رمز‌عبور
+- `%token`: date, e.g. 1405/08/25
+- `%token2`: time, e.g. 14:30
+
+## civiTwoStepOff
+
+Used for: Two-step sign-in was turned off. Always sent to a verified phone. (kind `twoStepOff`)
+
+```
+رایان تمدن جهان گستر
+ورود دومرحله‌ای حساب کاربری شما در تاریخ %token ساعت %token2 خاموش شد.
+اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.
+```
+
+- `%token`: date
+- `%token2`: time
+
+## civiAccountDeleted
+
+Used for: The member deleted their account. Sent to the number the account had. (kind `accountDeleted`)
+
+```
+رایان تمدن جهان گستر
+حساب کاربری شما در تاریخ %token ساعت %token2 حذف شد.
+اگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.
+```
+
+- `%token`: date
+- `%token2`: time
 
 ## civiReceived
 
@@ -41,13 +68,13 @@ Used for: A visitor submitted a form: insurance, software project, consultation,
 
 ```
 رایان تمدن جهان گستر
-%token2 شما ثبت شد.
+درخواست شما برای %token2 ثبت شد.
 کد رهگیری: %token
-برای پیگیری، این کد را در بخش «پیگیری درخواست» سایت وارد کنید.
+با این کد می‌توانید در بخش «پیگیری درخواست» سایت، وضعیت درخواست خود را ببینید.
 ```
 
 - `%token`: tracking code
-- `%token2`: what was submitted, e.g. درخواست‌بیمه
+- `%token2`: بیمه، ساخت‌نرم‌افزار، مشاوره یا همکاری
 
 ## civiScheduled
 
@@ -55,25 +82,38 @@ Used for: Staff set the time of an insurance callback or a consultation. (kind `
 
 ```
 رایان تمدن جهان گستر
-%token3 شما برای %token ساعت %token2 هماهنگ شد.
+زمان %token3 شما با کارشناس ما تعیین شد:
+تاریخ %token، ساعت %token2
+اگر این زمان برایتان مناسب نیست، با پشتیبانی تماس بگیرید.
 ```
 
 - `%token`: date, e.g. 1405/08/25
 - `%token2`: time, e.g. 14:30
-- `%token3`: what, e.g. تماس‌مشاور‌بیمه
+- `%token3`: تماس or مشاوره
 
-## civiUpdate
+## civiProposalReady
 
-Used for: Staff moved a visitor request on: proposal ready, CV decided. (kind `update`)
+Used for: Staff sent the proposal for a software project request. (kind `proposalReady`)
 
 ```
 رایان تمدن جهان گستر
-وضعیت درخواست %token: %token2
-جزئیات را با همین کد در بخش «پیگیری درخواست» سایت ببینید.
+پیشنهاد ما (هزینه و زمان‌بندی) برای پروژهٔ نرم‌افزاری شما آماده است.
+با کد رهگیری %token در بخش «پیگیری درخواست» سایت، آن را ببینید و پاسخ دهید.
 ```
 
 - `%token`: tracking code
-- `%token2`: new status, e.g. پیشنهاد‌آماده‌است
+
+## civiResumeUpdate
+
+Used for: Staff decided a CV: shortlisted, matched or declined. (kind `resumeUpdate`)
+
+```
+رایان تمدن جهان گستر
+بررسی رزومهٔ شما به نتیجه رسید.
+با کد رهگیری %token در بخش «پیگیری درخواست» سایت، نتیجه را ببینید.
+```
+
+- `%token`: tracking code
 
 ## civiAccount
 
@@ -81,9 +121,9 @@ Used for: Staff opened an account for a company or an expert. The password is ne
 
 ```
 رایان تمدن جهان گستر
-حساب کاربری شما ساخته شد.
+حساب کاربری شما در سایت ما ساخته شد.
 نام کاربری: %token
-رمز عبور را حضوری دریافت کرده‌اید؛ پس از ورود آن را تغییر دهید.
+رمز عبور را حضوری از ما گرفته‌اید؛ بعد از اولین ورود، آن را تغییر دهید.
 ```
 
 - `%token`: username
@@ -94,11 +134,11 @@ Used for: A member has a new application, bid or purchase request. Off until SMS
 
 ```
 رایان تمدن جهان گستر
-%token تازه منتظر پاسخ شماست.
-برای دیدن، وارد حساب کاربری خود شوید.
+یک %token تازه برای شما رسیده و منتظر پاسخ شماست.
+برای دیدن جزئیات، وارد حساب کاربری خود در سایت شوید.
 ```
 
-- `%token`: what, e.g. درخواست‌همکاری
+- `%token`: درخواست، پیشنهاد or سفارش
 
 ## civiVerification
 
@@ -106,8 +146,8 @@ Used for: Staff decided an identity verification. Off until SMS_MEMBER_ALERTS=tr
 
 ```
 رایان تمدن جهان گستر
-نتیجهٔ احراز هویت شما: %token
-جزئیات در حساب کاربری شماست.
+احراز هویت شما %token شد.
+برای دیدن جزئیات، وارد حساب کاربری خود در سایت شوید.
 ```
 
-- `%token`: تأیید‌شد or تأیید‌نشد
+- `%token`: تأیید or رد

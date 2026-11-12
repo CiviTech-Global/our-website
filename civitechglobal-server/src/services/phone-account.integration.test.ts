@@ -20,6 +20,7 @@ vi.mock('./sms/dispatch.js', () => ({
   smsMemberSafely: vi.fn((userId: string) => sent.alerts.push(userId)),
   sendSmsSafely: vi.fn(),
   memberPhone: vi.fn(),
+  nowTokens: () => ({ token: '1405/08/25', token2: '14:30' }),
 }));
 
 const { prisma } = await import('../config/database.js');

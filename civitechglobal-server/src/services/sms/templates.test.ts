@@ -43,7 +43,7 @@ describe('the link guard', () => {
     't.me/channel',
     'SITE.IR',
   ])('refuses %s in a token', (value) => {
-    expect(() => assertNoLink('update', { token: 'AB12CD34', token2: value })).toThrow(SmsLinkError);
+    expect(() => assertNoLink('received', { token: 'AB12CD34', token2: value })).toThrow(SmsLinkError);
   });
 
   it.each(['AB12CD34', '1405/08/25', '14:30', tokenWords('پیشنهاد', 'آماده', 'است'), 'acme.hr'])(

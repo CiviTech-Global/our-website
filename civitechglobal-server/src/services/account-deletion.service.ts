@@ -1,5 +1,4 @@
-import { memberPhone, sendSmsSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
+import { memberPhone, nowTokens, sendSmsSafely } from './sms/dispatch.js';
 import { randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
@@ -391,5 +390,5 @@ export async function deleteOwnAccount(userId: string, input: DeleteAccountInput
     logger.error({ userId, failed, files }, 'Account deleted, but some of its files could not be removed');
   }
   logger.info({ userId, files: files.length }, 'Account deleted by its owner');
-  if (alertPhone) sendSmsSafely('security', { phone: alertPhone }, { token: tokenWords('حذف', 'حساب', 'کاربری') });
+  if (alertPhone) sendSmsSafely('accountDeleted', { phone: alertPhone }, nowTokens());
 }

@@ -30,52 +30,72 @@ export interface SmsTemplate {
 const SIGNATURE = 'رایان تمدن جهان گستر';
 
 export const SMS_TEMPLATES = {
+  // "۵ دقیقه" is OTP_TTL_SECONDS (300, also otp_ttl_seconds in the deploy).
+  // Change both together, and resubmit the template.
   otp: {
     name: 'civiOtp',
-    text: `${SIGNATURE}\nکد تأیید شما: %token\nاین کد را به هیچ‌کس ندهید.`,
+    text: `${SIGNATURE}\nکد تأیید شما: %token\nاین کد تا ۵ دقیقه معتبر است. آن را به هیچ‌کس، حتی پشتیبانی ما، ندهید.`,
     tokens: { token: 'the 6-digit code' },
     purpose: 'Every one-time code: insurance form, account phone check, password reset.',
   },
-  security: {
-    name: 'civiSecurity',
-    text: `${SIGNATURE}\nهشدار امنیتی: %token در حساب شما انجام شد.\nاگر این کار شما نبوده، فوراً با پشتیبانی تماس بگیرید.`,
-    tokens: { token: 'what happened, e.g. تغییر‌رمز‌عبور' },
-    purpose: 'Password changed or reset, two-step sign-in turned off, account deleted. Always sent to a verified phone.',
+  passwordChanged: {
+    name: 'civiPasswordChanged',
+    text: `${SIGNATURE}\nرمز عبور حساب کاربری شما در تاریخ %token ساعت %token2 تغییر کرد.\nاگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.`,
+    tokens: { token: 'date, e.g. 1405/08/25', token2: 'time, e.g. 14:30' },
+    purpose: 'The password was changed, or reset by SMS. Always sent to a verified phone.',
+  },
+  twoStepOff: {
+    name: 'civiTwoStepOff',
+    text: `${SIGNATURE}\nورود دومرحله‌ای حساب کاربری شما در تاریخ %token ساعت %token2 خاموش شد.\nاگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.`,
+    tokens: { token: 'date', token2: 'time' },
+    purpose: 'Two-step sign-in was turned off. Always sent to a verified phone.',
+  },
+  accountDeleted: {
+    name: 'civiAccountDeleted',
+    text: `${SIGNATURE}\nحساب کاربری شما در تاریخ %token ساعت %token2 حذف شد.\nاگر این کار را شما انجام نداده‌اید، فوراً با پشتیبانی تماس بگیرید.`,
+    tokens: { token: 'date', token2: 'time' },
+    purpose: 'The member deleted their account. Sent to the number the account had.',
   },
   received: {
     name: 'civiReceived',
-    text: `${SIGNATURE}\n%token2 شما ثبت شد.\nکد رهگیری: %token\nبرای پیگیری، این کد را در بخش «پیگیری درخواست» سایت وارد کنید.`,
-    tokens: { token: 'tracking code', token2: 'what was submitted, e.g. درخواست‌بیمه' },
+    text: `${SIGNATURE}\nدرخواست شما برای %token2 ثبت شد.\nکد رهگیری: %token\nبا این کد می‌توانید در بخش «پیگیری درخواست» سایت، وضعیت درخواست خود را ببینید.`,
+    tokens: { token: 'tracking code', token2: 'بیمه، ساخت‌نرم‌افزار، مشاوره یا همکاری' },
     purpose: 'A visitor submitted a form: insurance, software project, consultation, CV.',
   },
   scheduled: {
     name: 'civiScheduled',
-    text: `${SIGNATURE}\n%token3 شما برای %token ساعت %token2 هماهنگ شد.`,
-    tokens: { token: 'date, e.g. 1405/08/25', token2: 'time, e.g. 14:30', token3: 'what, e.g. تماس‌مشاور‌بیمه' },
+    text: `${SIGNATURE}\nزمان %token3 شما با کارشناس ما تعیین شد:\nتاریخ %token، ساعت %token2\nاگر این زمان برایتان مناسب نیست، با پشتیبانی تماس بگیرید.`,
+    tokens: { token: 'date, e.g. 1405/08/25', token2: 'time, e.g. 14:30', token3: 'تماس or مشاوره' },
     purpose: 'Staff set the time of an insurance callback or a consultation.',
   },
-  update: {
-    name: 'civiUpdate',
-    text: `${SIGNATURE}\nوضعیت درخواست %token: %token2\nجزئیات را با همین کد در بخش «پیگیری درخواست» سایت ببینید.`,
-    tokens: { token: 'tracking code', token2: 'new status, e.g. پیشنهاد‌آماده‌است' },
-    purpose: 'Staff moved a visitor request on: proposal ready, CV decided.',
+  proposalReady: {
+    name: 'civiProposalReady',
+    text: `${SIGNATURE}\nپیشنهاد ما (هزینه و زمان‌بندی) برای پروژهٔ نرم‌افزاری شما آماده است.\nبا کد رهگیری %token در بخش «پیگیری درخواست» سایت، آن را ببینید و پاسخ دهید.`,
+    tokens: { token: 'tracking code' },
+    purpose: 'Staff sent the proposal for a software project request.',
+  },
+  resumeUpdate: {
+    name: 'civiResumeUpdate',
+    text: `${SIGNATURE}\nبررسی رزومهٔ شما به نتیجه رسید.\nبا کد رهگیری %token در بخش «پیگیری درخواست» سایت، نتیجه را ببینید.`,
+    tokens: { token: 'tracking code' },
+    purpose: 'Staff decided a CV: shortlisted, matched or declined.',
   },
   account: {
     name: 'civiAccount',
-    text: `${SIGNATURE}\nحساب کاربری شما ساخته شد.\nنام کاربری: %token\nرمز عبور را حضوری دریافت کرده‌اید؛ پس از ورود آن را تغییر دهید.`,
+    text: `${SIGNATURE}\nحساب کاربری شما در سایت ما ساخته شد.\nنام کاربری: %token\nرمز عبور را حضوری از ما گرفته‌اید؛ بعد از اولین ورود، آن را تغییر دهید.`,
     tokens: { token: 'username' },
     purpose: 'Staff opened an account for a company or an expert. The password is never texted.',
   },
   waiting: {
     name: 'civiWaiting',
-    text: `${SIGNATURE}\n%token تازه منتظر پاسخ شماست.\nبرای دیدن، وارد حساب کاربری خود شوید.`,
-    tokens: { token: 'what, e.g. درخواست‌همکاری' },
+    text: `${SIGNATURE}\nیک %token تازه برای شما رسیده و منتظر پاسخ شماست.\nبرای دیدن جزئیات، وارد حساب کاربری خود در سایت شوید.`,
+    tokens: { token: 'درخواست، پیشنهاد or سفارش' },
     purpose: 'A member has a new application, bid or purchase request. Off until SMS_MEMBER_ALERTS=true; at most one per member per 6 hours.',
   },
   verification: {
     name: 'civiVerification',
-    text: `${SIGNATURE}\nنتیجهٔ احراز هویت شما: %token\nجزئیات در حساب کاربری شماست.`,
-    tokens: { token: 'تأیید‌شد or تأیید‌نشد' },
+    text: `${SIGNATURE}\nاحراز هویت شما %token شد.\nبرای دیدن جزئیات، وارد حساب کاربری خود در سایت شوید.`,
+    tokens: { token: 'تأیید or رد' },
     purpose: 'Staff decided an identity verification. Off until SMS_MEMBER_ALERTS=true.',
   },
 } as const satisfies Record<string, SmsTemplate>;

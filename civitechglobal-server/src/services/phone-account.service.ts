@@ -8,8 +8,7 @@ import { hashPassword } from '../utils/password.js';
 import { normalizeIranMobile } from '../utils/persian.js';
 import { emailLookupHash } from './auth.service.js';
 import { canSendSms } from './sms/index.js';
-import { sendSms, smsMemberSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
+import { nowTokens, sendSms, smsMemberSafely } from './sms/dispatch.js';
 
 /**
  * A member's phone, proved by a code, and what it unlocks: resetting a
@@ -191,7 +190,7 @@ export async function resetPasswordWithSms(identifier: string, code: string, new
     prisma.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } }),
   ]);
 
-  smsMemberSafely(user.id, 'security', 'security', { token: tokenWords('بازیابی', 'رمز', 'عبور') });
+  smsMemberSafely(user.id, 'passwordChanged', 'security', nowTokens());
 }
 
 /** For tests and the log: the hash the dispatcher records for a phone. */

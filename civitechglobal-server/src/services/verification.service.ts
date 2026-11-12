@@ -1,5 +1,4 @@
 import { smsMemberSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
 import type { Prisma, VerificationDocumentKind } from '@prisma/client';
 import { toPage } from '../utils/page.js';
 import { searchWhere } from './list-search.js';
@@ -347,7 +346,7 @@ export async function review(
     link: '/dashboard/verification',
   });
   smsMemberSafely(existing.userId, 'verification', 'alert', {
-    token: decision === 'APPROVED' ? tokenWords('تأیید', 'شد') : tokenWords('تأیید', 'نشد'),
+    token: decision === 'APPROVED' ? 'تأیید' : 'رد',
   });
 
 // There is no audit table yet, and "who approved this identity?" is a

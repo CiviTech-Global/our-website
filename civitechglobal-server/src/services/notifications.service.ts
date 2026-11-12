@@ -1,7 +1,6 @@
 import { env } from '../config/env.js';
 import { redis } from '../config/redis.js';
 import { smsMemberSafely } from './sms/dispatch.js';
-import { tokenWords } from './sms/templates.js';
 import { prisma } from '../config/database.js';
 import { toPage } from '../utils/page.js';
 import { logger } from '../config/logger.js';
@@ -53,11 +52,11 @@ export async function notifyUser(userId: string, input: NotifyInput): Promise<vo
  * arrive: the text says "something is waiting", the site says what.
  */
 const WAITING_SMS: Record<string, string> = {
-  'application.received': tokenWords('درخواست', 'همکاری'),
-  'bid.received': tokenWords('پیشنهاد', 'پروژه'),
-  'book.request': tokenWords('درخواست', 'خرید', 'کتاب'),
-  'service.order': tokenWords('سفارش', 'خدمت'),
-  'order.placed': tokenWords('سفارش', 'فروشگاه'),
+  'application.received': 'درخواست',
+  'bid.received': 'پیشنهاد',
+  'book.request': 'درخواست',
+  'service.order': 'سفارش',
+  'order.placed': 'سفارش',
 };
 const WAITING_SMS_GAP_SECONDS = 6 * 60 * 60;
 

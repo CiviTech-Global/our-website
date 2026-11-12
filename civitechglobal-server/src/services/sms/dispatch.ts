@@ -165,6 +165,12 @@ export function smsMemberSafely(
     .catch((error) => logger.error({ err: error, kind }, 'SMS member lookup failed'));
 }
 
+/** Now, as the date and time tokens of a security alert. */
+export function nowTokens(): SmsTokens {
+  const { date, time } = smsDateTime(new Date());
+  return { token: date, token2: time };
+}
+
 /** Date and time in Tehran for a token: 1405/08/25 and 14:30, Latin digits, no spaces. */
 export function smsDateTime(when: Date): { date: string; time: string } {
   const date = new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn', {

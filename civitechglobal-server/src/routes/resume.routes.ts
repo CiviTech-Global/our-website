@@ -1,12 +1,7 @@
 import { sendSmsSafely } from '../services/sms/dispatch.js';
-import { tokenWords } from '../services/sms/templates.js';
 
-/** Which CV statuses are a decision the applicant should hear, and in what words. */
-const RESUME_DECISION_WORDS: Partial<Record<string, string>> = {
-  SHORTLISTED: tokenWords('در', 'فهرست', 'کوتاه'),
-  MATCHED: tokenWords('برای', 'گفت‌وگو', 'انتخاب', 'شد'),
-  DECLINED: tokenWords('این', 'بار', 'انتخاب', 'نشد'),
-};
+/** CV statuses that are a decision the applicant should hear about. */
+const RESUME_DECISIONS = new Set(['SHORTLISTED', 'MATCHED', 'DECLINED']);
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { searchWhere } from '../services/list-search.js';
 import { toPage } from '../utils/page.js';
@@ -228,8 +223,8 @@ router.patch('/admin/:id', validate(updateResumeStatusSchema), async (req, res, 
       select: { id: true, status: true, matchedRole: true, assignedToId: true },
     });
     // Only decisions are texted; moving a CV between internal piles is not news.
-    const word = input.status && input.status !== before?.status ? RESUME_DECISION_WORDS[input.status] : undefined;
-    if (word && before?.phone) sendSmsSafely('update', { phone: before.phone }, { token: before.trackingCode, token2: word });
+    const decided = input.status && input.status !== before?.status && RESUME_DECISIONS.has(input.status);
+    if (decided && before?.phone) sendSmsSafely('resumeUpdate', { phone: before.phone }, { token: before.trackingCode });
     successResponse(res, updated, 'وضعیت به‌روزرسانی شد.');
   } catch (error) {
     next(error);

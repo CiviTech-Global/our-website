@@ -58,7 +58,7 @@ describe('sending', () => {
 
 describe('refusing', () => {
   it('never sends a link, and says why in the log', async () => {
-    const outcome = await sendSms('update', { phone: '09120000000' }, { token: 'AB12', token2: 'see example.com' });
+    const outcome = await sendSms('received', { phone: '09120000000' }, { token: 'AB12', token2: 'see example.com' });
     expect(outcome.status).toBe('SKIPPED');
     expect(mocks.sendTemplate).not.toHaveBeenCalled();
     expect(logged()).toMatchObject({ status: 'SKIPPED', reason: expect.stringContaining('link') });

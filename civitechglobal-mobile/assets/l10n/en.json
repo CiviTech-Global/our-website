@@ -3809,10 +3809,13 @@
   "when": "When",
   "kinds": {
    "otp": "Code",
-   "security": "Security alert",
+   "passwordChanged": "Password changed",
+   "twoStepOff": "Two-step sign-in off",
+   "accountDeleted": "Account deleted",
    "received": "Request received",
    "scheduled": "Time arranged",
-   "update": "Status change",
+   "proposalReady": "Proposal ready",
+   "resumeUpdate": "CV decision",
    "account": "Account ready",
    "waiting": "Waiting for you",
    "verification": "Verification result"

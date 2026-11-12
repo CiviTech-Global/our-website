@@ -3809,10 +3809,13 @@
   "when": "Date",
   "kinds": {
    "otp": "Code",
-   "security": "Alerte de sécurité",
+   "passwordChanged": "Mot de passe modifié",
+   "twoStepOff": "Connexion en deux étapes désactivée",
+   "accountDeleted": "Compte supprimé",
    "received": "Demande reçue",
    "scheduled": "Rendez-vous fixé",
-   "update": "Changement de statut",
+   "proposalReady": "Proposition prête",
+   "resumeUpdate": "Décision sur le CV",
    "account": "Compte prêt",
    "waiting": "En attente de vous",
    "verification": "Résultat de vérification"
