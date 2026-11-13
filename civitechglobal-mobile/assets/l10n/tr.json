@@ -3794,6 +3794,7 @@
   "profileHint": "Başkalarının sizin hakkınızda gördükleri ve ilan vermek ile teklif vermek için gereken kimlik doğrulaması.",
   "planServices": "Plan ve talepler",
   "planServicesHint": "Planınız, uzman profiliniz ve bize gönderdiğiniz talepler.",
+  "areasTitle": "Alanlarınız",
   "moreTools": "{count} bölüm daha",
   "fewerTools": "Yalnızca kullandıklarım",
   "moreToolsHint": "Henüz kullanmadığınız bölümler. Başladığınızda kendiliğinden listeye çıkarlar.",

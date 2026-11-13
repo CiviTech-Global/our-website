@@ -47,9 +47,7 @@ class WorkspacePanels extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: BaghSpace.gutter,
       children: [
-        if (canEmail && !user.emailVerified) const _VerifyEmailBanner(),
-        _Setup(user: user, workspace: d, canEmail: canEmail),
-        _Attention(workspace: d),
+        _NextSteps(user: user, workspace: d, canEmail: canEmail),
         if (d.hiringPostings > 0)
           _Panel(
             title: w.hiringTitle,
@@ -312,18 +310,35 @@ class _Panel extends ConsumerWidget {
   }
 }
 
-/// While the address is unconfirmed, and only where the server can send mail.
-class _VerifyEmailBanner extends ConsumerStatefulWidget {
-  const _VerifyEmailBanner();
+enum _Step { done, pending, todo }
+
+/// One thing to do next: a label, and where to do it or what does it.
+typedef _Next = ({IconData icon, String label, String? href, bool email});
+
+/// "Your next steps", as the web's NextStepsPanel: what is waiting on them
+/// first, then what is left of setting the account up, in one list. The
+/// first step is set apart with its own button, so somebody who opens the
+/// app not knowing where to start is told. Resending the verification email
+/// happens right here, where the step is.
+class _NextSteps extends ConsumerStatefulWidget {
+  const _NextSteps({
+    required this.user,
+    required this.workspace,
+    required this.canEmail,
+  });
+
+  final AuthUser user;
+  final Workspace workspace;
+  final bool canEmail;
 
   @override
-  ConsumerState<_VerifyEmailBanner> createState() => _VerifyEmailBannerState();
+  ConsumerState<_NextSteps> createState() => _NextStepsState();
 }
 
-class _VerifyEmailBannerState extends ConsumerState<_VerifyEmailBanner> {
+class _NextStepsState extends ConsumerState<_NextSteps> {
   bool _sending = false;
 
-  Future<void> _send() async {
+  Future<void> _sendEmail() async {
     final s = ref.read(stringsProvider);
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _sending = true);
@@ -338,235 +353,191 @@ class _VerifyEmailBannerState extends ConsumerState<_VerifyEmailBanner> {
     }
   }
 
+  void _go(_Next item) {
+    if (item.email) {
+      _sendEmail();
+    } else if (item.href != null) {
+      openLink(context, ref, item.href!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
-    final t = BaghColors.of(context).tints[1];
-    final text = Theme.of(context).textTheme;
-    return SoftSurface(
-      tint: t,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: 8,
-        children: [
-          Row(
-            spacing: 10,
-            children: [
-              Icon(Icons.mark_email_unread_outlined, color: t.ink),
-              Expanded(
-                child: Text(
-                  s.auth.verifyBannerTitle,
-                  style: text.titleSmall?.copyWith(color: t.ink),
-                ),
-              ),
-            ],
-          ),
-          Text(
-            s.auth.verifyBannerBody,
-            style: text.bodyMedium?.copyWith(color: t.ink),
-          ),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: BaghKey(
-              label: s.auth.verifyBannerAction,
-              kind: BaghKeyKind.outline,
-              loading: _sending,
-              onPressed: _send,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-enum _Step { done, pending, todo }
-
-/// "Getting set up": what is left before the marketplace is open to them,
-/// with the way to each open step. Gone once every step is done.
-class _Setup extends ConsumerWidget {
-  const _Setup({
-    required this.user,
-    required this.workspace,
-    required this.canEmail,
-  });
-
-  final AuthUser user;
-  final Workspace workspace;
-  final bool canEmail;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
+    final w = s.workspace;
+    final n = s.dashNav;
+    final d = widget.workspace;
+    final user = widget.user;
     final language = ref.watch(l10nProvider).language;
     final c = BaghColors.of(context);
     final text = Theme.of(context).textTheme;
-    final steps = <(String, _Step, String?)>[
+    String num(int v) => localDigits(v, language);
+    final forward = Directionality.of(context) == TextDirection.rtl
+        ? Icons.chevron_left_rounded
+        : Icons.chevron_right_rounded;
+
+    final setup = <(String, _Step, String?, bool)>[
       (
         s.app.setupPhone,
         (user.phone ?? '').isNotEmpty ? _Step.done : _Step.todo,
         '/dashboard/profile',
+        false,
       ),
-      if (canEmail)
+      if (widget.canEmail)
         (
           s.app.setupEmail,
           user.emailVerified ? _Step.done : _Step.todo,
-          // Done from the banner above, not from a page.
           null,
+          true,
         ),
       (
         s.app.setupIdentity,
-        switch (workspace.verification) {
+        switch (d.verification) {
           'APPROVED' => _Step.done,
           'PENDING' => _Step.pending,
           _ => _Step.todo,
         },
         '/dashboard/verification',
+        false,
       ),
     ];
-    final done = steps.where((x) => x.$2 == _Step.done).length;
-    if (done == steps.length) return const SizedBox.shrink();
-
-    return _Card(
-      title: s.app.setupTitle,
-      trailing: Text(
-        s.app.setupProgress.fill({
-          'done': localDigits(done, language),
-          'total': localDigits(steps.length, language),
-        }),
-        style: text.labelMedium?.copyWith(color: c.ink2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: done / steps.length,
-              minHeight: 6,
-              color: c.primary,
-              backgroundColor: c.fill,
-            ),
-          ),
-          for (final (label, state, href) in steps)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(
-                switch (state) {
-                  _Step.done => Icons.check_circle_rounded,
-                  _Step.pending => Icons.schedule_rounded,
-                  _Step.todo => Icons.radio_button_unchecked_rounded,
-                },
-                color: switch (state) {
-                  _Step.done => c.primary,
-                  _Step.pending => c.tints[1].ink,
-                  _Step.todo => c.ink2,
-                },
-              ),
-              title: Text(
-                label,
-                style: state == _Step.done
-                    ? text.bodyMedium?.copyWith(
-                        color: c.ink2,
-                        decoration: TextDecoration.lineThrough,
-                      )
-                    : text.bodyMedium,
-              ),
-              trailing: switch (state) {
-                _Step.done => Text(s.app.setupDone, style: text.labelMedium),
-                _Step.pending => Text(
-                  s.app.setupPending,
-                  style: text.labelMedium?.copyWith(color: c.tints[1].ink),
-                ),
-                _Step.todo when href != null => TextButton(
-                  onPressed: () => openLink(context, ref, href),
-                  child: Text(s.app.setupAction),
-                ),
-                _Step.todo => null,
-              },
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// What is waiting on this person, across every part they play.
-class _Attention extends ConsumerWidget {
-  const _Attention({required this.workspace});
-
-  final Workspace workspace;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
-    final w = s.workspace;
-    final d = workspace;
-    final language = ref.watch(l10nProvider).language;
-    final c = BaghColors.of(context);
-    String n(int v) => localDigits(v, language);
     final changes = d.changesRequested;
-    final items = <(IconData, String, String)>[
-      if (d.verification != 'APPROVED' && d.verification != 'PENDING')
+    final items = <_Next>[
+      if (d.unreadMessages > 0)
         (
-          Icons.verified_user_outlined,
-          w.attentionVerify,
-          '/dashboard/verification',
+          icon: Icons.forum_outlined,
+          label: w.attentionMessages.fill({'count': num(d.unreadMessages)}),
+          href: '/dashboard/messages',
+          email: false,
         ),
       if (d.hiringUnseen > 0)
         (
-          Icons.group_outlined,
-          w.attentionApplicants.fill({'count': n(d.hiringUnseen)}),
-          '/dashboard/jobs',
+          icon: Icons.group_outlined,
+          label: w.attentionApplicants.fill({'count': num(d.hiringUnseen)}),
+          href: '/dashboard/jobs',
+          email: false,
         ),
       if (d.bidsAwaiting > 0)
         (
-          Icons.gavel_rounded,
-          w.attentionBids.fill({'count': n(d.bidsAwaiting)}),
-          '/dashboard/projects',
+          icon: Icons.gavel_rounded,
+          label: w.attentionBids.fill({'count': num(d.bidsAwaiting)}),
+          href: '/dashboard/projects',
+          email: false,
         ),
       if (changes > 0)
         (
-          Icons.error_outline_rounded,
-          w.attentionChanges.fill({'count': n(changes)}),
-          (d.hiringByStatus['CHANGES_REQUESTED'] ?? 0) > 0
+          icon: Icons.error_outline_rounded,
+          label: w.attentionChanges.fill({'count': num(changes)}),
+          href: (d.hiringByStatus['CHANGES_REQUESTED'] ?? 0) > 0
               ? '/dashboard/jobs'
               : (d.clientByStatus['CHANGES_REQUESTED'] ?? 0) > 0
               ? '/dashboard/projects'
               : '/dashboard/books',
+          email: false,
         ),
-      if (d.unreadMessages > 0)
-        (
-          Icons.forum_outlined,
-          w.attentionMessages.fill({'count': n(d.unreadMessages)}),
-          '/dashboard/messages',
-        ),
+      for (final (label, state, href, email) in setup)
+        if (state == _Step.todo)
+          (
+            icon: email
+                ? Icons.mark_email_unread_outlined
+                : Icons.verified_user_outlined,
+            label: label,
+            href: href,
+            email: email,
+          ),
     ];
+    final pending = [
+      for (final (label, state, _, _) in setup)
+        if (state == _Step.pending) label,
+    ];
+    final done = setup.where((x) => x.$2 == _Step.done).length;
+
     return _Card(
-      title: w.attentionTitle,
-      child: items.isEmpty
+      title: n.nextTitle,
+      trailing: done < setup.length
           ? Text(
-              w.allClear,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: c.ink2),
+              n.nextProgress.fill({
+                'done': num(done),
+                'total': num(setup.length),
+              }),
+              style: text.labelMedium?.copyWith(color: c.ink2),
             )
-          : Column(
-              children: [
-                for (final (icon, label, href) in items)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(icon, color: c.tints[1].ink),
-                    title: Text(label),
-                    trailing: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_left_rounded
-                          : Icons.chevron_right_rounded,
-                    ),
-                    onTap: () => openLink(context, ref, href),
+          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 4,
+        children: [
+          if (items.isEmpty && pending.isEmpty)
+            Text(w.allClear, style: text.bodyMedium?.copyWith(color: c.ink2)),
+          if (items.isNotEmpty)
+            SoftSurface(
+              tint: c.primarySoft,
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 10,
+                children: [
+                  Row(
+                    spacing: 10,
+                    children: [
+                      Icon(items.first.icon, color: c.primarySoft.ink),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              n.nextFirst,
+                              style: text.labelMedium?.copyWith(
+                                color: c.primarySoft.ink,
+                              ),
+                            ),
+                            Text(items.first.label, style: text.titleSmall),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-              ],
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: BaghKey(
+                      label: items.first.email
+                          ? s.auth.verifyBannerAction
+                          : n.nextGo,
+                      loading: items.first.email && _sending,
+                      onPressed: () => _go(items.first),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          for (final item in items.skip(1))
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(item.icon, color: c.tints[1].ink),
+              title: Text(item.label),
+              trailing: item.email && _sending
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(forward),
+              onTap: () => _go(item),
+            ),
+          for (final label in pending)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.schedule_rounded, color: c.tints[1].ink),
+              title: Text(
+                label,
+                style: text.bodyMedium?.copyWith(color: c.ink2),
+              ),
+              trailing: Text(
+                s.app.setupPending,
+                style: text.labelMedium?.copyWith(color: c.tints[1].ink),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

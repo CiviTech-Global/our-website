@@ -12,6 +12,7 @@ import '../../design/widgets/girih.dart';
 import '../../design/widgets/soft_surface.dart';
 import '../../l10n/l10n.dart';
 import '../help/help_sheet.dart';
+import 'areas_card.dart';
 import 'workspace_data.dart';
 import 'workspace_panels.dart';
 
@@ -56,6 +57,7 @@ class MeScreen extends ConsumerWidget {
         onRefresh: () async {
           ref
             ..invalidate(workspaceProvider)
+            ..invalidate(memberAreasProvider)
             ..invalidate(trackedRequestsProvider);
           if (user != null) await ref.read(sessionProvider.notifier).reload();
           await ref.read(workspaceProvider.future);
@@ -153,6 +155,8 @@ class MeScreen extends ConsumerWidget {
                     ? const SizedBox.shrink()
                     : WorkspacePanels(user: user, workspace: workspace),
               ),
+              const SizedBox(height: BaghSpace.gutter),
+              const AreasCard(),
             ],
             const SizedBox(height: BaghSpace.gutter),
             SoftSurface(
@@ -187,6 +191,13 @@ class MeScreen extends ConsumerWidget {
                         _ => null,
                       },
                       () => context.push('/dashboard/requests'),
+                    ),
+                  if (user != null)
+                    row(
+                      Icons.co_present_outlined,
+                      s.plans.navExpert,
+                      hint: s.dashNav.hintExpert,
+                      () => context.push('/dashboard/expert'),
                     ),
                   if (user != null)
                     row(

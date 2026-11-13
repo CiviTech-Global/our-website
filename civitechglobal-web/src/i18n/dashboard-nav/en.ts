@@ -24,6 +24,7 @@ const en: typeof fa = {
   planServices: 'Plan & requests',
   planServicesHint: 'Your plan, your expert profile, and the requests you sent us.',
 
+  areasTitle: 'Your areas',
   moreTools: '{count} more sections',
   fewerTools: 'Only what I use',
   moreToolsHint: 'Sections you have not used yet. Once you start, they move up into the list by themselves.',

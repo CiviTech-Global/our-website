@@ -148,6 +148,7 @@ class StringsDashNav extends L10nNode {
   String get profileHint => string("profileHint");
   String get planServices => string("planServices");
   String get planServicesHint => string("planServicesHint");
+  String get areasTitle => string("areasTitle");
   String get moreTools => string("moreTools");
   String get fewerTools => string("fewerTools");
   String get moreToolsHint => string("moreToolsHint");

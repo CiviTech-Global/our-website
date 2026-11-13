@@ -157,6 +157,33 @@ final workspaceProvider = FutureProvider<Workspace?>((ref) async {
       );
 });
 
+/// Which parts of the member dashboard this member uses, as
+/// `GET /market/me/areas`: the "Your areas" card shows those sections and
+/// tucks the rest under "more".
+class MemberAreas {
+  const MemberAreas(this.used);
+
+  factory MemberAreas.fromJson(Map<String, Object?> j) => MemberAreas({
+    for (final MapEntry(:key, :value) in j.entries)
+      if (value == true) key,
+  });
+
+  final Set<String> used;
+
+  bool has(String area) => used.contains(area);
+}
+
+/// Null while nobody is signed in.
+final memberAreasProvider = FutureProvider<MemberAreas?>((ref) async {
+  if (ref.watch(_accountProvider) == null) return null;
+  return ref
+      .read(apiClientProvider)
+      .get(
+        '/market/me/areas',
+        parse: (d) => MemberAreas.fromJson(d! as Map<String, Object?>),
+      );
+});
+
 /// A request made through one of the account-less intakes and kept on the
 /// account by its code. [state] is where it stands now, or null when the
 /// request can no longer be found.

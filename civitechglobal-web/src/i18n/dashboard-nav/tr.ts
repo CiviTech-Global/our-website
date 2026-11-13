@@ -24,6 +24,7 @@ const tr: typeof fa = {
   planServices: 'Plan ve talepler',
   planServicesHint: 'Planınız, uzman profiliniz ve bize gönderdiğiniz talepler.',
 
+  areasTitle: 'Alanlarınız',
   moreTools: '{count} bölüm daha',
   fewerTools: 'Yalnızca kullandıklarım',
   moreToolsHint: 'Henüz kullanmadığınız bölümler. Başladığınızda kendiliğinden listeye çıkarlar.',

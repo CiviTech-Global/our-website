@@ -24,6 +24,7 @@ const fr: typeof fa = {
   planServices: 'Abonnement & demandes',
   planServicesHint: 'Votre abonnement, votre profil d’expert et les demandes que vous nous avez envoyées.',
 
+  areasTitle: 'Vos espaces',
   moreTools: '{count} autres sections',
   fewerTools: 'Seulement ce que j’utilise',
   moreToolsHint: 'Les sections que vous n’avez pas encore utilisées. Dès que vous commencez, elles remontent d’elles-mêmes.',

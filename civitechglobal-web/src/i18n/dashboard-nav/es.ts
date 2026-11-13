@@ -24,6 +24,7 @@ const es: typeof fa = {
   planServices: 'Plan y solicitudes',
   planServicesHint: 'Su plan, su perfil de experto y las solicitudes que nos envió.',
 
+  areasTitle: 'Sus áreas',
   moreTools: '{count} secciones más',
   fewerTools: 'Solo lo que uso',
   moreToolsHint: 'Secciones que aún no ha usado. Cuando empiece, suben solas a la lista.',

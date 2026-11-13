@@ -24,6 +24,7 @@ const de: typeof fa = {
   planServices: 'Plan & Anfragen',
   planServicesHint: 'Ihr Plan, Ihr Expertenprofil und die Anfragen, die Sie uns geschickt haben.',
 
+  areasTitle: 'Ihre Bereiche',
   moreTools: '{count} weitere Bereiche',
   fewerTools: 'Nur was ich nutze',
   moreToolsHint: 'Bereiche, die Sie noch nicht genutzt haben. Sobald Sie beginnen, rücken sie von selbst in die Liste.',

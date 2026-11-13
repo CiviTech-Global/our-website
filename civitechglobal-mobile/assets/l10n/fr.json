@@ -3794,6 +3794,7 @@
   "profileHint": "Ce que les autres voient de vous, et la vérification d’identité requise pour publier et proposer.",
   "planServices": "Abonnement & demandes",
   "planServicesHint": "Votre abonnement, votre profil d’expert et les demandes que vous nous avez envoyées.",
+  "areasTitle": "Vos espaces",
   "moreTools": "{count} autres sections",
   "fewerTools": "Seulement ce que j’utilise",
   "moreToolsHint": "Les sections que vous n’avez pas encore utilisées. Dès que vous commencez, elles remontent d’elles-mêmes.",
