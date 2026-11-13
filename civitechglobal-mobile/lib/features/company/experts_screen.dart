@@ -22,6 +22,7 @@ class Expert {
     required this.slug,
     required this.fullName,
     required this.headline,
+    this.affiliation,
     this.bio,
     this.specialities = const [],
     this.languages = const [],
@@ -42,6 +43,10 @@ class Expert {
       slug: '${j['slug']}',
       fullName: '${j['fullName'] ?? ''}',
       headline: '${j['headline'] ?? ''}',
+      affiliation: switch (j['affiliation']) {
+        final String a when a.trim().isNotEmpty => a.trim(),
+        _ => null,
+      },
       bio: j['bio'] as String?,
       specialities: strings(j['specialities']),
       languages: strings(j['languages']),
@@ -62,6 +67,9 @@ class Expert {
   final String slug;
   final String fullName;
   final String headline;
+
+  /// The organisation the expert comes from, such as a partner company.
+  final String? affiliation;
   final String? bio;
   final List<String> specialities;
   final List<String> languages;
@@ -411,6 +419,7 @@ class _Standing extends ConsumerWidget {
       spacing: 6,
       runSpacing: 6,
       children: [
+        if (expert.affiliation case final org?) _Tag(org, c.tints[1]),
         if (expert.acceptsConsultations)
           _Tag(k.takesConsultations, c.primarySoft)
         else

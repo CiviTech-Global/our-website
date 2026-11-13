@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/api_exception.dart';
+import '../../core/auth/session.dart';
 import '../../core/format.dart';
 import '../../core/geo.dart';
 import '../../design/haptics.dart';
@@ -510,36 +513,78 @@ class _SubscriptionRow extends ConsumerWidget {
   }
 }
 
-/// A whole plan, free and active at once, for a member or a company.
+/// Members or companies a grant can go to, found by name, email, username,
+/// phone or national ID: `GET /billing/admin/holders`.
+final _holdersProvider = FutureProvider.autoDispose
+    .family<List<StaffRow>, ({String subject, String search})>(
+      (ref, q) => ref
+          .read(apiClientProvider)
+          .get(
+            '/billing/admin/holders',
+            query: {'subject': q.subject, 'search': q.search},
+            parse: _rows,
+          ),
+    );
+
+/// A whole plan, free, for a member or a company. Active at once; the same
+/// plan granted again starts when the running one ends.
 class StaffGrantScreen extends ConsumerStatefulWidget {
-  const StaffGrantScreen({super.key});
+  const StaffGrantScreen({
+    super.key,
+    this.subject,
+    this.holderId,
+    this.holderName,
+  });
+
+  /// Chosen already when the desk comes from an account it opened.
+  final String? subject;
+  final String? holderId;
+  final String? holderName;
 
   @override
   ConsumerState<StaffGrantScreen> createState() => _StaffGrantScreenState();
 }
 
 class _StaffGrantScreenState extends ConsumerState<StaffGrantScreen> {
-  final _form = GlobalKey<FormState>();
-  final _holder = TextEditingController();
+  final _search = TextEditingController();
   final _note = TextEditingController();
-  String _subject = 'USER';
+  Timer? _debounce;
+  String _term = '';
+  late String _subject = planSubjects.contains(widget.subject)
+      ? widget.subject!
+      : 'USER';
+  late ({String id, String label})? _holder = widget.holderId == null
+      ? null
+      : (
+          id: widget.holderId!,
+          label: (widget.holderName?.isNotEmpty ?? false)
+              ? widget.holderName!
+              : widget.holderId!,
+        );
   String _tier = 'PRO';
-  int _months = 1;
+  int _months = 6;
   bool _busy = false;
-  bool _tried = false;
   String? _error;
 
   @override
   void dispose() {
-    _holder.dispose();
+    _debounce?.cancel();
+    _search.dispose();
     _note.dispose();
     super.dispose();
   }
 
+  void _onSearch(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) setState(() => _term = value.trim());
+    });
+  }
+
   Future<void> _grant() async {
     final s = ref.read(stringsProvider);
-    if (!_tried) setState(() => _tried = true);
-    if (_busy || !_form.currentState!.validate()) return;
+    final holder = _holder;
+    if (_busy || holder == null) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -554,9 +599,9 @@ class _StaffGrantScreenState extends ConsumerState<StaffGrantScreen> {
               'tier': _tier,
               'months': _months,
               if (_subject == 'COMPANY')
-                'companyId': _holder.text.trim()
+                'companyId': holder.id
               else
-                'userId': _holder.text.trim(),
+                'userId': holder.id,
               if (_note.text.trim().isNotEmpty) 'note': _note.text.trim(),
             },
           );
@@ -578,89 +623,154 @@ class _StaffGrantScreenState extends ConsumerState<StaffGrantScreen> {
     final s = ref.watch(stringsProvider);
     final p = s.plans;
     final language = ref.watch(l10nProvider).language;
+    final c = BaghColors.of(context);
+    final text = Theme.of(context).textTheme;
     final periods =
         ref.watch(planCatalogProvider).value?.periods ??
         const <({int months, int discountPercent})>[];
-    final months = {1, for (final period in periods) period.months}.toList()
+    final months = {1, 6, for (final period in periods) period.months}.toList()
       ..sort();
+    final holder = _holder;
+    final searching = holder == null && _term.length >= 2;
+    final matches = searching
+        ? ref.watch(_holdersProvider((subject: _subject, search: _term)))
+        : null;
+
+    String tierName(Object? tier) =>
+        tier == 'CUSTOM' ? p.custom : p.tiers.label('${tier ?? 'FREE'}');
 
     return AccountPage(
       title: p.grantTitle,
       subtitle: p.grantHint,
       children: [
-        Form(
-          key: _form,
-          autovalidateMode: _tried
-              ? AutovalidateMode.always
-              : AutovalidateMode.disabled,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 16,
-            children: [
-              DropdownButtonFormField<String>(
-                isExpanded: true,
-                initialValue: _subject,
-                decoration: InputDecoration(labelText: p.holder),
-                items: [
-                  for (final subject in planSubjects)
-                    DropdownMenuItem(
-                      value: subject,
-                      child: Text(p.subjects.label(subject)),
-                    ),
-                ],
-                onChanged: (v) => setState(() => _subject = v ?? _subject),
+        DropdownButtonFormField<String>(
+          isExpanded: true,
+          initialValue: _subject,
+          decoration: InputDecoration(labelText: p.holder),
+          items: [
+            for (final subject in planSubjects)
+              DropdownMenuItem(
+                value: subject,
+                child: Text(p.subjects.label(subject)),
               ),
-              TextFormField(
-                controller: _holder,
-                textDirection: TextDirection.ltr,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  labelText: _subject == 'COMPANY'
-                      ? p.grantCompanyId
-                      : p.grantUserId,
+          ],
+          onChanged: (v) => setState(() {
+            _subject = v ?? _subject;
+            _holder = null;
+          }),
+        ),
+        if (holder != null)
+          SoftSurface(
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(holder.label, style: text.titleSmall),
+                      Text(
+                        holder.id,
+                        textDirection: TextDirection.ltr,
+                        style: text.bodySmall?.copyWith(color: c.ink2),
+                      ),
+                    ],
+                  ),
                 ),
-                validator: Validators(s).required,
-              ),
-              DropdownButtonFormField<String>(
-                isExpanded: true,
-                initialValue: _tier,
-                decoration: InputDecoration(labelText: p.wholeTier),
-                items: [
-                  for (final tier in planTiers)
-                    if (tier != 'FREE')
-                      DropdownMenuItem(
-                        value: tier,
-                        child: Text(p.tiers.label(tier)),
-                      ),
-                ],
-                onChanged: (v) => setState(() => _tier = v ?? _tier),
-              ),
-              DropdownButtonFormField<int>(
-                isExpanded: true,
-                initialValue: months.contains(_months) ? _months : months.first,
-                decoration: InputDecoration(labelText: p.months),
-                items: [
-                  for (final m in months)
-                    DropdownMenuItem(
-                      value: m,
-                      child: Text(
-                        p.monthsOption.fill({
-                          'count': localDigits(m, language),
-                        }),
-                      ),
-                    ),
-                ],
-                onChanged: (v) => setState(() => _months = v ?? _months),
-              ),
-              TextFormField(
-                controller: _note,
-                maxLength: 500,
-                minLines: 2,
-                maxLines: 4,
-                decoration: InputDecoration(labelText: p.note),
-              ),
-            ],
+                TextButton(
+                  onPressed: () => setState(() => _holder = null),
+                  child: Text(p.grantChange),
+                ),
+              ],
+            ),
+          )
+        else ...[
+          TextField(
+            controller: _search,
+            autocorrect: false,
+            onChanged: _onSearch,
+            decoration: InputDecoration(
+              labelText: _subject == 'COMPANY'
+                  ? p.grantFindCompany
+                  : p.grantFindMember,
+              helperText: _subject == 'COMPANY'
+                  ? p.grantSearchCompanyHint
+                  : p.grantSearchMemberHint,
+              prefixIcon: const Icon(Icons.search_rounded),
+            ),
           ),
+          if (matches != null)
+            AsyncView(
+              value: matches,
+              onRetry: () => ref.invalidate(_holdersProvider),
+              isEmpty: (rows) => rows.isEmpty,
+              empty: p.grantNoMatch,
+              data: (rows) => SoftSurface(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(
+                  children: [
+                    for (final row in rows)
+                      ListTile(
+                        title: Text('${row['label']}'),
+                        subtitle: Text(
+                          [
+                            if ('${row['detail'] ?? ''}'.isNotEmpty)
+                              '${row['detail']}',
+                            [
+                              tierName(row['currentTier']),
+                              if (DateTime.tryParse('${row['activeUntil']}')
+                                  case final until?)
+                                p.grantActiveUntil.fill({
+                                  'date': formatDate(until.toLocal(), language),
+                                }),
+                            ].join(' · '),
+                          ].join('\n'),
+                          style: text.bodySmall?.copyWith(color: c.ink2),
+                        ),
+                        onTap: () => setState(
+                          () => _holder = (
+                            id: '${row['id']}',
+                            label: '${row['label']}',
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+        DropdownButtonFormField<String>(
+          isExpanded: true,
+          initialValue: _tier,
+          decoration: InputDecoration(labelText: p.wholeTier),
+          items: [
+            for (final tier in planTiers)
+              if (tier != 'FREE')
+                DropdownMenuItem(value: tier, child: Text(p.tiers.label(tier))),
+          ],
+          onChanged: (v) => setState(() => _tier = v ?? _tier),
+        ),
+        DropdownButtonFormField<int>(
+          isExpanded: true,
+          initialValue: months.contains(_months) ? _months : months.first,
+          decoration: InputDecoration(labelText: p.months),
+          items: [
+            for (final m in months)
+              DropdownMenuItem(
+                value: m,
+                child: Text(
+                  p.monthsOption.fill({'count': localDigits(m, language)}),
+                ),
+              ),
+          ],
+          onChanged: (v) => setState(() => _months = v ?? _months),
+        ),
+        TextField(
+          controller: _note,
+          maxLength: 500,
+          minLines: 2,
+          maxLines: 4,
+          decoration: InputDecoration(labelText: p.note),
         ),
         if (_error != null) FormMessage(_error!),
         BaghKey(
@@ -668,7 +778,7 @@ class _StaffGrantScreenState extends ConsumerState<StaffGrantScreen> {
           icon: Icons.card_giftcard_rounded,
           loading: _busy,
           expand: true,
-          onPressed: _grant,
+          onPressed: holder == null ? null : _grant,
         ),
       ],
     );
@@ -747,6 +857,7 @@ class StaffAccountsScreen extends ConsumerWidget {
                       ].join(' · '),
                       style: text.bodySmall?.copyWith(color: c.ink2),
                     ),
+                    onTap: () => _accountActions(context, ref, a),
                     onLongPress: () {
                       Clipboard.setData(ClipboardData(text: '${a['id']}'));
                       ScaffoldMessenger.of(
@@ -761,6 +872,95 @@ class StaffAccountsScreen extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// What the desk does with an account it opened: copy its IDs, or give it a
+/// plan — the company, its representative's shops, or the person.
+void _accountActions(BuildContext context, WidgetRef ref, StaffRow a) {
+  final s = ref.read(stringsProvider);
+  final p = s.plans;
+  final session = ref.read(sessionProvider).value;
+  final canGrant =
+      session?.role == 'SUPER_ADMIN' ||
+      (session?.permissions.contains('billing') ?? false);
+  final userId = '${a['id']}';
+  final company = a['company'] is Map
+      ? (a['company']! as Map).cast<String, Object?>()
+      : null;
+  final person = '${a['firstName'] ?? ''} ${a['lastName'] ?? ''}'.trim();
+
+  void copy(String value) {
+    Clipboard.setData(ClipboardData(text: value));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value)));
+  }
+
+  void grant(String subject, String holder, String name) {
+    context.push(
+      Uri(
+        path: '/staff/plans/grant',
+        queryParameters: {'subject': subject, 'holder': holder, 'name': name},
+      ).toString(),
+    );
+  }
+
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheet) => SafeArea(
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.copy_rounded),
+            title: Text(p.grantUserId),
+            subtitle: Text(userId, textDirection: TextDirection.ltr),
+            onTap: () {
+              Navigator.pop(sheet);
+              copy(userId);
+            },
+          ),
+          if (company != null)
+            ListTile(
+              leading: const Icon(Icons.copy_rounded),
+              title: Text(p.grantCompanyId),
+              subtitle: Text(
+                '${company['id']}',
+                textDirection: TextDirection.ltr,
+              ),
+              onTap: () {
+                Navigator.pop(sheet);
+                copy('${company['id']}');
+              },
+            ),
+          if (canGrant) ...[
+            const Divider(),
+            if (company != null)
+              ListTile(
+                leading: const Icon(Icons.card_giftcard_rounded),
+                title: Text('${p.grantTitle}: ${p.subjects.label('COMPANY')}'),
+                onTap: () {
+                  Navigator.pop(sheet);
+                  grant('COMPANY', '${company['id']}', '${company['name']}');
+                },
+              ),
+            for (final subject in const ['BUSINESS', 'USER'])
+              ListTile(
+                leading: const Icon(Icons.card_giftcard_rounded),
+                title: Text('${p.grantTitle}: ${p.subjects.label(subject)}'),
+                onTap: () {
+                  Navigator.pop(sheet);
+                  grant(
+                    subject,
+                    userId,
+                    person.isEmpty ? '${a['email']}' : person,
+                  );
+                },
+              ),
+          ],
+        ],
+      ),
+    ),
+  );
 }
 
 /// A company account and its company page, opened by the desk for a company

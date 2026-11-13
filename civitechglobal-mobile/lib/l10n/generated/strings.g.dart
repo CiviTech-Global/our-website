@@ -201,6 +201,8 @@ class StringsPlans extends L10nNode {
   String get expertVerifyFirst => string("expertVerifyFirst");
   String get hourlyFee => string("hourlyFee");
   String get hourlyFeeHint => string("hourlyFeeHint");
+  String get expertAffiliation => string("expertAffiliation");
+  String get expertAffiliationHint => string("expertAffiliationHint");
   String get feePerHour => string("feePerHour");
   L10nMap get expertStatuses => L10nMap(node("expertStatuses"));
   String get expertHeadline => string("expertHeadline");
@@ -228,6 +230,13 @@ class StringsPlans extends L10nNode {
   String get grantHint => string("grantHint");
   String get grantUserId => string("grantUserId");
   String get grantCompanyId => string("grantCompanyId");
+  String get grantFindMember => string("grantFindMember");
+  String get grantFindCompany => string("grantFindCompany");
+  String get grantSearchMemberHint => string("grantSearchMemberHint");
+  String get grantSearchCompanyHint => string("grantSearchCompanyHint");
+  String get grantNoMatch => string("grantNoMatch");
+  String get grantChange => string("grantChange");
+  String get grantActiveUntil => string("grantActiveUntil");
   String get note => string("note");
   String get grant => string("grant");
   String get granted => string("granted");

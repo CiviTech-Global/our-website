@@ -37,6 +37,7 @@ import { UploadStatus } from '@/components/ui/UploadStatus';
 const EMPTY = {
   fullName: '',
   headline: '',
+  affiliation: '',
   slug: '',
   bio: '',
   specialities: '',
@@ -108,6 +109,7 @@ export default function AdminExpertsPage() {
     setValues({
       fullName: expert.fullName,
       headline: expert.headline,
+      affiliation: expert.affiliation ?? '',
       slug: expert.slug,
       bio: expert.bio ?? '',
       specialities: expert.specialities.join('، '),
@@ -142,6 +144,7 @@ export default function AdminExpertsPage() {
     const payload: ExpertPayload = {
       fullName: values.fullName.trim(),
       headline: values.headline.trim(),
+      affiliation: values.affiliation.trim(),
       slug: values.slug.trim() || undefined,
       bio: values.bio.trim() || undefined,
       specialities: list(values.specialities),
@@ -327,7 +330,10 @@ export default function AdminExpertsPage() {
                       </Badge>
                     )}
                   </div>
-                  <p className="mt-0.5 text-body text-app-text-3">{expert.headline}</p>
+                  <p className="mt-0.5 text-body text-app-text-3">
+                    {expert.headline}
+                    {expert.affiliation && ` · ${expert.affiliation}`}
+                  </p>
                   <p className="mt-0.5 text-label text-app-text-4">
                     <span className="ltr font-mono">/experts/{expert.slug}</span>
                     {' · '}
@@ -412,6 +418,15 @@ export default function AdminExpertsPage() {
               required
               value={values.headline}
               onChange={(e) => set('headline')(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label={t.plans.expertAffiliation} htmlFor="expert-affiliation" hint={t.plans.expertAffiliationHint}>
+            <Input
+              id="expert-affiliation"
+              maxLength={160}
+              value={values.affiliation}
+              onChange={(e) => set('affiliation')(e.target.value)}
             />
           </FormField>
 

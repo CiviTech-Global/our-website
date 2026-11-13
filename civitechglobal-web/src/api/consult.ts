@@ -26,6 +26,8 @@ export interface Expert {
   slug: string;
   fullName: string;
   headline: string;
+  /** The organisation the expert comes from, such as a partner company. */
+  affiliation: string | null;
   bio: string | null;
   specialities: string[];
   languages: string[];
@@ -72,6 +74,8 @@ export interface ExpertAccountPayload {
 export interface ExpertPayload {
   fullName: string;
   headline: string;
+  /** Staff only; blank clears it. */
+  affiliation?: string;
   slug?: string;
   bio?: string;
   specialities?: string[];

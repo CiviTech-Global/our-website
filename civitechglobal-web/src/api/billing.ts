@@ -215,12 +215,36 @@ export function useAdminSubscriptions(query: { page: number; status?: string; se
   });
 }
 
+/** A member or company a grant can go to, with what it holds now. */
+export interface PlanHolder {
+  id: string;
+  label: string;
+  detail: string;
+  currentTier: PlanTier | 'CUSTOM';
+  activeUntil: string | null;
+  subscriptions: Array<{ code: string; tier: PlanTier | 'CUSTOM'; startsAt: string | null; endsAt: string | null }>;
+}
+
+export function usePlanHolderSearch(subject: PlanSubject, search: string) {
+  const term = search.trim();
+  return useQuery({
+    queryKey: ['billing', 'admin', 'holders', subject, term],
+    queryFn: async () =>
+      (await api.get<PlanHolder[]>('/billing/admin/holders', { params: { subject, search: term } })).data,
+    enabled: term.length >= 2,
+    staleTime: 10_000,
+  });
+}
+
 export function useGrantPlan() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: PlanSelection & { userId?: string; companyId?: string; note?: string }) =>
       (await api.post('/billing/admin/grants', input)).data,
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.adminSubscriptions }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.adminSubscriptions });
+      void qc.invalidateQueries({ queryKey: ['billing', 'admin', 'holders'] });
+    },
   });
 }
 

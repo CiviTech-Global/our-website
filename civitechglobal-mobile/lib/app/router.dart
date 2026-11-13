@@ -251,7 +251,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'grant',
-                builder: (_, _) => const StaffGrantScreen(),
+                builder: (_, state) => StaffGrantScreen(
+                  subject: state.uri.queryParameters['subject'],
+                  holderId: state.uri.queryParameters['holder'],
+                  holderName: state.uri.queryParameters['name'],
+                ),
               ),
             ],
           ),

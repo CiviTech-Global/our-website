@@ -175,6 +175,16 @@ router.get(
   }),
 );
 
+/** Members or companies a grant can go to, by name, email, username, phone or national ID. */
+router.get(
+  '/admin/holders',
+  ...canBill,
+  validate({ query: z.object({ subject, search: z.string().trim().min(2).max(120) }) }),
+  wrap(async (req, res) => {
+    successResponse(res, await subscriptions.searchHolders(req.query.subject as never, String(req.query.search)));
+  }),
+);
+
 router.post(
   '/admin/grants',
   ...canBill,
