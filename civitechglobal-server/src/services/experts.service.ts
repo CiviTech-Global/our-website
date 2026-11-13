@@ -17,9 +17,10 @@ import { notifySafely } from './notifications.service.js';
  *     and hand over, so the expert can keep their own fee and links current;
  *   - a verified member submits their own, which waits for staff approval.
  *
- * Either way an expert who takes consultations states an hourly fee, and
- * links to where their work can be read — GitHub, LinkedIn, a website — so a
- * client can judge them before asking. No email: clients reach experts through
+ * Either way an expert who takes consultations links to where their work can
+ * be read — GitHub, LinkedIn, a website — so a client can judge them before
+ * asking. An hourly fee is optional: partner experts, for one, consult on
+ * terms agreed between the companies rather than a public rate. No email: clients reach experts through
  * the platform, never around it.
  *
  * `acceptsConsultations` separates the two purposes the list serves: somebody
@@ -29,6 +30,8 @@ import { notifySafely } from './notifications.service.js';
 export interface ExpertInput {
   fullName: string;
   headline: string;
+  /** The organisation they come from; staff only. */
+  affiliation?: string | null;
   slug?: string;
   bio?: string;
   specialities?: string[];
@@ -45,7 +48,7 @@ export interface ExpertInput {
 }
 
 /** What an expert may change about their own profile. */
-export type OwnExpertInput = Omit<ExpertInput, 'slug' | 'featured' | 'published'>;
+export type OwnExpertInput = Omit<ExpertInput, 'slug' | 'featured' | 'published' | 'affiliation'>;
 
 /** The public URL for a photo, never its storage key. See showcase.service. */
 const photoUrl = (id: string, storedName: string | null): string | null =>
@@ -90,6 +93,7 @@ function normalize(input: Partial<ExpertInput>) {
   return {
     ...(input.fullName !== undefined ? { fullName: input.fullName.trim() } : {}),
     ...(input.headline !== undefined ? { headline: input.headline.trim() } : {}),
+    ...(input.affiliation !== undefined ? { affiliation: text(input.affiliation) } : {}),
     ...(input.bio !== undefined ? { bio: text(input.bio) } : {}),
     ...(input.specialities !== undefined
       ? { specialities: input.specialities.map((s) => s.trim()).filter(Boolean) }
@@ -120,15 +124,12 @@ interface Publishable {
 }
 
 /**
- * What a profile must have before the club shows it as bookable: a fee, and at
- * least one place a client can read the expert's work.
+ * What a profile must have before the club shows it as bookable: at least one
+ * place a client can read the expert's work. The fee may be left blank.
  */
 function assertComplete(row: Publishable, context: 'publish' | 'submit') {
   if (!row.acceptsConsultations) return;
   if (context === 'publish' && !row.published) return;
-  if (!row.hourlyFee || row.hourlyFee <= 0n) {
-    throw new AppError('برای پذیرش مشاوره، هزینهٔ هر ساعت مشاوره را وارد کنید.', 400);
-  }
   if (!row.linkedinUrl && !row.githubUrl && !row.websiteUrl) {
     throw new AppError('دست‌کم یکی از پیوندهای حرفه‌ای (لینکدین، گیت‌هاب یا وب‌سایت) لازم است.', 400);
   }
@@ -139,6 +140,7 @@ const publicFields = {
   slug: true,
   fullName: true,
   headline: true,
+  affiliation: true,
   bio: true,
   specialities: true,
   languages: true,

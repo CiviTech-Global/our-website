@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router';
-import { Globe, MessageCircle, UserRound } from 'lucide-react';
+import { Building2, Globe, MessageCircle, UserRound } from 'lucide-react';
 import { Github, Linkedin } from '@/components/ui/BrandIcons';
 import { expertPhotoSrc, usePublicExpert } from '@/api/consult';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -104,6 +104,15 @@ export default function ExpertProfilePage() {
         <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold text-text-primary">{expert.fullName}</h1>
           <p className="mt-1 text-text-secondary">{expert.headline}</p>
+          {expert.affiliation && (
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-text-secondary">
+              <Building2 className="h-4 w-4 shrink-0" aria-hidden />
+              <span>
+                <span className="sr-only">{t.plans.expertAffiliation}: </span>
+                {expert.affiliation}
+              </span>
+            </p>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {expert.acceptsConsultations ? (

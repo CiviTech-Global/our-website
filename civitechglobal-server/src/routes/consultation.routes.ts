@@ -91,6 +91,8 @@ const ownExpertSchema = z.object({
 const expertSchema = ownExpertSchema.extend({
   fullName: trimmed(120).min(2, 'نام الزامی است'),
   headline: trimmed(160).min(2, 'عنوان الزامی است'),
+  /** The organisation the expert comes from, such as a partner company. Blank clears it. */
+  affiliation: z.union([z.literal(''), trimmed(160)]).nullable().optional(),
   slug: trimmed(80).optional(),
   featured: z.coerce.boolean().optional(),
   published: z.coerce.boolean().optional(),

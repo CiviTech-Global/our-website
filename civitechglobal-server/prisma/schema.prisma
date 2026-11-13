@@ -2250,6 +2250,9 @@ model Expert {
   fullName String  @map("full_name")
   /// One line under the name: "Backend engineer, 12 years".
   headline String
+  /// The organisation the expert comes from, shown on their profile — a
+  /// partner company whose teams are listed in the club. Set by staff only.
+  affiliation String?
   bio      String?
 
   /// What they can actually help with. Free text, because the field's own
@@ -2281,8 +2284,8 @@ model Expert {
   userId String? @unique @map("user_id")
   user   User?   @relation("ExpertAccount", fields: [userId], references: [id], onDelete: SetNull)
 
-  /// What an hour of consultation costs, in feeCurrency. Required before a
-  /// profile that takes consultations is published.
+  /// What an hour of consultation costs, in feeCurrency. Optional: an expert
+  /// without one is booked on terms settled when the session is arranged.
   hourlyFee   BigInt? @map("hourly_fee")
   feeCurrency String  @default("IRT") @map("fee_currency")
 

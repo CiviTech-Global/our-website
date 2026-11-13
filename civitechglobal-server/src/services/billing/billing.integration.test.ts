@@ -6,7 +6,7 @@ import { prisma } from '../../config/database.js';
 import { AppError } from '../../middleware/errorHandler.js';
 import { seedPlanCatalog, setPrices } from './catalog.service.js';
 import { MONTH_MS, assertStock, entitlementFor, holderKey, releaseQuota, useQuota, type Holder } from './quota.service.js';
-import { checkout, confirmPayment, getOwnBilling, grant, quote } from './subscription.service.js';
+import { checkout, confirmPayment, getOwnBilling, grant, quote, searchHolders } from './subscription.service.js';
 
 /**
  * Plans and limits, against the real database.
@@ -177,6 +177,55 @@ describe('subscriptions', () => {
 
     const business = await entitlementFor({ subject: 'BUSINESS', userId }, 'business.shops');
     expect(business.source).toBe('free');
+  });
+
+  it('a tier raised in the catalogue reaches its holders, and a cut never does', async () => {
+    const userId = await newUser();
+    await grant('staff-test', { subject: 'USER', userId, tier: 'PRO', months: 6 });
+    const level = await prisma.planFeatureLevel.findFirstOrThrow({
+      where: { tier: 'PRO', feature: { key: 'user.project_bids' } },
+    });
+    try {
+      await prisma.planFeatureLevel.update({ where: { id: level.id }, data: { limit: 30 } });
+      expect(await entitlementFor({ subject: 'USER', userId }, 'user.project_bids')).toMatchObject({ limit: 30 });
+
+      await prisma.planFeatureLevel.update({ where: { id: level.id }, data: { limit: 10 } });
+      expect(await entitlementFor({ subject: 'USER', userId }, 'user.project_bids')).toMatchObject({ limit: 20 });
+    } finally {
+      await prisma.planFeatureLevel.update({ where: { id: level.id }, data: { limit: level.limit } });
+    }
+  });
+
+  it('a renewal of the same tier starts when the running one ends', async () => {
+    const userId = await newUser();
+    const first = await grant('staff-test', { subject: 'USER', userId, tier: 'PRO', months: 6 });
+    const renewal = await grant('staff-test', { subject: 'USER', userId, tier: 'PRO', months: 6 });
+    expect(renewal.startsAt!.getTime()).toBe(first.endsAt!.getTime());
+    expect(renewal.endsAt!.getTime() - first.startsAt!.getTime()).toBe(12 * MONTH_MS);
+
+    // Another tier is an upgrade, not a renewal: it starts at once.
+    const vip = await grant('staff-test', { subject: 'USER', userId, tier: 'VIP', months: 1 });
+    expect(vip.startsAt!.getTime()).toBeLessThanOrEqual(Date.now());
+  });
+
+  it('finds who a grant can go to, with what they hold now', async () => {
+    const userId = await newUser();
+    await prisma.user.update({ where: { id: userId }, data: { username: `holder${RUN}`, phone: '+989121234567' } });
+    await grant('staff-test', { subject: 'USER', userId, tier: 'PRO', months: 6 });
+
+    const byUsername = await searchHolders('USER', `@holder${RUN}`);
+    expect(byUsername).toEqual([expect.objectContaining({ id: userId, currentTier: 'PRO' })]);
+    expect((await searchHolders('BUSINESS', `holder${RUN}`))[0]).toMatchObject({ id: userId, currentTier: 'FREE' });
+    expect((await searchHolders('USER', '09121234567')).map((h) => h.id)).toContain(userId);
+
+    const ownerId = await newUser('COMPANY');
+    const company = await prisma.company.create({
+      data: { ownerId, name: `Partner ${RUN}`, slug: `partner-${RUN}`, nationalId: `9${Date.now()}`.slice(0, 11) },
+      select: { id: true, nationalId: true },
+    });
+    companyIds.push(company.id);
+    expect((await searchHolders('COMPANY', `partner ${RUN}`))[0]).toMatchObject({ id: company.id, currentTier: 'FREE' });
+    expect((await searchHolders('COMPANY', company.nationalId!))[0]).toMatchObject({ id: company.id });
   });
 
   it('prices a custom mix from different tiers, with the period discount', async () => {

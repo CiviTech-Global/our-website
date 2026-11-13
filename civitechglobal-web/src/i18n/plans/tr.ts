@@ -125,7 +125,10 @@ const tr: typeof fa = {
     'Uzmanlar kulübünde yer alın ve danışmanlıklarınız için ücret alın. Yeni bir profil, destek ekibi inceledikten sonra yayınlanır.',
   expertVerifyFirst: 'Danışman profili oluşturmadan önce kimlik doğrulamasını tamamlayın.',
   hourlyFee: 'Danışmanlık saat ücreti (Toman)',
-  hourlyFeeHint: 'Danışmanlık almak için zorunludur ve sayfanızda gösterilir.',
+  hourlyFeeHint:
+    'İsteğe bağlı. Girilirse sayfanızda gösterilir; girilmezse ücret görüşme ayarlanırken kararlaştırılır.',
+  expertAffiliation: 'Kuruluş',
+  expertAffiliationHint: 'Uzmanın geldiği şirket, örneğin bir iş ortağı. Profilinde gösterilir.',
   feePerHour: '{amount} Toman / saat',
   expertStatuses: {
     DRAFT: 'Taslak',
@@ -151,16 +154,24 @@ const tr: typeof fa = {
 
   adminPlansTitle: 'Planlar ve fiyatlar',
   adminPlansIntro:
-    'Her seviyenin aylık fiyatını belirleyin. Fiyatlar yalnızca sonraki satın almalara uygulanır; satın alınmış abonelikler fiyatlarını ve sınırlarını korur. Fiyatı olmayan seviye satın alınamaz.',
+    'Her seviyenin aylık fiyatını belirleyin. Fiyatlar yalnızca sonraki satın almalara uygulanır ve etkin abonelikler fiyatlarını korur. Bir seviyenin sınırını yükseltmek, o seviyeye sahip herkese ulaşır; düşürmek ise dönemleri bitene kadar onları etkilemez. Fiyatı olmayan seviye satın alınamaz.',
   priceIrt: 'Toman',
   priceUsdt: 'USDT',
   savePrices: 'Fiyatları kaydet',
   pricesSaved: 'Fiyatlar kaydedildi.',
   subscriptionsTitle: 'Abonelikler',
   grantTitle: 'Plan ver',
-  grantHint: 'Kurucu üye, telafi veya desteğin açtığı bir hesap için. Ücretsiz ve hemen etkin.',
+  grantHint:
+    'Bir iş ortağı, kurucu üye, telafi veya desteğin açtığı bir hesap için. Ücretsiz ve hemen etkin; aynı planı yeniden vermek, mevcut plan bittiğinde başlar.',
   grantUserId: 'Kullanıcı kimliği',
   grantCompanyId: 'Şirket kimliği',
+  grantFindMember: 'Üye ara',
+  grantFindCompany: 'Şirket ara',
+  grantSearchMemberHint: 'Ad, e-posta, kullanıcı adı veya telefon numarası.',
+  grantSearchCompanyHint: 'Şirket adı, ulusal kimlik numarası veya temsilcisinin e-postası.',
+  grantNoMatch: 'Sonuç yok.',
+  grantChange: 'Değiştir',
+  grantActiveUntil: '{date} tarihine kadar',
   note: 'Not',
   grant: 'Ver',
   granted: 'Plan verildi.',

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * What a consultant profile needs before the club shows it as bookable: an
- * hourly fee and at least one professional link — and a refusal needs a reason
- * the expert can act on.
+ * What a consultant profile needs before the club shows it as bookable: at
+ * least one professional link, with the fee optional — and a refusal needs a
+ * reason the expert can act on.
  */
 
 const mocks = vi.hoisted(() => ({
@@ -32,15 +32,21 @@ beforeEach(() => vi.clearAllMocks());
 const base = { fullName: 'Ada Lovelace', headline: 'Engines', slug: 'ada' };
 
 describe('a profile that takes consultations', () => {
-  it('cannot be published without a fee', async () => {
-    await expect(createExpert({ ...base, githubUrl: 'https://github.com/ada' }, null)).rejects.toMatchObject({
-      statusCode: 400,
-    });
-    expect(mocks.prisma.expert.create).not.toHaveBeenCalled();
+  it('is published without a fee, for terms settled when a session is arranged', async () => {
+    await createExpert({ ...base, githubUrl: 'https://github.com/ada' }, null);
+    expect(mocks.prisma.expert.create).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the organisation staff give it', async () => {
+    await createExpert({ ...base, githubUrl: 'https://github.com/ada', affiliation: '  Partner Co  ' }, null);
+    expect(mocks.prisma.expert.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ affiliation: 'Partner Co' }) }),
+    );
   });
 
   it('cannot be published without a link to the expert\'s work', async () => {
     await expect(createExpert({ ...base, hourlyFee: 1_500_000n }, null)).rejects.toMatchObject({ statusCode: 400 });
+    expect(mocks.prisma.expert.create).not.toHaveBeenCalled();
   });
 
   it('is published with both', async () => {

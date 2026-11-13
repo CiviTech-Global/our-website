@@ -271,7 +271,17 @@ export async function grant(
 
   // A grant is free, so an unpriced level can be given.
   const q = await quote(input, { requirePrice: false });
-  const now = new Date();
+  // A renewal: the same whole tier granted again while one is still running
+  // starts when that one ends, so six months and six more make twelve rather
+  // than overlapping. A different tier or a custom mix starts at once.
+  const running = q.tier
+    ? await prisma.planSubscription.findFirst({
+        where: { ...holderData(holder), status: 'ACTIVE', tier: q.tier, endsAt: { gt: new Date() } },
+        orderBy: { endsAt: 'desc' },
+        select: { endsAt: true },
+      })
+    : null;
+  const now = running?.endsAt ?? new Date();
   const created = await prisma.planSubscription.create({
     data: {
       code: generateTrackingCode(),
@@ -294,7 +304,9 @@ export async function grant(
     notifySafely(recipient, {
       type: 'billing.granted',
       title: 'یک پلن به شما اعطا شد',
-      body: `پلن ${created.code} از طرف پشتیبانی برای ${q.months} ماه فعال شد.`,
+      body: running
+        ? `پلن ${created.code} از طرف پشتیبانی برای ${q.months} ماه تمدید شد و پس از پایان پلن فعلی آغاز می‌شود.`
+        : `پلن ${created.code} از طرف پشتیبانی برای ${q.months} ماه فعال شد.`,
       link: '/dashboard/billing',
     });
   }
@@ -432,6 +444,99 @@ export async function getOwnPayment(userId: string, subscriptionId: string) {
   });
   if (!row) throw new AppError('این اشتراک پیدا نشد.', 404);
   return serialize(row);
+}
+
+const TIER_ORDER: Record<PlanTier, number> = { FREE: 0, PRO: 1, PREMIUM: 2, VIP: 3 };
+
+/**
+ * Who a grant can go to, found by what staff actually know about them: a
+ * name, email, username, phone number, or a company's name or national ID.
+ * Each match carries what it holds now, so staff see a renewal as a renewal.
+ */
+export async function searchHolders(subject: PlanSubjectKey, search: string) {
+  const term = search.trim();
+  if (term.length < 2) return [];
+  const digits = term.replace(/[^0-9]/g, '');
+  const now = new Date();
+  const active = {
+    where: { subject: subject as PlanSubject, status: 'ACTIVE' as const, endsAt: { gt: now } },
+    orderBy: { endsAt: 'desc' as const },
+    select: { code: true, tier: true, startsAt: true, endsAt: true },
+  };
+  const summarize = (subs: { code: string; tier: PlanTier | null; startsAt: Date | null; endsAt: Date | null }[]) => {
+    const live = subs.filter((sub) => sub.startsAt && sub.startsAt <= now);
+    const best = live.reduce<PlanTier | null>(
+      (top, sub) => (sub.tier && (!top || TIER_ORDER[sub.tier] > TIER_ORDER[top]) ? sub.tier : top),
+      null,
+    );
+    return {
+      currentTier: best ?? (live.length ? 'CUSTOM' : 'FREE'),
+      activeUntil: subs[0]?.endsAt ?? null,
+      subscriptions: subs.map((sub) => ({ ...sub, tier: sub.tier ?? 'CUSTOM' })),
+    };
+  };
+
+  if (subject === 'COMPANY') {
+    const rows = await prisma.company.findMany({
+      where: {
+        OR: [
+          { id: term },
+          { name: { contains: term, mode: 'insensitive' } },
+          { slug: { contains: term, mode: 'insensitive' } },
+          ...(digits.length >= 4 ? [{ nationalId: { contains: digits } }] : []),
+          { owner: { email: { contains: term, mode: 'insensitive' } } },
+        ],
+      },
+      orderBy: { name: 'asc' },
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        nationalId: true,
+        owner: { select: { email: true, username: true } },
+        planSubscriptions: active,
+      },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      label: row.name,
+      detail: [row.nationalId, row.owner.email, row.owner.username && `@${row.owner.username}`].filter(Boolean).join(' · '),
+      ...summarize(row.planSubscriptions),
+    }));
+  }
+
+  // Phones are stored in more than one shape; the last ten digits match all of them.
+  const phoneTail = digits.length >= 4 ? digits.replace(/^(0098|98|0)/, '') : '';
+  const rows = await prisma.user.findMany({
+    where: {
+      deletedAt: null,
+      OR: [
+        { id: term },
+        { email: { contains: term, mode: 'insensitive' } },
+        { username: { contains: term.replace(/^@/, ''), mode: 'insensitive' } },
+        { firstName: { contains: term, mode: 'insensitive' } },
+        { lastName: { contains: term, mode: 'insensitive' } },
+        ...(phoneTail ? [{ phone: { contains: phoneTail } }] : []),
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      username: true,
+      company: { select: { name: true } },
+      planSubscriptions: active,
+    },
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    label: `${row.firstName} ${row.lastName}`.trim() || row.email || row.id,
+    detail: [row.email, row.username && `@${row.username}`, row.company?.name].filter(Boolean).join(' · '),
+    ...summarize(row.planSubscriptions),
+  }));
 }
 
 export async function listForStaff(query: { page: number; pageSize: number; status?: string; search?: string }) {

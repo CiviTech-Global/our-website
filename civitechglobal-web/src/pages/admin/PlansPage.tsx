@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
@@ -13,8 +14,10 @@ import {
   useCancelSubscription,
   useGrantPlan,
   usePlanCatalog,
+  usePlanHolderSearch,
   useSetPlanPrices,
   type PaidTier,
+  type PlanHolder,
   type PlanSubject,
   type PriceUpdate,
 } from '@/api/billing';
@@ -176,27 +179,45 @@ function PriceGrid() {
 }
 
 function GrantForm() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const p = t.plans;
   const { showToast } = useToast();
   const grant = useGrantPlan();
-  const [subject, setSubject] = useState<PlanSubject>('USER');
-  const [holderId, setHolderId] = useState('');
+  // Arriving from the accounts page, the holder is already chosen.
+  const [params] = useSearchParams();
+  const initialSubject = PLAN_SUBJECTS.find((value) => value === params.get('subject')) ?? 'USER';
+  const initialHolder = params.get('holder');
+  const [subject, setSubject] = useState<PlanSubject>(initialSubject);
+  const [holder, setHolder] = useState<{ id: string; label: string } | null>(
+    initialHolder ? { id: initialHolder, label: params.get('name') || initialHolder } : null,
+  );
+  const [search, setSearch] = useState('');
+  const [debounced, setDebounced] = useState('');
   const [tier, setTier] = useState<PaidTier>('PRO');
   const [months, setMonths] = useState(6);
   const [note, setNote] = useState('');
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(search), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  const { data: matches, isFetching } = usePlanHolderSearch(subject, holder ? '' : debounced);
+
+  const tierName = (value: PlanHolder['currentTier']) => (value === 'CUSTOM' ? p.custom : p.tiers[value]);
+
   async function onGrant() {
+    if (!holder) return;
     try {
       await grant.mutateAsync({
         subject,
         tier,
         months,
         note: note.trim() || undefined,
-        ...(subject === 'COMPANY' ? { companyId: holderId.trim() } : { userId: holderId.trim() }),
+        ...(subject === 'COMPANY' ? { companyId: holder.id } : { userId: holder.id }),
       });
       showToast(p.granted, 'success');
-      setHolderId('');
+      setHolder(null);
+      setSearch('');
       setNote('');
     } catch (error) {
       showToast(apiMessage(error, t.common.error), 'error');
@@ -209,18 +230,22 @@ function GrantForm() {
         <CardTitle>{p.grantTitle}</CardTitle>
         <CardDescription>{p.grantHint}</CardDescription>
       </CardHeader>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <FormField label={p.holder} htmlFor="grant-subject">
-          <Select id="grant-subject" value={subject} onChange={(e) => setSubject(e.target.value as PlanSubject)}>
+          <Select
+            id="grant-subject"
+            value={subject}
+            onChange={(e) => {
+              setSubject(e.target.value as PlanSubject);
+              setHolder(null);
+            }}
+          >
             {PLAN_SUBJECTS.map((value) => (
               <option key={value} value={value}>
                 {p.subjects[value]}
               </option>
             ))}
           </Select>
-        </FormField>
-        <FormField label={subject === 'COMPANY' ? p.grantCompanyId : p.grantUserId} htmlFor="grant-holder">
-          <Input id="grant-holder" dir="ltr" className="ltr text-start" value={holderId} onChange={(e) => setHolderId(e.target.value)} />
         </FormField>
         <FormField label={p.wholeTier} htmlFor="grant-tier">
           <Select id="grant-tier" value={tier} onChange={(e) => setTier(e.target.value as PaidTier)}>
@@ -244,7 +269,60 @@ function GrantForm() {
           <Input id="grant-note" value={note} onChange={(e) => setNote(e.target.value)} />
         </FormField>
       </div>
-      <Button className="mt-4 w-fit" onClick={() => void onGrant()} isLoading={grant.isPending} disabled={!holderId.trim()}>
+
+      <div className="mt-3">
+        {holder ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-app-border p-3">
+            <span className="text-body text-app-text">{holder.label}</span>
+            <span dir="ltr" className="text-label text-app-text-4">
+              {holder.id}
+            </span>
+            <Button variant="ghost" size="sm" onClick={() => setHolder(null)}>
+              {p.grantChange}
+            </Button>
+          </div>
+        ) : (
+          <FormField
+            label={subject === 'COMPANY' ? p.grantFindCompany : p.grantFindMember}
+            htmlFor="grant-search"
+            hint={subject === 'COMPANY' ? p.grantSearchCompanyHint : p.grantSearchMemberHint}
+          >
+            <Input id="grant-search" value={search} onChange={(e) => setSearch(e.target.value)} autoComplete="off" />
+          </FormField>
+        )}
+        {!holder && debounced.trim().length >= 2 && (
+          <div className="mt-2">
+            {isFetching && <Spinner label={t.common.loading} />}
+            {!isFetching && matches?.length === 0 && <p className="text-label text-app-text-4">{p.grantNoMatch}</p>}
+            <ul className="flex flex-col divide-y divide-app-border">
+              {matches?.map((match) => (
+                <li key={match.id}>
+                  <button
+                    type="button"
+                    className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md px-2 py-2 text-start hover:bg-app-hover"
+                    onClick={() => setHolder({ id: match.id, label: match.label })}
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-body text-app-text">{match.label}</span>
+                      {match.detail && (
+                        <span dir="ltr" className="block truncate text-label text-app-text-4">
+                          {match.detail}
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-2 text-label text-app-text-4">
+                      <Badge variant={match.currentTier === 'FREE' ? 'default' : 'success'}>{tierName(match.currentTier)}</Badge>
+                      {match.activeUntil && fill(p.grantActiveUntil, { date: formatDate(match.activeUntil, locale) })}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <Button className="mt-4 w-fit" onClick={() => void onGrant()} isLoading={grant.isPending} disabled={!holder}>
         {p.grant}
       </Button>
     </Card>

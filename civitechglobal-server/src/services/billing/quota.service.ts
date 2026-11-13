@@ -83,9 +83,16 @@ function holderWhere(holder: Holder) {
     : { subject: holder.subject as PlanSubject, userId: holder.userId };
 }
 
-/** What the holder may do for one feature, right now. */
+/**
+ * What the holder may do for one feature, right now.
+ *
+ * Each subscription item keeps the limit it was sold or granted with, and is
+ * also measured against its tier's level in the catalogue today: when staff
+ * raise a tier, everybody already on it gets the raise, and when they lower
+ * one, nobody loses what they hold until their period ends.
+ */
 export async function entitlementFor(holder: Holder, featureKey: FeatureKey, now = new Date()): Promise<Entitlement> {
-  const [items, free] = await Promise.all([
+  const [items, levels] = await Promise.all([
     prisma.planSubscriptionItem.findMany({
       where: {
         featureKey,
@@ -98,15 +105,21 @@ export async function entitlementFor(holder: Holder, featureKey: FeatureKey, now
       },
       select: { tier: true, kind: true, limit: true, liveDays: true },
     }),
-    prisma.planFeatureLevel.findFirst({
-      where: { tier: 'FREE', feature: { key: featureKey } },
+    prisma.planFeatureLevel.findMany({
+      where: { feature: { key: featureKey } },
       select: { tier: true, kind: true, limit: true, liveDays: true },
     }),
   ]);
 
+  const current = new Map(levels.map((level) => [level.tier, level]));
+  const free = current.get('FREE');
   let best: Entitlement | null = free ? { ...free, source: 'free' } : null;
   for (const item of items) {
-    const candidate: Entitlement = { ...item, source: 'subscription' };
+    let candidate: Entitlement = { ...item, source: 'subscription' };
+    const today = current.get(item.tier);
+    // Same kind only: a raise is a bigger number of the same thing, and a
+    // monthly allowance is not comparable with a stock of live listings.
+    if (today && today.kind === item.kind) candidate = better(candidate, { ...today, source: 'subscription' });
     best = best ? better(best, candidate) : candidate;
   }
 

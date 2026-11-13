@@ -160,6 +160,7 @@ function ExpertCard({ expert }: { expert: Expert }) {
             {expert.fullName}
           </Link>
           <p className="mt-0.5 text-sm text-text-secondary">{expert.headline}</p>
+          {expert.affiliation && <p className="mt-0.5 text-sm text-text-secondary">{expert.affiliation}</p>}
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {expert.acceptsConsultations ? (
@@ -255,7 +256,10 @@ function ExpertRow({ expert }: { expert: Expert }) {
 
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold text-text-primary group-hover:underline">{expert.fullName}</p>
-          <p className="truncate text-sm text-text-secondary">{expert.headline}</p>
+          <p className="truncate text-sm text-text-secondary">
+            {expert.headline}
+            {expert.affiliation && ` · ${expert.affiliation}`}
+          </p>
         </div>
 
         <div className="hidden shrink-0 flex-wrap justify-end gap-1.5 sm:flex">

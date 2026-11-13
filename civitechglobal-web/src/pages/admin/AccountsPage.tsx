@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
+import { useAuth } from '@/contexts/AuthProvider';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
-import { useCreateCompanyAccount, useVouchedAccounts } from '@/api/billing';
+import { useCreateCompanyAccount, useVouchedAccounts, type PlanSubject } from '@/api/billing';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -39,6 +41,11 @@ export default function AdminAccountsPage() {
   const [form, setForm] = useState(EMPTY);
   const [page, setPage] = useState(1);
   const { data, isLoading } = useVouchedAccounts(page);
+  const { user } = useAuth();
+  // Granting is billing's key; the shortcut is only offered to whoever holds it.
+  const canGrant = user?.role === 'SUPER_ADMIN' || (user?.permissions ?? []).includes('billing');
+  const grantHref = (subject: PlanSubject, holder: string, name: string) =>
+    `/admin/plans?${new URLSearchParams({ subject, holder, name }).toString()}`;
 
   const field = (name: keyof typeof EMPTY) => ({
     id: `account-${name}`,
@@ -135,9 +142,35 @@ export default function AdminAccountsPage() {
                   )}
                   {' · '}
                   {p.vouchedAt} {formatDate(account.staffVouchedAt, locale)}
-                  {' · '}
-                  <span dir="ltr">{account.id}</span>
                 </p>
+                <p className="text-label text-app-text-4">
+                  {p.grantUserId}: <span dir="ltr" className="select-all">{account.id}</span>
+                  {account.company && (
+                    <>
+                      {' · '}
+                      {p.grantCompanyId}: <span dir="ltr" className="select-all">{account.company.id}</span>
+                    </>
+                  )}
+                </p>
+                {canGrant && (
+                  <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-label">
+                    <span className="text-app-text-4">{p.grantTitle}:</span>
+                    {account.company && (
+                      <Link className="text-app-primary hover:underline" to={grantHref('COMPANY', account.company.id, account.company.name)}>
+                        {p.subjects.COMPANY}
+                      </Link>
+                    )}
+                    {(['BUSINESS', 'USER'] as const).map((subject) => (
+                      <Link
+                        key={subject}
+                        className="text-app-primary hover:underline"
+                        to={grantHref(subject, account.id, `${account.firstName} ${account.lastName}`.trim() || account.email)}
+                      >
+                        {p.subjects[subject]}
+                      </Link>
+                    ))}
+                  </p>
+                )}
               </div>
               <Badge>{account.accountKind === 'COMPANY' ? p.kindCompany : p.expertTitle}</Badge>
             </li>
