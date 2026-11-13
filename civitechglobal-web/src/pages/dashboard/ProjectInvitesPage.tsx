@@ -29,7 +29,17 @@ export default function ProjectInvitesPage() {
           <Spinner label={t.common.loading} />
         </div>
       )}
-      {!isLoading && data?.length === 0 && <EmptyState title={t.work.invitesEmpty} />}
+      {!isLoading && data?.length === 0 && (
+        <EmptyState
+          title={t.work.invitesEmpty}
+          description={t.dashNav.emptyInvites}
+          action={
+            <Link to="/dashboard/services/new">
+              <Button variant="outline">{t.dashNav.listService}</Button>
+            </Link>
+          }
+        />
+      )}
       <ul className="flex flex-col gap-3">
         {data?.map((invite) => (
           <ProjectCard

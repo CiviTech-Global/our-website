@@ -1,4 +1,6 @@
 import { useSavedJobs } from '@/api/jobs';
+import { Button } from '@/components/ui/Button';
+import { Link } from 'react-router';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { formatDate } from '@/i18n/utils';
 import { useDocumentTitle } from '@/lib/documentTitle';
@@ -28,7 +30,17 @@ export default function SavedJobsPage() {
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.jobs.savedEmpty} />}
+      {!isLoading && data?.length === 0 && (
+        <EmptyState
+          title={t.jobs.savedEmpty}
+          description={t.dashNav.emptySavedJobs}
+          action={
+            <Link to="/jobs">
+              <Button variant="outline">{t.dashNav.browseJobs}</Button>
+            </Link>
+          }
+        />
+      )}
 
       <div className="flex flex-col gap-4">
         {data?.map((entry) => (

@@ -203,3 +203,71 @@ export async function getWorkspace(userId: string) {
     trackedRequests,
   };
 }
+
+/**
+ * Which parts of the dashboard this member uses, for the sidebar.
+ *
+ * The sidebar shows the sections a member works in and keeps the rest one
+ * click away, so somebody who only sells books is not handed twenty links
+ * about hiring and freelancing. Asked on every dashboard screen, so it is
+ * existence checks only — one indexed count per area, nothing listed.
+ */
+export async function getAreas(userId: string) {
+  const some = (n: number) => n > 0;
+  const zero = Promise.resolve(0);
+  const [
+    jobs,
+    company,
+    applications,
+    savedJobs,
+    jobAlerts,
+    projects,
+    bids,
+    invites,
+    savedProjects,
+    projectAlerts,
+    services,
+    serviceSales,
+    servicePurchases,
+    awards,
+    shops,
+    orders,
+    books,
+    bookPurchases,
+    expert,
+  ] = await Promise.all([
+    prisma.jobPost.count({ where: { authorId: userId } }),
+    features.jobsV2 ? prisma.company.count({ where: { ownerId: userId } }) : zero,
+    prisma.jobApplication.count({ where: { applicantId: userId } }),
+    features.jobsV2 ? prisma.savedJob.count({ where: { userId } }) : zero,
+    features.jobsV2 ? prisma.jobAlert.count({ where: { userId } }) : zero,
+    prisma.freelanceProject.count({ where: { authorId: userId } }),
+    prisma.projectBid.count({ where: { bidderId: userId } }),
+    features.projectsV2 ? prisma.projectInvite.count({ where: { freelancerId: userId } }) : zero,
+    features.projectsV2 ? prisma.savedProject.count({ where: { userId } }) : zero,
+    features.projectsV2 ? prisma.projectAlert.count({ where: { userId } }) : zero,
+    features.projectsV2 ? prisma.service.count({ where: { ownerId: userId } }) : zero,
+    features.projectsV2 ? prisma.serviceOrder.count({ where: { sellerId: userId } }) : zero,
+    features.projectsV2 ? prisma.serviceOrder.count({ where: { buyerId: userId } }) : zero,
+    prisma.marketplaceAward.count({ where: { awardedById: userId } }),
+    features.tradeMaster ? prisma.business.count({ where: { ownerId: userId } }) : zero,
+    features.tradeMasterOrders ? prisma.order.count({ where: { buyerId: userId } }) : zero,
+    prisma.bookListing.count({ where: { sellerId: userId } }),
+    prisma.bookRequest.count({ where: { buyerId: userId } }),
+    prisma.expert.count({ where: { userId } }),
+  ]);
+  const won = (await awardsWon(userId)).length;
+
+  return {
+    hiring: some(jobs + company),
+    jobSearch: some(applications + savedJobs + jobAlerts),
+    client: some(projects + servicePurchases),
+    freelance: some(bids + invites + savedProjects + projectAlerts + services + serviceSales),
+    /** Agreed work on either side: the client who awarded it, or the one doing it. */
+    collaborations: some(awards + won),
+    shops: some(shops),
+    books: some(books),
+    buying: some(orders + bookPurchases),
+    expert: some(expert),
+  };
+}

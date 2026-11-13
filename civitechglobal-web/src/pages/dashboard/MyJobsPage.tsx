@@ -316,7 +316,18 @@ export default function MyJobsPage() {
         <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />
       ) : null}
 
-      {!isLoading && controls.activeCount === 0 && isVerified && jobs?.length === 0 && <EmptyState title={t.market.noJobs} />}
+      {!isLoading && controls.activeCount === 0 && isVerified && jobs?.length === 0 && (
+        <EmptyState
+          title={t.market.noJobs}
+          description={t.dashNav.emptyJobs}
+          action={
+            <Button onClick={() => openForm('new')}>
+              <Plus className="size-4" aria-hidden="true" />
+              {t.market.newJob}
+            </Button>
+          }
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {list.items.map((job) => (
@@ -662,7 +673,7 @@ function ApplicantsModal({ jobId, onClose }: { jobId: string; onClose: () => voi
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noApplicants} />}
+      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noApplicants} description={t.dashNav.emptyApplicants} />}
 
       <ul className="flex flex-col gap-3">
         {data?.map((application) => (

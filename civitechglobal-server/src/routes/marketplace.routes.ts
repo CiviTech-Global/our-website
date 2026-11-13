@@ -52,7 +52,7 @@ import * as notifications from '../services/notifications.service.js';
 import * as analytics from '../services/marketplace-analytics.service.js';
 import * as ops from '../services/marketplace-ops.service.js';
 import { authorize } from '../middleware/authorize.js';
-import { getWorkspace } from '../services/workspace.service.js';
+import { getAreas, getWorkspace } from '../services/workspace.service.js';
 import * as tracking from '../services/tracking.service.js';
 import { z } from 'zod';
 
@@ -426,6 +426,14 @@ router.get(
   '/me/workspace',
   wrap(async (req, res) => {
     successResponse(res, serialize(await getWorkspace(req.user!.userId)));
+  }),
+);
+
+// Which dashboard areas the member uses: the sidebar's sections follow it.
+router.get(
+  '/me/areas',
+  wrap(async (req, res) => {
+    successResponse(res, await getAreas(req.user!.userId));
   }),
 );
 

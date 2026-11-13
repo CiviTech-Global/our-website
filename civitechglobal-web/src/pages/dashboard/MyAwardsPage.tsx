@@ -90,7 +90,17 @@ export default function MyAwardsPage() {
         />
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.market.awardsEmpty} />}
+      {!isLoading && data?.length === 0 && (
+        <EmptyState
+          title={t.market.awardsEmpty}
+          description={t.dashNav.emptyAwards}
+          action={
+            <Link to="/projects">
+              <Button variant="outline">{t.dashNav.browseProjects}</Button>
+            </Link>
+          }
+        />
+      )}
 
       {!isLoading && shown.total === 0 && (data?.length ?? 0) > 0 && (
         <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />

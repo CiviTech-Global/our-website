@@ -54,6 +54,7 @@ class Strings extends L10nNode {
   StringsWork get work => StringsWork(node("work"));
   StringsBookshop get bookshop => StringsBookshop(node("bookshop"));
   StringsPlans get plans => StringsPlans(node("plans"));
+  StringsDashNav get dashNav => StringsDashNav(node("dashNav"));
   StringsSms get sms => StringsSms(node("sms"));
 }
 
@@ -121,6 +122,91 @@ class StringsSmsKinds extends L10nNode {
   String get account => string("account");
   String get waiting => string("waiting");
   String get verification => string("verification");
+}
+
+class StringsDashNav extends L10nNode {
+  const StringsDashNav(super.raw);
+
+  String get work => string("work");
+  String get market => string("market");
+  String get account => string("account");
+  String get hiring => string("hiring");
+  String get hiringHint => string("hiringHint");
+  String get jobSearch => string("jobSearch");
+  String get jobSearchHint => string("jobSearchHint");
+  String get client => string("client");
+  String get clientHint => string("clientHint");
+  String get freelance => string("freelance");
+  String get freelanceHint => string("freelanceHint");
+  String get shops => string("shops");
+  String get shopsHint => string("shopsHint");
+  String get books => string("books");
+  String get booksHint => string("booksHint");
+  String get buying => string("buying");
+  String get buyingHint => string("buyingHint");
+  String get profile => string("profile");
+  String get profileHint => string("profileHint");
+  String get planServices => string("planServices");
+  String get planServicesHint => string("planServicesHint");
+  String get areasTitle => string("areasTitle");
+  String get moreTools => string("moreTools");
+  String get fewerTools => string("fewerTools");
+  String get moreToolsHint => string("moreToolsHint");
+  String get nextTitle => string("nextTitle");
+  String get nextFirst => string("nextFirst");
+  String get nextGo => string("nextGo");
+  String get nextProgress => string("nextProgress");
+  String get hintVerification => string("hintVerification");
+  String get hintBilling => string("hintBilling");
+  String get hintExpert => string("hintExpert");
+  String get hintRequests => string("hintRequests");
+  String get hintCompany => string("hintCompany");
+  String get hintAlerts => string("hintAlerts");
+  String get hintInvites => string("hintInvites");
+  String get hintAwards => string("hintAwards");
+  String get hintServiceOrders => string("hintServiceOrders");
+  String get emptyConversations => string("emptyConversations");
+  String get emptyApplicationsTitle => string("emptyApplicationsTitle");
+  String get emptyApplications => string("emptyApplications");
+  String get browseJobs => string("browseJobs");
+  String get emptyAwards => string("emptyAwards");
+  String get browseProjects => string("browseProjects");
+  String get emptyBidsTitle => string("emptyBidsTitle");
+  String get emptyBids => string("emptyBids");
+  String get emptyJobs => string("emptyJobs");
+  String get emptyApplicants => string("emptyApplicants");
+  String get emptyProjects => string("emptyProjects");
+  String get emptyProjectBids => string("emptyProjectBids");
+  String get emptyRequests => string("emptyRequests");
+  String get startRequest => string("startRequest");
+  String get emptyNotifications => string("emptyNotifications");
+  String get emptyInvites => string("emptyInvites");
+  String get listService => string("listService");
+  String get emptySavedJobs => string("emptySavedJobs");
+  String get emptyShopOrders => string("emptyShopOrders");
+  String get staffSiteContent => string("staffSiteContent");
+  String get staffPeoplePlans => string("staffPeoplePlans");
+  String get staffShowcase => string("staffShowcase");
+  String get staffSitePeople => string("staffSitePeople");
+  String get staffAccounts => string("staffAccounts");
+  String get staffBilling => string("staffBilling");
+  String get staffWaitingHint => string("staffWaitingHint");
+  String get staffClientsHint => string("staffClientsHint");
+  String get staffRecruitmentHint => string("staffRecruitmentHint");
+  String get staffContactHint => string("staffContactHint");
+  String get staffTrustHint => string("staffTrustHint");
+  String get staffJobsHint => string("staffJobsHint");
+  String get staffFreelanceHint => string("staffFreelanceHint");
+  String get staffBooksHint => string("staffBooksHint");
+  String get staffInsightsHint => string("staffInsightsHint");
+  String get staffReviewHint => string("staffReviewHint");
+  String get staffSetupHint => string("staffSetupHint");
+  String get staffShowcaseHint => string("staffShowcaseHint");
+  String get staffSitePeopleHint => string("staffSitePeopleHint");
+  String get staffAccessHint => string("staffAccessHint");
+  String get staffAccountsHint => string("staffAccountsHint");
+  String get staffBillingHint => string("staffBillingHint");
+  String get staffSystemHint => string("staffSystemHint");
 }
 
 class StringsPlans extends L10nNode {

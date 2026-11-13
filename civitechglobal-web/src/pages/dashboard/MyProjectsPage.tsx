@@ -242,7 +242,16 @@ export default function MyProjectsPage() {
       ) : null}
 
       {!isLoading && controls.activeCount === 0 && isVerified && projects?.length === 0 && (
-        <EmptyState title={t.market.noProjects} />
+        <EmptyState
+          title={t.market.noProjects}
+          description={t.dashNav.emptyProjects}
+          action={
+            <Button onClick={() => openForm('new')}>
+              <Plus className="size-4" aria-hidden="true" />
+              {t.market.newProject}
+            </Button>
+          }
+        />
       )}
 
       <ul className="flex flex-col gap-3">
@@ -496,7 +505,7 @@ function BidsModal({ projectId, onClose }: { projectId: string; onClose: () => v
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noBids} />}
+      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noBids} description={t.dashNav.emptyProjectBids} />}
 
       <ul className="flex flex-col gap-3">
         {data?.map((bid) => (

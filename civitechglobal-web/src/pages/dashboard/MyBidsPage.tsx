@@ -1,4 +1,5 @@
 import { PageHeader } from '@/components/app/PageHeader';
+import { Link } from 'react-router';
 import { useState, type FormEvent } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useOwnBids, useReviseBid } from '@/api/marketplace';
@@ -93,8 +94,15 @@ export default function MyBidsPage() {
 
       {!isLoading && list.total === 0 && (
         <EmptyState
-          title={controls.activeCount > 0 ? t.list.noResults : t.common.noResults}
-          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+          title={controls.activeCount > 0 ? t.list.noResults : t.dashNav.emptyBidsTitle}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : t.dashNav.emptyBids}
+          action={
+            controls.activeCount > 0 ? undefined : (
+              <Link to="/projects">
+                <Button>{t.dashNav.browseProjects}</Button>
+              </Link>
+            )
+          }
         />
       )}
 

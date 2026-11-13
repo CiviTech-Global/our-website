@@ -1,6 +1,7 @@
 import work from './work/fa';
 import bookshop from './bookshop/fa';
 import plans from './plans/fa';
+import dashNav from './dashboard-nav/fa';
 import sms from './sms/fa';
 
 const fa = {
@@ -2996,6 +2997,7 @@ const fa = {
   work,
   bookshop,
   plans,
+  dashNav,
   sms,
 };
 

@@ -111,7 +111,17 @@ export default function MyRequestsPage() {
         </div>
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.workspace.noRequests} />}
+      {!isLoading && data?.length === 0 && (
+        <EmptyState
+          title={t.workspace.noRequests}
+          description={t.dashNav.emptyRequests}
+          action={
+            <Link to="/start-project">
+              <Button variant="outline">{t.dashNav.startRequest}</Button>
+            </Link>
+          }
+        />
+      )}
 
       <ul className="flex flex-col gap-3">
         {data?.map((row) => {

@@ -2,6 +2,7 @@ import type fa from './fa';
 import work from './work/en';
 import bookshop from './bookshop/en';
 import plans from './plans/en';
+import dashNav from './dashboard-nav/en';
 import sms from './sms/en';
 
 const en: typeof fa = {
@@ -3008,6 +3009,7 @@ const en: typeof fa = {
   work,
   bookshop,
   plans,
+  dashNav,
   sms,
 };
 

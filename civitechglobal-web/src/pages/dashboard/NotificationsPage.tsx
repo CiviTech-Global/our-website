@@ -72,7 +72,7 @@ export default function NotificationsPage() {
         />
       )}
 
-      {!isLoading && data?.items.length === 0 && <EmptyState title={t.market.noNotifications} />}
+      {!isLoading && data?.items.length === 0 && <EmptyState title={t.market.noNotifications} description={t.dashNav.emptyNotifications} />}
 
       {!isLoading && shown.total === 0 && (data?.items.length ?? 0) > 0 && (
         <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />

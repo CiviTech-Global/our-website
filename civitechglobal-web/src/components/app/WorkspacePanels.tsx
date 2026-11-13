@@ -58,19 +58,44 @@ function Figures({ items }: { items: Array<{ label: string; value: number; to: s
   );
 }
 
-/** What is waiting on this person, across every part they play. */
-export function AttentionPanel({ data }: { data: Workspace }) {
+/** One step of getting an account ready, as the home's checklist knows it. */
+export interface SetupStep {
+  id: string;
+  label: string;
+  state: 'done' | 'pending' | 'todo';
+  to?: string;
+  /** For a step finished in place, such as resending a verification email. */
+  onAction?: () => void;
+}
+
+/**
+ * The member's next steps: what is waiting on them, then what is left of
+ * setting the account up — one list, in the order it is worth doing.
+ *
+ * Replaces two panels ("needs your action" and "complete your account") that
+ * asked the reader to merge two lists in their head. The first step is set
+ * apart with its own button: somebody who opens the dashboard not knowing
+ * where to start is told.
+ */
+export function NextStepsPanel({ data, setup }: { data: Workspace; setup: SetupStep[] }) {
   const { t } = useLocale();
+  const n = t.dashNav;
   const number = useNumber();
   const changes = (data.hiring.byStatus.CHANGES_REQUESTED ?? 0) + (data.client.byStatus.CHANGES_REQUESTED ?? 0) +
     (data.selling.booksByStatus.CHANGES_REQUESTED ?? 0);
-  const items: Array<{ icon: ReactNode; label: string; to: string }> = [];
+  const items: Array<{ id: string; icon: ReactNode; label: string; to?: string; onAction?: () => void }> = [];
 
-  if (data.verification !== 'APPROVED' && data.verification !== 'PENDING') {
-    items.push({ icon: <ShieldCheck />, label: t.workspace.attentionVerify, to: '/dashboard/verification' });
+  if (data.unread.messages > 0) {
+    items.push({
+      id: 'messages',
+      icon: <MessagesSquare />,
+      label: t.workspace.attentionMessages.replace('{count}', number(data.unread.messages)),
+      to: '/dashboard/messages',
+    });
   }
   if (data.hiring.unseen > 0) {
     items.push({
+      id: 'applicants',
       icon: <Users />,
       label: t.workspace.attentionApplicants.replace('{count}', number(data.hiring.unseen)),
       to: '/dashboard/jobs',
@@ -78,6 +103,7 @@ export function AttentionPanel({ data }: { data: Workspace }) {
   }
   if (data.client.bidsAwaiting > 0) {
     items.push({
+      id: 'bids',
       icon: <Gavel />,
       label: t.workspace.attentionBids.replace('{count}', number(data.client.bidsAwaiting)),
       to: '/dashboard/projects',
@@ -85,32 +111,82 @@ export function AttentionPanel({ data }: { data: Workspace }) {
   }
   if (changes > 0) {
     items.push({
+      id: 'changes',
       icon: <AlertCircle />,
       label: t.workspace.attentionChanges.replace('{count}', number(changes)),
       to: (data.hiring.byStatus.CHANGES_REQUESTED ?? 0) > 0 ? '/dashboard/jobs' : (data.client.byStatus.CHANGES_REQUESTED ?? 0) > 0 ? '/dashboard/projects' : '/dashboard/books',
     });
   }
-  if (data.unread.messages > 0) {
-    items.push({
-      icon: <MessagesSquare />,
-      label: t.workspace.attentionMessages.replace('{count}', number(data.unread.messages)),
-      to: '/dashboard/messages',
-    });
+  for (const step of setup) {
+    if (step.state === 'todo') items.push({ id: step.id, icon: <ShieldCheck />, label: step.label, to: step.to, onAction: step.onAction });
   }
+  const pending = setup.filter((step) => step.state === 'pending');
+  const done = setup.filter((step) => step.state === 'done').length;
+  const [first, ...rest] = items;
 
   return (
-    <Panel title={t.workspace.attentionTitle} flush>
-      {items.length === 0 ? (
-        <p className="px-4 py-4 text-body text-app-text-3">{t.workspace.allClear}</p>
-      ) : (
+    <Panel
+      title={n.nextTitle}
+      actions={
+        setup.length > 0 && done < setup.length ? (
+          <span className="text-label text-app-text-3">
+            {n.nextProgress.replace('{done}', number(done)).replace('{total}', number(setup.length))}
+          </span>
+        ) : undefined
+      }
+      flush
+    >
+      {!first && pending.length === 0 && <p className="px-4 py-4 text-body text-app-text-3">{t.workspace.allClear}</p>}
+      {first && (
+        <div className="flex flex-wrap items-center gap-3 border-b border-app-border-light bg-app-primary-soft px-4 py-4">
+          <span className="text-app-primary [&_svg]:size-5">{first.icon}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-label font-medium text-app-primary">{n.nextFirst}</span>
+            <span className="block text-body font-medium text-app-text">{first.label}</span>
+          </span>
+          {first.to ? (
+            <Link
+              to={first.to}
+              className="app-key app-key-primary inline-flex h-9 items-center gap-1.5 px-4 text-body font-semibold"
+            >
+              {n.nextGo}
+              <ChevronRight className="size-4 rtl:rotate-180" aria-hidden="true" />
+            </Link>
+          ) : (
+            first.onAction && (
+              <button type="button" onClick={first.onAction} className="app-key app-key-primary inline-flex h-9 items-center px-4 text-body font-semibold">
+                {n.nextGo}
+              </button>
+            )
+          )}
+        </div>
+      )}
+      {(rest.length > 0 || pending.length > 0) && (
         <ul className="divide-y divide-app-border-light">
-          {items.map((item) => (
-            <li key={item.label}>
-              <Link to={item.to} className="flex items-center gap-3 px-4 py-3 hover:bg-app-hover">
-                <span className="text-status-warning [&_svg]:size-4">{item.icon}</span>
-                <span className="min-w-0 flex-1 text-body text-app-text">{item.label}</span>
-                <ChevronRight className="size-4 text-app-text-4 rtl:rotate-180" aria-hidden="true" />
-              </Link>
+          {rest.map((item) => (
+            <li key={item.id}>
+              {item.to ? (
+                <Link to={item.to} className="flex items-center gap-3 px-4 py-3 hover:bg-app-hover">
+                  <span className="text-status-warning [&_svg]:size-4">{item.icon}</span>
+                  <span className="min-w-0 flex-1 text-body text-app-text">{item.label}</span>
+                  <ChevronRight className="size-4 text-app-text-4 rtl:rotate-180" aria-hidden="true" />
+                </Link>
+              ) : (
+                <button type="button" onClick={item.onAction} className="flex w-full items-center gap-3 px-4 py-3 text-start hover:bg-app-hover">
+                  <span className="text-status-warning [&_svg]:size-4">{item.icon}</span>
+                  <span className="min-w-0 flex-1 text-body text-app-text">{item.label}</span>
+                  <ChevronRight className="size-4 text-app-text-4 rtl:rotate-180" aria-hidden="true" />
+                </button>
+              )}
+            </li>
+          ))}
+          {pending.map((step) => (
+            <li key={step.id} className="flex items-center gap-3 px-4 py-3">
+              <span className="text-app-icon [&_svg]:size-4">
+                <ShieldCheck />
+              </span>
+              <span className="min-w-0 flex-1 text-body text-app-text-3">{step.label}</span>
+              <Badge variant="warning">{t.app.setupPending}</Badge>
             </li>
           ))}
         </ul>

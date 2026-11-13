@@ -5,6 +5,7 @@ import {
   moduleCount,
   moduleHome,
   resolveActive,
+  splitSections,
   visibleModules,
   type NavModule,
 } from './navigation';
@@ -97,5 +98,34 @@ describe('navigation', () => {
   it('caps a count chip at 99+', () => {
     expect(formatCount(7, String)).toBe('7');
     expect(formatCount(240, String)).toBe('99+');
+  });
+});
+
+describe('sections by use', () => {
+  const work: NavModule = {
+    id: 'work',
+    label: 'Work',
+    icon: null,
+    sections: [
+      { id: 'hiring', label: 'Hiring', inUse: true, items: [{ to: '/dashboard/jobs', label: 'Jobs', icon: null }] },
+      { id: 'search', label: 'Job search', inUse: false, items: [{ to: '/dashboard/applications', label: 'Applications', icon: null }] },
+      { id: 'always', label: 'Always', items: [{ to: '/dashboard/awards', label: 'Awards', icon: null }] },
+    ],
+  };
+  const ids = (sections: { id: string }[]) => sections.map((section) => section.id);
+
+  it('tucks away what the reader does not use', () => {
+    const { shown, tucked } = splitSections(work, '/dashboard/jobs');
+    expect(ids(shown)).toEqual(['hiring', 'always']);
+    expect(ids(tucked)).toEqual(['search']);
+  });
+
+  it('never tucks the section on screen', () => {
+    expect(splitSections(work, '/dashboard/applications/12').tucked).toEqual([]);
+  });
+
+  it('shows everything to somebody who uses none of it yet', () => {
+    const fresh = { ...work, sections: work.sections.map((section) => ({ ...section, inUse: section.inUse === undefined ? undefined : false })) };
+    expect(ids(splitSections(fresh, '/dashboard').shown)).toEqual(['hiring', 'search', 'always']);
   });
 });

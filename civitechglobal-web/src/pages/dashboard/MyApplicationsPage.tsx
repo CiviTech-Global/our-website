@@ -101,8 +101,15 @@ export default function MyApplicationsPage() {
 
       {!isLoading && list.total === 0 && (
         <EmptyState
-          title={controls.activeCount > 0 ? t.list.noResults : t.common.noResults}
-          description={controls.activeCount > 0 ? t.list.noResultsBody : undefined}
+          title={controls.activeCount > 0 ? t.list.noResults : t.dashNav.emptyApplicationsTitle}
+          description={controls.activeCount > 0 ? t.list.noResultsBody : t.dashNav.emptyApplications}
+          action={
+            controls.activeCount > 0 ? undefined : (
+              <Link to="/jobs">
+                <Button>{t.dashNav.browseJobs}</Button>
+              </Link>
+            )
+          }
         />
       )}
 
