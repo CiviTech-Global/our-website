@@ -1,14 +1,10 @@
 import { Link } from 'react-router';
 import {
-  CheckCircle2,
   ChevronRight,
-  Circle,
   ClipboardList,
-  Clock,
   Code2,
   FileText,
   Handshake,
-  MailWarning,
   MessagesSquare,
   Package,
   PackageSearch,
@@ -22,13 +18,14 @@ import { useOwnVerification } from '@/api/marketplace';
 import { useWorkspace } from '@/api/workspace';
 import {
   ActivityPanel,
-  AttentionPanel,
   ClientPanel,
   FreelancePanel,
   GetStartedPanel,
   HiringPanel,
   JobSearchPanel,
+  NextStepsPanel,
   SellingPanel,
+  type SetupStep,
 } from '@/components/app/WorkspacePanels';
 import { useOwnShops } from '@/api/trademaster';
 import type { OwnShop } from '@/types/trademaster';
@@ -41,33 +38,25 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { toPersianDigits } from '@/i18n/utils';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { PageHeader } from '@/components/app/PageHeader';
-import { DetailList, Panel } from '@/components/app/Panel';
+import { Panel } from '@/components/app/Panel';
 import { StatCard, StatGrid } from '@/components/app/StatCard';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils';
-
-type StepState = 'done' | 'pending' | 'todo';
-
-interface SetupStep {
-  id: string;
-  label: string;
-  state: StepState;
-  to?: string;
-}
 
 /**
  * The member home.
  *
- * Built on the same pattern as the admin home so the two panels read as one
- * product: a row of figures that each open the screen they summarise, then a
- * main column and a side column of panels.
+ * Answers, in this order: what should I do next, how are the parts I play
+ * going, and what else could I do here.
  *
- * The profile-completion bar, "account status: active" and "role" cards this
- * replaced each answered a question nobody arrives asking. "Getting set up"
- * answers the one they do — what do I still need to do before I can use the
- * marketplace — as a checklist with a link beside each open step. Once every
- * step is done the panel is not shown at all: a finished checklist is noise.
+ * - The figures across the top are only those for parts the member plays.
+ *   Five zeros on a new account read as five things they are failing at.
+ * - "Your next steps" is one ranked list — what is waiting on them, then what
+ *   is left of setting the account up — with the first step set apart.
+ * - One panel per part they play; the parts they do not play yet are offered
+ *   together at the foot.
+ *
+ * The account details card this page used to carry repeated the profile
+ * screen and the user menu, so it is gone.
  */
 export default function DashboardPage() {
   const { t, locale } = useLocale();
@@ -89,6 +78,17 @@ export default function DashboardPage() {
 
   const number = (value: number) => (locale === 'fa' ? toPersianDigits(value) : value.toLocaleString('en'));
 
+  async function resendVerification() {
+    try {
+      await sendVerification.mutateAsync();
+      showToast(t.auth.verifyBannerSent, 'success');
+    } catch (error) {
+      // The server explains a 501 here by naming the contact form, which is
+      // more use than "something went wrong".
+      showToast(isApiError(error) ? error.message : t.common.error, 'error');
+    }
+  }
+
   const steps: SetupStep[] = [
     {
       id: 'phone',
@@ -102,7 +102,8 @@ export default function DashboardPage() {
             id: 'email',
             label: t.app.setupEmail,
             // Undefined means the server does not report it; not a step we can show.
-            state: (user?.emailVerified === false ? 'todo' : 'done') as StepState,
+            state: (user?.emailVerified === false ? 'todo' : 'done') as SetupStep['state'],
+            onAction: () => void resendVerification(),
           },
         ]
       : []),
@@ -118,11 +119,81 @@ export default function DashboardPage() {
       to: '/dashboard/verification',
     },
   ];
-  const doneCount = steps.filter((step) => step.state === 'done').length;
 
   const greeting = user
     ? `${t.dashboard.welcome}${locale === 'fa' ? '،' : ','} ${user.firstName}`
     : t.dashboard.welcome;
+
+  const unreadTotal = workspace ? workspace.unread.messages + workspace.unread.notifications : 0;
+  const figures = workspace
+    ? [
+        <StatCard
+          key="messages"
+          label={t.meStats.unreadMessages}
+          value={unreadTotal}
+          icon={MessagesSquare}
+          to="/dashboard/messages"
+          tone={unreadTotal > 0 ? 'attention' : 'neutral'}
+        />,
+        ...(workspace.hiring.postings > 0
+          ? [
+              <StatCard
+                key="applicants"
+                label={t.workspace.applicants}
+                value={workspace.hiring.applicants}
+                icon={Users}
+                to="/dashboard/jobs"
+                tone={workspace.hiring.unseen > 0 ? 'attention' : 'neutral'}
+                hint={
+                  workspace.hiring.unseen > 0
+                    ? `${number(workspace.hiring.unseen)} ${t.workspace.newApplicants}`
+                    : undefined
+                }
+              />,
+            ]
+          : []),
+        ...(workspace.jobSearch.applications > 0
+          ? [
+              <StatCard
+                key="applications"
+                label={t.meStats.applications}
+                value={workspace.jobSearch.applications}
+                icon={FileText}
+                to="/dashboard/applications"
+              />,
+            ]
+          : []),
+        ...(workspace.collaborations.active + workspace.collaborations.completed > 0
+          ? [
+              <StatCard
+                key="collaborations"
+                label={t.workspace.collaborationsTitle}
+                value={workspace.collaborations.active}
+                icon={Handshake}
+                to="/dashboard/awards"
+                tone="positive"
+                hint={
+                  workspace.collaborations.completed > 0
+                    ? `${number(workspace.collaborations.completed)} ${t.workspace.completedLabel}`
+                    : undefined
+                }
+              />,
+            ]
+          : []),
+        ...(workspace.trackedRequests > 0
+          ? [
+              <StatCard
+                key="requests"
+                label={t.workspace.requestsTitle}
+                value={workspace.trackedRequests}
+                icon={ClipboardList}
+                to="/dashboard/requests"
+              />,
+            ]
+          : []),
+      ]
+    : [];
+  const columns = Math.min(5, Math.max(3, figures.length)) as 3 | 4 | 5;
 
   return (
     <div>
@@ -130,140 +201,19 @@ export default function DashboardPage() {
         title={greeting}
         description={t.app.memberOverviewDescription}
         summary={
-          <StatGrid columns={5}>
-            <StatCard
-              label={t.meStats.unreadMessages}
-              value={workspace ? workspace.unread.messages + workspace.unread.notifications : undefined}
-              loading={statsLoading}
-              icon={MessagesSquare}
-              to="/dashboard/messages"
-              tone={workspace && workspace.unread.messages + workspace.unread.notifications > 0 ? 'attention' : 'neutral'}
-            />
-            <StatCard
-              label={t.workspace.applicants}
-              value={workspace?.hiring.applicants}
-              loading={statsLoading}
-              icon={Users}
-              to="/dashboard/jobs"
-              tone={workspace && workspace.hiring.unseen > 0 ? 'attention' : 'neutral'}
-              hint={
-                workspace && workspace.hiring.unseen > 0
-                  ? `${number(workspace.hiring.unseen)} ${t.workspace.newApplicants}`
-                  : undefined
-              }
-            />
-            <StatCard
-              label={t.meStats.applications}
-              value={workspace?.jobSearch.applications}
-              loading={statsLoading}
-              icon={FileText}
-              to="/dashboard/applications"
-            />
-            <StatCard
-              label={t.workspace.collaborationsTitle}
-              value={workspace?.collaborations.active}
-              loading={statsLoading}
-              icon={Handshake}
-              to="/dashboard/awards"
-              tone="positive"
-              hint={
-                workspace && workspace.collaborations.completed > 0
-                  ? `${number(workspace.collaborations.completed)} ${t.workspace.completedLabel}`
-                  : undefined
-              }
-            />
-            <StatCard
-              label={t.workspace.requestsTitle}
-              value={workspace?.trackedRequests}
-              loading={statsLoading}
-              icon={ClipboardList}
-              to="/dashboard/requests"
-            />
-          </StatGrid>
+          statsLoading ? (
+            <StatGrid columns={3}>
+              <StatCard label={t.meStats.unreadMessages} value={undefined} loading icon={MessagesSquare} />
+            </StatGrid>
+          ) : figures.length > 1 ? (
+            <StatGrid columns={columns}>{figures}</StatGrid>
+          ) : undefined
         }
       />
 
-      {/* Only while it matters. A banner that stays after the thing is done is
-          how people learn to stop reading banners. */}
-      {canEmail && user?.emailVerified === false && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded border border-status-warning-border bg-status-warning-bg px-4 py-3">
-          <MailWarning className="size-5 shrink-0 text-status-warning" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-body font-medium text-app-text">{t.auth.verifyBannerTitle}</p>
-            <p className="text-body text-app-text-3">{t.auth.verifyBannerBody}</p>
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            isLoading={sendVerification.isPending}
-            onClick={async () => {
-              try {
-                await sendVerification.mutateAsync();
-                showToast(t.auth.verifyBannerSent, 'success');
-              } catch (error) {
-                // The server explains a 501 here by naming the contact form,
-                // which is more use than "something went wrong".
-                showToast(isApiError(error) ? error.message : t.common.error, 'error');
-              }
-            }}
-          >
-            {t.auth.verifyBannerAction}
-          </Button>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
-          {workspace && <AttentionPanel data={workspace} />}
-
-          {doneCount < steps.length && (
-            <Panel
-              title={t.app.setupTitle}
-              actions={
-                <span className="text-label text-app-text-3">
-                  {t.app.setupProgress
-                    .replace('{done}', number(doneCount))
-                    .replace('{total}', number(steps.length))}
-                </span>
-              }
-              flush
-            >
-              {/* A thin progress rule under the header: the checklist below is
-                the detail, this is the glance. */}
-              <div className="h-1 bg-app-fill" aria-hidden="true">
-                <div
-                  className="h-full bg-app-primary transition-[width]"
-                  style={{ width: `${(doneCount / steps.length) * 100}%` }}
-                />
-              </div>
-              <ol className="divide-y divide-app-border-light">
-                {steps.map((step) => (
-                  <li key={step.id} className="flex items-center gap-3 px-4 py-3">
-                    <StepIcon state={step.state} />
-                    <span
-                      className={cn(
-                        'min-w-0 flex-1 text-body',
-                        step.state === 'done'
-                          ? 'text-app-text-3 line-through decoration-app-text-4'
-                          : 'text-app-text'
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                    {step.state === 'done' && <Badge variant="success">{t.app.setupDone}</Badge>}
-                    {step.state === 'pending' && <Badge variant="warning">{t.app.setupPending}</Badge>}
-                    {step.state === 'todo' && step.to && (
-                      <Link to={step.to}>
-                        <Button variant="outline" size="sm">
-                          {t.app.setupAction}
-                        </Button>
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </Panel>
-          )}
+          {workspace && <NextStepsPanel data={workspace} setup={steps} />}
 
           {/* Only for people who actually sell something. A panel headed "your
               shops" that is empty for every other member is a permanent
@@ -296,29 +246,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
-          <Panel title={t.app.accountTitle} viewAll={{ to: '/dashboard/profile', label: t.nav.profile }}>
-            <DetailList
-              columns={2}
-              items={[
-                {
-                  label: t.admin.fullName,
-                  value: user ? `${user.firstName} ${user.lastName}` : null,
-                  wide: true,
-                },
-                { label: t.auth.email, value: user ? <span dir="ltr">{user.email}</span> : null, wide: true },
-                { label: t.dashboard.roleTitle, value: user ? t.app.roles[user.role] : null },
-                {
-                  label: t.dashboard.accountStatusTitle,
-                  value: (
-                    <Badge variant="success" dot>
-                      {t.dashboard.accountStatusActive}
-                    </Badge>
-                  ),
-                },
-              ]}
-            />
-          </Panel>
-
           {workspace && <ActivityPanel data={workspace} />}
 
           <Panel title={t.dashboard.quickActions} flush>
@@ -367,16 +294,6 @@ function ShopRow({ shop, number }: { shop: OwnShop; number: (value: number) => s
       )}
     </li>
   );
-}
-
-function StepIcon({ state }: { state: StepState }) {
-  if (state === 'done') {
-    return <CheckCircle2 className="size-5 shrink-0 text-status-success" aria-hidden="true" />;
-  }
-  if (state === 'pending') {
-    return <Clock className="size-5 shrink-0 text-status-warning" aria-hidden="true" />;
-  }
-  return <Circle className="size-5 shrink-0 text-app-text-4" aria-hidden="true" />;
 }
 
 function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {

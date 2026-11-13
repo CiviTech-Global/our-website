@@ -27,12 +27,21 @@ export interface NavItem {
    * from that list would light up the overview instead of intake.
    */
   shortcut?: boolean;
+  /** What the screen is for, in one line: the link's tooltip. */
+  hint?: string;
 }
 
 export interface NavSection {
   id: string;
   /** Omitted for a module's first, unlabelled section. */
   label?: string;
+  /** What the section is for, in one line: shown as the heading's tooltip. */
+  hint?: string;
+  /**
+   * Whether the reader works in this part. False tucks it under "More" so the
+   * sidebar lists what they use; undefined means always shown.
+   */
+  inUse?: boolean;
   items: NavItem[];
 }
 
@@ -106,4 +115,29 @@ export function moduleCount(module: NavModule): number {
 /** "99+" past two digits — a chip that grows with the queue stops fitting the row. */
 export function formatCount(count: number, localize: (value: number) => string): string {
   return count > 99 ? `${localize(99)}+` : localize(count);
+}
+
+/**
+ * A module's sections, split into what the reader uses and what waits under
+ * "More".
+ *
+ * A section is tucked only when it says it is not in use and does not hold the
+ * screen on display. A module where nothing is in use yet shows everything:
+ * somebody new is exploring, and hiding the whole module from them would hide
+ * the way in.
+ */
+export function splitSections(module: NavModule, pathname: string): { shown: NavSection[]; tucked: NavSection[] } {
+  const holdsCurrent = (section: NavSection) =>
+    section.items.some((item) => !item.shortcut && itemMatches(pathname, item));
+  const tracked = module.sections.filter((section) => section.inUse !== undefined);
+  if (tracked.length === 0 || !tracked.some((section) => section.inUse)) {
+    return { shown: module.sections, tucked: [] };
+  }
+  const shown: NavSection[] = [];
+  const tucked: NavSection[] = [];
+  for (const section of module.sections) {
+    if (section.inUse === false && !holdsCurrent(section)) tucked.push(section);
+    else shown.push(section);
+  }
+  return { shown, tucked };
 }

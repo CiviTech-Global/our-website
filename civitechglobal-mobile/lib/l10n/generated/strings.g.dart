@@ -54,6 +54,7 @@ class Strings extends L10nNode {
   StringsWork get work => StringsWork(node("work"));
   StringsBookshop get bookshop => StringsBookshop(node("bookshop"));
   StringsPlans get plans => StringsPlans(node("plans"));
+  StringsDashNav get dashNav => StringsDashNav(node("dashNav"));
   StringsSms get sms => StringsSms(node("sms"));
 }
 
@@ -121,6 +122,48 @@ class StringsSmsKinds extends L10nNode {
   String get account => string("account");
   String get waiting => string("waiting");
   String get verification => string("verification");
+}
+
+class StringsDashNav extends L10nNode {
+  const StringsDashNav(super.raw);
+
+  String get work => string("work");
+  String get market => string("market");
+  String get account => string("account");
+  String get hiring => string("hiring");
+  String get hiringHint => string("hiringHint");
+  String get jobSearch => string("jobSearch");
+  String get jobSearchHint => string("jobSearchHint");
+  String get client => string("client");
+  String get clientHint => string("clientHint");
+  String get freelance => string("freelance");
+  String get freelanceHint => string("freelanceHint");
+  String get shops => string("shops");
+  String get shopsHint => string("shopsHint");
+  String get books => string("books");
+  String get booksHint => string("booksHint");
+  String get buying => string("buying");
+  String get buyingHint => string("buyingHint");
+  String get profile => string("profile");
+  String get profileHint => string("profileHint");
+  String get planServices => string("planServices");
+  String get planServicesHint => string("planServicesHint");
+  String get moreTools => string("moreTools");
+  String get fewerTools => string("fewerTools");
+  String get moreToolsHint => string("moreToolsHint");
+  String get nextTitle => string("nextTitle");
+  String get nextFirst => string("nextFirst");
+  String get nextGo => string("nextGo");
+  String get nextProgress => string("nextProgress");
+  String get hintVerification => string("hintVerification");
+  String get hintBilling => string("hintBilling");
+  String get hintExpert => string("hintExpert");
+  String get hintRequests => string("hintRequests");
+  String get hintCompany => string("hintCompany");
+  String get hintAlerts => string("hintAlerts");
+  String get hintInvites => string("hintInvites");
+  String get hintAwards => string("hintAwards");
+  String get hintServiceOrders => string("hintServiceOrders");
 }
 
 class StringsPlans extends L10nNode {

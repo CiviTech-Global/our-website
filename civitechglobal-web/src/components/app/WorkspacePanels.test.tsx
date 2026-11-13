@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
-import { AttentionPanel, GetStartedPanel } from './WorkspacePanels';
+import { GetStartedPanel, NextStepsPanel, type SetupStep } from './WorkspacePanels';
 import type { Workspace } from '@/api/workspace';
 
 /**
@@ -35,27 +35,47 @@ function renderEn(node: React.ReactNode) {
   );
 }
 
-describe('AttentionPanel', () => {
+describe('NextStepsPanel', () => {
   it('says so when nothing is waiting', () => {
-    renderEn(<AttentionPanel data={workspace()} />);
+    renderEn(<NextStepsPanel data={workspace()} setup={[]} />);
     expect(screen.getByText('Nothing needs you right now.')).toBeInTheDocument();
   });
 
-  it('lists what is waiting, each linking to where to act on it', () => {
+  it('puts what is waiting first, then setup, each linking to where to act on it', () => {
+    const setup: SetupStep[] = [
+      { id: 'phone', label: 'Add your phone number', state: 'done', to: '/dashboard/profile' },
+      { id: 'identity', label: 'Verify your identity', state: 'todo', to: '/dashboard/verification' },
+    ];
     renderEn(
-      <AttentionPanel
+      <NextStepsPanel
         data={workspace({
-          verification: 'UNVERIFIED',
           hiring: { ...workspace().hiring, unseen: 3 },
           client: { ...workspace().client, bidsAwaiting: 2 },
           unread: { notifications: 0, messages: 5 },
         })}
+        setup={setup}
       />,
     );
+    // The first step is set apart, with its own button.
+    expect(screen.getByText('Start here')).toBeInTheDocument();
+    expect(screen.getByText(/5 unread messages/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Go/ })).toHaveAttribute('href', '/dashboard/messages');
     expect(screen.getByRole('link', { name: /3 new applicants/ })).toHaveAttribute('href', '/dashboard/jobs');
     expect(screen.getByRole('link', { name: /2 offers awaiting/ })).toHaveAttribute('href', '/dashboard/projects');
-    expect(screen.getByRole('link', { name: /5 unread messages/ })).toHaveAttribute('href', '/dashboard/messages');
     expect(screen.getByRole('link', { name: /Verify your identity/ })).toHaveAttribute('href', '/dashboard/verification');
+    expect(screen.queryByText('Add your phone number')).not.toBeInTheDocument();
+    expect(screen.getByText('1 of 2 account steps done')).toBeInTheDocument();
+  });
+
+  it('shows a step under review without asking for it again', () => {
+    renderEn(
+      <NextStepsPanel
+        data={workspace()}
+        setup={[{ id: 'identity', label: 'Verify your identity', state: 'pending', to: '/dashboard/verification' }]}
+      />,
+    );
+    expect(screen.queryByRole('link', { name: /Verify your identity/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Verify your identity')).toBeInTheDocument();
   });
 });
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { ChevronDown, PanelLeftClose, X } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, PanelLeftClose, X } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { toPersianDigits } from '@/i18n/utils';
 import { cn } from '@/lib/utils';
-import { formatCount, itemMatches, type NavItem, type NavModule } from './navigation';
+import { formatCount, itemMatches, splitSections, type NavItem, type NavModule, type NavSection } from './navigation';
 import { UserMenu } from './UserMenu';
 
 /**
@@ -34,6 +34,13 @@ export function AppSidebar({
   const { t, locale } = useLocale();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(() => readCollapsed(panel));
+  const [showMore, setShowMore] = useState(() => readFlag(`${MORE_KEY}-${panel}`));
+  const { shown, tucked } = module ? splitSections(module, pathname) : { shown: [], tucked: [] };
+  const sections: NavSection[] = showMore ? [...shown, ...tucked] : shown;
+  const tuckedWaiting = tucked.reduce(
+    (sum, section) => sum + section.items.reduce((inner, item) => inner + (item.count ?? 0), 0),
+    0,
+  );
   const localize = (value: number) => (locale === 'fa' ? toPersianDigits(value) : String(value));
 
   const toggle = (key: string) => {
@@ -74,7 +81,7 @@ export function AppSidebar({
       </div>
 
       <nav aria-label={t.app.sectionNavigation} className="min-h-0 flex-1 overflow-y-auto px-2 py-3">
-        {module?.sections.map((section, index) => {
+        {module && sections.map((section, index) => {
           const key = `${module.id}:${section.id}`;
           // The section holding the page on screen is never folded away: the
           // reader would lose the one link that says where they are.
@@ -90,7 +97,7 @@ export function AppSidebar({
                 onClick={() => toggle(key)}
                 aria-expanded={!folded}
                 aria-controls={listId}
-                title={t.admin.toggleSection}
+                title={section.hint ?? t.admin.toggleSection}
                 className="app-label mb-1 flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-start hover:bg-app-hover"
               >
                 <ChevronDown
@@ -116,6 +123,32 @@ export function AppSidebar({
           </div>
           );
         })}
+
+        {/* What the reader has not used yet: one quiet line rather than a
+            dozen links, and still one click from all of it. */}
+        {tucked.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowMore(!showMore);
+              writeFlag(`${MORE_KEY}-${panel}`, !showMore);
+            }}
+            aria-expanded={showMore}
+            title={`${t.dashNav.moreToolsHint}
+${tucked.map((section) => section.label).filter(Boolean).join(locale === 'fa' ? '، ' : ', ')}`}
+            className="mt-4 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-label text-app-text-3 hover:bg-app-hover hover:text-app-text"
+          >
+            <ChevronsUpDown className="size-4 shrink-0 text-app-icon" aria-hidden="true" />
+            <span className="min-w-0 flex-1 truncate">
+              {showMore ? t.dashNav.fewerTools : t.dashNav.moreTools.replace('{count}', localize(tucked.length))}
+            </span>
+            {!showMore && tuckedWaiting > 0 && (
+              <span className="app-readout inline-flex h-[18px] min-w-[20px] items-center justify-center px-1 text-caption font-semibold">
+                {formatCount(tuckedWaiting, localize)}
+              </span>
+            )}
+          </button>
+        )}
       </nav>
 
       <div className="shrink-0 border-t border-app-border-light p-2">
@@ -126,6 +159,24 @@ export function AppSidebar({
 }
 
 const COLLAPSED_KEY = 'ct-sidebar-sections';
+const MORE_KEY = 'ct-sidebar-more';
+
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string, on: boolean): void {
+  try {
+    if (on) localStorage.setItem(key, '1');
+    else localStorage.removeItem(key);
+  } catch {
+    // Kept for this visit only.
+  }
+}
 
 /** Which labelled sections the reader has folded, per panel, as "module:section" keys. */
 function readCollapsed(panel: string): Set<string> {
@@ -154,6 +205,7 @@ function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
       to={item.to}
       end={item.end}
       onClick={onNavigate}
+      title={item.hint}
       className={({ isActive }) =>
         cn(
           'group relative flex h-9 items-center gap-2.5 rounded-lg ps-3 pe-2 text-body transition-[background-color,color] duration-(--dur-feedback) ease-(--ease) [&_svg]:size-4 [&_svg]:shrink-0',

@@ -69,6 +69,29 @@ export function useWorkspace(enabled = true) {
   });
 }
 
+/** Which dashboard areas the member uses; the sidebar's sections follow it. */
+export interface MemberAreas {
+  hiring: boolean;
+  jobSearch: boolean;
+  client: boolean;
+  freelance: boolean;
+  collaborations: boolean;
+  shops: boolean;
+  books: boolean;
+  buying: boolean;
+  expert: boolean;
+}
+
+export function useMemberAreas(enabled = true) {
+  return useQuery({
+    queryKey: ['market', 'me', 'areas'],
+    queryFn: async () => (await api.get<MemberAreas>('/market/me/areas')).data,
+    enabled,
+    // Asked on every dashboard screen; what a member uses changes rarely.
+    staleTime: 5 * 60_000,
+  });
+}
+
 // --- Tracking codes kept on the account ----------------------------------------
 
 export interface TrackedRequest {

@@ -2,6 +2,7 @@ import type { PartialTranslations } from './merge';
 import work from './work/tr';
 import bookshop from './bookshop/tr';
 import plans from './plans/tr';
+import dashNav from './dashboard-nav/tr';
 import sms from './sms/tr';
 
 /**
@@ -2845,6 +2846,7 @@ const tr: PartialTranslations = {
   work,
   bookshop,
   plans,
+  dashNav,
   sms,
 };
 
