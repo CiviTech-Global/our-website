@@ -49,7 +49,7 @@ export default function ConversationsPage() {
         />
       )}
 
-      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noConversations} />}
+      {!isLoading && data?.length === 0 && <EmptyState title={t.market.noConversations} description={t.dashNav.emptyConversations} />}
 
       {!isLoading && shown.total === 0 && (data?.length ?? 0) > 0 && (
         <EmptyState title={t.list.noResults} description={t.list.noResultsBody} />

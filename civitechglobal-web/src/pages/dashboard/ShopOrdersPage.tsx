@@ -128,7 +128,7 @@ export default function ShopOrdersPage() {
       )}
 
       {!isLoading && data?.items.length === 0 && (
-        <EmptyState title={t.trademaster.noShopOrders} icon={<Package aria-hidden="true" />} />
+        <EmptyState title={t.trademaster.noShopOrders} description={t.dashNav.emptyShopOrders} icon={<Package aria-hidden="true" />} />
       )}
 
       <ul className="flex flex-col gap-3">

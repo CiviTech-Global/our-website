@@ -56,6 +56,7 @@ import { features } from '@/lib/features';
  */
 export function AdminLayout() {
   const { t } = useLocale();
+  const n = t.dashNav;
   const { user } = useAuth();
   const { data: workload } = useWorkload(Boolean(user));
 
@@ -177,7 +178,7 @@ export function AdminLayout() {
       icon: <LayoutDashboard />,
       sections: [
         { id: 'main', items: [{ to: '/admin', label: t.admin.dashboard, icon: <LayoutDashboard />, end: true }] },
-        { id: 'waiting', label: t.app.waitingOnYou, items: waiting },
+        { id: 'waiting', label: t.app.waitingOnYou, hint: n.staffWaitingHint, items: waiting },
       ],
     },
     {
@@ -188,14 +189,20 @@ export function AdminLayout() {
         {
           id: 'clients',
           label: t.admin.navClientRequests,
+          hint: n.staffClientsHint,
           items: [
             ...when(can('projects'), queue.projects),
             ...when(can('insurance'), queue.insurance),
             ...when(can('consultations'), queue.consultations),
           ],
         },
-        { id: 'recruitment', label: t.admin.navRecruitment, items: when(can('resumes'), queue.resumes, queue.programme) },
-        { id: 'contact', label: t.admin.navContact, items: when(can('messages'), queue.messages) }
+        {
+          id: 'recruitment',
+          label: t.admin.navRecruitment,
+          hint: n.staffRecruitmentHint,
+          items: when(can('resumes'), queue.resumes, queue.programme),
+        },
+        { id: 'contact', label: t.admin.navContact, hint: n.staffContactHint, items: when(can('messages'), queue.messages) }
       ),
     },
     {
@@ -204,10 +211,11 @@ export function AdminLayout() {
       icon: <Briefcase />,
       sections: sections(
         // Verification first: it is the door to every board below.
-        { id: 'trust', label: t.admin.navTrust, items: when(can('verification'), queue.verification) },
+        { id: 'trust', label: t.admin.navTrust, hint: n.staffTrustHint, items: when(can('verification'), queue.verification) },
         {
           id: 'jobs',
           label: t.nav.jobs,
+          hint: n.staffJobsHint,
           // Postings and the applications answering them are one desk: whoever
           // decides a role belongs on the board judges the replies to it.
           items: [...when(can('jobs'), queue.jobPosts, queue.applications), ...when(can('jobs') && features.jobsV2, companies)],
@@ -215,6 +223,7 @@ export function AdminLayout() {
         {
           id: 'freelance',
           label: t.nav.freelance,
+          hint: n.staffFreelanceHint,
           items: [
             ...when(can('freelance'), queue.freelanceProjects, queue.bids),
             ...when(can('freelance') && features.projectsV2, {
@@ -228,6 +237,7 @@ export function AdminLayout() {
         {
           id: 'books',
           label: t.nav.books,
+          hint: n.staffBooksHint,
           items: [
             ...when(can('books'), queue.books),
             ...when(can('books') && features.booksV2, { to: '/admin/book-catalog', label: t.bookshop.navCatalog, icon: <Library /> }),
@@ -236,6 +246,7 @@ export function AdminLayout() {
         {
           id: 'insights',
           label: t.analytics.title,
+          hint: n.staffInsightsHint,
           items: when(can('analytics'), { to: '/admin/marketplace', label: t.analytics.title, icon: <BarChart3 /> }),
         }
       ),
@@ -251,22 +262,28 @@ export function AdminLayout() {
         {
           id: 'review',
           label: t.admin.navReview,
+          hint: n.staffReviewHint,
           items: when(features.tradeMaster && can('trademaster'), queue.tradeMasterShops, queue.tradeMasterProducts),
         },
         {
           id: 'setup',
           label: t.admin.navSetup,
+          hint: n.staffSetupHint,
           items: when(features.tradeMaster && can('trademaster'), tradeMasterOpenShop, tradeMasterCategories, tradeMasterGuilds),
         }
       ),
     },
     {
-      id: 'showcase',
-      label: t.showcase.groupAdmin,
+      // What the public site says about the company: who we work with, what
+      // we built, and the people we vouch for.
+      id: 'site',
+      label: n.staffSiteContent,
       icon: <Sparkles />,
       sections: sections(
         {
-          id: 'main',
+          id: 'showcase',
+          label: n.staffShowcase,
+          hint: n.staffShowcaseHint,
           items: when(
             can('showcase'),
             { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 /> },
@@ -276,13 +293,12 @@ export function AdminLayout() {
         },
         {
           id: 'people',
-          label: t.admin.navPeople,
+          label: n.staffSitePeople,
+          hint: n.staffSitePeopleHint,
           items: [
             // The club is editorial too, but its own permission: who we vouch
             // for is a different decision from which logos are on the wall.
             ...when(can('experts'), { to: '/admin/experts', label: t.experts.adminTitle, icon: <UserRound /> }),
-            // Companies and experts the desk met in person, with credentials handed over.
-            ...when(can('accounts'), { to: '/admin/accounts', label: t.plans.adminAccountsTitle, icon: <KeyRound /> }),
             // Super admin only, and not a grantable permission: who represents
             // the company on its own page is not a module of work to delegate.
             ...when(isSuper, { to: '/admin/team', label: t.team.adminTitle, icon: <UsersRound /> }),
@@ -291,13 +307,16 @@ export function AdminLayout() {
       ),
     },
     {
-      id: 'administration',
-      label: t.admin.groupAdministration,
+      // Who can sign in and what they hold: access, the accounts the desk
+      // opened in person, and the plans and texts that cost money.
+      id: 'people-plans',
+      label: n.staffPeoplePlans,
       icon: <Settings />,
       sections: sections(
         {
           id: 'access',
           label: t.admin.navAccess,
+          hint: n.staffAccessHint,
           items: when(
             can('users'),
             { to: '/admin/users', label: t.admin.users, icon: <Users /> },
@@ -305,8 +324,15 @@ export function AdminLayout() {
           ),
         },
         {
+          id: 'accounts',
+          label: n.staffAccounts,
+          hint: n.staffAccountsHint,
+          items: when(can('accounts'), { to: '/admin/accounts', label: t.plans.adminAccountsTitle, icon: <KeyRound /> }),
+        },
+        {
           id: 'billing',
-          label: t.plans.adminPlansTitle,
+          label: n.staffBilling,
+          hint: n.staffBillingHint,
           items: when(
             can('billing'),
             { to: '/admin/plans', label: t.plans.adminPlansTitle, icon: <BadgeDollarSign /> },
@@ -316,6 +342,7 @@ export function AdminLayout() {
         {
           id: 'system',
           label: t.admin.navSystem,
+          hint: n.staffSystemHint,
           items: [
             ...when(isSuper, { to: '/admin/audit', label: t.audit.title, icon: <ScrollText /> }),
             // Only in development: features.demoData is false in a production
