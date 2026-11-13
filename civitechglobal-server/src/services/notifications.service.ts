@@ -1,3 +1,6 @@
+import { env } from '../config/env.js';
+import { redis } from '../config/redis.js';
+import { smsMemberSafely } from './sms/dispatch.js';
 import { prisma } from '../config/database.js';
 import { toPage } from '../utils/page.js';
 import { logger } from '../config/logger.js';
@@ -39,6 +42,33 @@ export async function notifyUser(userId: string, input: NotifyInput): Promise<vo
   // The same notice on the member's phones, once the row exists: the row is
   // the record, the push only says there is something to read.
   pushSafely(userId, { title: input.title, body: input.body, link: input.link });
+  smsForWaiting(userId, input.type);
+}
+
+/**
+ * Notices where somebody is waiting for this member's answer also go by SMS —
+ * only with SMS_MEMBER_ALERTS on, only to a verified phone that has not opted
+ * out, and at most one such text per member per six hours, however many
+ * arrive: the text says "something is waiting", the site says what.
+ */
+const WAITING_SMS: Record<string, string> = {
+  'application.received': 'درخواست',
+  'bid.received': 'پیشنهاد',
+  'book.request': 'درخواست',
+  'service.order': 'سفارش',
+  'order.placed': 'سفارش',
+};
+const WAITING_SMS_GAP_SECONDS = 6 * 60 * 60;
+
+function smsForWaiting(userId: string, type: string): void {
+  const what = WAITING_SMS[type];
+  if (!what || !env.SMS_MEMBER_ALERTS) return;
+  redis
+    .set(`sms:waiting:${userId}`, '1', 'EX', WAITING_SMS_GAP_SECONDS, 'NX')
+    .then((first) => {
+      if (first) smsMemberSafely(userId, 'waiting', 'alert', { token: what });
+    })
+    .catch((error) => logger.error({ err: error, type }, 'Waiting SMS throttle failed'));
 }
 
 /** Fire-and-forget: logs, never throws, callers do not await for correctness. */
@@ -110,4 +140,28 @@ export async function notifyRole(
     select: { id: true },
   });
   await Promise.all(users.map((user) => notifyUser(user.id, input)));
+}
+
+/**
+ * Tells every member of staff who can work a desk that something arrived:
+ * super admins, and admins holding the permission directly or through their
+ * role. In-app only; staff are not texted about the queue.
+ */
+export function notifyStaffSafely(permission: string, input: NotifyInput): void {
+  prisma.user
+    .findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { role: 'SUPER_ADMIN' },
+          { role: 'ADMIN', permissions: { has: permission } },
+          { role: 'ADMIN', adminRole: { permissions: { has: permission } } },
+        ],
+      },
+      select: { id: true },
+    })
+    .then((staff) => {
+      for (const member of staff) notifySafely(member.id, input);
+    })
+    .catch((error) => logger.error({ err: error, permission }, 'Failed to find staff to notify'));
 }

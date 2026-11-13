@@ -1,3 +1,4 @@
+import { sendSmsSafely } from './sms/dispatch.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import {
@@ -95,6 +96,9 @@ export async function submitResume(input: ResumeInput, files: IncomingFile[]): P
 
       const created = await createWithUniqueTrackingCode(tx, identity.id, email, phone, input, stored);
       await recordRequest(tx, identity.id);
+      // After commit would be tidier, but the send is in the background and
+      // a rollback after this line is a disk error, not a decision.
+      setImmediate(() => sendSmsSafely('received', { phone }, { token: created.trackingCode, token2: 'همکاری' }));
       return { id: created.id, trackingCode: created.trackingCode };
     });
   } catch (error) {

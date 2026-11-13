@@ -1,3 +1,4 @@
+import { notifySafely } from './notifications.service.js';
 import type { Prisma } from '@prisma/client';
 import { searchWhere } from './list-search.js';
 import { toPage } from '../utils/page.js';
@@ -88,13 +89,21 @@ export async function listAudit(query: {
  * editorial act and it is audited like one.
  */
 export async function setJobFeatured(staffId: string, jobId: string, featured: boolean) {
-  const job = await prisma.jobPost.findUnique({ where: { id: jobId }, select: { id: true, title: true } });
+  const job = await prisma.jobPost.findUnique({ where: { id: jobId }, select: { id: true, title: true, authorId: true } });
   if (!job) throw new AppError('این آگهی پیدا نشد.', 404);
 
   await prisma.jobPost.update({
     where: { id: jobId },
     data: { featured, featuredAt: featured ? new Date() : null },
   });
+  if (featured) {
+    notifySafely(job.authorId, {
+      type: 'listing.featured',
+      title: 'آگهی شما ویژه شد',
+      body: `«${job.title}» در صدر فهرست آگهی‌ها نمایش داده می‌شود.`,
+      link: '/dashboard/jobs',
+    });
+  }
   await audit(staffId, {
     action: featured ? 'job.featured' : 'job.unfeatured',
     targetType: 'job',
@@ -108,7 +117,7 @@ export async function setJobFeatured(staffId: string, jobId: string, featured: b
 export async function setProjectFeatured(staffId: string, projectId: string, featured: boolean) {
   const project = await prisma.freelanceProject.findUnique({
     where: { id: projectId },
-    select: { id: true, title: true },
+    select: { id: true, title: true, authorId: true },
   });
   if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
 
@@ -116,6 +125,14 @@ export async function setProjectFeatured(staffId: string, projectId: string, fea
     where: { id: projectId },
     data: { featured, featuredAt: featured ? new Date() : null },
   });
+  if (featured) {
+    notifySafely(project.authorId, {
+      type: 'listing.featured',
+      title: 'پروژهٔ شما ویژه شد',
+      body: `«${project.title}» در صدر فهرست پروژه‌ها نمایش داده می‌شود.`,
+      link: '/dashboard/projects',
+    });
+  }
   await audit(staffId, {
     action: featured ? 'project.featured' : 'project.unfeatured',
     targetType: 'project',
@@ -132,13 +149,19 @@ export async function setProjectFeatured(staffId: string, projectId: string, fea
 
 /** Extending a closing date keeps a live listing alive; it cannot be backdated. */
 export async function extendJobDeadline(staffId: string, jobId: string, closesAt: Date) {
-  const job = await prisma.jobPost.findUnique({ where: { id: jobId }, select: { id: true, title: true } });
+  const job = await prisma.jobPost.findUnique({ where: { id: jobId }, select: { id: true, title: true, authorId: true } });
   if (!job) throw new AppError('این آگهی پیدا نشد.', 404);
   if (closesAt.getTime() <= Date.now()) {
     throw new AppError('مهلت جدید باید در آینده باشد.', 400);
   }
 
   await prisma.jobPost.update({ where: { id: jobId }, data: { closesAt } });
+  notifySafely(job.authorId, {
+    type: 'listing.extended',
+    title: 'مهلت آگهی شما تمدید شد',
+    body: `مهلت «${job.title}» تمدید شد.`,
+    link: '/dashboard/jobs',
+  });
   await audit(staffId, {
     action: 'job.deadline_extended',
     targetType: 'job',
@@ -152,7 +175,7 @@ export async function extendJobDeadline(staffId: string, jobId: string, closesAt
 export async function extendProjectDeadline(staffId: string, projectId: string, closesAt: Date) {
   const project = await prisma.freelanceProject.findUnique({
     where: { id: projectId },
-    select: { id: true, title: true },
+    select: { id: true, title: true, authorId: true },
   });
   if (!project) throw new AppError('این پروژه پیدا نشد.', 404);
   if (closesAt.getTime() <= Date.now()) {
@@ -160,6 +183,12 @@ export async function extendProjectDeadline(staffId: string, projectId: string, 
   }
 
   await prisma.freelanceProject.update({ where: { id: projectId }, data: { closesAt } });
+  notifySafely(project.authorId, {
+    type: 'listing.extended',
+    title: 'مهلت پروژهٔ شما تمدید شد',
+    body: `مهلت «${project.title}» تمدید شد.`,
+    link: '/dashboard/projects',
+  });
   await audit(staffId, {
     action: 'project.deadline_extended',
     targetType: 'project',
@@ -203,6 +232,14 @@ export async function setUserPaused(
     targetType: 'user',
     targetId: userId,
     meta: { email: target.email, reason: paused ? reason!.trim() : undefined },
+  });
+  notifySafely(userId, {
+    type: paused ? 'account.paused' : 'account.unpaused',
+    title: paused ? 'دسترسی شما به بازارگاه محدود شد' : 'دسترسی شما به بازارگاه برقرار شد',
+    body: paused
+      ? `دلیل: ${reason!.trim().slice(0, 200)} — برای پیگیری با پشتیبانی تماس بگیرید.`
+      : 'می‌توانید دوباره آگهی ثبت کنید، درخواست بدهید و پیام بفرستید.',
+    link: '/dashboard',
   });
 
   return { id: userId, marketplacePaused: paused };

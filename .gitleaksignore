@@ -30,3 +30,5 @@ dab85b9c687f606b2b0ac844d1a9b502381f14c4:civitechglobal-web/src/components/home/
 e3d6833c627bb302db4cdbe01b57e938e829d48f:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:66
 e3d6833c627bb302db4cdbe01b57e938e829d48f:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:67
 e3d6833c627bb302db4cdbe01b57e938e829d48f:civitechglobal-web/src/components/home/HeroMotif.tsx:generic-api-key:83
+# A made-up key in the Kavenegar client test (reviewed 2026-11-12); not a credential.
+3c5f62eb6e56af09ec6647bda39e19f4a7b6b006:civitechglobal-server/src/services/sms/kavenegar.test.ts:generic-api-key:10

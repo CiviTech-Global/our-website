@@ -1,3 +1,5 @@
+import { scheduledTokens, sendSmsSafely } from './sms/dispatch.js';
+import { notifySafely } from './notifications.service.js';
 import type { ConsultationStatus, DayPart, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { searchWhere } from './list-search.js';
@@ -83,13 +85,15 @@ export async function createRequest(input: ConsultationInput, now = new Date()) 
   // A named expert is a preference, not a guarantee, and one who does not take
   // appointments cannot be asked for.
   let expertId: string | null = null;
+  let expertUserId: string | null = null;
   if (input.expertSlug) {
     const expert = await prisma.expert.findFirst({
       where: { slug: input.expertSlug, published: true, acceptsConsultations: true },
-      select: { id: true },
+      select: { id: true, userId: true },
     });
     if (!expert) throw new AppError('این کارشناس برای مشاوره در دسترس نیست.', 400);
     expertId = expert.id;
+    expertUserId = expert.userId;
   }
 
   const phone = input.phone.trim();
@@ -111,6 +115,16 @@ export async function createRequest(input: ConsultationInput, now = new Date()) 
   });
 
   logger.info({ requestId: created.id, topic: input.topic, expertId }, 'Consultation requested');
+  sendSmsSafely('received', { phone }, { token: created.trackingCode, token2: 'مشاوره' });
+  // An expert with an account hears that somebody asked for them by name.
+  if (expertUserId) {
+    notifySafely(expertUserId, {
+      type: 'consultation.requested',
+      title: 'درخواست مشاورهٔ تازه',
+      body: 'کسی برای مشاوره شما را انتخاب کرده است. همکاران ما برای هماهنگی زمان با شما تماس می‌گیرند.',
+      link: '/dashboard/expert',
+    });
+  }
   return {
     trackingCode: created.trackingCode,
     createdAt: created.createdAt.toISOString(),
@@ -262,7 +276,7 @@ export interface StaffUpdate {
 export async function updateForStaff(id: string, update: StaffUpdate, actorId: string) {
   const existing = await prisma.consultationRequest.findUnique({
     where: { id },
-    select: { id: true, status: true, contactedAt: true },
+    select: { id: true, status: true, contactedAt: true, scheduledAt: true, phoneNumber: true },
   });
   if (!existing) throw new AppError('این درخواست پیدا نشد.', 404);
 
@@ -276,7 +290,7 @@ export async function updateForStaff(id: string, update: StaffUpdate, actorId: s
     throw new AppError('زمان واردشده معتبر نیست.', 400);
   }
 
-  return prisma.consultationRequest.update({
+  const updated = await prisma.consultationRequest.update({
     where: { id },
     data: {
       ...(update.status ? { status: update.status } : {}),
@@ -295,6 +309,12 @@ export async function updateForStaff(id: string, update: StaffUpdate, actorId: s
     },
     select: { id: true, status: true, scheduledAt: true },
   });
+
+  // A new or moved time is texted to the person who asked.
+  if (scheduledAt instanceof Date && existing.scheduledAt?.getTime() !== scheduledAt.getTime()) {
+    sendSmsSafely('scheduled', { phone: existing.phoneNumber }, scheduledTokens(scheduledAt, 'مشاوره'));
+  }
+  return updated;
 }
 
 /** How many are waiting, for the admin home. */

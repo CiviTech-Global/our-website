@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { AuthCard } from './AuthCard';
+import { useCapabilities } from '@/api/capabilities';
+import { SmsPasswordReset } from '@/components/account/SmsPasswordReset';
 
 const schema = z.object({
   email: z.string().min(1, 'auth.required').email('auth.invalidEmail'),
@@ -25,6 +27,10 @@ export default function ForgotPasswordPage() {
   useDocumentTitle(t.auth.forgotTitle);
   const forgot = useForgotPassword();
   const [sent, setSent] = useState(false);
+  // SMS first where it exists: this deployment sends no email, so a texted
+  // code to a verified phone is the way back into an account.
+  const capabilities = useCapabilities();
+  const [byEmail, setByEmail] = useState(false);
 
   /**
    * The one failure worth showing.
@@ -56,6 +62,24 @@ export default function ForgotPasswordPage() {
       }
     }
     setSent(true);
+  }
+
+  if (capabilities.sms && !byEmail) {
+    return (
+      <AuthCard title={t.sms.resetTitle} subtitle={t.auth.forgotSubtitle}>
+        <SmsPasswordReset />
+        <p className="mt-6 flex flex-wrap justify-center gap-4 text-center text-sm text-text-secondary">
+          {capabilities.email && (
+            <button type="button" className="font-medium text-brand-green-600 hover:underline dark:text-brand-green-400" onClick={() => setByEmail(true)}>
+              {t.sms.byEmail}
+            </button>
+          )}
+          <Link to="/login" className="font-medium text-brand-green-600 hover:underline dark:text-brand-green-400">
+            {t.auth.backToLogin}
+          </Link>
+        </p>
+      </AuthCard>
+    );
   }
 
   if (emailUnavailable) {

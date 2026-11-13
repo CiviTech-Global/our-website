@@ -1,3 +1,5 @@
+import { notifyStaffSafely } from './notifications.service.js';
+import { sendSmsSafely } from './sms/dispatch.js';
 import { randomInt } from 'node:crypto';
 import type { Prisma } from '@prisma/client';
 import { insuranceProductRepository } from '../database/prisma/repositories/insurance-product.repository.js';
@@ -187,6 +189,16 @@ export async function submitRequest(input: SubmitRequestInput): Promise<SubmitRe
     categoryTitle: productRow.category.title,
     createdAt: created.createdAt.toISOString(),
   });
+
+  notifyStaffSafely('insurance', {
+    type: 'insurance.lead',
+    title: 'درخواست بیمهٔ تازه',
+    body: `${productRow.title} — کد ${created.trackingCode}`,
+    link: '/admin/requests',
+  });
+
+  // The tracking code is the applicant's only way back; a text keeps it.
+  sendSmsSafely('received', { phone }, { token: created.trackingCode, token2: 'بیمه' });
 
   return {
     id: created.id,

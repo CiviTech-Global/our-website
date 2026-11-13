@@ -2,6 +2,7 @@ import type fa from './fa';
 import work from './work/en';
 import bookshop from './bookshop/en';
 import plans from './plans/en';
+import sms from './sms/en';
 
 const en: typeof fa = {
   common: {
@@ -3007,6 +3008,7 @@ const en: typeof fa = {
   work,
   bookshop,
   plans,
+  sms,
 };
 
 export default en;

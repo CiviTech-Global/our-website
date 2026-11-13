@@ -1,3 +1,7 @@
+import { sendSmsSafely } from '../services/sms/dispatch.js';
+
+/** CV statuses that are a decision the applicant should hear about. */
+const RESUME_DECISIONS = new Set(['SHORTLISTED', 'MATCHED', 'DECLINED']);
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { searchWhere } from '../services/list-search.js';
 import { toPage } from '../utils/page.js';
@@ -201,6 +205,10 @@ router.get('/admin/:id', async (req, res, next) => {
 router.patch('/admin/:id', validate(updateResumeStatusSchema), async (req, res, next) => {
   try {
     const input = req.body as z.infer<typeof updateResumeStatusSchema>;
+    const before = await prisma.resumeSubmission.findUnique({
+      where: { id: param(req, 'id') },
+      select: { status: true, phone: true, trackingCode: true },
+    });
     const updated = await prisma.resumeSubmission.update({
       where: { id: param(req, 'id') },
       data: {
@@ -214,6 +222,9 @@ router.patch('/admin/:id', validate(updateResumeStatusSchema), async (req, res, 
       },
       select: { id: true, status: true, matchedRole: true, assignedToId: true },
     });
+    // Only decisions are texted; moving a CV between internal piles is not news.
+    const decided = input.status && input.status !== before?.status && RESUME_DECISIONS.has(input.status);
+    if (decided && before?.phone) sendSmsSafely('resumeUpdate', { phone: before.phone }, { token: before.trackingCode });
     successResponse(res, updated, 'وضعیت به‌روزرسانی شد.');
   } catch (error) {
     next(error);

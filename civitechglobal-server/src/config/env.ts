@@ -150,6 +150,15 @@ export const env = {
   SMS_SENDER: optional('SMS_SENDER', ''),
   /** Kavenegar/SMS.ir verify-lookup template name. */
   SMS_OTP_TEMPLATE: optional('SMS_OTP_TEMPLATE', ''),
+  /**
+   * Informational texts to members (a new application, bid or purchase
+   * request; a verification decision). Off until the owner has seen what
+   * texts cost in the SMS log. Codes, security alerts and visitor texts are
+   * not affected by this switch.
+   */
+  SMS_MEMBER_ALERTS: optional('SMS_MEMBER_ALERTS', 'false').trim().toLowerCase() === 'true',
+  /** Texts one phone may receive in a day, codes included. A flood guard, not a quota. */
+  SMS_DAILY_CAP: parseInt(optional('SMS_DAILY_CAP', '12'), 10),
 
   // --- Push notifications to the mobile app -------------------------------
   //

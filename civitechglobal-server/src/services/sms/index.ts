@@ -1,5 +1,7 @@
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
+import { KavenegarClient } from './kavenegar.js';
+import type { SmsTokens } from './templates.js';
 
 /**
  * SMS delivery, behind one interface.
@@ -12,10 +14,23 @@ import { logger } from '../../config/logger.js';
  * The console provider is not a stub for tests only: it is the correct choice
  * in development, where nobody wants a real message per form submission.
  */
+/** What a gateway reports about one accepted message. */
+export interface SentSms {
+  messageId?: string;
+  /** In Rials, as the gateway reports it. */
+  cost?: number;
+}
+
 export interface SmsProvider {
   readonly name: string;
   /** Sends a one-time code. Throws on delivery failure. */
   sendOtp(phone: string, code: string): Promise<void>;
+  /**
+   * Sends any approved template. Throws on delivery failure. Callers go
+   * through services/sms/dispatch.ts, which adds the link guard, the cap and
+   * the log; nothing else should call this directly.
+   */
+  sendTemplate(phone: string, template: string, tokens: SmsTokens): Promise<SentSms>;
 }
 
 /**
@@ -36,6 +51,10 @@ class NoSmsProvider implements SmsProvider {
   async sendOtp(): Promise<void> {
     throw new Error('This deployment has no SMS provider configured (SMS_PROVIDER=none).');
   }
+
+  async sendTemplate(): Promise<SentSms> {
+    throw new Error('This deployment has no SMS provider configured (SMS_PROVIDER=none).');
+  }
 }
 
 class ConsoleSmsProvider implements SmsProvider {
@@ -47,36 +66,38 @@ class ConsoleSmsProvider implements SmsProvider {
     // by createSmsProvider() below, so the code cannot leak into real logs.
     logger.info({ phone, code }, '[console SMS] one-time code');
   }
+
+  async sendTemplate(phone: string, template: string, tokens: SmsTokens): Promise<SentSms> {
+    logger.info({ phone, template, tokens }, '[console SMS] template');
+    return {};
+  }
 }
 
-/** Kavenegar — https://api.kavenegar.com/v1/{key}/verify/lookup.json */
+/** Kavenegar: see ./kavenegar.ts for the wire format and status codes. */
 class KavenegarProvider implements SmsProvider {
   readonly name = 'kavenegar';
 
+  private readonly client: KavenegarClient;
+
   constructor(
-    private readonly apiKey: string,
+    apiKey: string,
     private readonly template: string,
-  ) {}
+  ) {
+    this.client = new KavenegarClient(apiKey);
+  }
 
+  /** Through the verify template; see KavenegarClient.verifyLookup. */
   async sendOtp(phone: string, code: string): Promise<void> {
-    const url = new URL(`https://api.kavenegar.com/v1/${this.apiKey}/verify/lookup.json`);
-    url.searchParams.set('receptor', phone);
-    url.searchParams.set('token', code);
-    url.searchParams.set('template', this.template);
+    await this.client.verifyLookup(phone, { token: code }, this.template);
+  }
 
-    const response = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(10_000) });
-    if (!response.ok) {
-      throw new Error(`Kavenegar responded ${response.status}`);
-    }
+  async sendTemplate(phone: string, template: string, tokens: SmsTokens): Promise<SentSms> {
+    return this.client.verifyLookup(phone, tokens, template);
+  }
 
-    // Kavenegar returns HTTP 200 with a non-200 status inside the body on
-    // failure (bad template, no credit, blocked number), so the HTTP code alone
-    // is not evidence of delivery.
-    const body = (await response.json()) as { return?: { status?: number; message?: string } };
-    const status = body.return?.status;
-    if (status !== 200) {
-      throw new Error(`Kavenegar rejected the send: ${status} ${body.return?.message ?? ''}`.trim());
-    }
+  /** Remaining credit, for the readiness check. Sends nothing. */
+  async accountInfo() {
+    return this.client.accountInfo();
   }
 }
 
@@ -113,6 +134,15 @@ class SmsIrProvider implements SmsProvider {
     if (body.status !== 1) {
       throw new Error(`SMS.ir rejected the send: ${body.status} ${body.message ?? ''}`.trim());
     }
+  }
+
+  /**
+   * Codes only. SMS.ir templates are numeric ids configured per message, and
+   * this deployment uses Kavenegar; the code path is kept so a switch back is a
+   * setting, but the other templates are not wired here.
+   */
+  async sendTemplate(): Promise<SentSms> {
+    throw new Error('SMS.ir is configured for one-time codes only.');
   }
 }
 

@@ -75,7 +75,14 @@ model User {
   role        Role     @default(USER)
   permissions String[] @default([])
 
-  phone String?
+  phone           String?
+  /// Set when the member proved `phone` with a code. Cleared whenever the
+  /// number changes. Only a verified number is ever texted about the account
+  /// — a password-reset code to a typo'd number is a code for a stranger.
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  /// The member turned off informational texts. Codes and security alerts are
+  /// still sent: they are the account's protection, not a newsletter.
+  smsOptOut       Boolean   @default(false) @map("sms_opt_out")
 
   adminRoleId String?
   adminRole   AdminRole? @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
@@ -3857,4 +3864,44 @@ model PlanQuotaEvent {
   @@index([featureKey, outcome, createdAt])
   @@index([holderKey, createdAt])
   @@map("plan_quota_events")
+}
+
+// ---------------------------------------------------------------------------
+// SMS
+// ---------------------------------------------------------------------------
+
+enum SmsStatus {
+  SENT
+  FAILED
+  /// Not sent on purpose: no gateway, over the daily cap, opted out, or a
+  /// link in the text. The reason says which.
+  SKIPPED
+}
+
+/// One text, sent or not. For the cost and for "did the code go out?".
+///
+/// The phone number is stored only as a hash: this table answers how many and
+/// how much, and a support question about one number is answered by hashing
+/// the number the person gives.
+model SmsMessage {
+  id String @id @default(cuid())
+
+  /// Which template, by our key (see services/sms/templates.ts).
+  kind      String
+  phoneHash String  @map("phone_hash")
+  userId    String? @map("user_id")
+
+  status SmsStatus
+  reason String?
+
+  /// Kavenegar's message id and the cost it reported, in Rials.
+  providerMessageId String? @map("provider_message_id")
+  cost              Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([kind, status, createdAt])
+  @@index([phoneHash, createdAt])
+  @@map("sms_messages")
 }

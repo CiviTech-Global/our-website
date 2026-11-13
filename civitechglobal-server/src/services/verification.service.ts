@@ -1,3 +1,4 @@
+import { smsMemberSafely } from './sms/dispatch.js';
 import type { Prisma, VerificationDocumentKind } from '@prisma/client';
 import { toPage } from '../utils/page.js';
 import { searchWhere } from './list-search.js';
@@ -343,6 +344,9 @@ export async function review(
         ? 'هویت شما تأیید شد و دسترسی کامل بازارگاه برای شما فعال است.'
         : `اطلاعات ارسالی تأیید نشد${notes.reviewNote ? `: ${notes.reviewNote.slice(0, 120)}` : '.'}`,
     link: '/dashboard/verification',
+  });
+  smsMemberSafely(existing.userId, 'verification', 'alert', {
+    token: decision === 'APPROVED' ? 'تأیید' : 'رد',
   });
 
 // There is no audit table yet, and "who approved this identity?" is a

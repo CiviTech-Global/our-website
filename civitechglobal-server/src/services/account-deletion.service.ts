@@ -1,3 +1,4 @@
+import { memberPhone, nowTokens, sendSmsSafely } from './sms/dispatch.js';
 import { randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
@@ -173,6 +174,9 @@ export async function deleteOwnAccount(userId: string, input: DeleteAccountInput
       select: { storedName: true },
     }),
   ]);
+
+  // Read before the row is wiped: the alert goes to the number the account had.
+  const alertPhone = await memberPhone(userId, 'security');
 
   const now = new Date();
   const husk = `deleted+${userId}@deleted.invalid`;
@@ -386,4 +390,5 @@ export async function deleteOwnAccount(userId: string, input: DeleteAccountInput
     logger.error({ userId, failed, files }, 'Account deleted, but some of its files could not be removed');
   }
   logger.info({ userId, files: files.length }, 'Account deleted by its owner');
+  if (alertPhone) sendSmsSafely('accountDeleted', { phone: alertPhone }, nowTokens());
 }

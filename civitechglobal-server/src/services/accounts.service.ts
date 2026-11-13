@@ -4,6 +4,9 @@ import { AppError } from '../middleware/errorHandler.js';
 import { hashPassword } from '../utils/password.js';
 import { emailLookupHash } from './auth.service.js';
 import { freeSlug } from './company.service.js';
+import { sendSmsSafely } from './sms/dispatch.js';
+import { greetingName } from './sms/templates.js';
+import { normalizeIranMobile } from '../utils/persian.js';
 
 /**
  * Member accounts staff open on somebody's behalf, and companies.
@@ -53,15 +56,33 @@ export async function createMemberAccount(
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
       username: username ?? null,
-      phone: input.phone?.trim() || null,
+      phone: normalizeIranMobile(input.phone ?? '') ?? (input.phone?.trim() || null),
       role: 'USER',
       accountKind: input.accountKind,
       ...(vouchedBy
-        ? { staffVouchedAt: new Date(), staffVouchedById: vouchedBy, emailVerified: true }
+        ? {
+            staffVouchedAt: new Date(),
+            staffVouchedById: vouchedBy,
+            emailVerified: true,
+            // Staff typed it in front of its owner: as good as a code.
+            ...(normalizeIranMobile(input.phone ?? '') ? { phoneVerifiedAt: new Date() } : {}),
+          }
         : {}),
     },
-    select: { id: true, email: true, username: true, firstName: true, lastName: true, accountKind: true },
+    select: { id: true, email: true, username: true, phone: true, firstName: true, lastName: true, accountKind: true },
   });
+}
+
+/**
+ * Tells the owner of a staff-opened account it is ready, once the account is
+ * committed. The username only: the password was handed over in person and
+ * is never texted. No username, no text — an email address in an SMS reads as
+ * a link and is refused anyway.
+ */
+export function announceStaffAccount(user: { id: string; firstName: string; phone: string | null }): void {
+  const name = greetingName(user.firstName);
+  if (!name || !user.phone) return;
+  sendSmsSafely('account', { phone: user.phone, userId: user.id }, { token: name });
 }
 
 export interface CompanyAccountInput {
@@ -94,7 +115,7 @@ export async function createCompanyAccount(input: CompanyAccountInput, vouchedBy
   if (taken) throw new AppError('شرکتی با این شناسهٔ ملی از پیش ثبت شده است.', 409);
   const slug = await freeSlug(name);
 
-  return prisma.$transaction(async (tx) => {
+  const created = await prisma.$transaction(async (tx) => {
     const user = await createMemberAccount(tx, { ...input.account, accountKind: 'COMPANY' }, vouchedBy);
     const company = await tx.company.create({
       data: { ownerId: user.id, name, nationalId, slug },
@@ -102,6 +123,8 @@ export async function createCompanyAccount(input: CompanyAccountInput, vouchedBy
     });
     return { user, company };
   });
+  if (vouchedBy) announceStaffAccount(created.user);
+  return created;
 }
 
 /** Staff list of member accounts the desk opened, newest first. */

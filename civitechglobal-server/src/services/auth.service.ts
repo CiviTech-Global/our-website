@@ -1,3 +1,4 @@
+import { nowTokens, smsMemberSafely } from './sms/dispatch.js';
 import { randomBytes } from 'node:crypto';
 import { sha256Hex } from '../utils/hash.js';
 import { redis } from '../config/redis.js';
@@ -368,6 +369,7 @@ export async function changePassword(userId: string, currentPassword: string, ne
     data: { password: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
   });
   await revokeAllUserRefreshTokens(userId);
+  smsMemberSafely(userId, 'passwordChanged', 'security', nowTokens());
   return issueSessionFor(userId);
 }
 
@@ -387,9 +389,13 @@ export async function getMe(userId: string) {
 }
 
 export async function updateProfile(userId: string, input: UpdateProfileInput) {
+  // A changed number is an unproved number: it stops receiving account texts
+  // until the member verifies it again.
+  const current = input.phone === undefined ? null : await userRepository.findUnique({ where: { id: userId }, select: { phone: true } });
+  const phoneChanged = input.phone !== undefined && (input.phone.trim() || null) !== (current?.phone ?? null);
   const user = await userRepository.update({
     where: { id: userId },
-    data: input,
+    data: { ...input, ...(phoneChanged ? { phoneVerifiedAt: null } : {}) },
     select: userResponseFields(),
   });
   return user;

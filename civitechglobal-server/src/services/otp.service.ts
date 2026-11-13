@@ -5,7 +5,8 @@ import { logger } from '../config/logger.js';
 import { redis } from '../config/redis.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { sha256Hex } from '../utils/hash.js';
-import { canSendSms, smsProvider } from './sms/index.js';
+import { canSendSms } from './sms/index.js';
+import { sendSms } from './sms/dispatch.js';
 
 /**
  * Phone verification for insurance requests.
@@ -93,7 +94,9 @@ export async function requestCode(phone: string): Promise<OtpRequestResult> {
   await redis.set(keyFor(phone), JSON.stringify(record), 'EX', env.OTP_TTL_SECONDS);
 
   try {
-    await smsProvider().sendOtp(phone, code);
+    // Through the dispatcher, so the code is capped and logged like every text.
+    const sent = await sendSms('otp', { phone }, { token: code });
+    if (sent.status !== 'SENT') throw new Error(sent.reason);
   } catch (error) {
     // Delivery failed, so the applicant has no code and must not be made to sit
     // out the cooldown for a message that never arrived.

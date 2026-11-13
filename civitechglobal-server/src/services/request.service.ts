@@ -1,3 +1,4 @@
+import { scheduledTokens, sendSmsSafely } from './sms/dispatch.js';
 import type { LeadStatus, Prisma, Role } from '@prisma/client';
 import { toPage } from '../utils/page.js';
 import { searchWhere } from './list-search.js';
@@ -123,7 +124,13 @@ export async function scheduleCallback(
 ) {
   const request = await insuranceRequestRepository.findFirstWithRelations(scopeWhere({ id }, principal));
   if (!request) throw new AppError('Request not found', 404);
-  return insuranceRequestRepository.scheduleCallback(id, scheduledAt);
+  const updated = await insuranceRequestRepository.scheduleCallback(id, scheduledAt);
+  // A new or moved time is texted; clearing it is not news worth a text.
+  const previous = (request as { callbackScheduledAt?: Date | null }).callbackScheduledAt ?? null;
+  if (scheduledAt && previous?.getTime() !== scheduledAt.getTime()) {
+    sendSmsSafely('scheduled', { phone: request.phoneNumber }, scheduledTokens(scheduledAt, 'تماس'));
+  }
+  return updated;
 }
 
 export async function getRequestStats(principal: RequestingPrincipal) {

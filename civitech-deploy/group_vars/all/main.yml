@@ -123,7 +123,11 @@ db_app_user: civitech_app
 # uses to read the answer. "console" logs the code instead of sending it and
 # is refused at startup when NODE_ENV=production — deploy.yml asserts the same
 # thing so the failure surfaces before the container starts.
-sms_provider: none
+#
+# Kavenegar since 2026-11-13: the key and the code template (civiOtp) are in
+# the vault; every other template is named in the server code
+# (services/sms/templates.ts) and approved on the account.
+sms_provider: kavenegar
 
 # Push notifications to the mobile app (services/push in the API). "none"
 # registers phones and sends nothing: the setting until a Pushe account

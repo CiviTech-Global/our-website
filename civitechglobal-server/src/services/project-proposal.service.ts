@@ -1,3 +1,4 @@
+import { sendSmsSafely } from './sms/dispatch.js';
 import type { EngagementModel, Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -161,7 +162,7 @@ export async function updateProposal(proposalId: string, input: ProposalInput) {
  * validity clock starts and the request's own status moves.
  */
 export async function sendProposal(proposalId: string) {
-  return prisma.$transaction(async (tx) => {
+  const sent = await prisma.$transaction(async (tx) => {
     const proposal = await tx.projectProposal.findUnique({ where: { id: proposalId } });
     if (!proposal) throw new AppError('پیشنهاد پیدا نشد.', 404);
     if (proposal.status !== 'DRAFT') {
@@ -192,6 +193,16 @@ export async function sendProposal(proposalId: string) {
 
     return sent;
   });
+
+  // The client reads it with their tracking code; the text says it is there.
+  const request = await prisma.projectRequest.findUnique({
+    where: { id: sent.requestId },
+    select: { trackingCode: true, phone: true },
+  });
+  if (request?.phone) {
+    sendSmsSafely('proposalReady', { phone: request.phone }, { token: request.trackingCode });
+  }
+  return sent;
 }
 
 function validate(input: ProposalInput): void {

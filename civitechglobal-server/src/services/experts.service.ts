@@ -2,7 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
-import { createMemberAccount, type MemberAccountInput } from './accounts.service.js';
+import { announceStaffAccount, createMemberAccount, type MemberAccountInput } from './accounts.service.js';
 import { assertVerified } from './verification.service.js';
 import { notifySafely } from './notifications.service.js';
 
@@ -260,8 +260,9 @@ export async function createExpert(
   const slug = await uniqueSlug(input.slug?.trim() || slugify(input.fullName));
 
   const stored = await storePhoto(photo);
+  let opened: Awaited<ReturnType<typeof createMemberAccount>> | null = null;
   try {
-    return await prisma.$transaction(async (tx) => {
+    const created = await prisma.$transaction(async (tx) => {
       const account = options.account
         ? await createMemberAccount(
             tx,
@@ -269,6 +270,7 @@ export async function createExpert(
             options.staffId ?? null,
           )
         : null;
+      opened = account;
       return tx.expert.create({
         data: {
           ...data,
@@ -281,6 +283,8 @@ export async function createExpert(
         select: { id: true, slug: true, fullName: true, userId: true },
       });
     });
+    if (opened) announceStaffAccount(opened);
+    return created;
   } catch (error) {
     // Nothing references the file yet; an orphan in storage is invisible and
     // never collected.
@@ -327,6 +331,7 @@ export async function updateExpert(
   const approving = data.published === true && existing.moderationStatus !== 'APPROVED';
 
   const stored = await storePhoto(photo);
+  let opened: Awaited<ReturnType<typeof createMemberAccount>> | null = null;
   try {
     const updated = await prisma.$transaction(async (tx) => {
       const account = options.account
@@ -336,6 +341,7 @@ export async function updateExpert(
             options.staffId ?? null,
           )
         : null;
+      opened = account;
       return tx.expert.update({
         where: { id },
         data: {
@@ -349,6 +355,7 @@ export async function updateExpert(
       });
     });
 
+    if (opened) announceStaffAccount(opened);
     if (approving && existing.userId) notifyDecision(existing.userId, 'APPROVED');
     // Only once the row points at the new file.
     if (stored && existing.photoStoredName) await removeFile(existing.photoStoredName);
