@@ -118,6 +118,9 @@ void main() {
 
     await tester.tap(find.text('Me').last);
     await settle(tester);
+    // Below the account rows on a short screen.
+    await tester.ensureVisible(find.text('Settings'));
+    await settle(tester);
     await tester.tap(find.text('Settings'));
     await settle(tester);
     await tester.scrollUntilVisible(find.text('Lapis & Apricot'), 120);

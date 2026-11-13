@@ -20,6 +20,7 @@ _AuthUser _$AuthUserFromJson(Map<String, dynamic> json) => _AuthUser(
           .toList() ??
       const <String>[],
   emailVerified: json['emailVerified'] as bool? ?? false,
+  accountKind: json['accountKind'] as String? ?? 'INDIVIDUAL',
 );
 
 Map<String, dynamic> _$AuthUserToJson(_AuthUser instance) => <String, dynamic>{
@@ -32,4 +33,5 @@ Map<String, dynamic> _$AuthUserToJson(_AuthUser instance) => <String, dynamic>{
   'role': instance.role,
   'permissions': instance.permissions,
   'emailVerified': instance.emailVerified,
+  'accountKind': instance.accountKind,
 };

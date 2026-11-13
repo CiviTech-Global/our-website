@@ -45,6 +45,20 @@ class StaffDeskMenu extends ConsumerWidget {
       if (granted.contains('analytics'))
         (Icons.insights_outlined, s.analytics.title, '/staff/analytics'),
       if (isSuper) (Icons.history_rounded, s.audit.title, '/staff/audit'),
+      if (granted.contains('billing')) ...[
+        (
+          Icons.workspace_premium_outlined,
+          s.plans.adminPlansTitle,
+          '/staff/plans',
+        ),
+        (Icons.sms_outlined, s.sms.adminTitle, '/staff/sms'),
+      ],
+      if (granted.contains('accounts'))
+        (
+          Icons.add_business_outlined,
+          s.plans.adminAccountsTitle,
+          '/staff/accounts',
+        ),
       for (final c in [...staffCollections, ...staffTools])
         if (c.permission == null ? isSuper : granted.contains(c.permission))
           (

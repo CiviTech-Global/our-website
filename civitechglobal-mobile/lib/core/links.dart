@@ -39,6 +39,10 @@ const appPaths = <String>{
   '/dashboard/notifications',
   '/dashboard/profile',
   '/dashboard/verification',
+  // The notice for an expert's review links here (expert.reviewed).
+  '/dashboard/expert',
+  '/dashboard/billing',
+  '/pricing',
   '/jobs',
   '/companies',
   '/dashboard/applications',

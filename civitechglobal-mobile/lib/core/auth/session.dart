@@ -96,6 +96,10 @@ class SessionController extends AsyncNotifier<AuthUser?> {
     required String lastName,
     required String email,
     required String password,
+
+    /// A registered company (a legal entity): its name and its eleven-digit
+    /// national ID. The names above are then its representative's.
+    ({String name, String nationalId})? company,
   }) async => _adopt(
     await _api.post<Object?>(
       '/auth/register',
@@ -104,6 +108,11 @@ class SessionController extends AsyncNotifier<AuthUser?> {
         'lastName': lastName.trim(),
         'email': email.trim(),
         'password': password,
+        if (company != null) ...{
+          'accountKind': 'COMPANY',
+          'companyName': company.name.trim(),
+          'companyNationalId': company.nationalId.trim(),
+        },
       },
     ),
   );
@@ -198,6 +207,27 @@ class AccountRecovery {
         '/auth/reset-password',
         body: {'token': token, 'password': password},
       );
+
+  /// Texts a reset code to the account's verified phone. The server answers
+  /// the same whether or not the account exists or has one.
+  Future<void> requestResetSms(String identifier) => _api.post<Object?>(
+    '/auth/password/sms',
+    body: {'identifier': identifier.trim()},
+  );
+
+  /// The texted code and the new password. Every session on the account ends.
+  Future<void> resetPasswordWithSms({
+    required String identifier,
+    required String code,
+    required String password,
+  }) => _api.post<Object?>(
+    '/auth/password/sms/reset',
+    body: {
+      'identifier': identifier.trim(),
+      'code': code.trim(),
+      'password': password,
+    },
+  );
 
   Future<void> verifyEmail(String token) =>
       _api.post<Object?>('/auth/verify-email', body: {'token': token});

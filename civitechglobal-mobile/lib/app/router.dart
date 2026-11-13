@@ -54,12 +54,15 @@ import '../features/market/market_screens.dart';
 import '../features/market/my_shops_screens.dart';
 import '../features/me/me_screen.dart';
 import '../features/me/requests_screen.dart';
+import '../features/plans/plans_screens.dart';
+import '../features/profile/expert_self_screen.dart';
 import '../features/profile/freelancer_card_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/public_profile_screen.dart';
 import '../features/profile/verification_screen.dart';
 import '../features/settings/language_choice_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/staff/staff_billing.dart';
 import '../features/staff/staff_collection_screens.dart';
 import '../features/staff/staff_people_screens.dart';
 import '../features/staff/staff_proposal_screen.dart';
@@ -242,6 +245,27 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, _) => const StaffAnalyticsScreen(),
           ),
           GoRoute(path: 'audit', builder: (_, _) => const StaffAuditScreen()),
+          GoRoute(
+            path: 'plans',
+            builder: (_, _) => const StaffPlansScreen(),
+            routes: [
+              GoRoute(
+                path: 'grant',
+                builder: (_, _) => const StaffGrantScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'accounts',
+            builder: (_, _) => const StaffAccountsScreen(),
+            routes: [
+              GoRoute(
+                path: 'company',
+                builder: (_, _) => const StaffCompanyAccountScreen(),
+              ),
+            ],
+          ),
+          GoRoute(path: 'sms', builder: (_, _) => const StaffSmsScreen()),
           GoRoute(
             path: 'q/:queue',
             builder: (_, state) =>
@@ -443,6 +467,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: '/dashboard/expert',
+        builder: (_, _) => const ExpertSelfScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/billing',
+        builder: (_, _) => const BillingScreen(),
+      ),
+      GoRoute(
         path: '/dashboard/verification',
         builder: (_, _) => const VerificationScreen(),
       ),
@@ -575,6 +607,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/contact', builder: (_, _) => const ContactScreen()),
+      GoRoute(
+        path: '/pricing',
+        builder: (_, state) =>
+            PricingScreen(subject: state.uri.queryParameters['subject']),
+      ),
       GoRoute(
         path: '/companies',
         builder: (_, _) => const CompaniesScreen(),
@@ -744,6 +781,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (_, _) => const ForgotPasswordScreen(),
+        routes: [
+          GoRoute(path: 'sms', builder: (_, _) => const SmsResetScreen()),
+        ],
       ),
       GoRoute(
         path: '/reset-password',

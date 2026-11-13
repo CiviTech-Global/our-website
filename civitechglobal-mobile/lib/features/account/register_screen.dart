@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_exception.dart';
 import '../../core/auth/session.dart';
+import '../../core/format.dart';
 import '../../design/haptics.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../l10n/l10n.dart';
@@ -28,13 +29,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  final _companyName = TextEditingController();
+  final _companyId = TextEditingController();
+
+  /// Registering a company (a legal entity) rather than a person.
+  bool _company = false;
   bool _busy = false;
   String? _error;
   Map<String, String> _fieldErrors = const {};
 
   @override
   void dispose() {
-    for (final c in [_first, _last, _email, _password, _confirm]) {
+    for (final c in [
+      _first,
+      _last,
+      _email,
+      _password,
+      _confirm,
+      _companyName,
+      _companyId,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -57,6 +71,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             lastName: _last.text,
             email: _email.text,
             password: _password.text,
+            company: _company
+                ? (
+                    name: _companyName.text,
+                    nationalId: toLatinDigits(_companyId.text),
+                  )
+                : null,
           );
       await ref.read(hapticsProvider).success();
       if (mounted) context.go(widget.from ?? '/me');
@@ -97,6 +117,64 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 16,
               children: [
+                Text(
+                  s.plans.accountKind,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(
+                      value: false,
+                      label: Text(s.plans.kindIndividual),
+                      icon: const Icon(Icons.person_outline_rounded),
+                    ),
+                    ButtonSegment(
+                      value: true,
+                      label: Text(s.plans.kindCompany),
+                      icon: const Icon(Icons.apartment_rounded),
+                    ),
+                  ],
+                  selected: {_company},
+                  onSelectionChanged: (v) => setState(() => _company = v.first),
+                ),
+                if (_company) ...[
+                  TextFormField(
+                    controller: _companyName,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.organizationName],
+                    validator: _check(
+                      'companyName',
+                      (x) =>
+                          (x ?? '').trim().length < 2 ? s.auth.required : null,
+                    ),
+                    decoration: InputDecoration(labelText: s.plans.companyName),
+                  ),
+                  TextFormField(
+                    controller: _companyId,
+                    keyboardType: TextInputType.number,
+                    textDirection: TextDirection.ltr,
+                    textInputAction: TextInputAction.next,
+                    maxLength: 11,
+                    validator: _check(
+                      'companyNationalId',
+                      (x) =>
+                          RegExp(
+                            r'^\d{11}$',
+                          ).hasMatch(toLatinDigits((x ?? '').trim()))
+                          ? null
+                          : s.plans.companyNationalIdHint,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: s.plans.companyNationalId,
+                      helperText: s.plans.companyNationalIdHint,
+                      counterText: '',
+                    ),
+                  ),
+                  Text(
+                    s.plans.representativeHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
                 TextFormField(
                   controller: _first,
                   textInputAction: TextInputAction.next,

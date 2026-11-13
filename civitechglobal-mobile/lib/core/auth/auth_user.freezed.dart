@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthUser {
 
- String get id; String get email; String get firstName; String get lastName; String? get username; String? get phone; String get role; List<String> get permissions; bool get emailVerified;
+ String get id; String get email; String get firstName; String get lastName; String? get username; String? get phone; String get role; List<String> get permissions; bool get emailVerified;/// INDIVIDUAL, or COMPANY for a registered company's account.
+ String get accountKind;
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $AuthUserCopyWith<AuthUser> get copyWith => _$AuthUserCopyWithImpl<AuthUser>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other.permissions, permissions)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other.permissions, permissions)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&(identical(other.accountKind, accountKind) || other.accountKind == accountKind));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,firstName,lastName,username,phone,role,const DeepCollectionEquality().hash(permissions),emailVerified);
+int get hashCode => Object.hash(runtimeType,id,email,firstName,lastName,username,phone,role,const DeepCollectionEquality().hash(permissions),emailVerified,accountKind);
 
 @override
 String toString() {
-  return 'AuthUser(id: $id, email: $email, firstName: $firstName, lastName: $lastName, username: $username, phone: $phone, role: $role, permissions: $permissions, emailVerified: $emailVerified)';
+  return 'AuthUser(id: $id, email: $email, firstName: $firstName, lastName: $lastName, username: $username, phone: $phone, role: $role, permissions: $permissions, emailVerified: $emailVerified, accountKind: $accountKind)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $AuthUserCopyWith<$Res>  {
   factory $AuthUserCopyWith(AuthUser value, $Res Function(AuthUser) _then) = _$AuthUserCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String firstName, String lastName, String? username, String? phone, String role, List<String> permissions, bool emailVerified
+ String id, String email, String firstName, String lastName, String? username, String? phone, String role, List<String> permissions, bool emailVerified, String accountKind
 });
 
 
@@ -65,7 +66,7 @@ class _$AuthUserCopyWithImpl<$Res>
 
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = freezed,Object? phone = freezed,Object? role = null,Object? permissions = null,Object? emailVerified = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = freezed,Object? phone = freezed,Object? role = null,Object? permissions = null,Object? emailVerified = null,Object? accountKind = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -76,7 +77,8 @@ as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullabl
 as String?,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,permissions: null == permissions ? _self.permissions : permissions // ignore: cast_nullable_to_non_nullable
 as List<String>,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,accountKind: null == accountKind ? _self.accountKind : accountKind // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -161,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String firstName,  String lastName,  String? username,  String? phone,  String role,  List<String> permissions,  bool emailVerified)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String firstName,  String lastName,  String? username,  String? phone,  String role,  List<String> permissions,  bool emailVerified,  String accountKind)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthUser() when $default != null:
-return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.username,_that.phone,_that.role,_that.permissions,_that.emailVerified);case _:
+return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.username,_that.phone,_that.role,_that.permissions,_that.emailVerified,_that.accountKind);case _:
   return orElse();
 
 }
@@ -182,10 +184,10 @@ return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.userna
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String firstName,  String lastName,  String? username,  String? phone,  String role,  List<String> permissions,  bool emailVerified)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String firstName,  String lastName,  String? username,  String? phone,  String role,  List<String> permissions,  bool emailVerified,  String accountKind)  $default,) {final _that = this;
 switch (_that) {
 case _AuthUser():
-return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.username,_that.phone,_that.role,_that.permissions,_that.emailVerified);case _:
+return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.username,_that.phone,_that.role,_that.permissions,_that.emailVerified,_that.accountKind);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +204,10 @@ return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.userna
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String firstName,  String lastName,  String? username,  String? phone,  String role,  List<String> permissions,  bool emailVerified)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String firstName,  String lastName,  String? username,  String? phone,  String role,  List<String> permissions,  bool emailVerified,  String accountKind)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthUser() when $default != null:
-return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.username,_that.phone,_that.role,_that.permissions,_that.emailVerified);case _:
+return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.username,_that.phone,_that.role,_that.permissions,_that.emailVerified,_that.accountKind);case _:
   return null;
 
 }
@@ -217,7 +219,7 @@ return $default(_that.id,_that.email,_that.firstName,_that.lastName,_that.userna
 @JsonSerializable()
 
 class _AuthUser extends AuthUser {
-  const _AuthUser({required this.id, required this.email, required this.firstName, required this.lastName, this.username, this.phone, this.role = 'USER', final  List<String> permissions = const <String>[], this.emailVerified = false}): _permissions = permissions,super._();
+  const _AuthUser({required this.id, required this.email, required this.firstName, required this.lastName, this.username, this.phone, this.role = 'USER', final  List<String> permissions = const <String>[], this.emailVerified = false, this.accountKind = 'INDIVIDUAL'}): _permissions = permissions,super._();
   factory _AuthUser.fromJson(Map<String, dynamic> json) => _$AuthUserFromJson(json);
 
 @override final  String id;
@@ -235,6 +237,8 @@ class _AuthUser extends AuthUser {
 }
 
 @override@JsonKey() final  bool emailVerified;
+/// INDIVIDUAL, or COMPANY for a registered company's account.
+@override@JsonKey() final  String accountKind;
 
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other._permissions, _permissions)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other._permissions, _permissions)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&(identical(other.accountKind, accountKind) || other.accountKind == accountKind));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,firstName,lastName,username,phone,role,const DeepCollectionEquality().hash(_permissions),emailVerified);
+int get hashCode => Object.hash(runtimeType,id,email,firstName,lastName,username,phone,role,const DeepCollectionEquality().hash(_permissions),emailVerified,accountKind);
 
 @override
 String toString() {
-  return 'AuthUser(id: $id, email: $email, firstName: $firstName, lastName: $lastName, username: $username, phone: $phone, role: $role, permissions: $permissions, emailVerified: $emailVerified)';
+  return 'AuthUser(id: $id, email: $email, firstName: $firstName, lastName: $lastName, username: $username, phone: $phone, role: $role, permissions: $permissions, emailVerified: $emailVerified, accountKind: $accountKind)';
 }
 
 
@@ -269,7 +273,7 @@ abstract mixin class _$AuthUserCopyWith<$Res> implements $AuthUserCopyWith<$Res>
   factory _$AuthUserCopyWith(_AuthUser value, $Res Function(_AuthUser) _then) = __$AuthUserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String firstName, String lastName, String? username, String? phone, String role, List<String> permissions, bool emailVerified
+ String id, String email, String firstName, String lastName, String? username, String? phone, String role, List<String> permissions, bool emailVerified, String accountKind
 });
 
 
@@ -286,7 +290,7 @@ class __$AuthUserCopyWithImpl<$Res>
 
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = freezed,Object? phone = freezed,Object? role = null,Object? permissions = null,Object? emailVerified = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = freezed,Object? phone = freezed,Object? role = null,Object? permissions = null,Object? emailVerified = null,Object? accountKind = null,}) {
   return _then(_AuthUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -297,7 +301,8 @@ as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullabl
 as String?,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,permissions: null == permissions ? _self._permissions : permissions // ignore: cast_nullable_to_non_nullable
 as List<String>,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,accountKind: null == accountKind ? _self.accountKind : accountKind // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

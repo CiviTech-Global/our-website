@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/format.dart';
+import '../../core/geo.dart';
 import '../../core/links.dart';
 import '../../design/palette.dart';
 import '../../design/tokens.dart';
@@ -30,6 +31,7 @@ class Expert {
     this.website,
     this.acceptsConsultations = false,
     this.photoUrl,
+    this.hourlyFee,
   });
 
   factory Expert.fromJson(Map<String, Object?> j) {
@@ -49,6 +51,11 @@ class Expert {
       website: j['websiteUrl'] as String?,
       acceptsConsultations: j['acceptsConsultations'] == true,
       photoUrl: j['photoUrl'] as String?,
+      hourlyFee: switch (j['hourlyFee']) {
+        final String fee when fee.isNotEmpty => fee,
+        final num fee => '$fee',
+        _ => null,
+      },
     );
   }
 
@@ -64,6 +71,9 @@ class Expert {
   final String? website;
   final bool acceptsConsultations;
   final String? photoUrl;
+
+  /// Toman per consultation hour, a whole number as a string.
+  final String? hourlyFee;
 }
 
 /// The club, in the order the staff set: `GET /consult/experts`.
@@ -405,6 +415,13 @@ class _Standing extends ConsumerWidget {
           _Tag(k.takesConsultations, c.primarySoft)
         else
           _Tag(k.listedOnly, c.tints[3]),
+        if (expert.hourlyFee case final fee? when expert.acceptsConsultations)
+          _Tag(
+            ref.watch(stringsProvider).plans.feePerHour.fill({
+              'amount': groupedNumber(fee, language),
+            }),
+            c.tints[0],
+          ),
         if (years != null && years > 0)
           _Tag(
             k.experience.fill({'years': localDigits(years, language)}),

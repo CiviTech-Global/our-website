@@ -190,6 +190,18 @@ class MeScreen extends ConsumerWidget {
                     ),
                   if (user != null)
                     row(
+                      Icons.workspace_premium_outlined,
+                      s.plans.navBilling,
+                      () => context.push('/dashboard/billing'),
+                    )
+                  else
+                    row(
+                      Icons.workspace_premium_outlined,
+                      s.plans.pricingTitle,
+                      () => context.push('/pricing'),
+                    ),
+                  if (user != null)
+                    row(
                       Icons.lock_outline_rounded,
                       s.dashboard.securityTitle,
                       () => context.push('/me/security'),

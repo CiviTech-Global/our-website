@@ -21,6 +21,7 @@ import '../../design/widgets/thousands_formatter.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import '../help/help_sheet.dart';
+import '../plans/post_as.dart';
 import 'employer_data.dart';
 import 'job_board_screen.dart' show jobBenefits, jobSeniorities;
 import 'job_form.dart';
@@ -97,6 +98,9 @@ class _EditorState extends ConsumerState<_Editor> {
   bool get _v2 =>
       ref.read(capabilitiesProvider).value?.feature('jobsV2') ?? false;
 
+  /// A new posting's shop, when posted as one; see PostAsPicker.
+  String? _postAs;
+
   String _snapshot() => jsonEncode(_d.toPayload(edit: true, v2: true));
 
   void _change(String field, VoidCallback apply) {
@@ -126,7 +130,7 @@ class _EditorState extends ConsumerState<_Editor> {
       if (widget.job case final job?) {
         await actions.updateJob(job.id, payload);
       } else {
-        await actions.createJob(payload);
+        await actions.createJob(postedAs(payload, _postAs));
       }
       await ref.read(hapticsProvider).success();
       if (!mounted) return;
@@ -336,6 +340,11 @@ class _EditorState extends ConsumerState<_Editor> {
       (
         v2 ? j.sectionBasics : m.newJob,
         [
+          if (widget.job == null)
+            PostAsPicker(
+              value: _postAs,
+              onChanged: (v) => setState(() => _postAs = v),
+            ),
           field(
             key: 'title',
             label: m.title,

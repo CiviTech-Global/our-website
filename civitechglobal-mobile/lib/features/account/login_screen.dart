@@ -86,13 +86,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 TextFormField(
                   controller: _email,
-                  keyboardType: TextInputType.emailAddress,
+                  // An email address or a username: accounts support
+                  // opens are handed either.
+                  keyboardType: TextInputType.visiblePassword,
                   textDirection: TextDirection.ltr,
                   autocorrect: false,
-                  autofillHints: const [AutofillHints.email],
+                  enableSuggestions: false,
+                  autofillHints: const [
+                    AutofillHints.username,
+                    AutofillHints.email,
+                  ],
                   textInputAction: TextInputAction.next,
-                  validator: v.email,
-                  decoration: InputDecoration(labelText: s.auth.email),
+                  validator: v.required,
+                  decoration: InputDecoration(
+                    labelText: s.plans.loginIdentifier,
+                  ),
                 ),
                 PasswordField(
                   controller: _password,

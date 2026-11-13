@@ -66,6 +66,8 @@ const _screens = [
   '/login',
   '/register',
   '/forgot-password',
+  '/forgot-password/sms',
+  '/pricing',
   '/reset-password?token=t',
   '/reset-password',
   '/services',
@@ -138,6 +140,8 @@ const _screens = [
 
 /// Screens a member sees: audited signed in only.
 const _memberScreens = [
+  '/dashboard/billing',
+  '/dashboard/expert',
   '/dashboard/requests',
   '/dashboard/applications',
   '/dashboard/saved-jobs',
@@ -200,6 +204,11 @@ const _memberScreens = [
   '/staff/roles',
   '/staff/analytics',
   '/staff/audit',
+  '/staff/plans',
+  '/staff/plans/grant',
+  '/staff/accounts',
+  '/staff/accounts/company',
+  '/staff/sms',
   '/staff/manage/team',
   '/staff/manage/team/new',
   '/staff/manage/team-sections',
@@ -1071,9 +1080,231 @@ Future<(int, Object?)> _fakeApi(RequestOptions o) async {
         },
       },
     ),
+    '/billing/plans' => (200, {'data': _planCatalog}),
+    '/billing/me' => (
+      200,
+      {
+        'data': {
+          'enforced': false,
+          'company': {'id': 'c1', 'name': 'Rayan Tamaddon Jahan Gostar Co.'},
+          'plans': [
+            for (final subject in ['USER', 'BUSINESS', 'COMPANY'])
+              {
+                'subject': subject,
+                'usage': [
+                  for (final f in _planFeatures.where((f) => f.$2 == subject))
+                    {
+                      'featureKey': f.$1,
+                      'name': f.$1,
+                      'tier': 'PREMIUM',
+                      'kind': 'MONTHLY',
+                      'limit': 120,
+                      'liveDays': null,
+                      'used': 118,
+                    },
+                ],
+                'active': [if (subject == 'USER') _subscription],
+              },
+          ],
+          'history': [_subscription, _subscription],
+        },
+      },
+    ),
+    '/auth/me/phone' => (
+      200,
+      {
+        'data': {
+          'phone': '09121234567',
+          'phoneVerifiedAt': null,
+          'smsOptOut': false,
+          'suggestedPhone': null,
+          'smsAvailable': true,
+        },
+      },
+    ),
+    '/consult/me/expert' => (
+      200,
+      {
+        'data': {
+          'slug': 'maryam',
+          'fullName': 'Maryam-Alexandra Ahmadi-Khorasani',
+          'headline': long,
+          'bio': long,
+          'specialities': ['Distributed systems', 'Public-sector software'],
+          'languages': ['Persian', 'English', 'German'],
+          'yearsExperience': 14,
+          'githubUrl': 'https://github.com/maryam-alexandra',
+          'linkedinUrl': '',
+          'websiteUrl': '',
+          'hourlyFee': '2500000',
+          'acceptsConsultations': true,
+          'photoUrl': null,
+          'published': true,
+          'moderationStatus': 'CHANGES_REQUESTED',
+          'reviewNote': long,
+        },
+      },
+    ),
+    '/billing/admin/subscriptions' => (
+      200,
+      {
+        'data': {
+          'items': [
+            {
+              ..._subscription,
+              'id': 's1',
+              'note': long,
+              'user': {
+                'id': 'u1',
+                'email': 'maryam.ahmadi.long.address@example.com',
+                'firstName': 'Maryam-Alexandra',
+                'lastName': 'Ahmadi-Khorasani',
+              },
+              'company': null,
+            },
+          ],
+          'total': 45,
+          'page': 1,
+          'pageSize': 20,
+        },
+      },
+    ),
+    '/billing/admin/accounts' => (
+      200,
+      {
+        'data': {
+          'items': [
+            {
+              'id': 'a1',
+              'email': 'representative.long.address@example.com',
+              'username': 'rayan-tamaddon',
+              'firstName': 'Maryam-Alexandra',
+              'lastName': 'Ahmadi-Khorasani',
+              'accountKind': 'COMPANY',
+              'staffVouchedAt': '2026-11-10T10:00:00Z',
+              'company': {
+                'id': 'c1',
+                'name': 'Rayan Tamaddon Jahan Gostar Co.',
+                'slug': 'rayan',
+              },
+              'expertProfile': null,
+            },
+          ],
+          'total': 1,
+          'page': 1,
+          'pageSize': 20,
+        },
+      },
+    ),
+    '/billing/admin/sms' => (
+      200,
+      {
+        'data': {
+          'days': 30,
+          'provider': 'kavenegar',
+          'canSend': true,
+          'memberAlerts': false,
+          'dailyCap': 12,
+          'totalCostRials': 1250000,
+          'kinds': [
+            for (final kind in ['otp', 'passwordChanged', 'received'])
+              {
+                'kind': kind,
+                'template': 'civiPasswordChanged',
+                'sent': 1204,
+                'failed': 3,
+                'skipped': 18,
+                'costRials': 418500,
+              },
+          ],
+          'recent': [
+            {
+              'id': 'x1',
+              'kind': 'verification',
+              'status': 'SKIPPED',
+              'reason': 'daily cap reached for this number',
+              'cost': null,
+              'createdAt': '2026-11-12T10:00:00Z',
+            },
+            {
+              'id': 'x2',
+              'kind': 'otp',
+              'status': 'SENT',
+              'reason': null,
+              'cost': 3476,
+              'createdAt': '2026-11-12T10:00:00Z',
+            },
+          ],
+        },
+      },
+    ),
     _ => (404, {'success': false, 'message': 'not found'}),
   };
 }
+
+/// Every kind of item on the price list, as (key, subject).
+const _planFeatures = [
+  ('user.job_applications', 'USER'),
+  ('user.service_requests', 'USER'),
+  ('user.service_listings', 'USER'),
+  ('business.shops', 'BUSINESS'),
+  ('business.items', 'BUSINESS'),
+  ('company.job_posts', 'COMPANY'),
+];
+
+final _planCatalog = {
+  'features': [
+    for (final (key, subject) in _planFeatures)
+      {
+        'key': key,
+        'subject': subject,
+        'name': key,
+        'nameEn': null,
+        'levels': [
+          for (final tier in ['FREE', 'PRO', 'PREMIUM', 'VIP'])
+            {
+              'tier': tier,
+              'kind': key.endsWith('job_posts') ? 'LIFETIME' : 'MONTHLY',
+              'limit': tier == 'VIP' ? null : 1200,
+              'liveDays': 45,
+              'priceIrt': tier == 'FREE' ? '0' : '125000000',
+              'priceUsdt': tier == 'FREE' ? null : '1250.50',
+            },
+        ],
+      },
+  ],
+  'tiers': {
+    for (final subject in ['USER', 'BUSINESS', 'COMPANY'])
+      subject: [
+        for (final tier in ['FREE', 'PRO', 'PREMIUM', 'VIP'])
+          {
+            'tier': tier,
+            'monthlyIrt': tier == 'PRO' ? null : '1250000000',
+            'monthlyUsdt': '12500.50',
+          },
+      ],
+  },
+  'periods': [
+    {'months': 1, 'discountPercent': 0},
+    {'months': 12, 'discountPercent': 20},
+  ],
+};
+
+const _subscription = {
+  'id': 's0',
+  'code': 'SUB-ABCDEFGH',
+  'subject': 'USER',
+  'status': 'PENDING_PAYMENT',
+  'source': 'STAFF_GRANT',
+  'tier': null,
+  'months': 12,
+  'startsAt': '2026-11-01T10:00:00Z',
+  'endsAt': '2027-11-01T10:00:00Z',
+  'total': '15000000000',
+  'currency': 'IRT',
+  'createdAt': '2026-11-01T10:00:00Z',
+  'items': <Object>[],
+};
 
 const _sheets = ['start', 'module', 'help'];
 
