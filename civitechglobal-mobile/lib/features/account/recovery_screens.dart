@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/auth/session.dart';
 import '../../core/capabilities.dart';
 import '../../core/config.dart';
+import '../../core/format.dart';
 import '../../design/haptics.dart';
 import '../../design/widgets/bagh_key.dart';
 import '../../design/widgets/girih.dart';
@@ -67,7 +68,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (caps.isLoading) {
       return const Scaffold(body: Center(child: GirihSpinner()));
     }
-    if (!(caps.value?.email ?? false)) {
+    final canEmail = caps.value?.email ?? false;
+    final canSms = caps.value?.sms ?? false;
+    // Without email, a code by SMS is the only way back in.
+    if (!canEmail && canSms) return const SmsResetScreen(emailToo: false);
+    if (!canEmail) {
       return AccountPage(
         title: s.auth.emailUnavailableTitle,
         helpId: 'password-reset',
@@ -129,6 +134,171 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           loading: _busy,
           expand: true,
         ),
+        if (canSms)
+          BaghKey(
+            label: s.sms.resetTitle,
+            kind: BaghKeyKind.outline,
+            expand: true,
+            onPressed: () => context.push('/forgot-password/sms'),
+          ),
+      ],
+    );
+  }
+}
+
+/// Resetting the password with a code texted to the account's verified
+/// phone: the account's email or username, then the code and a new password.
+/// The first answer is the same whether or not the account exists, so the
+/// screen never tells a stranger who has an account here.
+class SmsResetScreen extends ConsumerStatefulWidget {
+  const SmsResetScreen({this.emailToo = true, super.key});
+
+  /// Whether resetting by email is also on offer, to go back to.
+  final bool emailToo;
+
+  @override
+  ConsumerState<SmsResetScreen> createState() => _SmsResetScreenState();
+}
+
+class _SmsResetScreenState extends ConsumerState<SmsResetScreen> {
+  final _form = GlobalKey<FormState>();
+  bool _tried = false;
+  final _identifier = TextEditingController();
+  final _code = TextEditingController();
+  final _password = TextEditingController();
+  bool _codeSent = false;
+  bool _done = false;
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _identifier.dispose();
+    _code.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_tried) setState(() => _tried = true);
+    if (_busy || !_form.currentState!.validate()) return;
+    final s = ref.read(stringsProvider);
+    final recovery = ref.read(accountRecoveryProvider);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      if (!_codeSent) {
+        await recovery.requestResetSms(_identifier.text);
+        setState(() {
+          _codeSent = true;
+          _tried = false;
+        });
+      } else {
+        await recovery.resetPasswordWithSms(
+          identifier: _identifier.text,
+          code: toLatinDigits(_code.text),
+          password: _password.text,
+        );
+        await ref.read(hapticsProvider).success();
+        setState(() => _done = true);
+      }
+    } catch (e) {
+      setState(() => _error = describeError(s, e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    final v = Validators(s);
+    if (_done) {
+      return AccountPage(
+        title: s.sms.resetTitle,
+        helpId: 'password-reset',
+        children: [
+          FormMessage(s.sms.resetDone, positive: true),
+          BaghKey(
+            label: s.auth.loginLink,
+            expand: true,
+            onPressed: () => context.go('/login'),
+          ),
+        ],
+      );
+    }
+    return AccountPage(
+      title: s.sms.resetTitle,
+      subtitle: _codeSent ? s.sms.resetCodeSent : s.sms.resetIntro,
+      helpId: 'password-reset',
+      children: [
+        Form(
+          key: _form,
+          autovalidateMode: _tried
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 16,
+            children: [
+              TextFormField(
+                controller: _identifier,
+                enabled: !_codeSent,
+                keyboardType: TextInputType.visiblePassword,
+                textDirection: TextDirection.ltr,
+                autocorrect: false,
+                enableSuggestions: false,
+                autofillHints: const [AutofillHints.username],
+                validator: v.required,
+                onFieldSubmitted: (_) => _codeSent ? null : _submit(),
+                decoration: InputDecoration(labelText: s.sms.identifier),
+              ),
+              if (_codeSent) ...[
+                TextFormField(
+                  controller: _code,
+                  keyboardType: TextInputType.number,
+                  textDirection: TextDirection.ltr,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  maxLength: 8,
+                  validator: (value) =>
+                      RegExp(
+                        r'^\d{4,8}$',
+                      ).hasMatch(toLatinDigits(value?.trim() ?? ''))
+                      ? null
+                      : s.auth.required,
+                  decoration: InputDecoration(
+                    labelText: s.sms.codeLabel,
+                    counterText: '',
+                  ),
+                ),
+                PasswordField(
+                  controller: _password,
+                  label: s.sms.newPassword,
+                  helper: s.auth.passwordHint,
+                  newPassword: true,
+                  validator: v.password,
+                  onSubmitted: (_) => _submit(),
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (_codeSent) Text(s.auth.resetRevokesSessions),
+        if (_error != null) FormMessage(_error!),
+        BaghKey(
+          label: _codeSent ? s.sms.resetSubmit : s.sms.sendResetCode,
+          onPressed: _submit,
+          loading: _busy,
+          expand: true,
+        ),
+        Text(s.sms.noPhoneHint),
+        if (widget.emailToo)
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text(s.sms.byEmail),
+          ),
       ],
     );
   }

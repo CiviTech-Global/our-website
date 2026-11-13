@@ -28,6 +28,7 @@ import '../help/help_sheet.dart';
 import '../intake/track_screen.dart' show StatusPill;
 import '../jobs/jobs_format.dart' show postedAgo;
 import '../jobs/seeker_screens.dart' show ReviewNote, statusTone;
+import '../plans/post_as.dart';
 import 'client_data.dart';
 import 'freelance_data.dart';
 import 'freelance_ui.dart';
@@ -1170,6 +1171,9 @@ class _ProjectWizardState extends ConsumerState<_ProjectWizard> {
   int _step = 0;
   List<PickedFile> _files = const [];
   late String? _savedId = widget.project?.id;
+
+  /// A new project's shop, when posted as one; see PostAsPicker.
+  String? _postAs;
   bool _sending = false;
   double? _progress;
   String? _error;
@@ -1199,7 +1203,7 @@ class _ProjectWizardState extends ConsumerState<_ProjectWizard> {
         await actions.update(id, _d.toPayload());
       } else {
         id = await actions.create(
-          _d.toPayload(),
+          postedAs(_d.toPayload(), _postAs),
           attachments: _files,
           onProgress: (p) => setState(() => _progress = p),
         );
@@ -1311,6 +1315,11 @@ class _ProjectWizardState extends ConsumerState<_ProjectWizard> {
 
     final body = switch (name) {
       'basics' => [
+        if (_savedId == null)
+          PostAsPicker(
+            value: _postAs,
+            onChanged: (v) => _set(() => _postAs = v),
+          ),
         TextFormField(
           key: const ValueKey('title'),
           initialValue: d.title,

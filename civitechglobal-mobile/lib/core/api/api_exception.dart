@@ -8,6 +8,8 @@ class ApiException implements Exception {
     this.status,
     this.fieldErrors = const {},
     this.offline = false,
+    this.code,
+    this.data,
   });
 
   factory ApiException.from(Object error) {
@@ -19,9 +21,13 @@ class ApiException implements Exception {
       }
       final data = response.data;
       var message = '';
+      String? code;
+      Object? extra;
       final fields = <String, String>{};
       if (data is Map) {
         if (data['message'] is String) message = data['message'] as String;
+        if (data['code'] is String) code = data['code'] as String;
+        extra = data['data'];
         final errors = data['errors'];
         if (errors is List) {
           for (final e in errors) {
@@ -35,6 +41,8 @@ class ApiException implements Exception {
         message: message,
         status: response.statusCode,
         fieldErrors: fields,
+        code: code,
+        data: extra,
       );
     }
     return ApiException(message: error.toString());
@@ -50,6 +58,12 @@ class ApiException implements Exception {
 
   /// The request never reached the server.
   final bool offline;
+
+  /// The server's machine-readable reason, e.g. `QUOTA_EXCEEDED`.
+  final String? code;
+
+  /// What the server attached to the error, for a [code] that has any.
+  final Object? data;
 
   @override
   String toString() => 'ApiException($status, $message)';

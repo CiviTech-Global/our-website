@@ -55,6 +55,12 @@ class ApiClient {
 
   Completer<bool>? _refreshing;
 
+  /// Every refusal for a plan limit (402 `QUOTA_EXCEEDED`), wherever it came
+  /// from, so the app can offer the plans once instead of each form on its
+  /// own. The request still fails as usual for its caller.
+  final _quotaHits = StreamController<ApiException>.broadcast();
+  Stream<ApiException> get quotaHits => _quotaHits.stream;
+
   static const _authPaths = {
     '/auth/login',
     '/auth/register',
@@ -125,10 +131,10 @@ class ApiClient {
         try {
           return await attempt();
         } on DioException catch (retryError) {
-          throw ApiException.from(retryError);
+          throw _failure(retryError);
         }
       }
-      throw ApiException.from(error);
+      throw _failure(error);
     }
   }
 
@@ -203,8 +209,17 @@ class ApiClient {
         }
         onSessionLost?.call();
       }
-      throw ApiException.from(error);
+      throw _failure(error);
     }
+  }
+
+  /// The error as the app sees it; a plan-limit refusal is reported too.
+  ApiException _failure(DioException error) {
+    final failure = ApiException.from(error);
+    if (failure.status == 402 && failure.code == 'QUOTA_EXCEEDED') {
+      _quotaHits.add(failure);
+    }
+    return failure;
   }
 
   /// Renews the access token with the stored refresh token. True on success.

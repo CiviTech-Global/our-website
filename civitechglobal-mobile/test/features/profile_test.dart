@@ -171,6 +171,9 @@ void main() {
       'headline': '',
       'bio': '',
       'website': 'https://maryam.example',
+      // Blank links clear them, as on the web.
+      'githubUrl': '',
+      'linkedinUrl': '',
     });
   });
 

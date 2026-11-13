@@ -20,6 +20,8 @@ typedef OwnProfile = ({
   String? headline,
   String? bio,
   String? website,
+  String? githubUrl,
+  String? linkedinUrl,
   List<String> skills,
 });
 
@@ -30,6 +32,8 @@ OwnProfile _ownProfile(Object? d) {
     headline: _text(m['headline']),
     bio: _text(m['bio']),
     website: _text(m['website']),
+    githubUrl: _text(m['githubUrl']),
+    linkedinUrl: _text(m['linkedinUrl']),
     skills: _strings(m['skills']),
   );
 }
@@ -86,6 +90,8 @@ class PublicProfile {
     this.headline,
     this.bio,
     this.website,
+    this.githubUrl,
+    this.linkedinUrl,
     this.companyName,
     this.joinedAt,
     this.skills = const [],
@@ -96,6 +102,8 @@ class PublicProfile {
     headline: _text(j['headline']),
     bio: _text(j['bio']),
     website: _text(j['website']),
+    githubUrl: _text(j['githubUrl']),
+    linkedinUrl: _text(j['linkedinUrl']),
     companyName: _text(j['companyName']),
     skills: _strings(j['skills']),
     verified: j['verified'] == true,
@@ -147,6 +155,8 @@ class PublicProfile {
   final String? headline;
   final String? bio;
   final String? website;
+  final String? githubUrl;
+  final String? linkedinUrl;
   final String? companyName;
   final List<String> skills;
   final bool verified;
@@ -263,6 +273,8 @@ class ProfileActions {
     required String headline,
     required String bio,
     required String website,
+    required String githubUrl,
+    required String linkedinUrl,
     List<String>? skills,
   }) async {
     await _api.patch<void>(
@@ -271,6 +283,8 @@ class ProfileActions {
         'headline': headline,
         'bio': bio,
         'website': website,
+        'githubUrl': githubUrl,
+        'linkedinUrl': linkedinUrl,
         'skills': ?skills,
       },
     );

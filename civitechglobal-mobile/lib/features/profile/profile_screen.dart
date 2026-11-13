@@ -18,6 +18,7 @@ import '../../l10n/l10n.dart';
 import '../account/account_page.dart';
 import '../help/help_sheet.dart';
 import '../intake/track_screen.dart' show StatusPill;
+import 'phone_settings.dart';
 import 'profile_data.dart';
 import 'verification_screen.dart' show verificationTone;
 
@@ -44,6 +45,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _headline = TextEditingController();
   final _bio = TextEditingController();
   final _website = TextEditingController();
+  final _github = TextEditingController();
+  final _linkedin = TextEditingController();
   final _skills = TextEditingController();
 
   /// What each field held when last seeded or saved, to tell an edit from
@@ -84,6 +87,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _headline: profile.headline ?? '',
           _bio: profile.bio ?? '',
           _website: profile.website ?? '',
+          _github: profile.githubUrl ?? '',
+          _linkedin: profile.linkedinUrl ?? '',
           _skills: profile.skills.join('، '),
         });
       }, fireImmediately: true);
@@ -105,6 +110,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _headline,
       _bio,
       _website,
+      _github,
+      _linkedin,
       _skills,
     ]) {
       c.dispose();
@@ -164,6 +171,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             headline: _headline.text.trim(),
             bio: _bio.text.trim(),
             website: _website.text.trim(),
+            githubUrl: _github.text.trim(),
+            linkedinUrl: _linkedin.text.trim(),
             skills: withSkills ? splitSkills(_skills.text) : null,
           );
       await ref.read(hapticsProvider).success();
@@ -171,6 +180,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _headline: _headline.text,
         _bio: _bio.text,
         _website: _website.text,
+        _github: _github.text,
+        _linkedin: _linkedin.text,
         _skills: _skills.text,
       });
       setState(() => _publicMessage = (s.market.publicProfileSaved, true));
@@ -216,7 +227,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   onRefresh: () async {
                     ref
                       ..invalidate(ownProfileProvider)
-                      ..invalidate(ownVerificationProvider);
+                      ..invalidate(ownVerificationProvider)
+                      ..invalidate(phoneSettingsProvider);
                     await ref.read(ownProfileProvider.future);
                   },
                   child: ListView(
@@ -298,6 +310,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: BaghSpace.gutter),
+                      const PhoneSettingsCard(),
                       const SizedBox(height: BaghSpace.gutter),
                       _Section(
                         title: m.publicProfileTitle,
@@ -388,6 +402,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             : s.volunteer.errUrl;
                                       },
                                     ),
+                                    Text(
+                                      s.plans.linksTitle,
+                                      style: text.titleSmall,
+                                    ),
+                                    Text(
+                                      s.plans.linksHint,
+                                      style: text.bodySmall?.copyWith(
+                                        color: c.ink2,
+                                      ),
+                                    ),
+                                    _LinkField(
+                                      controller: _github,
+                                      label: s.plans.github,
+                                      host: 'github.com',
+                                      hint: 'https://github.com/…',
+                                      error: s.volunteer.errUrl,
+                                    ),
+                                    _LinkField(
+                                      controller: _linkedin,
+                                      label: s.plans.linkedin,
+                                      host: 'linkedin.com',
+                                      hint: 'https://www.linkedin.com/in/…',
+                                      error: s.volunteer.errUrl,
+                                    ),
                                     // Only where the job board is on, as on
                                     // the web: skills match people to roles.
                                     if (jobsV2)
@@ -472,6 +510,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ),
                               ),
                             ListTile(
+                              leading: const Icon(Icons.school_outlined),
+                              title: Text(s.plans.navExpert),
+                              trailing: Icon(forward),
+                              onTap: () => context.push('/dashboard/expert'),
+                            ),
+                            ListTile(
                               leading: const Icon(Icons.lock_outline_rounded),
                               title: Text(s.dashboard.securityTitle),
                               trailing: Icon(forward),
@@ -549,4 +593,46 @@ class _Section extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A link to a profile on one site (GitHub, LinkedIn), checked as the server
+/// checks it: http(s), and that site or one of its subdomains.
+class _LinkField extends StatelessWidget {
+  const _LinkField({
+    required this.controller,
+    required this.label,
+    required this.host,
+    required this.hint,
+    required this.error,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String host;
+  final String hint;
+  final String error;
+
+  @override
+  Widget build(BuildContext context) => TextFormField(
+    controller: controller,
+    keyboardType: TextInputType.url,
+    textDirection: TextDirection.ltr,
+    autocorrect: false,
+    decoration: InputDecoration(labelText: label, hintText: hint),
+    validator: (v) {
+      final t = (v ?? '').trim();
+      if (t.isEmpty) return null;
+      return isProfileLink(t, host) ? null : error;
+    },
+  );
+}
+
+/// Whether [value] is an http(s) address on [host] or a subdomain of it.
+bool isProfileLink(String value, String host) {
+  final uri = Uri.tryParse(value);
+  if (uri == null || !(uri.scheme == 'https' || uri.scheme == 'http')) {
+    return false;
+  }
+  final name = uri.host.toLowerCase().replaceFirst(RegExp(r'^www\.'), '');
+  return name == host || name.endsWith('.$host');
 }

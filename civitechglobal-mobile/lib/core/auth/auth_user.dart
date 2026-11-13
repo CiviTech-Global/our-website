@@ -17,6 +17,9 @@ abstract class AuthUser with _$AuthUser {
     @Default('USER') String role,
     @Default(<String>[]) List<String> permissions,
     @Default(false) bool emailVerified,
+
+    /// INDIVIDUAL, or COMPANY for a registered company's account.
+    @Default('INDIVIDUAL') String accountKind,
   }) = _AuthUser;
 
   const AuthUser._();
@@ -28,4 +31,6 @@ abstract class AuthUser with _$AuthUser {
 
   /// Staff accounts get a link to the web panel; the app has no admin screens.
   bool get isStaff => role == 'ADMIN' || role == 'SUPER_ADMIN';
+
+  bool get isCompany => accountKind == 'COMPANY';
 }

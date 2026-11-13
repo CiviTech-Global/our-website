@@ -157,17 +157,17 @@ class _Profile extends ConsumerWidget {
                     ),
                 ],
               ),
-              if (p.website case final website?)
-                InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () => openLink(context, ref, website),
-                  child: _IconLine(
-                    Icons.language_rounded,
-                    website,
-                    color: c.primary,
-                    ltr: true,
+              for (final (icon, link) in [
+                (Icons.language_rounded, p.website),
+                (Icons.code_rounded, p.githubUrl),
+                (Icons.work_outline_rounded, p.linkedinUrl),
+              ])
+                if (link != null)
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => openLink(context, ref, link),
+                    child: _IconLine(icon, link, color: c.primary, ltr: true),
                   ),
-                ),
               if (p.bio case final bio?)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),

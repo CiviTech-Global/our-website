@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/api/api_client.dart';
 import '../core/auth/session.dart';
 import '../core/capabilities.dart';
 import '../core/links.dart';
 import '../core/push.dart';
 import '../core/settings.dart';
 import '../design/theme.dart';
+import '../features/plans/plans_screens.dart';
 import '../features/settings/update_screen.dart';
 import '../l10n/l10n.dart';
 import 'router.dart';
@@ -18,6 +20,10 @@ import 'router.dart';
 /// values/values-fa strings and iOS's en.lproj/fa.lproj InfoPlist.strings.
 String appName(String language) =>
     language == 'fa' ? 'رایان تمدن جهان گستر' : 'Rayan Tamaddon Jahan Gostar';
+
+final _quotaHitsProvider = StreamProvider(
+  (ref) => ref.watch(apiClientProvider).quotaHits,
+);
 
 class CiviTechApp extends ConsumerWidget {
   const CiviTechApp({super.key});
@@ -36,6 +42,14 @@ class CiviTechApp extends ConsumerWidget {
       // A tapped push opens what it is about, when the app has that screen.
       ..listen(pushTapsProvider, (_, next) {
         if (next.value case final link? when isAppPath(link)) router.push(link);
+      })
+      // An action refused for a plan limit offers the plans, wherever it
+      // was refused.
+      ..listen(_quotaHitsProvider, (_, next) {
+        final context = router.routerDelegate.navigatorKey.currentContext;
+        if (next.value case final hit? when context != null) {
+          showQuotaPrompt(context, ref, hit);
+        }
       });
     final highContrast = MediaQuery.maybeHighContrastOf(context) ?? false;
 
