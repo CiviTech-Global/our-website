@@ -19,6 +19,7 @@ import { apiMessage } from '@/lib/apiMessage';
 import { toPersianDigits } from '@/i18n/utils';
 import { fill, toman } from '@/lib/planFormat';
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
+import { EXPERT_TAG_LIMITS, firstTooLong, splitTags } from '@/lib/expertTags';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -131,15 +132,16 @@ export default function AdminExpertsPage() {
     setEditing(expert);
   }
 
-  const list = (value: string) =>
-    value
-      .split(/[,،]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-
   // The event is absent when this is a retry of a failed upload.
   async function submit(event?: FormEvent) {
     event?.preventDefault();
+
+    const specialities = splitTags(values.specialities);
+    const tooLong = firstTooLong(specialities, EXPERT_TAG_LIMITS.specialityLength);
+    if (tooLong) {
+      showToast(fill(t.experts.specialityTooLong, { max: number(EXPERT_TAG_LIMITS.specialityLength), item: tooLong }), 'error');
+      return;
+    }
 
     const payload: ExpertPayload = {
       fullName: values.fullName.trim(),
@@ -147,8 +149,8 @@ export default function AdminExpertsPage() {
       affiliation: values.affiliation.trim(),
       slug: values.slug.trim() || undefined,
       bio: values.bio.trim() || undefined,
-      specialities: list(values.specialities),
-      languages: list(values.languages),
+      specialities,
+      languages: splitTags(values.languages),
       yearsExperience: values.yearsExperience ? Number(values.yearsExperience) : null,
       linkedinUrl: values.linkedinUrl.trim() || undefined,
       githubUrl: values.githubUrl.trim() || undefined,

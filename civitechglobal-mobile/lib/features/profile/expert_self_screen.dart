@@ -198,7 +198,7 @@ class _ExpertSelfScreenState extends ConsumerState<ExpertSelfScreen> {
       _photo != null || _saved.entries.any((e) => e.key.text != e.value);
 
   List<String> _split(String value) => [
-    for (final item in value.split(RegExp('[,،]')))
+    for (final item in value.split(RegExp(r'[,،;؛\n\r]+')))
       if (item.trim().isNotEmpty) item.trim(),
   ];
 
