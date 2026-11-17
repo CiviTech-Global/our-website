@@ -78,7 +78,8 @@ const ownExpertSchema = z.object({
   fullName: trimmed(120).min(2, 'نام الزامی است').optional(),
   headline: trimmed(160).min(2, 'عنوان الزامی است').optional(),
   bio: trimmed(4000).optional(),
-  specialities: z.array(trimmed(60)).max(20).optional(),
+  // 100 leaves room for a descriptive Persian phrase; keep in step with the web's EXPERT_TAG_LIMITS.
+  specialities: z.array(trimmed(100).max(100, 'هر تخصص حداکثر ۱۰۰ نویسه است')).max(20, 'حداکثر ۲۰ تخصص').optional(),
   languages: z.array(trimmed(40)).max(10).optional(),
   yearsExperience: z.coerce.number().int().min(0).max(70).nullable().optional(),
   linkedinUrl: linkedinLink,

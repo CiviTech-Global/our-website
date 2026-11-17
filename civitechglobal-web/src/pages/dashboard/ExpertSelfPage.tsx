@@ -9,6 +9,8 @@ import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { apiMessage } from '@/lib/apiMessage';
 import { prepareImage } from '@/lib/prepareImage';
+import { EXPERT_TAG_LIMITS, firstTooLong, splitTags } from '@/lib/expertTags';
+import { fill } from '@/lib/planFormat';
 import { OWN_EXPERT_PHOTO_PATH, useOwnExpert, useSaveOwnExpert } from '@/api/consult';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -54,11 +56,6 @@ const schema = z.object({
 
 type Values = z.infer<typeof schema>;
 
-const split = (value: string) =>
-  value
-    .split(/[,،]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
 
 const STATUS_VARIANT = {
   DRAFT: 'default',
@@ -152,14 +149,20 @@ export default function ExpertSelfPage() {
       showToast(p.linksRequired, 'error');
       return;
     }
+    const specialities = splitTags(values.specialities);
+    const tooLong = firstTooLong(specialities, EXPERT_TAG_LIMITS.specialityLength);
+    if (tooLong) {
+      showToast(fill(t.experts.specialityTooLong, { max: EXPERT_TAG_LIMITS.specialityLength, item: tooLong }), 'error');
+      return;
+    }
     try {
       const result = await save.mutateAsync({
         payload: {
           fullName: values.fullName,
           headline: values.headline,
           bio: values.bio,
-          specialities: split(values.specialities),
-          languages: split(values.languages),
+          specialities,
+          languages: splitTags(values.languages),
           yearsExperience: values.yearsExperience ? Number(values.yearsExperience) : null,
           githubUrl: values.githubUrl,
           linkedinUrl: values.linkedinUrl,
