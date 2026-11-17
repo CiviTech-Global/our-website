@@ -58,8 +58,10 @@ jobs:
         run: npx prisma generate
 
       - name: Audit dependencies
+        # High and critical fail; runtime ones always fail. The only exceptions
+        # are dated entries in the script, for advisories with no fix yet.
         working-directory: civitechglobal-server
-        run: npm audit --audit-level=high
+        run: node ../scripts/audit-gate.mjs
 
       - name: Lint
         run: npm run lint:server
@@ -103,8 +105,9 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
+        # Same gate as the server job: see scripts/audit-gate.mjs.
         working-directory: civitechglobal-web
-        run: npm audit --audit-level=high
+        run: node ../scripts/audit-gate.mjs
 
       - name: Lint
         run: npm run lint:web
