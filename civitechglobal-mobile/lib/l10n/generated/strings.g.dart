@@ -1969,6 +1969,7 @@ class StringsExperts extends L10nNode {
   String get fieldBio => string("fieldBio");
   String get fieldSpecialities => string("fieldSpecialities");
   String get fieldSpecialitiesHint => string("fieldSpecialitiesHint");
+  String get specialityTooLong => string("specialityTooLong");
   String get fieldLanguages => string("fieldLanguages");
   String get fieldYears => string("fieldYears");
   String get fieldPhoto => string("fieldPhoto");
