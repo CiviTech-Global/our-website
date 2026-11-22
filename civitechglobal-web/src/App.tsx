@@ -48,6 +48,7 @@ const MessagesPage = lazy(() => import('@/pages/admin/MessagesPage'));
 const ProjectDetailPage = lazy(() => import('@/pages/admin/ProjectDetailPage'));
 const InsuranceProductPage = lazy(() => import('@/pages/public/InsuranceProductPage'));
 const TrackRequestPage = lazy(() => import('@/pages/public/TrackRequestPage'));
+const PayRequestPage = lazy(() => import('@/pages/public/PayRequestPage'));
 
 // The marketplace. Split out as its own set: the boards carry their own
 // filters, forms and money formatting, and none of it belongs in the bundle a
@@ -275,6 +276,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteLoadingFallback />}>
               <TrackRequestPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/pay"
+          element={
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <PayRequestPage />
             </Suspense>
           }
         />

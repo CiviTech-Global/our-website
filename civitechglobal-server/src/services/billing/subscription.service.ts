@@ -175,6 +175,9 @@ export async function checkout(userId: string, selection: PlanSelection, returnU
       currency: 'IRT',
       reference: started.reference,
       redirectUrl: started.redirectUrl,
+      // Where the gateway callback sends the buyer afterwards, so the
+      // callback can recover it without trusting the query string.
+      buyerReturnUrl: returnUrl,
     },
   });
 

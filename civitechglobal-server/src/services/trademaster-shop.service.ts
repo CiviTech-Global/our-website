@@ -18,6 +18,7 @@ import { notifySafely } from './notifications.service.js';
 import { authorProfileSummaries, authorProfileSummary } from './profile.service.js';
 import { IMAGE_EXTENSIONS, removeFile, storeFiles, type IncomingFile } from './attachment.service.js';
 import { isValidPoint, type Point } from '../utils/geo.js';
+import { normalizeIban } from '../utils/iban.js';
 import { assertBusinessCategoryUsable, businessCategoryScope } from './business-category.service.js';
 import {
   MAX_RADIUS_KM,
@@ -97,6 +98,11 @@ export interface ShopInput {
   phone?: string | null;
   email?: string | null;
   website?: string | null;
+  /**
+   * Sheba for the seller's share of order payments (Zibal multiplexing),
+   * already normalised by the route's validator. Null clears it.
+   */
+  payoutIban?: string | null;
 }
 
 export interface ShopQuery {
@@ -199,6 +205,9 @@ function normalize(input: Partial<ShopInput>) {
     ...(input.city !== undefined ? { city: text(input.city) } : {}),
     ...(input.address !== undefined ? { address: text(input.address) } : {}),
     ...(input.phone !== undefined ? { phone: text(input.phone) } : {}),
+    ...(input.payoutIban !== undefined
+      ? { payoutIban: input.payoutIban ? normalizeIban(input.payoutIban) : null }
+      : {}),
     ...(input.email !== undefined ? { email: email ? email.toLowerCase() : email } : {}),
     ...(input.website !== undefined ? { website: text(input.website) } : {}),
     ...locationPatch(input.latitude, input.longitude),
@@ -429,6 +438,8 @@ export async function getOwnShop(userId: string, shopId: string) {
       phone: true,
       email: true,
       website: true,
+      // The payout Sheba belongs to the owner only: it is a bank account.
+      payoutIban: true,
       moderationStatus: true,
       state: true,
       reviewNote: true,

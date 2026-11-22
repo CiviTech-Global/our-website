@@ -130,6 +130,16 @@ services:
       PUSH_PROVIDER: "{{ push_provider }}"
       PUSHE_API_TOKEN: "{{ vault_pushe_api_token | default('') }}"
       PUSHE_APP_ID: "{{ pushe_app_id }}"
+      # Payments (services/payment in the API). 'zibal' is the real gateway;
+      # the merchant id lives in the vault. 'sandbox' is refused by the server
+      # in production unless payment_allow_sandbox says so on purpose.
+      PAYMENT_DRIVER: "{{ payment_driver }}"
+      PAYMENT_ALLOW_SANDBOX: "{{ payment_allow_sandbox }}"
+      ZIBAL_MERCHANT_ID: "{{ vault_zibal_merchant_id | default('') }}"
+      # Platform commission on partner-paid flows (orders, consultation
+      # bills, freelance payment requests); the partner's share is split to
+      # their payout Sheba at the gateway (multiplexing).
+      PAYMENT_PARTNER_COMMISSION_PERCENT: "{{ payment_partner_commission_percent }}"
       # The Android app: its version floor and latest release, and where it
       # can be had (capabilities.routes.ts). Empty means not set yet.
       MOBILE_MIN_VERSION: "{{ mobile_min_version }}"

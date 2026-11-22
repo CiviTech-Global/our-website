@@ -24,6 +24,7 @@ import trackRoutes from './track.routes.js';
 import sitemapRoutes from './sitemap.routes.js';
 import pushRoutes from './push.routes.js';
 import billingRoutes from './billing.routes.js';
+import paymentsRoutes from './payments.routes.js';
 
 const router = Router();
 
@@ -98,6 +99,10 @@ router.use('/work', workRoutes);
 router.use('/bookshop', bookshopRoutes);
 
 router.use('/billing', billingRoutes);
+
+// The payment gateway's callback: unauthenticated by design — the buyer
+// arrives from the gateway's redirect, possibly with no session at all.
+router.use('/payments', paymentsRoutes);
 
 // Browser error reports and the Prometheus scrape endpoint. Mounted at the
 // root of /api rather than under a prefix: /api/metrics is where a scraper

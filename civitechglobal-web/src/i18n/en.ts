@@ -1880,6 +1880,24 @@ const en: typeof fa = {
       imageTooLarge: 'That picture is too large even after shrinking. Please choose a smaller one.',
     },
   },
+  pay: {
+    title: 'Pay an invoice',
+    subtitle: 'Review the invoice and pay it online.',
+    codeLabel: 'Payment code',
+    subjectLabel: 'Subject',
+    amountLabel: 'Amount due',
+    irt: 'Toman',
+    paidAtLabel: 'Paid at',
+    paidBadge: 'Paid',
+    unpaidBadge: 'Awaiting payment',
+    payButton: 'Pay online',
+    paidBody: 'This invoice has been paid successfully.',
+    notFoundTitle: 'Invoice not found',
+    notFoundBody: 'This payment code is not valid. Check the code or contact us.',
+    pendingBody: 'The payment is not final yet; try again in a few moments.',
+    error: 'Could not reach the payment gateway; please try again.',
+  },
+
   consult: {
     searchQueue: 'Search name, phone or tracking code',
     // The public request page

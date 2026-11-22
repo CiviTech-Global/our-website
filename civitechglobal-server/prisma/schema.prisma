@@ -161,6 +161,8 @@ model User {
   bids                  ProjectBid[]          @relation("Bidder")
   bidsReviewed          ProjectBid[]          @relation("BidReviewer")
   awardsMade            MarketplaceAward[]    @relation("AwardedBy")
+  paymentRequestsCreated  PaymentRequest[]  @relation("PaymentRequestCreator")
+  paymentRequestsReceived PaymentRequest[]  @relation("PaymentRequestPayer")
   assignedRequests      InsuranceRequest[]    @relation("LeadAssignee")
   consultationsAssigned ConsultationRequest[] @relation("ConsultationAssignee")
 
@@ -1856,6 +1858,11 @@ model MarketplaceAward {
   milestones MarketplaceMilestone[]
   reviews    MarketplaceReview[]
 
+  /// The bill issued for this contract, when the parties agreed a price the
+  /// platform collects. Context only — the award lifecycle stays the award
+  /// lifecycle; money lives on the payment request.
+  paymentRequest PaymentRequest?
+
   disputeStatus         DisputeStatus @default(NONE) @map("dispute_status")
   disputeReason         String?       @map("dispute_reason")
   disputeOpenedAt       DateTime?     @map("dispute_opened_at")
@@ -2289,6 +2296,10 @@ model Expert {
   hourlyFee   BigInt? @map("hourly_fee")
   feeCurrency String  @default("IRT") @map("fee_currency")
 
+  /// Where this expert's share of a paid consultation is settled by the
+  /// payment gateway (Zibal multiplexing). Sheba, stored normalised.
+  payoutIban String? @map("payout_iban")
+
   /// Where a self-submitted profile is on its way to the club. Profiles staff
   /// write are APPROVED from the start.
   moderationStatus ModerationStatus @default(APPROVED) @map("moderation_status")
@@ -2338,6 +2349,10 @@ model ConsultationRequest {
   expert   Expert? @relation(fields: [expertId], references: [id], onDelete: SetNull)
 
   availability ConsultationAvailability[]
+
+  /// The bill for this consultation, when the session has a price. Context
+  /// only — see the note on PaymentRequest about lifecycles.
+  paymentRequest PaymentRequest?
 
   status    ConsultationStatus @default(NEW)
   /// Ours, never shown to the person who asked.
@@ -2446,6 +2461,12 @@ model Business {
   phone   String?
   email   String?
   website String?
+
+  /// Where the seller's share of a paid order is settled by the payment
+  /// gateway (Zibal multiplexing). Sheba, stored normalised: uppercase,
+  /// no spaces. Null means every settlement lands with the platform and
+  /// the seller is paid out manually.
+  payoutIban String? @map("payout_iban")
 
   logoStoredName   String? @map("logo_stored_name")
   logoOriginalName String? @map("logo_original_name")
@@ -2880,7 +2901,8 @@ model PaymentIntent {
   id String @id @default(cuid())
 
   /// What the money is for. ORDER rows have orderId; SUBSCRIPTION rows have
-  /// subscriptionId. A database CHECK keeps the pair honest.
+  /// subscriptionId; PAYMENT_REQUEST rows have paymentRequestId. A database
+  /// CHECK keeps the three honest.
   purpose PaymentPurpose @default(ORDER)
 
   orderId String? @map("order_id")
@@ -2889,10 +2911,14 @@ model PaymentIntent {
   subscriptionId String?           @map("subscription_id")
   subscription   PlanSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
+  paymentRequestId String?         @map("payment_request_id")
+  paymentRequest   PaymentRequest? @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+
   /// Who paid. Scopes confirmation to them, as buyerId does for orders.
   payerUserId String? @map("payer_user_id")
 
-  /// 'sandbox' today. 'zarinpal' when that lands.
+  /// 'sandbox' or 'zibal'. Names which implementation created the row, so a
+  /// sandbox intent can never be mistaken for a real one.
   driver String
 
   status PaymentStatus @default(CREATED)
@@ -2905,6 +2931,15 @@ model PaymentIntent {
   /// Where the buyer is sent. Null for a driver that needs no redirect.
   redirectUrl String? @map("redirect_url")
 
+  /// The page on this site the gateway callback brings the buyer back to.
+  /// Stored on the intent so the callback never trusts the query string.
+  buyerReturnUrl String? @map("buyer_return_url")
+
+  /// The beneficiary shares sent to the gateway for a shared (تسهیم)
+  /// payment, as a JSON array of { iban, amount } — amounts as strings,
+  /// because BigInt is not JSON. Null for a regular payment.
+  splits Json? @map("splits")
+
   /// The gateway's reason for a refusal, verbatim. Never translated.
   failureReason String? @map("failure_reason")
 
@@ -2915,7 +2950,73 @@ model PaymentIntent {
 
   @@index([orderId, status])
   @@index([subscriptionId])
+  @@index([paymentRequestId])
   @@map("payment_intents")
+}
+
+/**
+ * A bill a staff member issues for something the platform arranged — a
+ * consultation session, a freelance contract, anything with a price that is
+ * neither an order nor a subscription. The payer follows the payment link
+ * (the code is the credential, as it is for the public intake forms) and
+ * pays through the gateway. A beneficiary share — the expert's or the
+ * partner's cut — settles straight to their Sheba at transaction time (Zibal
+ * multiplexing) and the rest stays with the platform.
+ *
+ * Deliberately a sibling of the thing it pays for, not a change to it:
+ * ConsultationRequest is not a booking and the award lifecycle keeps money
+ * out of scope, by documented decision. Linking a payment request to either
+ * is context for the settlement record; it moves neither lifecycle.
+ */
+model PaymentRequest {
+  id String @id @default(cuid())
+
+  /// Quotable public reference — the payment link's credential.
+  code String @unique
+
+  /// What it is for, in one sentence the payer sees.
+  title       String
+  description String?
+
+  /// Frozen at creation.
+  amount   BigInt
+  currency String @default("IRT")
+
+  /// The partner's share, settled to this Sheba at the gateway. Null: the
+  /// whole amount settles to the platform account.
+  beneficiaryIban String? @map("beneficiary_iban")
+  /// Whose share it is — for the settlement record and the staff list.
+  beneficiaryName String? @map("beneficiary_name")
+
+  /// The member being billed, when they have an account. The link also works
+  /// logged out — the code is the credential.
+  payerUserId String? @map("payer_user_id")
+  payerUser   User?   @relation("PaymentRequestPayer", fields: [payerUserId], references: [id], onDelete: SetNull)
+
+  /// What it pays for, where there is a row to point at. Unique: one live
+  /// bill per thing.
+  consultationRequestId String?              @unique @map("consultation_request_id")
+  consultationRequest   ConsultationRequest? @relation(fields: [consultationRequestId], references: [id], onDelete: SetNull)
+  awardId String?            @unique @map("award_id")
+  award   MarketplaceAward?  @relation(fields: [awardId], references: [id], onDelete: SetNull)
+
+  /// Set by the confirmation path, guarded, so a paid request is a fact and
+  /// not a cached belief.
+  paidAt DateTime? @map("paid_at")
+
+  /// The staff member who issued the bill — notified when it is paid.
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("PaymentRequestCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  /// One row per payment attempt, as everywhere else — an abandoned link
+  /// tried twice is two attempts.
+  intents PaymentIntent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([payerUserId])
+  @@map("payment_requests")
 }
 
 // ---------------------------------------------------------------------------
@@ -3706,6 +3807,10 @@ enum PlanSubscriptionSource {
 enum PaymentPurpose {
   ORDER
   SUBSCRIPTION
+  /// A staff-issued bill for something the platform arranged — a consultation
+  /// session, a freelance contract, anything with a price that is neither an
+  /// order nor a subscription. See PaymentRequest.
+  PAYMENT_REQUEST
 }
 
 /// One limited thing, e.g. "job applications per month".

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import type { OrderStatus } from '@prisma/client';
 import { TRANSITIONS, assertTransition } from './trademaster-order.service.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -37,7 +37,7 @@ function allows(from: OrderStatus, to: OrderStatus, actor: 'buyer' | 'seller'): 
 
 describe('the order transition table', () => {
   it('covers every status, so a new one cannot be forgotten', () => {
-    // Record<OrderStatus, …> already forces this at compile time. Asserted
+    // Record<OrderStatus, â€¦> already forces this at compile time. Asserted
     // again here because a future `as` or a partial type would quietly remove
     // that guarantee, and the failure would be an order stuck forever.
     expect(Object.keys(TRANSITIONS).sort()).toEqual([...ALL].sort());
@@ -117,3 +117,4 @@ describe('the order transition table', () => {
     }
   });
 });
+

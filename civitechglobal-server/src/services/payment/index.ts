@@ -1,13 +1,15 @@
 import type { PaymentStatus } from '@prisma/client';
 import { AppError } from '../../middleware/errorHandler.js';
 import { sandboxDriver } from './sandbox.js';
+import { zibalDriver } from './zibal.js';
 
 /**
  * Taking money, behind one seam.
  *
- * There is no real gateway yet. ZarinPal is coming, and the point of this file
- * is that when it does it becomes one more object in DRIVERS rather than a
- * change to the order service, the routes or the schema.
+ * Zibal is the real gateway; the sandbox driver remains for development and
+ * tests. The point of this file is that a gateway is one more object in
+ * DRIVERS rather than a change to the order service, the routes or the
+ * schema.
  *
  * The seam is deliberately narrow. A gateway does three things worth naming:
  * it is asked to start a payment and says where to send the buyer, it is asked
@@ -24,6 +26,20 @@ import { sandboxDriver } from './sandbox.js';
  * wrong shape.
  */
 
+/**
+ * One beneficiary's share of a shared (split) payment.
+ *
+ * The gateway settles each share straight to the beneficiary at transaction
+ * time (Zibal multiplexing); the unnamed remainder stays with us. Amounts are
+ * minor units in the payment's currency, as everywhere else.
+ */
+export interface PaymentSplit {
+  /** Beneficiary Sheba (IR…). */
+  iban: string;
+  /** Share. The sum of all shares must leave something with the platform. */
+  amount: bigint;
+}
+
 export interface StartPaymentInput {
   /** Our own order code, quoted back in the gateway's records. */
   orderCode: string;
@@ -34,6 +50,11 @@ export interface StartPaymentInput {
   returnUrl: string;
   /** Shown on the gateway's own page where it supports one. */
   description?: string;
+  /**
+   * Beneficiary shares for a shared payment. Absent/empty is a regular
+   * payment: everything settles to the platform account.
+   */
+  splits?: PaymentSplit[];
 }
 
 export interface StartedPayment {
@@ -72,6 +93,7 @@ export interface PaymentDriver {
 
 const DRIVERS: Record<string, PaymentDriver> = {
   [sandboxDriver.name]: sandboxDriver,
+  [zibalDriver.name]: zibalDriver,
 };
 
 /**

@@ -6,6 +6,7 @@ import { generateTrackingCode } from './insurance-request.service.js';
 import { PUBLIC_LISTING_WHERE } from './moderation.js';
 import { notifySafely } from './notifications.service.js';
 import { activeDriver, driverByName } from './payment/index.js';
+import { beneficiarySplit, partnerCommissionPercent } from './payment/partner-split.js';
 
 /**
  * Orders.
@@ -338,16 +339,34 @@ async function releaseStock(tx: Prisma.TransactionClient, orderId: string): Prom
  * Returns where to send the buyer. The order moves to AWAITING_PAYMENT, which
  * is a statement about the buyer's whereabouts rather than about money.
  */
+/**
+ * The seller's share of an order payment, as a gateway split. The shared
+ * math lives in payment/partner-split.ts; a missing Sheba or a zero
+ * commission degrades to a plain payment rather than blocking the buyer.
+ */
+async function orderSplits(businessId: string, total: bigint) {
+  const percent = partnerCommissionPercent();
+  if (percent <= 0 || total <= 0n) return undefined;
+
+  const business = await prisma.business.findFirst({
+    where: { id: businessId },
+    select: { payoutIban: true },
+  });
+  return beneficiarySplit(total, percent, business?.payoutIban);
+}
+
 export async function startPayment(userId: string, orderId: string, returnUrl: string) {
   const order = await prisma.order.findFirst({
     where: { id: orderId, buyerId: userId },
-    select: { id: true, code: true, status: true, total: true, currency: true },
+    select: { id: true, code: true, status: true, total: true, currency: true, businessId: true },
   });
   if (!order) throw new AppError('این سفارش پیدا نشد.', 404);
 
   if (order.status !== 'PENDING' && order.status !== 'AWAITING_PAYMENT') {
     throw new AppError('این سفارش در وضعیت پرداخت نیست.', 409);
   }
+
+  const splits = await orderSplits(order.businessId, order.total);
 
   const driver = activeDriver();
   const started = await driver.start({
@@ -356,6 +375,7 @@ export async function startPayment(userId: string, orderId: string, returnUrl: s
     currency: order.currency,
     returnUrl,
     description: order.code,
+    splits,
   });
 
   await prisma.$transaction([
@@ -368,6 +388,14 @@ export async function startPayment(userId: string, orderId: string, returnUrl: s
         currency: order.currency,
         reference: started.reference,
         redirectUrl: started.redirectUrl,
+        // Where the gateway callback sends the buyer afterwards, so the
+        // callback can recover it without trusting the query string.
+        buyerReturnUrl: returnUrl,
+        // The split that was sent to the gateway, for the settlement record.
+        // BigInt is not JSON: amounts are stored as strings.
+        splits: splits
+          ? (splits.map((s) => ({ iban: s.iban, amount: s.amount.toString() })) as Prisma.InputJsonValue)
+          : undefined,
       },
     }),
     prisma.order.update({

@@ -161,6 +161,21 @@ const queryText = (max: number) => z.preprocess(blankToUndefined, trimmed(max).o
 
 const kind = z.enum(['PRODUCT', 'SERVICE'], { message: 'نوع مورد را انتخاب کنید' });
 
+/**
+ * A Sheba, as a seller types it: digits (Persian ones accepted), spaces or
+ * dashes in fours. Normalised to the canonical form — no separators,
+ * uppercase — before it reaches the service or the database.
+ */
+const sheba = z.preprocess(
+  latinDigits,
+  z
+    .string()
+    .trim()
+    .max(40)
+    .transform((value) => value.replace(/[\s-]/g, '').toUpperCase())
+    .pipe(z.string().regex(/^IR\d{24}$/, 'شماره شبا معتبر نیست')),
+);
+
 // ---------------------------------------------------------------------------
 // Shops
 // ---------------------------------------------------------------------------
@@ -178,6 +193,11 @@ const shopFields = {
   // Null clears the location; both halves move together — see locationIsWhole.
   latitude: z.preprocess(blankToNull, latitude.nullable()).optional(),
   longitude: z.preprocess(blankToNull, longitude.nullable()).optional(),
+  /**
+   * Where the seller's share of a paid order is settled (Zibal multiplexing).
+   * Cleared like the other optional fields: blank or null removes it.
+   */
+  payoutIban: clearable(sheba),
   phone: clearable(phone),
   email: clearable(z.string().trim().email('نشانی ایمیل نامعتبر است').max(160)),
   website: clearable(webUrl),

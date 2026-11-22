@@ -122,6 +122,29 @@
           honest answer while there is no mail service.
       no_log: true
 
+    - name: Refuse to deploy a payment driver that cannot take money
+      # The same rule as the providers above. 'zibal' names the real gateway
+      # and must carry a real merchant id — the shared string "zibal" is the
+      # PUBLIC test merchant, allowed deliberately for staging. 'sandbox'
+      # marks every payment paid without a network call; the server refuses it
+      # in production unless payment_allow_sandbox says the deploy knows.
+      ansible.builtin.assert:
+        that:
+          - payment_driver in ['zibal', 'sandbox']
+          - >-
+            payment_driver == 'sandbox'
+            or (
+              vault_zibal_merchant_id is defined
+              and (vault_zibal_merchant_id | length) > 0
+              and not (vault_zibal_merchant_id | string).startswith('REPLACE_ME')
+            )
+          - payment_driver != 'sandbox' or not node_env | string == 'production' or payment_allow_sandbox | string == 'true'
+        fail_msg: >-
+          payment_driver must be 'zibal' with vault_zibal_merchant_id set in
+          vault.yml (from the Zibal panel), or 'sandbox' only outside
+          production / with payment_allow_sandbox=true on purpose.
+      no_log: true
+
     - name: Refuse to deploy an unpinned build
       # `latest` deploys whatever CI pushed most recently, which makes
       # rollback impossible and "which commit is live" unanswerable. Override

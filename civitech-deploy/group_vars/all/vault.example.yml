@@ -43,6 +43,11 @@ vault_sms_api_key: "REPLACE_ME"
 # Kavenegar: the approved template name. SMS.ir: the numeric template id.
 vault_sms_otp_template: "REPLACE_ME"
 
+# Zibal payment gateway (zibal.ir). The merchant id (کد مرچنت) from the Zibal
+# panel, menu «درگاه پرداخت». Required when payment_driver is "zibal"; the
+# shared string "zibal" is Zibal's public test merchant.
+vault_zibal_merchant_id: "REPLACE_ME"
+
 # Used once by `prisma/seed.ts`, which only creates a SUPER_ADMIN when none
 # exists. Change the password from the admin UI after the first login.
 vault_seed_admin_email: "admin@civitechglobal.com"

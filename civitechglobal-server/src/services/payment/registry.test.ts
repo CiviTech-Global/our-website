@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { activeDriver, driverByName, sandboxDriver } from './index.js';
+import { zibalDriver } from './zibal.js';
 import { AppError } from '../../middleware/errorHandler.js';
 
 /**
@@ -46,10 +47,16 @@ describe('the payment driver registry', () => {
     expect(activeDriver().name).toBe('sandbox');
   });
 
+  it('resolves the zibal driver by name', () => {
+    vi.stubEnv('PAYMENT_DRIVER', 'zibal');
+    expect(activeDriver().name).toBe('zibal');
+  });
+
   it('resolves a stored intent by the driver that created it', () => {
     // Verification has to go back to the same gateway that issued the
     // reference, not to whichever one the deployment now prefers.
     expect(driverByName('sandbox')).toBe(sandboxDriver);
+    expect(driverByName('zibal')).toBe(zibalDriver);
   });
 
   it('throws for a stored intent naming a driver that no longer exists', () => {

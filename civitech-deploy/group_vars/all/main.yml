@@ -136,6 +136,18 @@ sms_provider: kavenegar
 push_provider: none
 pushe_app_id: ""
 
+# Payments (civitechglobal-server/src/services/payment). "zibal" is the real
+gateway and needs vault_zibal_merchant_id. "sandbox" marks every payment
+paid without a network call and is refused by the server in production
+unless payment_allow_sandbox is true — for a staging deploy on purpose.
+payment_driver: zibal
+payment_allow_sandbox: ""
+# Platform commission in percent (0-99) kept on partner-paid flows (marketplace
+# orders, consultation bills, freelance payment requests); the partner's share
+# is split to their payout Sheba at the gateway (Zibal multiplexing).
+# 0 disables the split: everything settles to the platform.
+payment_partner_commission_percent: "0"
+
 # The Android app (civitechglobal-mobile/README.md, "Releasing"). Versions
 # are dotted (1.2.0); below the minimum the app asks to be updated and does
 # nothing else. Each link is https or a path on this site, empty until it is
