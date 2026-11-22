@@ -137,9 +137,9 @@ push_provider: none
 pushe_app_id: ""
 
 # Payments (civitechglobal-server/src/services/payment). "zibal" is the real
-gateway and needs vault_zibal_merchant_id. "sandbox" marks every payment
-paid without a network call and is refused by the server in production
-unless payment_allow_sandbox is true — for a staging deploy on purpose.
+# gateway and needs vault_zibal_merchant_id. "sandbox" marks every payment
+# paid without a network call and is refused by the server in production
+# unless payment_allow_sandbox is true — for a staging deploy on purpose.
 payment_driver: zibal
 payment_allow_sandbox: ""
 # Platform commission in percent (0-99) kept on partner-paid flows (marketplace
