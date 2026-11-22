@@ -1785,6 +1785,23 @@
    "imageTooLarge": "Cette image reste trop lourde même après réduction. Choisissez-en une plus petite."
   }
  },
+ "pay": {
+  "title": "Payer une facture",
+  "subtitle": "Vérifiez la facture et payez-la en ligne.",
+  "codeLabel": "Code de paiement",
+  "subjectLabel": "Objet",
+  "amountLabel": "Montant à payer",
+  "irt": "Tomans",
+  "paidAtLabel": "Payée le",
+  "paidBadge": "Payée",
+  "unpaidBadge": "En attente de paiement",
+  "payButton": "Payer en ligne",
+  "paidBody": "Cette facture a été payée avec succès.",
+  "notFoundTitle": "Facture introuvable",
+  "notFoundBody": "Ce code de paiement est invalide. Vérifiez le code ou contactez-nous.",
+  "pendingBody": "Le paiement n’est pas encore finalisé ; réessayez dans quelques instants.",
+  "error": "Impossible de joindre la passerelle de paiement ; veuillez réessayer."
+ },
  "consult": {
   "searchQueue": "Rechercher un nom, un téléphone ou un code de suivi",
   "title": "Demander un conseil",
@@ -1908,7 +1925,8 @@
   "fieldSlugHint": "L'adresse publique : /experts/<slug>. Laissée vide, elle est générée.",
   "fieldBio": "Biographie",
   "fieldSpecialities": "Spécialités",
-  "fieldSpecialitiesHint": "Séparées par des virgules.",
+  "fieldSpecialitiesHint": "Séparées par des virgules, points-virgules ou retours à la ligne.",
+  "specialityTooLong": "Une spécialité compte au plus {max} caractères. Séparez-la par des virgules : « {item} »",
   "fieldLanguages": "Langues",
   "fieldYears": "Années d'expérience",
   "fieldPhoto": "Photographie",

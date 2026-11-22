@@ -1785,6 +1785,23 @@
    "imageTooLarge": "Bu görsel küçültüldükten sonra bile çok büyük. Lütfen daha küçüğünü seçin."
   }
  },
+ "pay": {
+  "title": "Fatura ödeme",
+  "subtitle": "Faturayı inceleyin ve çevrim içi ödeyin.",
+  "codeLabel": "Ödeme kodu",
+  "subjectLabel": "Konu",
+  "amountLabel": "Ödenecek tutar",
+  "irt": "Tümen",
+  "paidAtLabel": "Ödeme zamanı",
+  "paidBadge": "Ödendi",
+  "unpaidBadge": "Ödeme bekleniyor",
+  "payButton": "Çevrim içi öde",
+  "paidBody": "Bu fatura başarıyla ödendi.",
+  "notFoundTitle": "Fatura bulunamadı",
+  "notFoundBody": "Bu ödeme kodu geçerli değil. Kodu kontrol edin veya bizimle iletişime geçin.",
+  "pendingBody": "Ödeme henüz kesinleşmedi; biraz sonra tekrar deneyin.",
+  "error": "Ödeme sayfasına ulaşılamadı; lütfen tekrar deneyin."
+ },
  "consult": {
   "searchQueue": "Ad, telefon veya takip kodu ara",
   "title": "Danışmanlık talebi",
@@ -1908,7 +1925,8 @@
   "fieldSlugHint": "Herkese açık adres: /experts/<slug>. Boş bırakılırsa üretilir.",
   "fieldBio": "Özgeçmiş",
   "fieldSpecialities": "Uzmanlıklar",
-  "fieldSpecialitiesHint": "Virgülle ayırın.",
+  "fieldSpecialitiesHint": "Virgül, noktalı virgül veya yeni satırla ayırın.",
+  "specialityTooLong": "Bir uzmanlık en fazla {max} karakter olabilir. Virgülle ayırın: “{item}”",
   "fieldLanguages": "Diller",
   "fieldYears": "Deneyim yılı",
   "fieldPhoto": "Fotoğraf",

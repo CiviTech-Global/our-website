@@ -38,6 +38,7 @@ class Strings extends L10nNode {
   StringsBlog get blog => StringsBlog(node("blog"));
   StringsLanding get landing => StringsLanding(node("landing"));
   StringsUpload get upload => StringsUpload(node("upload"));
+  StringsPay get pay => StringsPay(node("pay"));
   StringsConsult get consult => StringsConsult(node("consult"));
   StringsExperts get experts => StringsExperts(node("experts"));
   StringsBooks get books => StringsBooks(node("books"));
@@ -1969,6 +1970,7 @@ class StringsExperts extends L10nNode {
   String get fieldBio => string("fieldBio");
   String get fieldSpecialities => string("fieldSpecialities");
   String get fieldSpecialitiesHint => string("fieldSpecialitiesHint");
+  String get specialityTooLong => string("specialityTooLong");
   String get fieldLanguages => string("fieldLanguages");
   String get fieldYears => string("fieldYears");
   String get fieldPhoto => string("fieldPhoto");
@@ -2051,6 +2053,26 @@ class StringsConsultHowSteps extends L10nNode {
   String get one => string("one");
   String get two => string("two");
   String get three => string("three");
+}
+
+class StringsPay extends L10nNode {
+  const StringsPay(super.raw);
+
+  String get title => string("title");
+  String get subtitle => string("subtitle");
+  String get codeLabel => string("codeLabel");
+  String get subjectLabel => string("subjectLabel");
+  String get amountLabel => string("amountLabel");
+  String get irt => string("irt");
+  String get paidAtLabel => string("paidAtLabel");
+  String get paidBadge => string("paidBadge");
+  String get unpaidBadge => string("unpaidBadge");
+  String get payButton => string("payButton");
+  String get paidBody => string("paidBody");
+  String get notFoundTitle => string("notFoundTitle");
+  String get notFoundBody => string("notFoundBody");
+  String get pendingBody => string("pendingBody");
+  String get error => string("error");
 }
 
 class StringsUpload extends L10nNode {

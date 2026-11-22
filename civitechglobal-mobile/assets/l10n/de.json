@@ -1785,6 +1785,23 @@
    "imageTooLarge": "Dieses Bild ist auch verkleinert noch zu groß. Bitte ein kleineres wählen."
   }
  },
+ "pay": {
+  "title": "Rechnung bezahlen",
+  "subtitle": "Prüfen Sie die Rechnung und zahlen Sie sie online.",
+  "codeLabel": "Zahlungscode",
+  "subjectLabel": "Betreff",
+  "amountLabel": "Zu zahlender Betrag",
+  "irt": "Toman",
+  "paidAtLabel": "Bezahlt am",
+  "paidBadge": "Bezahlt",
+  "unpaidBadge": "Zahlung ausstehend",
+  "payButton": "Online bezahlen",
+  "paidBody": "Diese Rechnung wurde erfolgreich bezahlt.",
+  "notFoundTitle": "Rechnung nicht gefunden",
+  "notFoundBody": "Dieser Zahlungscode ist ungültig. Prüfen Sie den Code oder kontaktieren Sie uns.",
+  "pendingBody": "Die Zahlung ist noch nicht final; versuchen Sie es in ein paar Augenblicken erneut.",
+  "error": "Das Zahlungsgateway war nicht erreichbar; bitte erneut versuchen."
+ },
  "consult": {
   "searchQueue": "Name, Telefon oder Vorgangscode suchen",
   "title": "Beratung anfragen",
@@ -1908,7 +1925,8 @@
   "fieldSlugHint": "Die öffentliche Adresse: /experts/<slug>. Leer gelassen, wird eine erzeugt.",
   "fieldBio": "Kurzbiografie",
   "fieldSpecialities": "Fachgebiete",
-  "fieldSpecialitiesHint": "Mit Komma trennen.",
+  "fieldSpecialitiesHint": "Mit Komma, Semikolon oder Zeilenumbruch trennen.",
+  "specialityTooLong": "Ein Fachgebiet darf höchstens {max} Zeichen haben. Bitte mit Komma trennen: „{item}“",
   "fieldLanguages": "Sprachen",
   "fieldYears": "Jahre Erfahrung",
   "fieldPhoto": "Foto",
