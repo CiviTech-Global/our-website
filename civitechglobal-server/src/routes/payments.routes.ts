@@ -4,6 +4,7 @@ import { PERMISSIONS } from '../auth/permissions.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { requirePermission } from '../middleware/requirePermission.js';
 import { successResponse } from '../utils/apiResponse.js';
+import { paymentConfig } from '../services/payment/index.js';
 import { zibalCallbackTarget } from '../services/payment/confirmation.service.js';
 import * as paymentRequests from '../services/payment/payment-request.service.js';
 import {
@@ -92,6 +93,17 @@ router.post(
   wrap(async (req, res) => {
     const body = paymentRequestConfirmSchema.parse(req.body);
     successResponse(res, await paymentRequests.confirmPayment(body.reference));
+  }),
+);
+
+router.get(
+  '/config',
+  authenticate,
+  requirePermission(PERMISSIONS.billing),
+  wrap(async (_req, res) => {
+    // Metadata only — see paymentConfig for why the merchant id never leaves
+    // the server.
+    successResponse(res, paymentConfig());
   }),
 );
 

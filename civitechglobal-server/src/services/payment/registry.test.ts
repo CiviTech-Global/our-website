@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { activeDriver, driverByName, sandboxDriver } from './index.js';
+import { activeDriver, driverByName, paymentConfig, sandboxDriver } from './index.js';
 import { zibalDriver } from './zibal.js';
 import { AppError } from '../../middleware/errorHandler.js';
 
@@ -64,6 +64,34 @@ describe('the payment driver registry', () => {
     // right: the alternative is verifying somebody's real payment against the
     // wrong gateway.
     expect(() => driverByName('gone')).toThrow(/Unknown payment driver/);
+  });
+});
+
+describe('paymentConfig', () => {
+  it('reports the driver, merchant presence and commission without leaking the merchant id', () => {
+    vi.stubEnv('PAYMENT_DRIVER', 'zibal');
+    vi.stubEnv('ZIBAL_MERCHANT_ID', 'super-secret-merchant');
+    vi.stubEnv('PAYMENT_PARTNER_COMMISSION_PERCENT', '10');
+    vi.stubEnv('APP_URL', 'https://example.ir/');
+
+    const config = paymentConfig();
+    expect(config.driver).toBe('zibal');
+    expect(config.merchantConfigured).toBe(true);
+    expect(config.testMerchant).toBe(false);
+    expect(config.commissionPercent).toBe(10);
+    expect(config.callbackUrl).toBe('https://example.ir/api/payments/zibal/callback');
+    // The merchant id itself is a credential: the config snapshot never carries it.
+    expect(JSON.stringify(config)).not.toContain('super-secret-merchant');
+  });
+
+  it('flags the public test merchant and an unconfigured gateway', () => {
+    vi.stubEnv('ZIBAL_MERCHANT_ID', 'zibal');
+    const config = paymentConfig();
+    expect(config.testMerchant).toBe(true);
+    expect(config.merchantConfigured).toBe(true);
+
+    vi.stubEnv('ZIBAL_MERCHANT_ID', '');
+    expect(paymentConfig().merchantConfigured).toBe(false);
   });
 });
 

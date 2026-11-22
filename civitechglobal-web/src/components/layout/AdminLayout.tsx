@@ -34,6 +34,7 @@ import {
   Layers,
   Library,
   BadgeDollarSign,
+  CreditCard,
   MessageSquareText,
   KeyRound,
 } from 'lucide-react';
@@ -336,6 +337,7 @@ export function AdminLayout() {
           items: when(
             can('billing'),
             { to: '/admin/plans', label: t.plans.adminPlansTitle, icon: <BadgeDollarSign /> },
+            { to: '/admin/payments', label: t.payments.adminTitle, icon: <CreditCard /> },
             { to: '/admin/sms', label: t.sms.adminTitle, icon: <MessageSquareText /> },
           ),
         },

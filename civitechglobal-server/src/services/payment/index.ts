@@ -2,6 +2,7 @@ import type { PaymentStatus } from '@prisma/client';
 import { AppError } from '../../middleware/errorHandler.js';
 import { sandboxDriver } from './sandbox.js';
 import { zibalDriver } from './zibal.js';
+import { partnerCommissionPercent } from './partner-split.js';
 
 /**
  * Taking money, behind one seam.
@@ -143,6 +144,27 @@ export function driverByName(name: string): PaymentDriver {
   const driver = DRIVERS[name];
   if (!driver) throw new AppError(`Unknown payment driver: ${name}`, 500);
   return driver;
+}
+
+/**
+ * The staff-facing snapshot of how this deployment takes money, for the
+ * admin payments page. Deliberately metadata only: whether a merchant id
+ * exists, never what it is — the merchant key is a credential, and "is it
+ * set" is all a screen needs. `testMerchant` is true for Zibal's public test
+ * merchant, which is public knowledge and worth showing as a bright badge so
+ * nobody mistakes test mode for live money.
+ */
+export function paymentConfig() {
+  const driver = (process.env.PAYMENT_DRIVER ?? '').trim().toLowerCase() || 'sandbox';
+  const merchant = (process.env.ZIBAL_MERCHANT_ID ?? '').trim();
+  const origin = (process.env.APP_URL ?? '').trim().replace(/\/+$/, '');
+  return {
+    driver,
+    merchantConfigured: merchant.length > 0,
+    testMerchant: merchant === 'zibal',
+    commissionPercent: partnerCommissionPercent(),
+    callbackUrl: `${origin}/api/payments/zibal/callback`,
+  };
 }
 
 export { sandboxDriver };

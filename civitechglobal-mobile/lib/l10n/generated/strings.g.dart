@@ -38,6 +38,7 @@ class Strings extends L10nNode {
   StringsBlog get blog => StringsBlog(node("blog"));
   StringsLanding get landing => StringsLanding(node("landing"));
   StringsUpload get upload => StringsUpload(node("upload"));
+  StringsPayments get payments => StringsPayments(node("payments"));
   StringsPay get pay => StringsPay(node("pay"));
   StringsConsult get consult => StringsConsult(node("consult"));
   StringsExperts get experts => StringsExperts(node("experts"));
@@ -2073,6 +2074,44 @@ class StringsPay extends L10nNode {
   String get notFoundBody => string("notFoundBody");
   String get pendingBody => string("pendingBody");
   String get error => string("error");
+}
+
+class StringsPayments extends L10nNode {
+  const StringsPayments(super.raw);
+
+  String get adminTitle => string("adminTitle");
+  String get statusCard => string("statusCard");
+  String get driverLabel => string("driverLabel");
+  String get merchantLabel => string("merchantLabel");
+  String get merchantSet => string("merchantSet");
+  String get merchantMissing => string("merchantMissing");
+  String get modeBadgeTest => string("modeBadgeTest");
+  String get modeBadgeLive => string("modeBadgeLive");
+  String get commissionLabel => string("commissionLabel");
+  String get callbackLabel => string("callbackLabel");
+  String get billsCard => string("billsCard");
+  String get newBillTitle => string("newBillTitle");
+  String get billTitleLabel => string("billTitleLabel");
+  String get billAmountLabel => string("billAmountLabel");
+  String get billDescriptionLabel => string("billDescriptionLabel");
+  String get billShebaLabel => string("billShebaLabel");
+  String get billBeneficiaryLabel => string("billBeneficiaryLabel");
+  String get createButton => string("createButton");
+  String get creating => string("creating");
+  String get createdBill => string("createdBill");
+  String get copyButton => string("copyButton");
+  String get copied => string("copied");
+  String get listCode => string("listCode");
+  String get listTitle => string("listTitle");
+  String get listAmount => string("listAmount");
+  String get listBeneficiary => string("listBeneficiary");
+  String get listStatus => string("listStatus");
+  String get listCreated => string("listCreated");
+  String get paidBadge => string("paidBadge");
+  String get unpaidBadge => string("unpaidBadge");
+  String get irt => string("irt");
+  String get loadError => string("loadError");
+  String get createError => string("createError");
 }
 
 class StringsUpload extends L10nNode {
