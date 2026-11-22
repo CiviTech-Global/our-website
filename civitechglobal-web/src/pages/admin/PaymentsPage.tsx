@@ -10,7 +10,9 @@ import {
   useCreatePaymentRequest,
   usePaymentConfig,
   usePaymentRequestList,
+  useTransactions,
   type CreatePaymentRequestInput,
+  type TransactionItem,
 } from '@/api/payments';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -18,6 +20,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -277,6 +280,129 @@ function BillsCard() {
   );
 }
 
+const PURPOSE_VARIANT: Record<TransactionItem['purpose'], 'info' | 'success' | 'default'> = {
+  ORDER: 'info',
+  SUBSCRIPTION: 'success',
+  PAYMENT_REQUEST: 'default',
+};
+
+const STATUS_VARIANT: Record<TransactionItem['status'], 'success' | 'danger' | 'warning' | 'info' | 'default'> = {
+  SUCCEEDED: 'success',
+  FAILED: 'danger',
+  PENDING: 'warning',
+  CREATED: 'info',
+  REFUNDED: 'default',
+};
+
+function transactionSubject(item: TransactionItem): string {
+  if (item.requestTitle) return item.requestTitle;
+  return item.orderCode ?? item.subscriptionCode ?? item.requestCode ?? '—';
+}
+
+function TransactionsCard() {
+  const { t, locale } = useLocale();
+  const p = t.payments;
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('');
+  const [search, setSearch] = useState('');
+  const list = useTransactions(page, status || undefined, search);
+
+  const purposeLabel: Record<TransactionItem['purpose'], string> = {
+    ORDER: p.purposeOrder,
+    SUBSCRIPTION: p.purposeSubscription,
+    PAYMENT_REQUEST: p.purposePaymentRequest,
+  };
+  const statusLabel: Record<TransactionItem['status'], string> = {
+    SUCCEEDED: p.stSucceeded,
+    FAILED: p.stFailed,
+    PENDING: p.stPending,
+    CREATED: p.stCreated,
+    REFUNDED: p.stRefunded,
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle>{p.transactionsCard}</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label={p.filterStatusLabel}>
+              <option value="">{p.filterAll}</option>
+              <option value="SUCCEEDED">{p.stSucceeded}</option>
+              <option value="PENDING">{p.stPending}</option>
+              <option value="FAILED">{p.stFailed}</option>
+              <option value="REFUNDED">{p.stRefunded}</option>
+            </Select>
+            <Input
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder={p.searchPlaceholder}
+              className="w-48"
+            />
+          </div>
+        </div>
+      </CardHeader>
+      {list.isLoading ? (
+        <div className="flex justify-center py-6">
+          <Spinner size={24} label={t.common.loading} />
+        </div>
+      ) : list.isError || !list.data ? (
+        <CardDescription>{p.loadError}</CardDescription>
+      ) : list.data.items.length === 0 ? (
+        <EmptyState title={p.transactionsCard} description={p.filterAll} />
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border-default text-start text-xs text-text-muted">
+                  <th className="py-2 pe-4 text-start font-normal">{p.txReference}</th>
+                  <th className="py-2 pe-4 text-start font-normal">{p.txPurpose}</th>
+                  <th className="py-2 pe-4 text-start font-normal">{p.txSubject}</th>
+                  <th className="py-2 pe-4 text-start font-normal">{p.listAmount}</th>
+                  <th className="py-2 pe-4 text-start font-normal">{p.txStatus}</th>
+                  <th className="py-2 text-start font-normal">{p.txCreated}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.data.items.map((item) => (
+                  <tr key={item.id} className="border-b border-border-subtle last:border-0" title={item.failureReason ?? undefined}>
+                    <td className="py-2 pe-4 font-mono text-xs">{item.reference ?? '—'}</td>
+                    <td className="py-2 pe-4">
+                      <Badge variant={PURPOSE_VARIANT[item.purpose]}>{purposeLabel[item.purpose]}</Badge>
+                    </td>
+                    <td className="py-2 pe-4">{transactionSubject(item)}</td>
+                    <td className="py-2 pe-4 whitespace-nowrap">
+                      {toman(item.amount, locale)} {p.irt}
+                    </td>
+                    <td className="py-2 pe-4">
+                      <Badge variant={STATUS_VARIANT[item.status]}>{statusLabel[item.status]}</Badge>
+                    </td>
+                    <td className="py-2 whitespace-nowrap">{formatDate(item.createdAt, locale)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {list.data.totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((v) => v - 1)}>
+                {t.common.back}
+              </Button>
+              <span className="text-xs text-text-muted">
+                {page} / {list.data.totalPages}
+              </span>
+              <Button variant="outline" size="sm" disabled={page >= list.data.totalPages} onClick={() => setPage((v) => v + 1)}>
+                {t.common.next}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
+  );
+}
+
 /** Staff: gateway status, issuing bills, and watching them get paid. */
 export default function AdminPaymentsPage() {
   const { t } = useLocale();
@@ -288,6 +414,7 @@ export default function AdminPaymentsPage() {
       <GatewayStatusCard />
       <IssueBillCard />
       <BillsCard />
+      <TransactionsCard />
     </div>
   );
 }

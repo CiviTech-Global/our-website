@@ -69,3 +69,10 @@ export const paymentRequestCodeSchema = z
 export const paymentRequestConfirmSchema = z.object({
   reference: z.string().trim().min(1).max(100),
 });
+
+export const paymentTransactionsListSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  status: z.enum(['CREATED', 'PENDING', 'SUCCEEDED', 'FAILED', 'REFUNDED']).optional(),
+  search: z.string().trim().max(120).optional(),
+});

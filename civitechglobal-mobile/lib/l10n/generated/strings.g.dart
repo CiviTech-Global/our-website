@@ -2112,6 +2112,23 @@ class StringsPayments extends L10nNode {
   String get irt => string("irt");
   String get loadError => string("loadError");
   String get createError => string("createError");
+  String get transactionsCard => string("transactionsCard");
+  String get filterStatusLabel => string("filterStatusLabel");
+  String get filterAll => string("filterAll");
+  String get searchPlaceholder => string("searchPlaceholder");
+  String get txReference => string("txReference");
+  String get txPurpose => string("txPurpose");
+  String get txSubject => string("txSubject");
+  String get txStatus => string("txStatus");
+  String get txCreated => string("txCreated");
+  String get purposeOrder => string("purposeOrder");
+  String get purposeSubscription => string("purposeSubscription");
+  String get purposePaymentRequest => string("purposePaymentRequest");
+  String get stCreated => string("stCreated");
+  String get stPending => string("stPending");
+  String get stSucceeded => string("stSucceeded");
+  String get stFailed => string("stFailed");
+  String get stRefunded => string("stRefunded");
 }
 
 class StringsUpload extends L10nNode {

@@ -94,6 +94,35 @@ export function usePaymentRequestList(page: number) {
   });
 }
 
+/** One row of the transactions ledger: a payment attempt, whatever it paid for. */
+export interface TransactionItem {
+  id: string;
+  purpose: 'ORDER' | 'SUBSCRIPTION' | 'PAYMENT_REQUEST';
+  status: 'CREATED' | 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+  amount: string;
+  currency: string;
+  reference: string | null;
+  driver: string;
+  failureReason: string | null;
+  settledAt: string | null;
+  createdAt: string;
+  orderCode: string | null;
+  subscriptionCode: string | null;
+  requestCode: string | null;
+  requestTitle: string | null;
+}
+
+export function useTransactions(page: number, status: string | undefined, search: string) {
+  const params = new URLSearchParams({ page: String(page), pageSize: '20' });
+  if (status) params.set('status', status);
+  if (search.trim()) params.set('search', search.trim());
+  return useQuery({
+    queryKey: ['payment-transactions', page, status, search],
+    queryFn: async () =>
+      (await api.get<Paged<TransactionItem>>(`/payments/transactions?${params.toString()}`)).data,
+  });
+}
+
 export interface CreatePaymentRequestInput {
   title: string;
   /** Whole Toman, digits only. */

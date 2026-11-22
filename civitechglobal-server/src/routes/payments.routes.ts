@@ -12,7 +12,9 @@ import {
   paymentRequestConfirmSchema,
   paymentRequestCreateSchema,
   paymentRequestListSchema,
+  paymentTransactionsListSchema,
 } from '../validators/payments.schema.js';
+import { listTransactions } from '../services/payment/transactions.service.js';
 
 /**
  * Payments.
@@ -104,6 +106,16 @@ router.get(
     // Metadata only — see paymentConfig for why the merchant id never leaves
     // the server.
     successResponse(res, paymentConfig());
+  }),
+);
+
+router.get(
+  '/transactions',
+  authenticate,
+  requirePermission(PERMISSIONS.billing),
+  wrap(async (req, res) => {
+    const query = paymentTransactionsListSchema.parse(req.query);
+    successResponse(res, await listTransactions(query));
   }),
 );
 
