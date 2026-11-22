@@ -5,7 +5,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-RUN npm ci --no-audit --no-fund
+# The build host sits on a long-haul link that drops big downloads: without
+# these, npm ci fails at a random tarball with a bare exit 1 (seen twice in
+# one evening). Generous retries make the install survive a flaky evening.
+RUN npm ci --no-audit --no-fund --fetch-retries=8 --fetch-retry-mintimeout=15000 --fetch-retry-maxtimeout=180000 --fetch-timeout=600000
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -18,7 +21,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-RUN npm ci --omit=dev --no-audit --no-fund
+RUN npm ci --omit=dev --no-audit --no-fund --fetch-retries=8 --fetch-retry-mintimeout=15000 --fetch-retry-maxtimeout=180000 --fetch-timeout=600000
 RUN npx prisma generate
 
 # --- Runtime stage ---
