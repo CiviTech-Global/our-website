@@ -180,7 +180,7 @@ export default function FreelanceProjectsPage() {
                       <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
                         <Link
                           to={`/profiles/${project.authorProfile.username}`}
-                          className="font-medium text-brand-600 hover:underline"
+                          className="font-medium text-brand-green-600 hover:underline"
                         >
                           @{project.authorProfile.username}
                         </Link>

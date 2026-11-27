@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "prerender": "node scripts/prerender.mjs && node scripts/precompress.mjs",
+    "design:shots": "node scripts/design-shots.mjs",
     "type-check": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",

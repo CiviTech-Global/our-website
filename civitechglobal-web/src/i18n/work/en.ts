@@ -437,6 +437,11 @@ const en: typeof fa = {
   serviceQueueTitle: 'Services queue',
   feature: 'Feature',
   unfeature: 'Unfeature',
+  // The freelance desk opening a service for a member or for the company.
+  deskCreateService: 'Create a service',
+  deskCreateServiceSubtitle: 'Set up a service for a member, or for the company’s own counter. It waits as a draft in the owner’s dashboard to be finished and submitted.',
+  deskServiceCreated: 'Draft service created for the owner.',
+  deskServiceHint: 'The owner completes the gallery, further packages and FAQs in their own editor, then submits it for review.',
 
   // ---- Contracts --------------------------------------------------------------------
   hourlyContract: 'Hourly contract',

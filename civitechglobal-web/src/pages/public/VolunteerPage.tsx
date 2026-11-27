@@ -278,8 +278,11 @@ export default function VolunteerPage() {
 
   return (
     <div className="page-frame page-frame-reading">
+      {/* The eyebrow + display heading is the shared page-head pattern the
+          start-project form uses. */}
       <AnimatedSection className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.volunteer.title}</h1>
+        <p className="eyebrow">{t.nav.volunteer}</p>
+        <h1 className="mt-3 text-4xl font-bold text-text-primary sm:text-5xl">{t.volunteer.title}</h1>
         <p className="mt-3 text-text-secondary">{t.volunteer.subtitle}</p>
       </AnimatedSection>
 

@@ -196,8 +196,10 @@ export default function JoinUsPage() {
     <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-8">
         {/* The invitation the home page ends with; "send your CV" stays the
-            button and the dashboard shortcut. */}
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.join.homeTitle}</h1>
+            button and the dashboard shortcut. The eyebrow + display heading
+            is the shared page-head pattern the start-project form uses. */}
+        <p className="eyebrow">{t.nav.joinUs}</p>
+        <h1 className="mt-3 text-4xl font-bold text-text-primary sm:text-5xl">{t.join.homeTitle}</h1>
         <p className="mt-3 text-text-secondary">{t.join.subtitle}</p>
       </AnimatedSection>
 

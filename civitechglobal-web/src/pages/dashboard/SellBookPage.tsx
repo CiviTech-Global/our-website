@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { BadgeCheck, ImagePlus, Save, Search, Send, X } from "lucide-react";
+import { BadgeCheck, Save, Search, Send, X } from "lucide-react";
 import {
   offerPhotoPath,
   useBookCategories,
@@ -14,6 +14,8 @@ import { useLocale } from "@/i18n/LocaleProvider";
 import { toLatinDigits } from "@/i18n/utils";
 import { apiMessage } from "@/lib/apiMessage";
 import { useDocumentTitle } from "@/lib/documentTitle";
+import { ImageTooLargeError, prepareImage } from "@/lib/prepareImage";
+import { useObjectUrl } from "@/lib/useObjectUrl";
 import { fill, formatNumber } from "@/lib/jobFormat";
 import { IRAN_PROVINCES, provinceLabel } from "@/lib/iranProvinces";
 import { languageName, money } from "@/lib/workFormat";
@@ -190,6 +192,37 @@ export default function SellBookPage() {
         listPrice: digits(facts.listPrice ?? "") || undefined,
       },
     };
+  }
+
+  /**
+   * Shrunk before they are held: a photo straight off a phone is several
+   * megabytes, and the server refuses an image over its ceiling. Each file
+   * is prepared on its own, so one unreadable picture does not take the
+   * rest of the batch down with it.
+   */
+  async function handlePhotoPick(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.target;
+    const chosen = Array.from(input.files ?? []);
+    // Cleared at once, so picking the same photo again still fires a change.
+    input.value = "";
+
+    const prepared: File[] = [];
+    for (const file of chosen) {
+      try {
+        prepared.push((await prepareImage(file)).file);
+      } catch (error) {
+        showToast(
+          error instanceof ImageTooLargeError
+            ? t.upload.errors.imageTooLarge
+            : t.upload.errors.unreadableImage,
+          "error",
+        );
+      }
+    }
+    if (prepared.length === 0) return;
+    setPhotos((current) =>
+      [...current, ...prepared].slice(0, MAX_PHOTOS - keptPhotos.length),
+    );
   }
 
   async function handleSave(andSubmit: boolean) {
@@ -749,6 +782,19 @@ export default function SellBookPage() {
             {newBook && !picked ? 4 : 3}. {t.bookshop.photosLabel}
           </h2>
           <p className="text-sm text-text-tertiary">{t.bookshop.photosHint}</p>
+          {/* The dashboard's standard, visible file input — the same control
+              every other upload form uses. The previous pattern (a
+              visually-hidden input inside a label tile) took focus the moment
+              the OS picker opened, and the browser's scroll-into-view could
+              leave the whole app painted blank until reload. */}
+          <Input
+            type="file"
+            accept=".png,.jpg,.jpeg,.webp"
+            multiple
+            aria-label={t.bookshop.photosLabel}
+            disabled={room <= 0}
+            onChange={(e) => void handlePhotoPick(e)}
+          />
           <div className="flex flex-wrap gap-3">
             {keptPhotos.map((photo) => (
               <div
@@ -774,47 +820,14 @@ export default function SellBookPage() {
               </div>
             ))}
             {photos.map((file, index) => (
-              <div
+              <NewPhotoThumb
                 key={`${file.name}-${index}`}
-                className="relative h-28 w-20 overflow-hidden rounded-lg bg-surface-muted"
-              >
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt={file.name}
-                  className="size-full object-cover"
-                />
-                <button
-                  type="button"
-                  className="absolute end-1 top-1 rounded-full bg-surface-default/90 p-0.5"
-                  aria-label={t.common.delete}
-                  onClick={() =>
-                    setPhotos(photos.filter((_, i) => i !== index))
-                  }
-                >
-                  <X className="size-4" aria-hidden="true" />
-                </button>
-              </div>
+                file={file}
+                onRemove={() =>
+                  setPhotos(photos.filter((_, i) => i !== index))
+                }
+              />
             ))}
-            {room > 0 && (
-              <label className="flex h-28 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border-default text-text-tertiary hover:border-border-strong">
-                <ImagePlus className="size-5" aria-hidden="true" />
-                <input
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.webp"
-                  multiple
-                  capture="environment"
-                  className="sr-only"
-                  onChange={(e) =>
-                    setPhotos(
-                      [...photos, ...Array.from(e.target.files ?? [])].slice(
-                        0,
-                        MAX_PHOTOS - keptPhotos.length,
-                      ),
-                    )
-                  }
-                />
-              </label>
-            )}
           </div>
           {progress !== null && (
             <div
@@ -861,6 +874,35 @@ export default function SellBookPage() {
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * One photo waiting to be sent. The preview URL is made once per file and
+ * revoked with the thumbnail — creating it inline in render leaked a fresh
+ * blob URL on every re-render.
+ */
+function NewPhotoThumb({
+  file,
+  onRemove,
+}: {
+  file: File;
+  onRemove: () => void;
+}) {
+  const { t } = useLocale();
+  const src = useObjectUrl(file);
+  return (
+    <div className="relative h-28 w-20 overflow-hidden rounded-lg bg-surface-muted">
+      <img src={src} alt={file.name} className="size-full object-cover" />
+      <button
+        type="button"
+        className="absolute end-1 top-1 rounded-full bg-surface-default/90 p-0.5"
+        aria-label={t.common.delete}
+        onClick={onRemove}
+      >
+        <X className="size-4" aria-hidden="true" />
+      </button>
     </div>
   );
 }

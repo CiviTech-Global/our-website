@@ -33,7 +33,7 @@ export function SimilarListings({ title, basePath, items }: SimilarListingsProps
           <li key={item.code}>
             <Link
               to={`${basePath}/${item.code}`}
-              className="flex items-center justify-between gap-3 rounded-xl border border-surface-200 p-3 transition-colors hover:border-brand-400 dark:border-surface-300"
+              className="flex items-center justify-between gap-3 rounded-xl border border-surface-200 p-3 transition-colors hover:border-brand-green-400 dark:border-surface-300"
             >
               <span className="font-medium text-text-primary">{item.title}</span>
               <span className="flex items-center gap-2">

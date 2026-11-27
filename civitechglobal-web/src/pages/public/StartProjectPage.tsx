@@ -2,7 +2,7 @@ import { SavedToAccount } from '@/components/account/SavedToAccount';
 import { diagnoseUpload, logUploadFailure } from '@/lib/uploadError';
 import { IDLE, UploadStatus, type UploadState } from '@/components/ui/UploadStatus';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { CheckCircle2, Copy, FileUp, Info, Paperclip, Send, X } from 'lucide-react';
 import { useSubmitProjectRequest } from '@/api/projects';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -54,6 +54,21 @@ const ENGAGEMENTS: EngagementModel[] = [
 
 type Errors = Record<string, string>;
 
+/**
+ * The fixed-price packages the home page links to (`/start-project?package=`).
+ * UI-level only: the package pre-fills a few fields so the brief arrives
+ * already framed; the server schema is untouched, and the client can change
+ * anything before submitting.
+ */
+const PACKAGE_PRESETS: Record<
+  string,
+  { titleKey: 'pkg1Title' | 'pkg2Title' | 'pkg3Title'; metaKey: 'pkg1Meta' | 'pkg2Meta' | 'pkg3Meta'; projectType: ProjectType }
+> = {
+  'shop-website': { titleKey: 'pkg1Title', metaKey: 'pkg1Meta', projectType: 'WEB_APP' },
+  'ordering-inventory': { titleKey: 'pkg2Title', metaKey: 'pkg2Meta', projectType: 'MOBILE_APP' },
+  'custom-integration': { titleKey: 'pkg3Title', metaKey: 'pkg3Meta', projectType: 'INTEGRATION' },
+};
+
 /** Digits only, for the money inputs. Stored unformatted, displayed grouped. */
 const digitsOnly = (value: string) => normalizePersianDigits(value).replace(/\D/g, '');
 
@@ -62,6 +77,8 @@ export default function StartProjectPage() {
   useDocumentTitle(t.project.seoTitle, { description: t.seo.startProject });
   const submit = useSubmitProjectRequest();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const preset = PACKAGE_PRESETS[searchParams.get('package') ?? ''];
 
   const [form, setForm] = useState({
     contactName: '',
@@ -70,9 +87,9 @@ export default function StartProjectPage() {
     website: '',
     email: '',
     phone: '',
-    title: '',
+    title: preset ? t.home[preset.titleKey] : '',
     summary: '',
-    projectType: 'NEW_BUILD' as ProjectType,
+    projectType: preset ? preset.projectType : ('NEW_BUILD' as ProjectType),
     platforms: [] as Platform[],
     goals: '',
     targetUsers: '',
@@ -86,7 +103,8 @@ export default function StartProjectPage() {
     budgetMin: '',
     budgetMax: '',
     suggestedPrice: '',
-    engagementModel: 'NOT_SURE' as EngagementModel,
+    // A package link implies a fixed-price engagement.
+    engagementModel: preset ? ('FIXED_PRICE' as EngagementModel) : ('NOT_SURE' as EngagementModel),
     ndaRequired: false,
     clientNotes: '',
   });
@@ -244,7 +262,7 @@ export default function StartProjectPage() {
       <div className="page-frame page-frame-reading">
         <AnimatedSection>
           <Card className="text-center">
-            <CheckCircle2 className="mx-auto mb-4 size-12 text-brand-green-500" aria-hidden="true" />
+            <CheckCircle2 className="mx-auto mb-4 size-12 text-brand-green-500 dark:text-brand-green-400" aria-hidden="true" />
             <h1 className="text-2xl font-bold text-text-primary">{t.project.successTitle}</h1>
             <p className="mx-auto mt-3 max-w-md text-text-secondary">{t.project.successBody}</p>
 
@@ -295,8 +313,14 @@ export default function StartProjectPage() {
   return (
     <div className="page-frame page-frame-reading">
       <AnimatedSection className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.project.title}</h1>
-        <p className="mt-3 text-text-secondary">{t.project.subtitle}</p>
+        <p className="eyebrow">{t.nav.startProject}</p>
+        <h1 className="mt-3 text-4xl font-bold text-text-primary sm:text-5xl">{t.project.title}</h1>
+        <p className="mt-4 text-lg leading-loose text-text-secondary">{t.project.subtitle}</p>
+        {preset && (
+          <p className="bagh-chip mt-5">
+            {t.home[preset.titleKey]} — {t.home[preset.metaKey]}
+          </p>
+        )}
       </AnimatedSection>
 
       {/* What happens next. Setting the expectation up front is why the brief
@@ -305,7 +329,7 @@ export default function StartProjectPage() {
       <AnimatedSection delay={0.05} className="mb-8">
         <Card className="border-brand-green-500/30 bg-brand-green-500/5">
           <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
-            <Info className="size-4 text-brand-green-500" aria-hidden="true" />
+            <Info className="size-4 text-brand-green-500 dark:text-brand-green-400" aria-hidden="true" />
             {t.project.processTitle}
           </h2>
           <ol className="flex flex-col gap-1.5 text-sm text-text-secondary">
@@ -458,7 +482,7 @@ export default function StartProjectPage() {
                     onClick={() => togglePlatform(platform)}
                     className={
                       active
-                        ? 'rounded-full border border-brand-green-500 bg-brand-green-500/10 px-4 py-1.5 text-sm text-brand-green-600 dark:text-brand-green-400'
+                        ? 'rounded-full border border-brand-green-500 bg-brand-green-500/10 px-4 py-1.5 text-sm text-brand-green-700 dark:text-brand-green-300'
                         : 'rounded-full border border-border-default px-4 py-1.5 text-sm text-text-secondary hover:border-brand-green-500/40'
                     }
                   >
@@ -595,7 +619,7 @@ export default function StartProjectPage() {
             htmlFor="files"
             className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border-default p-6 text-center transition-colors hover:border-brand-green-500/50"
           >
-            <FileUp className="size-6 text-brand-green-500" aria-hidden="true" />
+            <FileUp className="size-6 text-brand-green-500 dark:text-brand-green-400" aria-hidden="true" />
             <span className="text-sm font-medium text-text-primary">{t.project.chooseFiles}</span>
             <span className="text-xs text-text-muted">{t.project.fileRules}</span>
             <input

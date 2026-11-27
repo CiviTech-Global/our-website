@@ -57,13 +57,13 @@ export function ReviewForm({ awardId }: ReviewFormProps) {
                 onClick={() => setRating(value)}
                 aria-label={`${value}`}
                 aria-pressed={rating === value}
-                className="rounded p-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500"
+                className="rounded p-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green-500"
               >
                 <Star
                   className={cn(
                     'size-6',
                     value <= rating
-                      ? 'fill-amber-400 text-amber-400'
+                      ? 'fill-brand-amber-400 text-brand-amber-400'
                       : 'fill-transparent text-app-border',
                   )}
                 />

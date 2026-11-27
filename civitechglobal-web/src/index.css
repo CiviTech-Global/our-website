@@ -4,30 +4,24 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ===========================================================================
-   Bagh (باغ) — the design language
+   Bagh (باغ) — the design language, minimal edition
    ===========================================================================
-   One language for the whole platform, after the Persian garden: a strict
-   geometric plan with living things inside it. Synthesised from eight styles
-   (research: guides/ui-style-synthesis.md), each admitted only
-   for what it does well:
+   The production garden theme, restored after the lilac experiment and
+   quietened: the same firouzeh/khesht/saffron/lajvard palette the live site
+   runs, with the decorative noise turned down — no lattice backgrounds, no
+   multi-stop gradient frames, softer glows. What remains is the plan:
 
    - Swiss modernism and minimalism are the plan: an 8px module, a start-
      aligned grid, hierarchy from weight (Persian has no capitals to lean on),
-     one accent, restraint. Minimalism keeps its signifiers — every control has
-     a real border — because weak signifiers cost 22% more time in dense UI.
-   - Organic/biophilic is the planting: a palette taken from the garden and
-     its tiles (firouzeh turquoise, saffron, lajvard lapis, anar pomegranate,
-     khesht sun-dried brick) and low-density girih geometry, not blobs.
-   - Soft UI and claymorphism give depth that means something: one light,
-     straight overhead (so nothing has to be mirrored for RTL), a short drop
-     under what floats, a pressed state for what is pressed. Never a shadow as
-     the only boundary.
-   - Neubrutalism gives its outline: a solid 3px ring for focus and selection,
-     and the flat "tile lip" under a key in place of a gradient.
-   - Motion-driven and kinetic design are tokens with two intensities, after
-     IBM Carbon: productive (dashboards, forms, booking — fast, quiet) and
-     expressive (the public pages — slower, and allowed to perform). Persian
-     moves by the word, never by the letter: splitting letters breaks joining.
+     one accent, restraint. Every control keeps a real border.
+   - The palette is the garden's: firouzeh turquoise (primary action),
+     saffron (accent and focus), lajvard lapis (links, info, the deep band),
+     anar pomegranate (danger), khesht warm plaster (neutrals).
+   - One light, straight overhead (x=0 shadows, RTL-safe); a solid 3px ring
+     for focus; motion in two intensities (productive dashboards, expressive
+     public pages). Persian moves by the word, never by the letter.
+   - Semantic role tokens (--color-cta-*, --color-accent-text, --color-band*)
+     let components ask for a role, not a colour; the theme decides.
 
    Colours are OKLCH ramps, gamut-mapped to sRGB and checked against WCAG 2.2
    AA: text 4.5:1, control edges and focus 3:1, in light and dark.
@@ -70,6 +64,13 @@
   --color-text-secondary: var(--color-surface-700);
   --color-text-muted: oklch(53% 0.012 75);
   --color-text-inverse: var(--color-surface-50);
+
+  /* The deep band that closes every public page (the footer): the 30% as a
+     surface rather than as text. Indigo by day; its text is fog, headings
+     are white, and the 10% accent (lemon by day — 9.3:1 on indigo) is
+     allowed on the band alone. */
+  --color-band: oklch(24% 0.045 264);
+  --color-band-fg: oklch(92% 0.012 75);
 
   /* Semantic names for the public pages, as aliases of the scale above so the
      dark theme follows. */
@@ -138,7 +139,16 @@
   --color-brand-lapis-900: oklch(30% 0.104 264);
   --color-brand-lapis-950: oklch(22% 0.08 264);
 
-  /* Former glow colours, kept as names: now the garden's two waters. */
+  /* ---- Semantic CTA / accent tokens --------------------------------------
+     Components ask for the role, the theme decides the colour. The primary
+     action is the garden's turquoise with white lettering (5.1:1). */
+  --color-cta-bg: var(--color-brand-green-500);
+  --color-cta-fg: #ffffff;
+  --color-cta-edge: var(--color-brand-green-800);
+  /* Accent AS TEXT: deep turquoise by day (4.9:1 on plaster). */
+  --color-accent-text: var(--color-brand-green-700);
+
+  /* Former glow colours, kept as names. */
   --color-glow-blue: var(--color-brand-lapis-400);
   --color-glow-purple: var(--color-brand-green-300);
 
@@ -258,6 +268,9 @@
   --ease-expressive-exit: cubic-bezier(0.4, 0.14, 1, 1);
   /* A critically damped spring, for the one pop the public pages allow. */
   --ease-spring: linear(0, 0.18 6%, 0.58 18%, 0.86 30%, 0.97 42%, 1.01 55%, 1 70%, 1);
+  /* The rebrand's house easing, after the reference studio:
+     cubic-bezier(.2,.8,.2,1). */
+  --ease-glide: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   --animate-fade-up: fade-up var(--duration-slower) var(--ease-expressive-enter) both;
 
@@ -320,6 +333,17 @@
   --color-text-secondary: var(--color-surface-800);
   --color-text-muted: var(--color-surface-700);
   --color-text-inverse: var(--color-surface-50);
+
+  /* The night band: lapis darker than the canvas, still carrying plaster. */
+  --color-band: oklch(12% 0.025 264);
+  --color-band-fg: oklch(88% 0.012 75);
+
+  /* Night roles: the brighter turquoise of the night palette, with dark
+     lettering on the fill. */
+  --color-cta-bg: var(--color-brand-green-400);
+  --color-cta-fg: oklch(17% 0.02 262);
+  --color-cta-edge: var(--color-brand-green-800);
+  --color-accent-text: var(--color-brand-green-300);
 
   --color-surface-default: var(--color-surface-50);
   --color-surface-raised: var(--color-surface-50);
@@ -429,6 +453,15 @@ body {
   letter-spacing: 0;
 }
 
+/* Kill the double-tap zoom delay on controls (300ms on older mobile
+   browsers) without touching text inputs, where double-tap zoom is an
+   accessibility feature. */
+button,
+[role='button'],
+summary {
+  touch-action: manipulation;
+}
+
 /* Headings get their hierarchy from weight and size, never from case. */
 h1,
 h2,
@@ -507,7 +540,7 @@ p {
   line-height: 24px;
 }
 
-/* A card that answers the pointer: its edge turns turquoise and it rises
+/* A card that answers the pointer: its edge turns indigo and it rises
    on the overhead light. No neon. */
 .glow-border {
   position: relative;
@@ -526,15 +559,13 @@ p {
   box-shadow: 0 14px 28px -16px oklch(0% 0 0 / 0.7);
 }
 
+/* Accent text: indigo by day, aqua by night — the one accent-as-text role. */
 .glow-text {
-  color: var(--color-brand-green-600);
-}
-.dark .glow-text {
-  color: var(--color-brand-green-300);
+  color: var(--color-accent-text);
 }
 
 /* The kashi strip: a row of small eight-point stars, as a tile border runs
-   along a garden wall. Replaces the old neon line. Decorative only. */
+   along a garden wall. Decorative only. */
 .neon-line {
   height: 12px;
   border: none;
@@ -547,7 +578,10 @@ p {
 }
 
 /* Accent text: turquoise into lapis. Both ends keep 4.5:1 on their ground,
-   so the gradient never decides whether a word can be read. */
+   so the gradient never decides whether a word can be read. Static, short
+   phrases only — a brand wordmark, a 404. Anything animated or
+   sentence-length stays solid: background-clip:text does not survive child
+   inline-blocks, which is exactly how KineticWords splits a headline. */
 .gradient-text {
   background: linear-gradient(90deg, var(--color-brand-green-600), var(--color-brand-lapis-600));
   -webkit-background-clip: text;
@@ -556,6 +590,15 @@ p {
 }
 .dark .gradient-text {
   background-image: linear-gradient(90deg, var(--color-brand-green-300), var(--color-brand-lapis-300));
+}
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .gradient-text {
+    background: none;
+    color: var(--color-brand-green-600);
+  }
+  .dark .gradient-text {
+    color: var(--color-brand-green-300);
+  }
 }
 
 /* Soft drops on the overhead light. */
@@ -578,12 +621,11 @@ p {
    a section head. Fractal-like mid-complexity, which is the range the
    environmental-psychology work finds least stressful — and faint enough
    that text over it keeps its contrast. */
+/* Minimal edition: the girih lattice is gone — a page head is the ground
+   and nothing else. The class stays so every page that asks for the stage
+   keeps working; it simply adds no pattern. */
 .bagh-ground {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23057b6e' stroke-opacity='.13' stroke-width='1'%3E%3Cpath d='M48 8l11.3 28.7L88 48 59.3 59.3 48 88 36.7 59.3 8 48l28.7-11.3z'/%3E%3Cpath d='M48 20l20 8 8 20-8 20-20 8-20-8-8-20 8-20z'/%3E%3Cpath d='M0 0l20 8M96 0l-20 8M0 96l20-8M96 96l-20-8'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 96px 96px;
-}
-.dark .bagh-ground {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%2342bbaa' stroke-opacity='.12' stroke-width='1'%3E%3Cpath d='M48 8l11.3 28.7L88 48 59.3 59.3 48 88 36.7 59.3 8 48l28.7-11.3z'/%3E%3Cpath d='M48 20l20 8 8 20-8 20-20 8-20-8-8-20 8-20z'/%3E%3Cpath d='M0 0l20 8M96 0l-20 8M0 96l20-8M96 96l-20-8'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: none;
 }
 
 /* The one clay object on a page: the hero's main action. One outer drop and
@@ -633,6 +675,219 @@ p {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ---- Expressive signatures ---------------------------------------------- */
+
+/* Minimal edition: the crafted card is a quiet turquoise hairline, not a
+   gradient ring — one calm edge for the card a section wants noticed. */
+.card-edge {
+  border: 1px solid color-mix(in oklch, var(--color-brand-green-400) 55%, var(--color-border-default));
+}
+.dark .card-edge {
+  border-color: color-mix(in oklch, var(--color-brand-green-400) 40%, var(--color-border-default));
+}
+
+/* The primary action in pill form: the 10% accent as a fill — lemon with
+   indigo lettering by day (9.3:1), aqua with navy lettering by night
+   (8.9:1) — the tile-lip press the marketing buttons already use. A real
+   @utility (not a plain class) so display composes with `hidden` and
+   responsive variants like any other utility. */
+@utility primary-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.625rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--color-cta-fg);
+  background: linear-gradient(135deg, color-mix(in oklch, var(--color-cta-bg) 88%, white) 0%, var(--color-cta-bg) 55%, color-mix(in oklch, var(--color-cta-bg) 88%, black) 100%);
+  box-shadow:
+    0 2px 0 var(--color-cta-edge),
+    0 10px 20px -8px oklch(30% 0.06 182 / 0.45);
+  transition:
+    transform var(--duration-moderate) var(--ease-glide),
+    filter var(--duration-moderate) var(--ease-glide),
+    box-shadow var(--duration-moderate) var(--ease-glide);
+
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+  }
+  &:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 0 var(--color-cta-edge), 0 4px 10px -6px oklch(30% 0.06 182 / 0.45);
+  }
+}
+
+/* The secondary action: a glass pill with a hairline light border. */
+@utility glass-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.625rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: color-mix(in oklch, var(--color-surface-50) 55%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-surface-950) 28%, transparent);
+  transition:
+    transform var(--duration-moderate) var(--ease-glide),
+    box-shadow var(--duration-moderate) var(--ease-glide),
+    background-color var(--duration-moderate) var(--ease-glide);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklch, var(--color-brand-green-500) 55%, transparent),
+      0 10px 24px -12px oklch(22% 0.03 75 / 0.35);
+  }
+  @variant dark {
+    background: color-mix(in oklch, var(--color-surface-100) 55%, transparent);
+    color: var(--color-text-primary);
+    box-shadow: inset 0 0 0 1px oklch(100% 0 0 / 0.28);
+
+    &:hover {
+      box-shadow:
+        inset 0 0 0 1px oklch(72% 0.109 182 / 0.6),
+        0 10px 24px -12px oklch(0% 0 0 / 0.6);
+    }
+  }
+}
+
+/* An eyebrow label above a headline. Persian keeps letter-spacing 0 (the
+   global :lang(fa) rule already enforces it); Latin gets the tracked,
+   uppercase label. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent-text);
+  text-transform: none;
+}
+.eyebrow:dir(ltr) {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+}
+.eyebrow::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  /* currentColor so the band override below carries the rule too. */
+  background: linear-gradient(90deg, transparent, currentcolor);
+}
+
+/* On the deep lapis band the day accent would vanish into the band itself;
+   there the eyebrow carries saffron instead — 7.9:1 on the band. Band-only. */
+.bg-band .eyebrow {
+  color: var(--color-brand-amber-300);
+}
+
+/* An edge-masked infinite marquee for the trust bar. The track carries two
+   copies of the content and slides -50%; the mask fades both ends. Pauses
+   on hover (CSS); under reduced motion it rests as a wrapped row (below). */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: ct-marquee 70s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes ct-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+[dir='rtl'] .marquee-track {
+  animation-name: ct-marquee-rtl;
+}
+@keyframes ct-marquee-rtl {
+  to {
+    transform: translateX(50%);
+  }
+}
+
+/* The hero atmosphere: one soft turquoise breath over the plaster, nothing
+   more — pure CSS depth, no image budget, minimal edition. */
+.hero-canvas {
+  background:
+    radial-gradient(52rem 30rem at 72% 8%, oklch(72% 0.109 182 / 0.1), transparent 60%),
+    var(--color-ground);
+}
+.dark .hero-canvas {
+  background:
+    radial-gradient(52rem 30rem at 72% 8%, oklch(72% 0.109 182 / 0.12), transparent 60%),
+    var(--color-ground);
+}
+
+/* The hero's bottom edge dissolves into the next section: stacked blur
+   strips of increasing strength, masked to the last 5rem. */
+.progressive-blur {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 5rem;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, #000 30%, transparent);
+  mask-image: linear-gradient(to top, #000 30%, transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.progressive-blur::before,
+.progressive-blur::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+}
+.progressive-blur::before {
+  top: 33%;
+  height: 33%;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.progressive-blur::after {
+  top: 66%;
+  height: 34%;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* The process timeline's rail: a static hairline with a turquoise-to-lapis
+   fill that the component grows via --spine (0..1) as the section scrolls
+   into view. */
+.timeline-rail {
+  position: absolute;
+  inset-block: 0.5rem;
+  inset-inline-start: 1rem;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--color-border-default);
+}
+.timeline-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--color-brand-green-400), var(--color-brand-lapis-500));
+  transform: scaleY(var(--spine, 0));
+  transform-origin: top;
+  transition: transform 120ms linear;
+}
+.dark .timeline-fill {
+  background: linear-gradient(180deg, var(--color-brand-green-300), var(--color-brand-lapis-400));
 }
 
 /* ---- Maps (components/trademaster/ShopMap) --------------------------------
@@ -982,6 +1237,29 @@ textarea::placeholder {
     opacity: 1;
     transform: none;
   }
+
+  /* The marquee rests as a complete, wrapped row — no slide, no duplicated
+     strip running off the edge. */
+  .marquee {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+    justify-content: center;
+    row-gap: 0.75rem;
+  }
+}
+
+/* The footer's “pause animations” control sets data-motion="paused" on <html>
+   (persisted in localStorage as rtjg-motion): every animation freezes where
+   it stands. Transitions are untouched, so the page stays fully usable. */
+html[data-motion='paused'] *,
+html[data-motion='paused'] *::before,
+html[data-motion='paused'] *::after {
+  animation-play-state: paused !important;
 }
 
 /* The dashboards' mobile navigation drawer, sliding in from its own edge. */
@@ -1226,13 +1504,18 @@ body:has([data-app-shell]) #enamad-seal {
 }
 
 /* Forced colours (Windows high contrast): shadows and fills vanish there, so
-   every control is given a real system-coloured border. */
+   every control and card is given a real system-coloured border. The
+   gradient-hairline card edge and the pills rely on backgrounds in normal
+   mode, so they need the same fallback. */
 @media (forced-colors: active) {
   .app-key,
   .app-key-flat,
   .app-well,
   .app-raised,
-  .glass {
+  .glass,
+  .card-edge,
+  .primary-pill,
+  .glass-pill {
     border: 1px solid CanvasText;
   }
 }

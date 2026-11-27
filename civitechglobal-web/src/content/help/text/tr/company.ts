@@ -21,7 +21,7 @@ const company: Record<string, HelpArticleText> = {
     ],
     faqs: [
       ['Rayan Tamaddon Jahan Gostar tam olarak ne yapar?', 'Özel yazılım, web ve mobil uygulamalar, kurumsal ve kamu teknolojisi platformları ile veri analitiği ve görselleştirme tasarlar ve geliştirir. İşimizin büyük kısmı açık kaynaktır.'],
-      ['CiviTech Global ile Rayan Tamaddon Jahan Gostar arasındaki ilişki nedir?', 'CiviTech Global, Rayan Tamaddon Jahan Gostar’ın uluslararası markasıdır: tek şirket, tek ekip.'],
+      ['Is RTJG the same as Rayan Tamaddon Jahan Gostar?', 'Yes. RTJG is the short form of Rayan Tamaddon Jahan Gostar, used where space is tight: one company, one team.'],
       ['Siteyi kullanmak için kayıt olmam gerekir mi?', 'Proje, sigorta veya danışmanlık talebi, CV gönderme ya da bize ulaşma için hayır. İlan vermek, projeye teklif vermek veya kitap satmak için hesap gerekir.'],
       ['Talebimin nerede olduğunu nasıl öğrenirim?', 'Gönderirken aldığınız takip koduyla Talep takibi sayfasında. Giriş yapmışsanız kod Taleplerim altında da saklanır.'],
       ['Sitenin güven damgası var mı?', 'Evet. ENAMAD e-ticaret güven damgası her sayfanın altında yer alır.'],
@@ -113,7 +113,7 @@ const company: Record<string, HelpArticleText> = {
       ['Bizi tanıyın', 'Ekip, projeler, müşteriler, iş ortakları ve bloga bağlantılar.'],
     ],
     faqs: [
-      ['CiviTech Global nedir?', 'Rayan Tamaddon Jahan Gostar’ın uluslararası markasıdır.'],
+      ['What is RTJG?', 'The short form of Rayan Tamaddon Jahan Gostar, used where space is tight.'],
       ['Neden açık kaynak?', 'Kod şeffaf ve denetlenebilirdir, hiçbir tedarikçiye bağlı değildir, güvenliğini geniş bir topluluk sınar ve sahip olma maliyeti daha düşüktür.'],
       ['Sizinle nasıl çalışabilirim?', 'Proje için Proje başlatın, iş için CV gönderin, staj için Gönüllülük ve staj.'],
     ],
@@ -141,7 +141,7 @@ const company: Record<string, HelpArticleText> = {
     faqs: [
       ['Ekibe nasıl katılabilirim?', 'CV’nizi “CV gönderin” sayfasından gönderin. Okuruz ve deneyiminize uygun bir pozisyon açıldığında sizinle iletişime geçeriz.'],
       ['Yeni başlıyorum. Bana yer var mı?', 'Evet. “Gönüllülük ve staj” programı tam da bunun için var: deneyimli mühendislerle birlikte gerçek projeler.'],
-      ['CiviTech Global ile Rayan Tamaddon Jahan Gostar arasındaki ilişki nedir?', 'CiviTech Global, Rayan Tamaddon Jahan Gostar’ın uluslararası markasıdır: tek şirket, tek ekip.'],
+      ['Is RTJG the same as Rayan Tamaddon Jahan Gostar?', 'Yes. RTJG is the short form of Rayan Tamaddon Jahan Gostar, used where space is tight: one company, one team.'],
       ['Bu ekiple nasıl proje başlatırım?', 'Talebinizi “Proje başlatın” sayfasından iletin. Bir takip kodu alırsınız ve size ücretsiz, bağlayıcı olmayan yazılı bir teklif hazırlanır.'],
     ],
     related: {

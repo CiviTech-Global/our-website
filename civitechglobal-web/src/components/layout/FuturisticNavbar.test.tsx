@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { FuturisticNavbar } from './FuturisticNavbar';
@@ -16,19 +16,24 @@ vi.mock('@/i18n/LocaleProvider', async (importOriginal) => ({
     locale: 'en',
     setLocale: vi.fn(),
     t: {
-      common: { brand: 'Brand' },
+      common: { brand: 'Brand', close: 'Close' },
       theme: { light: 'Light', dark: 'Dark' },
       help: { openGuide: 'Guide', openGuideLabel: 'Guide to this page' },
       nav: {
-        servicesMenu: 'Services menu',
-        companyMenu: 'Company',
+        all: 'All sections',
+        groupMain: 'Main sections',
+        groupEcosystem: 'Ecosystem',
         services: 'What we do',
         startProject: 'Start a project',
         insurance: 'Insurance',
         about: 'About',
-        joinUs: 'Send your CV',
+        portfolio: 'Our projects',
+        pricing: 'Plans and pricing',
+        blog: 'Blog',
         contact: 'Contact',
         track: 'Track request',
+        jobs: 'Jobs',
+        joinUs: 'Send your CV',
         login: 'Login',
         register: 'Register',
         logout: 'Log out',
@@ -47,162 +52,122 @@ function renderAt(path = '/') {
   );
 }
 
+const triggerName = /All sections/;
+
 describe('FuturisticNavbar', () => {
-  it('collapses the link list into two menus plus tracking', () => {
+  it('keeps the four destination links and the primary project CTA at the top level', () => {
     renderAt();
-    expect(screen.getByRole('button', { name: /Services menu/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Company/ })).toBeInTheDocument();
-    // The one link that stayed top level.
-    expect(screen.getAllByRole('link', { name: 'Track request' }).length).toBeGreaterThan(0);
+    for (const name of ['What we do', 'Our projects', 'Plans and pricing', 'Blog']) {
+      expect(screen.getByRole('link', { name })).toBeInTheDocument();
+    }
+    // About left the bar for the menu.
+    expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Start a project' }).length).toBeGreaterThan(0);
   });
 
-  it('hides menu links until the menu is opened', async () => {
+  it('keeps the CTA and the menu trigger on one line at any width', () => {
+    renderAt();
+    const cta = screen.getByRole('link', { name: 'Start a project' });
+    expect(cta.className).toContain('whitespace-nowrap');
+    expect(cta.className).toContain('shrink-0');
+
+    const trigger = screen.getByRole('button', { name: triggerName });
+    expect(trigger.className).toContain('whitespace-nowrap');
+    expect(trigger.className).toContain('shrink-0');
+  });
+
+  it('hides the full link list until the menu is opened', async () => {
     const user = userEvent.setup();
     renderAt();
 
-    expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Track request' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Services menu/ }));
+    await user.click(screen.getByRole('button', { name: triggerName }));
 
-    expect(screen.getByRole('link', { name: 'Start a project' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Services menu/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Track request' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'About' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: triggerName })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
   });
 
-  it('opens only one menu at a time', async () => {
+  it('opens as a labelled dialog with grouped links', async () => {
     const user = userEvent.setup();
     renderAt();
 
-    await user.click(screen.getByRole('button', { name: /Services menu/ }));
-    await user.click(screen.getByRole('button', { name: /Company/ }));
+    const trigger = screen.getByRole('button', { name: triggerName });
+    await user.click(trigger);
 
-    expect(screen.getByRole('button', { name: /Services menu/ })).toHaveAttribute(
+    const dialog = screen.getByRole('dialog', { name: /Main sections/ });
+    expect(trigger).toHaveAttribute('aria-controls', dialog.id);
+    // Both groups are present with their headings.
+    expect(screen.getByText('Main sections')).toBeInTheDocument();
+    expect(screen.getByText('Ecosystem')).toBeInTheDocument();
+    // An ecosystem link that used to be buried in a dropdown.
+    expect(screen.getByRole('link', { name: 'Jobs' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Insurance' })).toBeInTheDocument();
+  });
+
+  it('offers a close control inside the menu', async () => {
+    const user = userEvent.setup();
+    renderAt();
+
+    await user.click(screen.getByRole('button', { name: triggerName }));
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: triggerName })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
-    // The company menu is about who the company is; joining moved to sit with
-    // the job boards, so About is the link that proves this menu opened.
-    expect(screen.getByRole('link', { name: 'About' })).toBeInTheDocument();
   });
 
-  it('stays open when the pointer leaves the trigger', async () => {
-    // The bug this replaces: the panel is absolutely positioned, so the
-    // container's box is only the button. Closing on mouseleave meant moving
-    // from the trigger towards the panel — the one thing anybody does — shut
-    // the menu before the pointer arrived.
+  it('closes when clicking outside the panel', async () => {
     const user = userEvent.setup();
     renderAt();
 
-    await user.click(screen.getByRole('button', { name: /Services menu/ }));
-    await user.unhover(screen.getByRole('button', { name: /Services menu/ }));
+    await user.click(screen.getByRole('button', { name: triggerName }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-    expect(screen.getByRole('link', { name: 'Start a project' })).toBeInTheDocument();
-  });
-
-  it('stays open while the pointer moves across the page', async () => {
-    const user = userEvent.setup();
-    renderAt();
-
-    await user.click(screen.getByRole('button', { name: /Services menu/ }));
-    // Somewhere else entirely, without pressing anything.
-    await user.hover(screen.getByRole('link', { name: 'Track request' }));
-
-    expect(screen.getByRole('link', { name: 'Start a project' })).toBeInTheDocument();
-  });
-
-  it('closes when something else is clicked', async () => {
-    const user = userEvent.setup();
-    renderAt();
-
-    await user.click(screen.getByRole('button', { name: /Services menu/ }));
-    await user.click(screen.getByRole('link', { name: 'Track request' }));
-
-    expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
-  });
-
-  it('opens on ArrowDown and puts focus on the first item', async () => {
-    const user = userEvent.setup();
-    renderAt();
-
-    const trigger = screen.getByRole('button', { name: /Services menu/ });
-    trigger.focus();
-    await user.keyboard('{ArrowDown}');
-
-    expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('link', { name: 'What we do' })).toHaveFocus();
-  });
-
-  it('moves through items with the arrow keys, and wraps', async () => {
-    const user = userEvent.setup();
-    renderAt();
-
-    const trigger = screen.getByRole('button', { name: /Services menu/ });
-    trigger.focus();
-    await user.keyboard('{ArrowDown}{ArrowDown}');
-    expect(screen.getByRole('link', { name: 'What we do' })).toHaveFocus();
-
-    await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('link', { name: 'Start a project' })).toHaveFocus();
-
-    // Back past the top lands on the last item rather than nowhere.
-    await user.keyboard('{ArrowUp}{ArrowUp}');
-    expect(screen.getByRole('link', { name: 'Insurance' })).toHaveFocus();
-
-    await user.keyboard('{Home}');
-    expect(screen.getByRole('link', { name: 'What we do' })).toHaveFocus();
-
-    await user.keyboard('{End}');
-    expect(screen.getByRole('link', { name: 'Insurance' })).toHaveFocus();
+    await user.click(document.body);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: triggerName })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
   });
 
   it('returns focus to the trigger when Escape closes it', async () => {
-    // Otherwise focus drops to <body> and a keyboard user is stranded at the
-    // top of the document with no idea where they had been.
     const user = userEvent.setup();
     renderAt();
 
-    const trigger = screen.getByRole('button', { name: /Services menu/ });
+    const trigger = screen.getByRole('button', { name: triggerName });
     await user.click(trigger);
-    await user.keyboard('{ArrowDown}');
     await user.keyboard('{Escape}');
 
-    expect(screen.queryByRole('link', { name: 'Start a project' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
 
-  it('closes on Escape', async () => {
-    const user = userEvent.setup();
-    renderAt();
-
-    await user.click(screen.getByRole('button', { name: /Company/ }));
-    await user.keyboard('{Escape}');
-
-    expect(screen.queryByRole('link', { name: 'Send your CV' })).not.toBeInTheDocument();
-  });
-
-  it('marks the menu holding the current page, including detail routes', () => {
-    renderAt('/insurance/third-party');
-    expect(screen.getByRole('button', { name: /Services menu/ })).toHaveClass(
-      'text-brand-green-700'
-    );
-    expect(screen.getByRole('button', { name: /Company/ })).not.toHaveClass(
-      'text-brand-green-700'
+  it('marks the current page with aria-current', () => {
+    renderAt('/services');
+    expect(screen.getByRole('link', { name: 'What we do' })).toHaveAttribute(
+      'aria-current',
+      'page'
     );
   });
 
-  it('shows every link at once in the mobile drawer', async () => {
+  it('closes the menu when a link is followed', async () => {
     const user = userEvent.setup();
     renderAt();
 
-    await user.click(screen.getByRole('button', { name: 'Toggle menu' }));
+    await user.click(screen.getByRole('button', { name: triggerName }));
+    const dialog = screen.getByRole('dialog', { name: /Main sections/ });
+    // 'About' lives only in the menu now, so this is the menu's own link.
+    await user.click(within(dialog).getByRole('link', { name: 'About' }));
 
-    // Flattened into sections, so nothing needs a second tap to reach.
-    expect(screen.getByRole('link', { name: 'Start a project' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Send your CV' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Contact' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

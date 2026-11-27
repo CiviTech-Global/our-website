@@ -427,6 +427,13 @@ const tr: typeof fa = {
   serviceQueueTitle: 'Hizmet kuyruğu',
   feature: 'Öne çıkar',
   unfeature: 'Öne çıkarmayı kaldır',
+  // New desk keys, in English until a translator pass reaches them: the type
+  // requires every fa key to exist here, and the text matches exactly what
+  // the runtime en fallback would render.
+  deskCreateService: 'Create a service',
+  deskCreateServiceSubtitle: 'Set up a service for a member, or for the company’s own counter. It waits as a draft in the owner’s dashboard to be finished and submitted.',
+  deskServiceCreated: 'Draft service created for the owner.',
+  deskServiceHint: 'The owner completes the gallery, further packages and FAQs in their own editor, then submits it for review.',
 
   hourlyContract: 'Saatlik sözleşme',
   hourlyRate: 'Ücret',

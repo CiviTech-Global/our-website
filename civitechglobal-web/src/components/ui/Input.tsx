@@ -12,7 +12,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  * On the application surface a field is 36px — the height of a button, so a
  * search box and the button beside it share a baseline. Everywhere, a field's
  * edge is the strong border (3:1, WCAG 1.4.11) and focus is the site's one
- * saffron ring; the border turns turquoise to say where typing will go.
+ * saffron ring; the border turns indigo to say where typing will go.
  */
 export function fieldClasses(app: boolean, invalid: boolean | undefined): string {
   return app

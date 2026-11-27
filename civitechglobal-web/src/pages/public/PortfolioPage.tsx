@@ -1,7 +1,6 @@
 import { ProjectGallery } from '@/components/showcase/ProjectGallery';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
-import { Code2, ExternalLink, FolderKanban, Star } from 'lucide-react';
+import { Code2, ExternalLink, Star } from 'lucide-react';
 import { Github } from '@/components/ui/BrandIcons';
 import {
   showcaseImageSrc,
@@ -16,8 +15,8 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { BandCta } from '@/components/marketing/BandCta';
 import { Badge, type BadgeVariant } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
@@ -43,6 +42,12 @@ function statusVariant(status: ShowcaseProjectStatus): BadgeVariant {
 }
 
 const PAGE_SIZE = 12;
+
+/** One outcome number on a case card: "40%", "faster checkout". */
+interface ProjectMetric {
+  label: string;
+  value: string;
+}
 
 /**
  * What the company is building, and what it has delivered.
@@ -88,11 +93,17 @@ export default function PortfolioPage() {
   };
 
   return (
-    <div className="page-frame">
-      <header className="mb-8 text-center">
-        <FolderKanban className="mx-auto mb-3 size-10 text-brand-green-500" aria-hidden="true" />
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.showcase.projectsTitle}</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-text-secondary">{t.showcase.projectsSubtitle}</p>
+    <div className="page-frame !pt-0">
+      <header className="hero-canvas bagh-ground -mx-4 mb-10 px-4 pb-14 pt-12 text-center sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <AnimatedSection>
+          <p className="eyebrow justify-center">{t.home.workEyebrow}</p>
+          <h1 className="mt-4 text-4xl font-bold text-text-primary sm:text-5xl">
+            {t.showcase.projectsTitle}
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-loose text-text-secondary">
+            {t.showcase.projectsSubtitle}
+          </p>
+        </AnimatedSection>
       </header>
 
       <div className="mb-8 flex justify-center">
@@ -106,7 +117,7 @@ export default function PortfolioPage() {
               className={cn(
                 'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
                 filter === value
-                  ? 'bg-brand-green-500/15 text-brand-green-600 dark:text-brand-green-400'
+                  ? 'bg-brand-green-500/15 text-brand-green-700 dark:text-brand-green-300'
                   : 'text-text-secondary hover:text-text-primary'
               )}
             >
@@ -181,15 +192,14 @@ export default function PortfolioPage() {
       )}
 
       {!isLoading && (
-        <AnimatedSection className="mt-12">
-          <Card className="flex flex-col items-center gap-4 border-brand-green-500/30 bg-brand-green-500/5 py-10 text-center">
-            <h2 className="text-xl font-semibold text-text-primary">{t.showcase.ctaTitle}</h2>
-            <p className="max-w-xl text-text-secondary">{t.showcase.ctaBody}</p>
-            <Link to="/start-project">
-              <Button size="lg">{t.nav.startProject}</Button>
-            </Link>
-          </Card>
-        </AnimatedSection>
+        <BandCta
+          title={t.showcase.ctaTitle}
+          body={t.showcase.ctaBody}
+          primaryLabel={t.nav.startProject}
+          primaryTo="/start-project"
+          secondaryLabel={t.home.heroCtaSecondary}
+          secondaryTo="/contact"
+        />
       )}
     </div>
   );
@@ -200,6 +210,14 @@ function ProjectCard({ project }: { project: ShowcaseProject }) {
   const [expanded, setExpanded] = useState(false);
   const cover = showcaseImageSrc(project.coverUrl);
   const clientLogo = showcaseImageSrc(project.client?.logoUrl ?? null);
+
+  /**
+   * Outcome metrics are not part of the showcase API yet. The card reserves
+   * the slot — a stat line under the summary, the reference anatomy's metric
+   * row — and renders it the day the field arrives; until then nothing
+   * renders, so a project without data shows no empty chrome.
+   */
+  const metrics = (project as ShowcaseProject & { metrics?: ProjectMetric[] | null }).metrics;
 
   return (
     <Card className="flex h-full flex-col overflow-hidden p-0">
@@ -212,14 +230,16 @@ function ProjectCard({ project }: { project: ShowcaseProject }) {
         />
       ) : (
         <div
-          className="flex aspect-video w-full items-center justify-center border-b border-border-default bg-gradient-to-br from-brand-green-500/15 to-brand-amber-500/10"
+          className="hero-canvas flex aspect-video w-full items-center justify-center border-b border-border-default"
           aria-hidden="true"
         >
-          <Code2 className="size-10 text-brand-green-500/60" />
+          <Code2 className="size-10 text-brand-green-500/70 dark:text-brand-green-400/70" />
         </div>
       )}
 
       <div className="flex flex-1 flex-col gap-3 p-5">
+        <h2 className="text-lg font-semibold text-text-primary">{project.title}</h2>
+
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={statusVariant(project.status)}>
             {t.showcase.projectStatuses[project.status]}
@@ -230,11 +250,31 @@ function ProjectCard({ project }: { project: ShowcaseProject }) {
               {t.showcase.featured}
             </Badge>
           )}
-          {project.category && <span className="text-xs text-text-muted">{project.category}</span>}
+          {project.category && <span className="bagh-chip text-xs">{project.category}</span>}
         </div>
 
-        <h2 className="text-lg font-semibold text-text-primary">{project.title}</h2>
-        <p className="text-sm leading-6 text-text-secondary">{project.summary}</p>
+        {/* The two-line outcome summary; the full description expands below. */}
+        <p
+          className={cn(
+            'text-sm leading-6 text-text-secondary',
+            project.description && !expanded && 'line-clamp-2'
+          )}
+        >
+          {project.summary}
+        </p>
+
+        {metrics && metrics.length > 0 && (
+          <dl className="flex flex-wrap gap-x-6 gap-y-2">
+            {metrics.map((metric) => (
+              <div key={metric.label}>
+                <dt className="text-xs text-text-muted">{metric.label}</dt>
+                <dd className="text-base font-bold tabular-nums text-brand-green-700 dark:text-brand-green-300">
+                  {metric.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
 
         {project.description && (
           <>
@@ -247,7 +287,7 @@ function ProjectCard({ project }: { project: ShowcaseProject }) {
               type="button"
               aria-expanded={expanded}
               onClick={() => setExpanded((prev) => !prev)}
-              className="w-fit text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+              className="w-fit text-sm font-medium text-brand-green-700 hover:underline dark:text-brand-green-300"
             >
               {expanded ? t.showcase.readLess : t.showcase.readMore}
             </button>
@@ -305,7 +345,7 @@ function ProjectCard({ project }: { project: ShowcaseProject }) {
                 href={project.projectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-medium text-brand-green-600 hover:underline dark:text-brand-green-400"
+                className="inline-flex items-center gap-1 text-sm font-medium text-brand-green-700 hover:underline dark:text-brand-green-300"
               >
                 <ExternalLink className="size-3.5" aria-hidden="true" />
                 {t.showcase.visitProject}

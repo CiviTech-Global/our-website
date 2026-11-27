@@ -596,6 +596,47 @@ export function useStaffCreateShop() {
   });
 }
 
+/**
+ * Hand the shop to a different member. The desk opens shops for the company
+ * and its clients; this is how one moves to its real owner. Both sides are
+ * notified by the server.
+ */
+export function useTransferShopOwner() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; ownerId: string }) => {
+      await api.patch(`/trademaster/admin/shops/${input.id}/owner`, { ownerId: input.ownerId });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.shopQueue });
+      // The shop leaves one member's dashboard and appears in another's.
+      void qc.invalidateQueries({ queryKey: keys.ownShops });
+      void qc.invalidateQueries({ queryKey: keys.shops });
+    },
+  });
+}
+
+/**
+ * A listing created from the desk, in any shop. Draft, as on the seller's
+ * path; pictures and publishing stay with the owner.
+ */
+export function useStaffCreateProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { shopId: string; payload: ProductPayload }) => {
+      const res = await api.post<OwnProduct>(
+        `/trademaster/admin/shops/${input.shopId}/products`,
+        input.payload
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.productQueue });
+      void qc.invalidateQueries({ queryKey: keys.products });
+    },
+  });
+}
+
 export function useShopReview(id: string | undefined) {
   return useQuery({
     queryKey: [...keys.shopQueue, 'detail', id],

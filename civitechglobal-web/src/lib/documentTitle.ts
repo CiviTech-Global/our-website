@@ -9,14 +9,13 @@ import type { Locale } from '@/i18n/locales';
  * The name in the tab.
  *
  * Only Persian differs: the company's own name is written in Persian script for
- * Persian readers, and every other language gets the romanised form plus the
- * international brand. A German or Turkish title carrying Persian script would
- * be unreadable to the person it is for, so those fall to English rather than
- * to the local dictionary.
+ * Persian readers, and every other language gets the romanised form. A German
+ * or Turkish title carrying Persian script would be unreadable to the person
+ * it is for, so those fall to English rather than to the local dictionary.
  */
 export const SITE_NAME = {
   fa: 'رایان تمدن جهان گستر',
-  en: 'Rayan Tamaddon Jahan Gostar | CiviTech Global',
+  en: 'Rayan Tamaddon Jahan Gostar',
 } as const;
 
 /**

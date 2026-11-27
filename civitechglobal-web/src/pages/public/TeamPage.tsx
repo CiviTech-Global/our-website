@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { BandCta } from '@/components/marketing/BandCta';
 
 /**
  * The people behind the company.
@@ -27,10 +28,16 @@ export default function TeamPage() {
   const empty = !isLoading && sections.length === 0 && unsectioned.length === 0;
 
   return (
-    <div className="page-frame">
-      <header className="mb-10 text-center">
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.team.title}</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-text-secondary">{t.team.subtitle}</p>
+    <div className="page-frame !pt-0">
+      {/* The same garden-lit stage every core page opens with. */}
+      <header className="hero-canvas bagh-ground -mx-4 mb-10 px-4 pb-14 pt-12 text-center sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <AnimatedSection>
+          <p className="eyebrow justify-center">{t.nav.team}</p>
+          <h1 className="mt-4 text-4xl font-bold text-text-primary sm:text-5xl">{t.team.title}</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-loose text-text-secondary">
+            {t.team.subtitle}
+          </p>
+        </AnimatedSection>
       </header>
 
       {isLoading && (
@@ -71,6 +78,17 @@ export default function TeamPage() {
         </AnimatedSection>
       )}
 
+      {/* The page closer: meeting the team usually ends in one of two asks —
+          join it, or start a project with it. The band owns the join ask; the
+          volunteer track is the quiet path beside it. */}
+      <BandCta
+        title={t.join.homeTitle}
+        body={t.join.homeBody}
+        primaryLabel={t.join.homeCta}
+        primaryTo="/join"
+        secondaryLabel={t.nav.volunteer}
+        secondaryTo="/volunteer"
+      />
     </div>
   );
 }

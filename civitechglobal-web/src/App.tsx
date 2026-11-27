@@ -144,6 +144,7 @@ const RequestDetailPage = lazy(() => import('@/pages/admin/RequestDetailPage'));
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const RolesPage = lazy(() => import('@/pages/admin/RolesPage'));
 const AdminTeamPage = lazy(() => import('@/pages/admin/TeamPage'));
+const SocialRailPage = lazy(() => import('@/pages/admin/SocialRailPage'));
 const ShowcaseOrganizationsPage = lazy(() => import('@/pages/admin/ShowcaseOrganizationsPage'));
 const ShowcaseProjectsPage = lazy(() => import('@/pages/admin/ShowcaseProjectsPage'));
 const VerificationQueuePage = lazy(() => import('@/pages/admin/VerificationQueuePage'));
@@ -152,6 +153,8 @@ const ConsultationQueuePage = lazy(() => import('@/pages/admin/ConsultationQueue
 const BookQueuePage = lazy(() => import('@/pages/admin/BookQueuePage'));
 const ShopQueuePage = lazy(() => import('@/pages/admin/ShopQueuePage'));
 const StaffShopCreatePage = lazy(() => import('@/pages/admin/StaffShopCreatePage'));
+const StaffProductCreatePage = lazy(() => import('@/pages/admin/StaffProductCreatePage'));
+const StaffServiceCreatePage = lazy(() => import('@/pages/admin/StaffServiceCreatePage'));
 const ProductQueuePage = lazy(() => import('@/pages/admin/ProductQueuePage'));
 const ProductCategoriesPage = lazy(() => import('@/pages/admin/ProductCategoriesPage'));
 const BusinessCategoriesPage = lazy(() => import('@/pages/admin/BusinessCategoriesPage'));
@@ -1047,6 +1050,18 @@ export default function App() {
             </RequirePermission>
           }
         />
+        {/* The public site's social/shortcut rail. Super admin only, like the
+            team page: what the site itself shows is not a delegable module. */}
+        <Route
+          path="social-rail"
+          element={
+            <RequirePermission superAdminOnly>
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <SocialRailPage />
+              </Suspense>
+            </RequirePermission>
+          }
+        />
         <Route
           path="customers"
           element={
@@ -1170,6 +1185,16 @@ export default function App() {
               }
             />
             <Route
+              path="trademaster/shops/:shopId/products/new"
+              element={
+                <RequirePermission permission="trademaster">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <StaffProductCreatePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+            <Route
               path="trademaster/products"
               element={
                 <RequirePermission permission="trademaster">
@@ -1264,16 +1289,28 @@ export default function App() {
           }
         />
         {features.projectsV2 && (
-          <Route
-            path="services-queue"
-            element={
-              <RequirePermission permission="freelance">
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <ServiceQueuePage />
-                </Suspense>
-              </RequirePermission>
-            }
-          />
+          <>
+            <Route
+              path="services-queue"
+              element={
+                <RequirePermission permission="freelance">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <ServiceQueuePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+            <Route
+              path="services-queue/new"
+              element={
+                <RequirePermission permission="freelance">
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <StaffServiceCreatePage />
+                  </Suspense>
+                </RequirePermission>
+              }
+            />
+          </>
         )}
         <Route
           path="bids"

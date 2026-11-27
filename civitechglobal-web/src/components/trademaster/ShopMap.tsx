@@ -254,7 +254,8 @@ export default function ShopMap({
               center={[circle.latitude, circle.longitude]}
               radius={circle.radiusKm * 1000}
               // A literal colour: Leaflet writes SVG attributes, which cannot read var().
-              pathOptions={{ color: '#406bce', weight: 1.5, fillOpacity: 0.06, dashArray: '6 6' }}
+              // The value is brand-green-500 (oklch(52.5% 0.093 182)) resolved to sRGB.
+              pathOptions={{ color: '#0e8b7d', weight: 1.5, fillOpacity: 0.06, dashArray: '6 6' }}
             />
             <Marker position={[circle.latitude, circle.longitude]} icon={SEARCH_POINT} interactive={false} />
           </>

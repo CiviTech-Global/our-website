@@ -10,6 +10,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { apiMessage } from '@/lib/apiMessage';
 import { prepareImage, ImageTooLargeError } from '@/lib/prepareImage';
+import { useObjectUrl } from '@/lib/useObjectUrl';
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -184,28 +185,21 @@ export function ProjectGalleryEditor({
       {pending && (
         <ul className="flex flex-col gap-2">
           {pending.files.map((file, index) => (
-            <li key={`${file.name}-${index}`} className="flex items-center gap-3">
-              <img
-                src={URL.createObjectURL(file)}
-                alt=""
-                className="size-14 shrink-0 rounded border border-app-border-light object-cover"
-              />
-              <Input
-                aria-label={t.showcase.shotCaption}
-                placeholder={t.showcase.shotCaption}
-                value={pending.captions[index]}
-                onChange={(e) =>
-                  setPending((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          captions: prev.captions.map((c, i) => (i === index ? e.target.value : c)),
-                        }
-                      : prev,
-                  )
-                }
-              />
-            </li>
+            <PendingShot
+              key={`${file.name}-${index}`}
+              file={file}
+              caption={pending.captions[index]}
+              onCaption={(value) =>
+                setPending((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        captions: prev.captions.map((c, i) => (i === index ? value : c)),
+                      }
+                    : prev,
+                )
+              }
+            />
           ))}
         </ul>
       )}
@@ -259,5 +253,38 @@ export function ProjectGalleryEditor({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * One chosen-but-unsent shot and the caption being typed for it. The preview
+ * URL is made once per file and revoked with the row — creating it inline in
+ * render leaked a fresh blob URL on every keystroke of the caption.
+ */
+function PendingShot({
+  file,
+  caption,
+  onCaption,
+}: {
+  file: File;
+  caption: string;
+  onCaption: (value: string) => void;
+}) {
+  const { t } = useLocale();
+  const src = useObjectUrl(file);
+  return (
+    <li className="flex items-center gap-3">
+      <img
+        src={src}
+        alt=""
+        className="size-14 shrink-0 rounded border border-app-border-light object-cover"
+      />
+      <Input
+        aria-label={t.showcase.shotCaption}
+        placeholder={t.showcase.shotCaption}
+        value={caption}
+        onChange={(e) => onCaption(e.target.value)}
+      />
+    </li>
   );
 }

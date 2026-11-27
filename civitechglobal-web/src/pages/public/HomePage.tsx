@@ -2,30 +2,36 @@ import { Link } from 'react-router';
 import {
   ArrowLeft,
   ArrowRight,
-  BarChart3,
-  Code2,
-  GitBranch,
-  Landmark,
+  Briefcase,
+  FolderKanban,
   ShieldCheck,
-  Smartphone,
-  UserPlus,
-  Sprout,
   Store,
-  Users,
 } from 'lucide-react';
-import { useAppDownloads } from '@/api/capabilities';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { BAZAAR_APP_URL, bazaarLink } from '@/lib/storeLinks';
+import { toPersianDigits } from '@/i18n/utils';
 import { CANONICAL_ORIGIN, SITE_NAME, useDocumentTitle } from '@/lib/documentTitle';
-import { organizationSchema, websiteSchema } from '@/lib/structuredData';
+import { faqPageSchema, organizationSchema, websiteSchema } from '@/lib/structuredData';
 import { LOCALE_TAGS } from '@/i18n/locales';
-import { GlowCard } from '@/components/ui/GlowCard';
-import { Button } from '@/components/ui/Button';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
-import { KineticWords } from '@/components/ui/KineticWords';
-import { HeroMotif } from '@/components/home/HeroMotif';
-import { MarketplaceShowcase } from '@/components/home/MarketplaceShowcase';
+import { BandCta } from '@/components/marketing/BandCta';
+import { EngagementTiers } from '@/components/marketing/EngagementTiers';
+import { HomeHero } from '@/components/home/HomeHero';
+import { TrustBar } from '@/components/home/TrustBar';
+import { IndustryMarquee } from '@/components/home/IndustryMarquee';
+import { ServicesBento } from '@/components/home/ServicesBento';
+import { HomeFaq } from '@/components/home/HomeFaq';
+import { SelectedWork } from '@/components/home/SelectedWork';
+import { ProcessTimeline } from '@/components/home/ProcessTimeline';
 
+/**
+ * The 2026 rebrand home page, on the conversion-blueprint spine: hero →
+ * trust → industries → problem → why us → services bento → work → process →
+ * packages → FAQ → ecosystem → final band CTA. Custom software design and
+ * development is the hero and the spine of every fold; the marketplace and
+ * insurance — real businesses, but secondary ones — stay in a single
+ * ecosystem strip near the end instead of competing with the studio
+ * narrative, and the page closes on the deep band like the footer does.
+ */
 export default function HomePage() {
   const { t, locale } = useLocale();
   const siteName = locale === 'fa' ? SITE_NAME.fa : SITE_NAME.en;
@@ -39,6 +45,14 @@ export default function HomePage() {
     import.meta.env.VITE_SOCIAL_GITHUB,
     import.meta.env.VITE_SOCIAL_X,
   ].filter((url): url is string => typeof url === 'string' && url.length > 0);
+
+  // The FAQ section's questions, stated for rich results. The schema is built
+  // from the same copy the section renders, so the markup can never claim
+  // more than the page shows.
+  const faqSchema = faqPageSchema(
+    t.home.faq.map((item) => ({ question: item.q, answer: item.a })),
+    LOCALE_TAGS[locale]
+  );
 
   // The tab and the search result lead with what the company does, not only
   // its name: nobody searches for the name before they know it.
@@ -57,197 +71,132 @@ export default function HomePage() {
         sameAs: socialProfiles,
       }),
       websiteSchema({ name: siteName, origin: CANONICAL_ORIGIN, locale: LOCALE_TAGS[locale] }),
+      ...(faqSchema ? [faqSchema] : []),
     ],
   });
-  const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
-
-  // The server's store link once it answers; the known one until then, so the
-  // prerendered hero carries it. A server with no Bazaar link hides it.
-  const downloads = useAppDownloads();
-  const bazaar = downloads ? downloads.bazaar : BAZAAR_APP_URL;
-
-  const features = [
-    { icon: Code2, title: t.home.feature0Title, desc: t.home.feature0Desc, glow: 'red' as const },
-    { icon: Smartphone, title: t.home.feature1Title, desc: t.home.feature1Desc, glow: 'green' as const },
-    { icon: Landmark, title: t.home.feature2Title, desc: t.home.feature2Desc, glow: 'amber' as const },
-    { icon: BarChart3, title: t.home.feature3Title, desc: t.home.feature3Desc, glow: 'red' as const },
-  ];
-
-  const howWeWork = [
-    { icon: GitBranch, title: t.home.work0Title, desc: t.home.work0Desc },
-    { icon: Users, title: t.home.work1Title, desc: t.home.work1Desc },
-    { icon: Sprout, title: t.home.work2Title, desc: t.home.work2Desc },
-  ];
 
   return (
     <div className="page-frame !pt-0">
-      {/* Hero */}
-      {/* The garden ground runs edge to edge behind the hero, under the plan. */}
-      <section className="bagh-ground relative -mx-4 grid grid-cols-1 items-center gap-10 rounded-b-[var(--radius-feature)] px-4 py-14 sm:-mx-6 sm:px-6 lg:-mx-8 lg:grid-cols-[1.05fr_1fr] lg:px-8 lg:py-20">
-        <AnimatedSection>
-          <p className="bagh-chip mb-5">{t.home.heroEyebrow}</p>
-          <KineticWords
-            text={t.home.heroTitle}
-            className="text-[clamp(2.25rem,1.6rem+2.6vw,3.6rem)] font-extrabold leading-[1.25] text-text-primary"
-          />
-          <p className="mt-5 max-w-lg text-lg leading-loose text-text-secondary">{t.home.heroSubtitle}</p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link to="/services">
-              <Button size="lg" className="bagh-clay">
-                {t.home.heroCtaPrimary}
-                <ArrowIcon className="size-4" aria-hidden="true" />
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button size="lg" variant="outline">
-                {t.home.heroCtaSecondary}
-              </Button>
-            </Link>
-          </div>
-          {bazaar && (
-            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <a
-                href={bazaarLink(bazaar, locale)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg bg-surface-inverse px-4 py-2.5 text-sm font-medium text-text-inverse transition hover:opacity-90"
-              >
-                <Store className="size-4" aria-hidden="true" />
-                {t.appDownload.bazaar}
-              </a>
-              <Link to="/app" className="text-sm font-medium text-brand-600 hover:underline">
-                {t.appDownload.title}
-              </Link>
-            </div>
-          )}
-        </AnimatedSection>
-        <AnimatedSection delay={0.1}>
-          <HeroMotif />
-        </AnimatedSection>
-      </section>
-
-      {/* Mission and vision: what the company is for, before what it sells. */}
-      <section className="py-12">
-        <AnimatedSection className="mb-8">
-          <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.home.missionTitle}</h2>
-          <hr className="neon-line mt-5 w-40 [mask-image:none]" />
-        </AnimatedSection>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <AnimatedSection>
-            <p className="text-lg leading-loose text-text-primary">{t.home.missionBody}</p>
-          </AnimatedSection>
-          <AnimatedSection delay={0.08}>
-            <p className="text-lg leading-loose text-text-secondary">{t.home.visionBody}</p>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* What we do */}
-      <section className="py-12">
-        <AnimatedSection className="mb-10">
-          <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.home.whatWeDoTitle}</h2>
-          <p className="mt-2 max-w-2xl text-text-secondary">{t.home.whatWeDoSubtitle}</p>
-          <hr className="neon-line mt-5 w-40 [mask-image:none]" />
-        </AnimatedSection>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, i) => (
-            <AnimatedSection key={feature.title} delay={i * 0.08}>
-              <GlowCard glow={feature.glow} className="h-full">
-                <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-brand-green-50 text-brand-green-600 ring-1 ring-brand-green-200 dark:bg-brand-green-400/10 dark:text-brand-green-300 dark:ring-brand-green-400/25">
-                  <feature.icon className="size-6" aria-hidden="true" />
-                </span>
-                <h3 className="mb-2 text-lg font-semibold text-text-primary">{feature.title}</h3>
-                <p className="text-sm text-text-secondary">{feature.desc}</p>
-              </GlowCard>
-            </AnimatedSection>
-          ))}
-        </div>
-      </section>
-
-      {/* How we work */}
-      <section className="py-12">
-        <AnimatedSection className="mb-10">
-          <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">{t.home.howWeWorkTitle}</h2>
-          <p className="mt-2 max-w-2xl text-text-secondary">{t.home.howWeWorkSubtitle}</p>
-          <hr className="neon-line mt-5 w-40 [mask-image:none]" />
-        </AnimatedSection>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {howWeWork.map((item, i) => (
-            <AnimatedSection key={item.title} delay={i * 0.08}>
-              <GlowCard glow="green" className="h-full">
-                <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-brand-amber-50 text-brand-amber-700 ring-1 ring-brand-amber-200 dark:bg-brand-amber-400/10 dark:text-brand-amber-300 dark:ring-brand-amber-400/25">
-                  <item.icon className="size-6" aria-hidden="true" />
-                </span>
-                <h3 className="mb-2 text-lg font-semibold text-text-primary">{item.title}</h3>
-                <p className="text-sm text-text-secondary">{item.desc}</p>
-              </GlowCard>
-            </AnimatedSection>
-          ))}
-        </div>
-      </section>
-
-      {/* Marketplace: live boards, featured listings, and how it works. */}
-      <MarketplaceShowcase />
-
-      {/* Insurance: one service, stated once, and easy to find. */}
-      <section className="py-12">
-        <AnimatedSection className="mb-6">
-          <h2 className="text-lg font-bold text-text-primary">{t.home.alsoTitle}</h2>
-        </AnimatedSection>
-        <AnimatedSection delay={0.06}>
-          <div className="flex flex-col gap-4 rounded-2xl border border-border-default bg-surface-50 p-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4">
-              <ShieldCheck className="mt-0.5 size-6 shrink-0 text-brand-green-500" aria-hidden="true" />
-              <div>
-                <h3 className="text-lg font-semibold text-text-primary">{t.home.alsoInsuranceTitle}</h3>
-                <p className="mt-1 max-w-xl text-sm text-text-secondary">{t.home.alsoInsuranceDesc}</p>
-              </div>
-            </div>
-            <Link to="/insurance" className="shrink-0">
-              <Button variant="outline">
-                {t.home.alsoInsuranceCta}
-                <ArrowIcon className="size-4" aria-hidden="true" />
-              </Button>
-            </Link>
-          </div>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.12}>
-          <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-border-default bg-surface-50 p-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4">
-              <UserPlus className="mt-0.5 size-6 shrink-0 text-brand-green-500" aria-hidden="true" />
-              <div>
-                <h3 className="text-lg font-semibold text-text-primary">{t.join.homeTitle}</h3>
-                <p className="mt-1 max-w-xl text-sm text-text-secondary">{t.join.homeBody}</p>
-              </div>
-            </div>
-            <Link to="/join" className="shrink-0">
-              <Button variant="outline">
-                {t.join.homeCta}
-                <ArrowIcon className="size-4" aria-hidden="true" />
-              </Button>
-            </Link>
-          </div>
-        </AnimatedSection>
-      </section>
-
-      {/* CTA */}
-      <AnimatedSection>
-        <section className="bagh-ground glow-border rounded-[var(--radius-feature)] bg-surface-50 p-8 text-center shadow-soft sm:p-12">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{t.home.ctaTitle}</h2>
-          <p className="mx-auto mt-2 max-w-md text-text-secondary">{t.home.ctaSubtitle}</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/start-project">
-              <Button size="lg">{t.nav.startProject}</Button>
-            </Link>
-            <Link to="/contact">
-              <Button size="lg" variant="outline">
-                {t.home.heroCtaSecondary}
-              </Button>
-            </Link>
-          </div>
-        </section>
-      </AnimatedSection>
+      <HomeHero />
+      <TrustBar />
+      <IndustryMarquee />
+      <PainPoint />
+      <WhyUs />
+      <ServicesBento />
+      <SelectedWork />
+      <ProcessTimeline />
+      <EngagementTiers />
+      <HomeFaq />
+      <Ecosystem />
+      {/* The page closer: the free-consult offer restated on the deep indigo
+          band, so the page ends with one decisive ask. */}
+      <BandCta
+        eyebrow={t.home.consultEyebrow}
+        title={t.home.finalCtaTitle}
+        body={t.home.finalCtaBody}
+        primaryLabel={t.home.finalCtaPrimary}
+        primaryTo="/start-project"
+        secondaryLabel={t.home.consultCta}
+        secondaryTo="/contact"
+      />
     </div>
   );
 }
+
+function PainPoint() {
+  const { t, locale } = useLocale();
+  const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
+  return (
+    <section className="py-14 text-center">
+      <AnimatedSection>
+        <h2 className="mx-auto max-w-3xl text-3xl font-bold leading-snug text-text-primary sm:text-4xl">
+          {t.home.painTitle}
+        </h2>
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-loose text-text-secondary">
+          {t.home.painBody}
+        </p>
+        <Link
+          to="/services"
+          className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-brand-green-700 underline-offset-4 hover:underline dark:text-brand-green-300"
+        >
+          {t.home.painCta}
+          <ArrowIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+        </Link>
+      </AnimatedSection>
+    </section>
+  );
+}
+
+function WhyUs() {
+  const { t, locale } = useLocale();
+  const reasons = [
+    { title: t.home.why1Title, desc: t.home.why1Desc },
+    { title: t.home.why2Title, desc: t.home.why2Desc },
+    { title: t.home.why3Title, desc: t.home.why3Desc },
+    { title: t.home.why4Title, desc: t.home.why4Desc },
+  ];
+  return (
+    <section className="py-12">
+      <AnimatedSection className="mb-10">
+        <p className="eyebrow">{t.home.whyEyebrow}</p>
+        <h2 className="mt-3 text-3xl font-extrabold text-text-primary sm:text-4xl">
+          {t.home.whyTitle}
+        </h2>
+      </AnimatedSection>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {reasons.map((reason, i) => (
+          <AnimatedSection key={reason.title} delay={i * 0.06}>
+            <div className="glass rounded-3xl p-7 shadow-soft">
+              <span className="text-3xl font-bold tabular-nums text-brand-green-600 dark:text-brand-green-300">
+                {locale === 'fa' ? toPersianDigits(i + 1) : `0${i + 1}`}
+              </span>
+              <h3 className="mt-3 text-lg font-bold text-text-primary">{reason.title}</h3>
+              <p className="mt-2 text-sm leading-7 text-text-secondary">{reason.desc}</p>
+            </div>
+          </AnimatedSection>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Ecosystem() {
+  const { t, locale } = useLocale();
+  const ArrowIcon = locale === 'fa' ? ArrowLeft : ArrowRight;
+  const tiles = [
+    { icon: Store, title: t.nav.localMarket, to: '/marketplace' },
+    { icon: ShieldCheck, title: t.nav.insurance, to: '/insurance' },
+    { icon: Briefcase, title: t.nav.jobs, to: '/jobs' },
+    { icon: FolderKanban, title: t.nav.freelance, to: '/projects' },
+  ];
+  return (
+    <section className="py-12">
+      <AnimatedSection className="mb-10 text-center">
+        <p className="eyebrow justify-center">{t.home.ecosystemEyebrow}</p>
+        <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-extrabold text-text-primary sm:text-4xl">
+          {t.home.ecosystemTitle}
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl leading-loose text-text-secondary">
+          {t.home.ecosystemBody}
+        </p>
+      </AnimatedSection>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {tiles.map((tile, i) => (
+          <AnimatedSection key={tile.to} delay={i * 0.05}>
+            <Link
+              to={tile.to}
+              className="glass ct-lift flex h-full flex-col items-center gap-3 rounded-3xl px-4 py-8 text-center shadow-soft"
+            >
+              <span className="flex size-12 items-center justify-center rounded-xl bg-brand-green-50 text-brand-green-700 dark:bg-brand-green-400/10 dark:text-brand-green-300">
+                <tile.icon className="size-6" aria-hidden="true" />
+              </span>
+              <span className="text-sm font-bold text-text-primary">{tile.title}</span>
+              <ArrowIcon className="size-4 text-brand-green-600 rtl:-scale-x-100 dark:text-brand-green-300" aria-hidden="true" />
+            </Link>
+          </AnimatedSection>
+        ))}
+      </div>
+    </section>
+  );
+}
+

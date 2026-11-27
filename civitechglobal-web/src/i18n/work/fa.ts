@@ -441,6 +441,11 @@ const fa = {
   serviceQueueTitle: 'صف خدمات',
   feature: 'ویژه کردن',
   unfeature: 'حذف از ویژه',
+  // The freelance desk opening a service for a member or for the company.
+  deskCreateService: 'ساخت خدمت',
+  deskCreateServiceSubtitle: 'برای یک عضو یا برای دفتر خود شرکت خدمت بسازید؛ به‌صورت پیش‌نویس در داشبورد مالک می‌ماند تا کامل و ارسال شود.',
+  deskServiceCreated: 'پیش‌نویس خدمت برای مالک ساخته شد.',
+  deskServiceHint: 'نسخهٔ نمایشی، بسته‌های بیشتر و پرسش‌های متداول را مالک در ویرایشگر خودش کامل می‌کند و سپس برای بررسی ارسال می‌کند.',
 
   // ---- Contracts --------------------------------------------------------------------
   hourlyContract: 'قرارداد ساعتی',

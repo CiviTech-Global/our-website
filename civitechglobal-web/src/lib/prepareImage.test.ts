@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ImageTooLargeError, ImageUnreadableError, MAX_IMAGE_BYTES, prepareImage } from './prepareImage';
 
 /**
@@ -52,6 +52,12 @@ beforeEach(() => {
     };
     return canvas as unknown as HTMLElement;
   }) as typeof document.createElement);
+});
+
+afterEach(() => {
+  // Tests that stub createImageBitmap must not leak it into the Image-path
+  // tests; the beforeEach stubs are re-applied per test anyway.
+  vi.unstubAllGlobals();
 });
 
 const sourceFile = (name = 'photo.jpg') =>
@@ -118,5 +124,61 @@ describe('prepareImage', () => {
     decodeFails = true;
 
     await expect(prepareImage(sourceFile('notreally.png'))).rejects.toBeInstanceOf(ImageUnreadableError);
+  });
+});
+
+describe('prepareImage with createImageBitmap', () => {
+  const fakeBitmap = (width: number, height: number) => ({ width, height, close: vi.fn() });
+
+  it('decodes downscaled, bounding the width and closing the bitmap', async () => {
+    const options: Array<ImageBitmapOptions | undefined> = [];
+    const bitmap = fakeBitmap(1600, 1200);
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn(async (_source: unknown, opts?: ImageBitmapOptions) => {
+        options.push(opts);
+        return bitmap;
+      }),
+    );
+
+    const prepared = await prepareImage(sourceFile());
+
+    expect(options).toEqual([{ resizeWidth: 1600, resizeQuality: 'high' }]);
+    expect(lastCanvas).toEqual({ width: 1600, height: 1200 });
+    expect(prepared.file.type).toBe('image/webp');
+    expect(bitmap.close).toHaveBeenCalled();
+  });
+
+  it('bounds the height too when the first pass comes back portrait', async () => {
+    const options: Array<ImageBitmapOptions | undefined> = [];
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn(async (_source: unknown, opts?: ImageBitmapOptions) => {
+        options.push(opts);
+        return opts?.resizeHeight ? fakeBitmap(1200, 1600) : fakeBitmap(1600, 2133);
+      }),
+    );
+
+    await prepareImage(sourceFile());
+
+    expect(options).toEqual([
+      { resizeWidth: 1600, resizeQuality: 'high' },
+      { resizeHeight: 1600, resizeQuality: 'high' },
+    ]);
+    expect(lastCanvas).toEqual({ width: 1200, height: 1600 });
+  });
+
+  it('falls back to the Image path when the resize options are refused', async () => {
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn(async () => {
+        throw new TypeError('unsupported options');
+      }),
+    );
+
+    // The Image stub from beforeEach reports 4000×3000.
+    await prepareImage(sourceFile());
+
+    expect(lastCanvas).toEqual({ width: 1600, height: 1200 });
   });
 });

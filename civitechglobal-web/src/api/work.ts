@@ -641,6 +641,52 @@ export function useReviewService() {
   });
 }
 
+/** A member the freelance desk may open a service for. */
+export interface ServiceOwnerOption {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string | null;
+}
+
+/** Members by name, email or username, for the desk's owner picker. */
+export function useServiceOwnerSearch(q: string) {
+  const term = q.trim();
+  return useQuery({
+    queryKey: ['work', 'admin', 'service-owners', term],
+    queryFn: async () =>
+      (await api.get<ServiceOwnerOption[]>('/work/admin/service-owners', { params: { q: term } })).data,
+    enabled: term.length >= 2,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * The desk opens a service: for a member (ownerId) or for the staff member.
+ * Draft either way; finishing and submitting stay with the owner.
+ */
+export function useStaffCreateService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      payload: Omit<ServicePayload, 'removeImageIds'> & { ownerId?: string };
+      images: File[];
+      onProgress?: (percent: number) => void;
+    }) => {
+      const form = multipart(input.payload, input.images.map((file) => ['images', file] as [string, File]));
+      const res = await api.upload<{ id: string; code: string; moderationStatus: string }>(
+        'POST',
+        '/work/admin/services',
+        form,
+        { onProgress: input.onProgress },
+      );
+      return res.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['work', 'admin', 'services'] }),
+  });
+}
+
 export function useFeatureService() {
   const qc = useQueryClient();
   return useMutation({

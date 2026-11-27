@@ -30,7 +30,7 @@ export function RatingStars({ avg, count, className }: RatingStarsProps) {
             className={cn(
               'size-3.5',
               index < filled
-                ? 'fill-amber-400 text-amber-400'
+                ? 'fill-brand-amber-400 text-brand-amber-400'
                 : 'fill-transparent text-surface-300 dark:text-surface-200'
             )}
           />

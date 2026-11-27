@@ -134,7 +134,7 @@ export default function PayRequestPage() {
         <AnimatedSection className="mt-6">
           <Card>
             <div className="flex items-center gap-2 text-sm text-text-secondary">
-              <Clock3 className="size-5 text-amber-500" aria-hidden="true" />
+              <Clock3 className="size-5 text-brand-amber-500" aria-hidden="true" />
               {t.pay.pendingBody}
             </div>
           </Card>

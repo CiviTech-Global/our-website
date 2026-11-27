@@ -22,7 +22,7 @@ export function AuthorCard({ profile }: AuthorCardProps) {
       <div className="flex items-center justify-between gap-2">
         <Link
           to={`/profiles/${profile.username}`}
-          className="font-semibold text-text-primary hover:text-brand-600"
+          className="font-semibold text-text-primary hover:text-brand-green-600"
         >
           @{profile.username}
         </Link>
@@ -31,7 +31,7 @@ export function AuthorCard({ profile }: AuthorCardProps) {
       {profile.headline && <p className="text-sm text-text-secondary">{profile.headline}</p>}
       <div className="flex items-center justify-between gap-2">
         <RatingStars avg={profile.ratingAvg} count={profile.ratingCount} />
-        <Link to={`/profiles/${profile.username}`} className="text-xs text-brand-600 hover:underline">
+        <Link to={`/profiles/${profile.username}`} className="text-xs text-brand-green-600 hover:underline">
           {t.market.viewProfile}
         </Link>
       </div>

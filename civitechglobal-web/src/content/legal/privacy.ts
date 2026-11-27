@@ -24,7 +24,7 @@ const en: PrivacyPolicy = {
   title: 'Privacy policy',
   updated: 'Last updated: 30 October 2026',
   intro:
-    'This policy explains what Rayan Tamaddon Jahan Gostar (CiviTech Global) collects when you use this website and our Android app, why, who can see it, and what you can do about it. The website and the app are the same service and follow the same rules.',
+    'This policy explains what Rayan Tamaddon Jahan Gostar collects when you use this website and our Android app, why, who can see it, and what you can do about it. The website and the app are the same service and follow the same rules.',
   sections: [
     {
       heading: 'What we collect',
@@ -104,7 +104,7 @@ const fa: PrivacyPolicy = {
   title: 'سیاست حریم خصوصی',
   updated: 'آخرین به‌روزرسانی: ۸ آبان ۱۴۰۵',
   intro:
-    'این صفحه توضیح می‌دهد که رایان تمدن جهان گستر (CiviTech Global) هنگام استفادهٔ شما از این وب‌سایت و برنامهٔ اندروید ما چه اطلاعاتی گردآوری می‌کند، برای چه، چه کسانی آن را می‌بینند و شما چه اختیاری دارید. وب‌سایت و برنامه یک خدمت‌اند و از یک قاعده پیروی می‌کنند.',
+    'این صفحه توضیح می‌دهد که رایان تمدن جهان گستر هنگام استفادهٔ شما از این وب‌سایت و برنامهٔ اندروید ما چه اطلاعاتی گردآوری می‌کند، برای چه، چه کسانی آن را می‌بینند و شما چه اختیاری دارید. وب‌سایت و برنامه یک خدمت‌اند و از یک قاعده پیروی می‌کنند.',
   sections: [
     {
       heading: 'چه اطلاعاتی گردآوری می‌کنیم',
@@ -184,7 +184,7 @@ const de: PrivacyPolicy = {
   title: 'Datenschutzerklärung',
   updated: 'Zuletzt aktualisiert: 30. Oktober 2026',
   intro:
-    'Diese Erklärung beschreibt, welche Daten Rayan Tamaddon Jahan Gostar (CiviTech Global) erhebt, wenn Sie diese Website und unsere Android-App nutzen, wozu, wer sie sehen kann und welche Möglichkeiten Sie haben. Website und App sind derselbe Dienst und folgen denselben Regeln.',
+    'Diese Erklärung beschreibt, welche Daten Rayan Tamaddon Jahan Gostar erhebt, wenn Sie diese Website und unsere Android-App nutzen, wozu, wer sie sehen kann und welche Möglichkeiten Sie haben. Website und App sind derselbe Dienst und folgen denselben Regeln.',
   sections: [
     {
       heading: 'Welche Daten wir erheben',
@@ -264,7 +264,7 @@ const fr: PrivacyPolicy = {
   title: 'Politique de confidentialité',
   updated: 'Dernière mise à jour : 30 octobre 2026',
   intro:
-    'Cette politique explique ce que Rayan Tamaddon Jahan Gostar (CiviTech Global) collecte lorsque vous utilisez ce site et notre application Android, pourquoi, qui peut le voir et ce que vous pouvez y faire. Le site et l\'application forment un seul service et suivent les mêmes règles.',
+    'Cette politique explique ce que Rayan Tamaddon Jahan Gostar collecte lorsque vous utilisez ce site et notre application Android, pourquoi, qui peut le voir et ce que vous pouvez y faire. Le site et l\'application forment un seul service et suivent les mêmes règles.',
   sections: [
     {
       heading: 'Ce que nous collectons',
@@ -344,7 +344,7 @@ const es: PrivacyPolicy = {
   title: 'Política de privacidad',
   updated: 'Última actualización: 30 de octubre de 2026',
   intro:
-    'Esta política explica qué recoge Rayan Tamaddon Jahan Gostar (CiviTech Global) cuando usa este sitio web y nuestra aplicación para Android, para qué, quién puede verlo y qué puede hacer usted al respecto. El sitio y la aplicación son el mismo servicio y siguen las mismas reglas.',
+    'Esta política explica qué recoge Rayan Tamaddon Jahan Gostar cuando usa este sitio web y nuestra aplicación para Android, para qué, quién puede verlo y qué puede hacer usted al respecto. El sitio y la aplicación son el mismo servicio y siguen las mismas reglas.',
   sections: [
     {
       heading: 'Qué recogemos',
@@ -424,7 +424,7 @@ const tr: PrivacyPolicy = {
   title: 'Gizlilik politikası',
   updated: 'Son güncelleme: 30 Ekim 2026',
   intro:
-    'Bu politika, Rayan Tamaddon Jahan Gostar\'ın (CiviTech Global) bu web sitesini ve Android uygulamamızı kullandığınızda hangi bilgileri topladığını, neden topladığını, kimlerin görebildiğini ve sizin neler yapabileceğinizi açıklar. Web sitesi ve uygulama aynı hizmettir ve aynı kurallara uyar.',
+    'Bu politika, Rayan Tamaddon Jahan Gostar\'ın bu web sitesini ve Android uygulamamızı kullandığınızda hangi bilgileri topladığını, neden topladığını, kimlerin görebildiğini ve sizin neler yapabileceğinizi açıklar. Web sitesi ve uygulama aynı hizmettir ve aynı kurallara uyar.',
   sections: [
     {
       heading: 'Neleri topluyoruz',

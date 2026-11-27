@@ -27,6 +27,7 @@ import { useDocumentTitle } from '@/lib/documentTitle';
 import { useClientList } from '@/lib/clientList';
 import { useListControls } from '@/lib/useListControls';
 import { apiMessage } from '@/lib/apiMessage';
+import { ImageTooLargeError, prepareImage } from '@/lib/prepareImage';
 import { toPersianDigits } from '@/i18n/utils';
 import { formatMoney, moderationVariant } from '@/lib/marketplace';
 import {
@@ -269,11 +270,32 @@ export default function ShopProductsPage() {
       return;
     }
 
-    setUploadState({ phase: 'uploading', percent: 0, file: chosen[0] });
+    // Shrunk before they go: a photo straight off a phone is several times
+    // the server's image ceiling, which would answer the upload with a 413.
+    // Each file is prepared on its own, so one unreadable picture does not
+    // take the rest of the batch down with it.
+    setUploadState({ phase: 'shrinking', percent: 0, file: chosen[0] });
+    const prepared: File[] = [];
+    for (const file of chosen) {
+      try {
+        prepared.push((await prepareImage(file)).file);
+      } catch (error) {
+        showToast(
+          error instanceof ImageTooLargeError ? t.upload.errors.imageTooLarge : t.upload.errors.unreadableImage,
+          'error'
+        );
+      }
+    }
+    if (prepared.length === 0) {
+      setUploadState(IDLE);
+      return;
+    }
+
+    setUploadState({ phase: 'uploading', percent: 0, file: prepared[0] });
     try {
       await addImages.mutateAsync({
         productId: live.id,
-        files: chosen,
+        files: prepared,
         onProgress: (percent) =>
           setUploadState((prev) => ({
             ...prev,
@@ -284,9 +306,9 @@ export default function ShopProductsPage() {
       setUploadState(IDLE);
       showToast(t.trademaster.imagesAdded, 'success');
     } catch (error) {
-      const diagnosis = diagnoseUpload(error, t, chosen[0]);
+      const diagnosis = diagnoseUpload(error, t, prepared[0]);
       logUploadFailure('product-images', diagnosis, error);
-      setUploadState({ phase: 'error', percent: 0, file: chosen[0], error: diagnosis });
+      setUploadState({ phase: 'error', percent: 0, file: prepared[0], error: diagnosis });
       showToast(diagnosis.message, 'error');
     }
   }

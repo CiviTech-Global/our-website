@@ -103,26 +103,26 @@ export default function ProfilePage() {
                   href={profile.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-brand-600 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-brand-green-600 hover:underline"
                 >
                   <Globe className="size-3.5" aria-hidden="true" />
                   {profile.website}
                 </a>
               )}
               {profile.linkedinUrl && (
-                <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-600 hover:underline">
+                <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-green-600 hover:underline">
                   <Linkedin className="size-3.5" aria-hidden="true" />
                   {t.plans.linkedin}
                 </a>
               )}
               {profile.githubUrl && (
-                <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-600 hover:underline">
+                <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-green-600 hover:underline">
                   <Github className="size-3.5" aria-hidden="true" />
                   {t.plans.github}
                 </a>
               )}
               {profile.expertSlug && (
-                <Link to={`/experts/${profile.expertSlug}`} className="inline-flex items-center gap-1.5 text-brand-600 hover:underline">
+                <Link to={`/experts/${profile.expertSlug}`} className="inline-flex items-center gap-1.5 text-brand-green-600 hover:underline">
                   <Presentation className="size-3.5" aria-hidden="true" />
                   {t.plans.navExpert}
                 </Link>
@@ -152,7 +152,7 @@ export default function ProfilePage() {
               <li key={job.code}>
                 <Link
                   to={`/jobs/${job.code}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-surface-200 p-3 transition-colors hover:border-brand-400 dark:border-surface-300"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-surface-200 p-3 transition-colors hover:border-brand-green-400 dark:border-surface-300"
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <Briefcase className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
@@ -169,7 +169,7 @@ export default function ProfilePage() {
               <li key={project.code}>
                 <Link
                   to={`/projects/${project.code}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-surface-200 p-3 transition-colors hover:border-brand-400 dark:border-surface-300"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-surface-200 p-3 transition-colors hover:border-brand-green-400 dark:border-surface-300"
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <FileText className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                   <span className="text-xs text-text-muted">
                     {review.role === 'buyer' ? t.bookshop.reviewRoleBuyer : review.role === 'seller' ? t.bookshop.reviewRoleSeller : t.market[ROLE_LABEL_KEYS[review.role]]}{' '}
                     {reviewListingPath(review) ? (
-                      <Link to={reviewListingPath(review)!} className="text-brand-600 hover:underline">
+                      <Link to={reviewListingPath(review)!} className="text-brand-green-600 hover:underline">
                         {review.listingTitle}
                       </Link>
                     ) : (

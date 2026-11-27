@@ -1,12 +1,14 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ImagePlus, Plus, Save, Send, Trash2, X } from 'lucide-react';
+import { Plus, Save, Send, Trash2, X } from 'lucide-react';
 import { serviceImagePath, useOwnService, useSaveService, useSubmitService, useWorkCategories } from '@/api/work';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { toLatinDigits } from '@/i18n/utils';
 import { apiMessage } from '@/lib/apiMessage';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { ImageTooLargeError, prepareImage } from '@/lib/prepareImage';
+import { useObjectUrl } from '@/lib/useObjectUrl';
 import { languageName } from '@/lib/workFormat';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/app/PageHeader';
@@ -167,6 +169,30 @@ export default function ServiceEditorPage() {
     };
   }
 
+  /**
+   * Shrunk before they are held: a photo straight off a phone is several
+   * megabytes, and the server refuses an image over its ceiling. Each file
+   * is prepared on its own, so one unreadable picture does not take the
+   * rest of the batch down with it.
+   */
+  async function handleImagePick(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.target;
+    const chosen = Array.from(input.files ?? []);
+    // Cleared at once, so picking the same picture again still fires a change.
+    input.value = '';
+
+    const prepared: File[] = [];
+    for (const file of chosen) {
+      try {
+        prepared.push((await prepareImage(file)).file);
+      } catch (error) {
+        showToast(error instanceof ImageTooLargeError ? t.upload.errors.imageTooLarge : t.upload.errors.unreadableImage, 'error');
+      }
+    }
+    if (prepared.length === 0) return;
+    setImages((current) => [...current, ...prepared].slice(0, MAX_IMAGES - keptImages.length));
+  }
+
   async function handleSave(event: FormEvent, andSubmit = false) {
     event.preventDefault();
     try {
@@ -264,6 +290,18 @@ export default function ServiceEditorPage() {
 
       {section(
         t.work.galleryLabel,
+        <>
+        {/* The dashboard's standard, visible file input — a visually-hidden
+            input inside a label tile took focus when the OS picker opened and
+            could leave the app painted blank until reload. */}
+        <Input
+          type="file"
+          accept=".png,.jpg,.jpeg,.webp"
+          multiple
+          aria-label={t.work.galleryLabel}
+          disabled={roomForImages <= 0}
+          onChange={(e) => void handleImagePick(e)}
+        />
         <div className="flex flex-wrap gap-3">
           {keptImages.map((image) => (
             <div key={image.id} className="relative h-24 w-36 overflow-hidden rounded-xl bg-surface-muted">
@@ -279,32 +317,10 @@ export default function ServiceEditorPage() {
             </div>
           ))}
           {images.map((file, index) => (
-            <div key={`${file.name}-${index}`} className="relative h-24 w-36 overflow-hidden rounded-xl bg-surface-muted">
-              <img src={URL.createObjectURL(file)} alt={file.name} className="size-full object-cover" />
-              <button
-                type="button"
-                className="absolute end-1 top-1 rounded-full bg-surface-default/90 p-1"
-                aria-label={t.common.delete}
-                onClick={() => setImages(images.filter((_, i) => i !== index))}
-              >
-                <X className="size-4" aria-hidden="true" />
-              </button>
-            </div>
+            <GalleryThumb key={`${file.name}-${index}`} file={file} onRemove={() => setImages(images.filter((_, i) => i !== index))} />
           ))}
-          {roomForImages > 0 && (
-            <label className="flex h-24 w-36 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border-default text-sm text-text-tertiary hover:border-border-strong">
-              <ImagePlus className="size-5" aria-hidden="true" />
-              <input
-                type="file"
-                accept=".png,.jpg,.jpeg,.webp"
-                multiple
-                className="sr-only"
-                onChange={(e) => setImages([...images, ...Array.from(e.target.files ?? [])].slice(0, MAX_IMAGES - keptImages.length))}
-              />
-              {t.work.galleryLabel.split('(')[0].trim()}
-            </label>
-          )}
-        </div>,
+        </div>
+        </>,
       )}
 
       {section(
@@ -477,6 +493,29 @@ function ListEditor<T>({
           {addLabel}
         </Button>
       )}
+    </div>
+  );
+}
+
+/**
+ * One gallery picture waiting to be sent. The preview URL is made once per
+ * file and revoked with the thumbnail — creating it inline in render leaked
+ * a fresh blob URL on every re-render.
+ */
+function GalleryThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const { t } = useLocale();
+  const src = useObjectUrl(file);
+  return (
+    <div className="relative h-24 w-36 overflow-hidden rounded-xl bg-surface-muted">
+      <img src={src} alt={file.name} className="size-full object-cover" />
+      <button
+        type="button"
+        className="absolute end-1 top-1 rounded-full bg-surface-default/90 p-1"
+        aria-label={t.common.delete}
+        onClick={onRemove}
+      >
+        <X className="size-4" aria-hidden="true" />
+      </button>
     </div>
   );
 }

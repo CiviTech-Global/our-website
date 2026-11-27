@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { BadgeCheck, BookOpen, GitMerge, Pencil } from 'lucide-react';
 import { useBookCategories, useMergeBooks, useStaffCatalog, useUpdateCatalogBook } from '@/api/bookshop';
 import { useToast } from '@/contexts/ToastContext';
@@ -6,6 +6,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { toLatinDigits } from '@/i18n/utils';
 import { apiMessage } from '@/lib/apiMessage';
 import { useDocumentTitle } from '@/lib/documentTitle';
+import { ImageTooLargeError, prepareImage } from '@/lib/prepareImage';
 import { useListControls } from '@/lib/useListControls';
 import { fill, formatNumber } from '@/lib/jobFormat';
 import { languageName, money } from '@/lib/workFormat';
@@ -206,6 +207,28 @@ function EditModal({ row, onClose }: { row: StaffCatalogRow; onClose: () => void
   const [cover, setCover] = useState<File | null>(null);
   const set = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
+  /** Shrunk before it is held, so the server's image ceiling is met before anything is sent. */
+  async function pickCover(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.target;
+    const file = input.files?.[0];
+    if (!file) {
+      setCover(null);
+      return;
+    }
+    try {
+      setCover((await prepareImage(file)).file);
+    } catch (error) {
+      setCover(null);
+      showToast(
+        error instanceof ImageTooLargeError ? t.upload.errors.imageTooLarge : t.upload.errors.unreadableImage,
+        'error'
+      );
+      // Let the same file be picked again after a failure; without this the
+      // input holds the old value and the change event never fires.
+      input.value = '';
+    }
+  }
+
   async function save(event: FormEvent) {
     event.preventDefault();
     const payload = {
@@ -316,7 +339,7 @@ function EditModal({ row, onClose }: { row: StaffCatalogRow; onClose: () => void
             <Input id="e-tags" value={form.tags} onChange={(e) => set('tags', e.target.value)} />
           </FormField>
           <FormField label={t.bookshop.coverLabel} htmlFor="e-cover">
-            <Input id="e-cover" type="file" accept=".png,.jpg,.jpeg,.webp" onChange={(e) => setCover(e.target.files?.[0] ?? null)} />
+            <Input id="e-cover" type="file" accept=".png,.jpg,.jpeg,.webp" onChange={(e) => void pickCover(e)} />
           </FormField>
         </div>
         <FormField label={t.bookshop.descriptionLabel} htmlFor="e-description">

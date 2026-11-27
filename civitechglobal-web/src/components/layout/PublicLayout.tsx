@@ -2,6 +2,7 @@ import { Outlet } from 'react-router';
 import { FuturisticNavbar } from './FuturisticNavbar';
 import { FuturisticFooter } from './FuturisticFooter';
 import { PageHelp } from '@/components/help/PageHelp';
+import { SocialRail } from './SocialRail';
 
 export function PublicLayout() {
   return (
@@ -16,6 +17,9 @@ export function PublicLayout() {
         <PageHelp />
       </main>
       <FuturisticFooter />
+      {/* The social/shortcut rail — renders nothing until a super admin
+          enables it, so public pages are untouched by default. */}
+      <SocialRail />
     </div>
   );
 }

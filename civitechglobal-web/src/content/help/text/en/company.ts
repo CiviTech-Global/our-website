@@ -21,7 +21,7 @@ const company: Record<string, HelpArticleText> = {
     ],
     faqs: [
       ['What exactly does Rayan Tamaddon Jahan Gostar do?', 'Design and development of custom software, web and mobile apps, enterprise and civic-tech platforms, and data analytics and visualisation. Much of our work is open source.'],
-      ['How is CiviTech Global related to Rayan Tamaddon Jahan Gostar?', 'CiviTech Global is the international brand of Rayan Tamaddon Jahan Gostar: one company, one team.'],
+      ['Is RTJG the same as Rayan Tamaddon Jahan Gostar?', 'Yes. RTJG is the short form of Rayan Tamaddon Jahan Gostar, used where space is tight: one company, one team.'],
       ['Do I need to sign up to use the site?', 'Not to request a project, insurance or a consultation, send a CV or contact us. You need an account to post a listing, bid on a project or sell a book.'],
       ['How do I find out where my request has got to?', 'With the tracking code you received when you submitted it, on Track a request. If you were signed in, the code is also saved under My requests.'],
       ['Does the site have a trust seal?', 'Yes. The ENAMAD e-commerce trust seal appears at the bottom of every page.'],
@@ -113,7 +113,7 @@ const company: Record<string, HelpArticleText> = {
       ['Get to know us', 'Links to the team, projects, customers, partners and the blog.'],
     ],
     faqs: [
-      ['What is CiviTech Global?', 'The international brand of Rayan Tamaddon Jahan Gostar.'],
+      ['What is RTJG?', 'The short form of Rayan Tamaddon Jahan Gostar, used where space is tight.'],
       ['Why open source?', 'The code is transparent and auditable, tied to no vendor, its security is tested by a wide community, and it costs less to own.'],
       ['How can I work with you?', 'For a project, use Start a project; for a job, Send your CV; for an internship, Volunteering and internships.'],
     ],
@@ -141,7 +141,7 @@ const company: Record<string, HelpArticleText> = {
     faqs: [
       ['How can I join the team?', 'Send your CV from the Send your CV page. We read it and get in touch whenever a role opens that fits your experience.'],
       ['I am just starting out; is there room for me?', 'Yes. The volunteering and internship programme exists for exactly that: real projects alongside experienced engineers.'],
-      ['How is CiviTech Global related to Rayan Tamaddon Jahan Gostar?', 'CiviTech Global is the international brand of Rayan Tamaddon Jahan Gostar: one company, one team.'],
+      ['Is RTJG the same as Rayan Tamaddon Jahan Gostar?', 'Yes. RTJG is the short form of Rayan Tamaddon Jahan Gostar, used where space is tight: one company, one team.'],
       ['How do I start a project with this team?', 'Submit your request on the Start a project page. You get a tracking code, and a written proposal is prepared for you, free and without obligation.'],
     ],
     related: {

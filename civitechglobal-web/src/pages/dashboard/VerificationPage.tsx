@@ -1,13 +1,14 @@
 import { useUploadFeedback } from '@/lib/useUploadFeedback';
 import { UploadStatus } from '@/components/ui/UploadStatus';
 import { PageHeader } from '@/components/app/PageHeader';
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useOwnVerification, useSubmitVerification } from '@/api/marketplace';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useToast } from '@/contexts/ToastContext';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { verificationVariant } from '@/lib/marketplace';
+import { ImageTooLargeError, prepareImage } from '@/lib/prepareImage';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -86,6 +87,31 @@ export default function VerificationPage() {
 
   const set = (name: keyof typeof fields) => (value: string) =>
     setFields((prev) => ({ ...prev, [name]: value }));
+
+  /**
+   * A photographed document is shrunk to fit the server's image ceiling
+   * before it is held; a PDF is not a picture and goes as it is.
+   */
+  async function pickDocument(index: number, event: ChangeEvent<HTMLInputElement>) {
+    const input = event.target;
+    const file = input.files?.[0] ?? null;
+    let kept = file;
+    if (file && file.type.startsWith('image/')) {
+      try {
+        kept = (await prepareImage(file)).file;
+      } catch (error) {
+        kept = null;
+        showToast(
+          error instanceof ImageTooLargeError ? t.upload.errors.imageTooLarge : t.upload.errors.unreadableImage,
+          'error'
+        );
+        // Let the same file be picked again after a failure; without this the
+        // input holds the old value and the change event never fires.
+        input.value = '';
+      }
+    }
+    setDocuments((prev) => prev.map((row, i) => (i === index ? { ...row, file: kept } : row)));
+  }
 
   const needsCompany = kind === 'COMPANY';
 
@@ -373,13 +399,7 @@ export default function VerificationPage() {
                         id={`file-${doc.key}`}
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) =>
-                          setDocuments((prev) =>
-                            prev.map((row, i) =>
-                              i === index ? { ...row, file: e.target.files?.[0] ?? null } : row
-                            )
-                          )
-                        }
+                        onChange={(e) => void pickDocument(index, e)}
                       />
                     </FormField>
                   </div>

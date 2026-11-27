@@ -1,7 +1,17 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
-import { MapPin, Plus, Store } from 'lucide-react';
-import { useReviewShop, useShopQueue, useShopReview } from '@/api/trademaster';
+import { ArrowLeftRight, MapPin, PackagePlus, Plus, Search, Store, X } from 'lucide-react';
+import {
+  useReviewShop,
+  useShopOwnerSearch,
+  useShopQueue,
+  useShopReview,
+  useTransferShopOwner,
+  type ShopOwnerOption,
+} from '@/api/trademaster';
+import { useToast } from '@/contexts/ToastContext';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { apiMessage } from '@/lib/apiMessage';
 import { useDocumentTitle } from '@/lib/documentTitle';
 import { useListControls } from '@/lib/useListControls';
 import { formatDate } from '@/i18n/utils';
@@ -13,7 +23,9 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Input } from '@/components/ui/Input';
 import { ListToolbar } from '@/components/ui/ListToolbar';
+import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Spinner } from '@/components/ui/Spinner';
 import { StaffImage } from '@/components/ui/StaffImage';
@@ -123,6 +135,7 @@ export default function ShopQueuePage() {
 function ShopCard({ row }: { row: ShopQueueRow }) {
   const { t, locale } = useLocale();
   const review = useReviewShop();
+  const [transferOpen, setTransferOpen] = useState(false);
 
   /**
    * Fetched for every card in the page, as the product queue does.
@@ -234,11 +247,151 @@ function ShopCard({ row }: { row: ShopQueueRow }) {
         </div>
       </div>
 
+      <div className="mt-3 flex flex-wrap gap-2">
+        {/* Stock is listed only in a live shop, as on the seller's own path. */}
+        {row.moderationStatus === 'APPROVED' && (
+          <Link to={`/admin/trademaster/shops/${row.id}/products/new`}>
+            <Button variant="outline" size="sm">
+              <PackagePlus className="size-4" aria-hidden="true" />
+              {t.trademaster.desk.addListing}
+            </Button>
+          </Link>
+        )}
+        <Button variant="outline" size="sm" onClick={() => setTransferOpen(true)}>
+          <ArrowLeftRight className="size-4" aria-hidden="true" />
+          {t.trademaster.desk.transferOwner}
+        </Button>
+      </div>
+
       <ReviewActions
         isPending={review.isPending}
         onReview={(input) => review.mutateAsync({ id: row.id, payload: input })}
       />
+
+      <TransferOwnerModal shop={row} isOpen={transferOpen} onClose={() => setTransferOpen(false)} />
     </Card>
+  );
+}
+
+/**
+ * Handing the shop to a different member.
+ *
+ * The same member search the open-a-shop form uses, and one deliberate press:
+ * the shop and everything in it moves, and both the old and the new owner are
+ * notified. There is no undo on this screen — the way back is the same dialog
+ * on the same shop.
+ */
+function TransferOwnerModal({
+  shop,
+  isOpen,
+  onClose,
+}: {
+  shop: ShopQueueRow;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useLocale();
+  const desk = t.trademaster.desk;
+  const { showToast } = useToast();
+  const transfer = useTransferShopOwner();
+
+  const [owner, setOwner] = useState<ShopOwnerOption | null>(null);
+  const [ownerQuery, setOwnerQuery] = useState('');
+  const owners = useShopOwnerSearch(isOpen && !owner ? ownerQuery : '');
+
+  function close() {
+    setOwner(null);
+    setOwnerQuery('');
+    onClose();
+  }
+
+  async function handleTransfer() {
+    if (!owner) {
+      showToast(desk.ownerRequired, 'error');
+      return;
+    }
+    try {
+      await transfer.mutateAsync({ id: shop.id, ownerId: owner.id });
+      showToast(desk.transferred, 'success');
+      close();
+    } catch (error) {
+      showToast(apiMessage(error, t.common.error), 'error');
+    }
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={close} title={desk.transferOwner}>
+      <div className="flex flex-col gap-3">
+        <p className="text-body text-app-text-2">
+          {desk.transferHint.replace('{shop}', shop.name)}
+        </p>
+
+        {owner ? (
+          <div className="flex items-start justify-between gap-2 rounded-[var(--radius-control)] border border-app-primary bg-app-primary-soft p-3">
+            <div className="min-w-0">
+              <p className="text-label text-app-text-3">{desk.ownerChosen}</p>
+              <p className="truncate font-semibold text-app-text">
+                {owner.firstName} {owner.lastName}
+              </p>
+              <p className="truncate text-label text-app-text-3" dir="ltr">
+                {owner.email}
+              </p>
+            </div>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setOwner(null)} aria-label={desk.ownerChange}>
+              <X className="size-4" aria-hidden="true" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <label className="relative">
+              <span className="sr-only">{desk.ownerSearch}</span>
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-app-icon" aria-hidden="true" />
+              <Input
+                value={ownerQuery}
+                onChange={(e) => setOwnerQuery(e.target.value)}
+                placeholder={desk.ownerSearch}
+                className="ps-9"
+                maxLength={80}
+              />
+            </label>
+            {owners.isFetching && <Spinner label={t.common.loading} />}
+            {owners.data && owners.data.length === 0 && (
+              <p className="text-label text-app-text-3">{desk.ownerNone}</p>
+            )}
+            {owners.data && owners.data.length > 0 && (
+              <ul className="flex max-h-60 flex-col gap-1 overflow-y-auto">
+                {owners.data.map((option) => (
+                  <li key={option.id}>
+                    <button
+                      type="button"
+                      onClick={() => setOwner(option)}
+                      className="flex w-full flex-col rounded-[var(--radius-control)] px-3 py-2 text-start hover:bg-app-hover"
+                    >
+                      <span className="font-medium text-app-text">
+                        {option.firstName} {option.lastName}
+                      </span>
+                      <span className="truncate text-label text-app-text-3" dir="ltr">
+                        {option.email}
+                        {option.username ? ` · @${option.username}` : ''}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="ghost" onClick={close}>
+            {t.common.cancel}
+          </Button>
+          <Button type="button" onClick={() => void handleTransfer()} disabled={!owner} isLoading={transfer.isPending}>
+            {desk.transferConfirm}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 

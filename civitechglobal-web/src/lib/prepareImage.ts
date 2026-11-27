@@ -69,6 +69,43 @@ async function decode(file: File): Promise<HTMLImageElement> {
   }
 }
 
+/**
+ * Decodes `file` already scaled down, where the browser allows it.
+ *
+ * A phone photo is tens of megapixels, and decoding it at full size just to
+ * draw it into a 1600px canvas is what ran low-memory phones out of memory —
+ * the tab was discarded and the form came back blank. createImageBitmap's
+ * resize options scale during decode, so the full-resolution pixels never
+ * exist. Which edge is the long one is not known until after the first pass,
+ * so width is bounded first and a portrait result is then bounded by height
+ * from the already-small bitmap. (Passing both options at once would stretch
+ * the picture to exactly that box, so they go one at a time.)
+ *
+ * Returns null when the browser cannot do this — older Safari has
+ * createImageBitmap but not the resize options — and the caller falls back
+ * to decoding through an Image element. A browser that ignores the options
+ * instead of refusing them hands back a full-size bitmap, which the canvas
+ * draw below still scales correctly.
+ */
+async function decodeDownscaled(file: File): Promise<ImageBitmap | null> {
+  if (typeof createImageBitmap !== 'function') return null;
+  try {
+    let bitmap = await createImageBitmap(file, { resizeWidth: MAX_EDGE, resizeQuality: 'high' });
+    if (bitmap.height > MAX_EDGE) {
+      // Portrait: the long edge is the height, so bound that instead. The
+      // source is already small, so this second pass is cheap.
+      const upright = await createImageBitmap(bitmap, { resizeHeight: MAX_EDGE, resizeQuality: 'high' });
+      bitmap.close();
+      bitmap = upright;
+    }
+    return bitmap;
+  } catch {
+    // Either the options are unsupported or the file is undecodable; the
+    // Image path tells those apart and reports the second properly.
+    return null;
+  }
+}
+
 function toBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
 }
@@ -82,33 +119,44 @@ function toBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob | null
  * pointless anyway, and the honest answer is to ask for a different picture.
  */
 export async function prepareImage(file: File): Promise<PreparedImage> {
-  const image = await decode(file);
-  const { width, height } = scaled(image.naturalWidth, image.naturalHeight);
+  const bitmap = await decodeDownscaled(file);
+  const image: CanvasImageSource = bitmap ?? (await decode(file));
 
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext('2d');
-  if (!context) throw new ImageUnreadableError('no 2d context');
-  // White underneath: a transparent PNG re-encoded to a lossy format would
-  // otherwise get black where the transparency was.
-  context.fillStyle = '#ffffff';
-  context.fillRect(0, 0, width, height);
-  context.drawImage(image, 0, 0, width, height);
+  try {
+    const { width, height } = scaled(
+      bitmap ? bitmap.width : (image as HTMLImageElement).naturalWidth,
+      bitmap ? bitmap.height : (image as HTMLImageElement).naturalHeight,
+    );
 
-  for (const quality of QUALITY_STEPS) {
-    const blob = await toBlob(canvas, quality);
-    if (!blob) throw new ImageUnreadableError('encode failed');
-    if (blob.size <= MAX_IMAGE_BYTES) {
-      const name = `${file.name.replace(/\.[^.]+$/, '') || 'image'}.webp`;
-      return {
-        file: new File([blob], name, { type: 'image/webp' }),
-        originalBytes: file.size,
-        width,
-        height,
-      };
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new ImageUnreadableError('no 2d context');
+    // White underneath: a transparent PNG re-encoded to a lossy format would
+    // otherwise get black where the transparency was.
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+
+    for (const quality of QUALITY_STEPS) {
+      const blob = await toBlob(canvas, quality);
+      if (!blob) throw new ImageUnreadableError('encode failed');
+      if (blob.size <= MAX_IMAGE_BYTES) {
+        const name = `${file.name.replace(/\.[^.]+$/, '') || 'image'}.webp`;
+        return {
+          file: new File([blob], name, { type: 'image/webp' }),
+          originalBytes: file.size,
+          width,
+          height,
+        };
+      }
     }
-  }
 
-  throw new ImageTooLargeError('over budget at the lowest quality');
+    throw new ImageTooLargeError('over budget at the lowest quality');
+  } finally {
+    // The canvas holds the scaled pixels from here on; the bitmap's memory
+    // is the thing this whole path exists to give back early.
+    bitmap?.close();
+  }
 }

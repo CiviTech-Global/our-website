@@ -1,4 +1,5 @@
-import { Star } from 'lucide-react';
+import { Link } from 'react-router';
+import { Plus, Star } from 'lucide-react';
 import { serviceImagePath, useFeatureService, useReviewService, useServiceQueue } from '@/api/work';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -46,7 +47,18 @@ export default function ServiceQueuePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title={t.work.serviceQueueTitle} className="mb-2" />
+      <PageHeader
+        title={t.work.serviceQueueTitle}
+        className="mb-2"
+        actions={
+          <Link to="/admin/services-queue/new">
+            <Button>
+              <Plus className="size-4" aria-hidden="true" />
+              {t.work.deskCreateService}
+            </Button>
+          </Link>
+        }
+      />
       <ListToolbar
         controls={controls}
         searchPlaceholder={t.market.searchQueueProjects}

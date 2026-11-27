@@ -19,6 +19,7 @@ import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { BandCta } from '@/components/marketing/BandCta';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'auth.required'),
@@ -88,11 +89,14 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="page-frame">
-      <header className="mb-10 text-center">
-        <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">{t.contact.title}</h1>
-        <p className="mx-auto mt-3 max-w-xl text-text-secondary">{t.contact.subtitle}</p>
-      </header>
+    <div className="page-frame !pt-0">
+      <AnimatedSection className="hero-canvas bagh-ground -mx-4 mb-10 px-4 pb-14 pt-12 text-center sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <p className="eyebrow justify-center">{t.nav.contact}</p>
+        <h1 className="mt-4 text-4xl font-bold text-text-primary sm:text-5xl">{t.contact.title}</h1>
+        <p className="mx-auto mt-4 max-w-xl text-lg leading-loose text-text-secondary">
+          {t.contact.subtitle}
+        </p>
+      </AnimatedSection>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <AnimatedSection className="lg:col-span-3">
@@ -150,7 +154,7 @@ export default function ContactPage() {
                 more honest than an inbox nobody empties. */}
             <Card>
               <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
-                <Mail className="size-5 text-brand-green-500" aria-hidden="true" />
+                <Mail className="size-5 text-brand-green-500 dark:text-brand-green-400" aria-hidden="true" />
                 {t.contact.infoTitle}
               </h2>
               <p className="text-sm text-text-secondary">{t.contact.infoBody}</p>
@@ -173,6 +177,16 @@ export default function ContactPage() {
         </AnimatedSection>
       </div>
 
+      {/* The page closer: the same deep band every public page ends on. A
+          visitor who came here with a project in mind gets the direct path. */}
+      <BandCta
+        title={t.home.finalCtaTitle}
+        body={t.home.finalCtaBody}
+        primaryLabel={t.nav.startProject}
+        primaryTo="/start-project"
+        secondaryLabel={t.home.consultCta}
+        secondaryTo="/consult"
+      />
     </div>
   );
 }
@@ -192,7 +206,7 @@ function IssuedCodeCard({ code, onAnother }: { code: string; onAnother: () => vo
   return (
     <Card className="border-brand-green-500/40">
       <div className="flex flex-col items-center gap-4 py-6 text-center">
-        <CheckCircle2 className="size-10 text-brand-green-500" aria-hidden="true" />
+        <CheckCircle2 className="size-10 text-brand-green-500 dark:text-brand-green-400" aria-hidden="true" />
         <h2 className="text-lg font-semibold text-text-primary">{t.contact.issuedTitle}</h2>
         <p className="max-w-sm text-sm text-text-secondary">{t.contact.issuedBody}</p>
 
@@ -260,7 +274,7 @@ function TrackTicket() {
   return (
     <Card>
       <h2 className="mb-1 flex items-center gap-2 text-lg font-semibold text-text-primary">
-        <MessageSquare className="size-5 text-brand-green-500" aria-hidden="true" />
+        <MessageSquare className="size-5 text-brand-green-500 dark:text-brand-green-400" aria-hidden="true" />
         {t.contact.trackTitle}
       </h2>
       <p className="mb-3 text-sm text-text-secondary">{t.contact.trackBody}</p>
@@ -313,7 +327,7 @@ function TrackTicket() {
             state.ticket.replies.map((r) => (
               <div
                 key={r.id}
-                className="rounded-lg border border-brand-green-500/40 bg-brand-green-50/40 p-3 dark:bg-brand-green-900/10"
+                className="rounded-lg border border-brand-green-500/40 bg-brand-green-50/40 p-3 dark:bg-brand-green-400/10"
               >
                 <p className="whitespace-pre-line text-sm text-text-primary">{r.body}</p>
                 <p className="mt-2 text-xs text-text-muted">

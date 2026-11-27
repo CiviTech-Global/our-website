@@ -178,7 +178,7 @@ export function MarketplaceShowcase() {
                       )}
                       {listing.authorProfile && (
                         <div className="flex flex-wrap items-center gap-2 text-xs">
-                          <span className="font-medium text-brand-600">
+                          <span className="font-medium text-brand-green-600">
                             @{listing.authorProfile.username}
                           </span>
                           {listing.authorProfile.verified && <VerifiedBadge />}

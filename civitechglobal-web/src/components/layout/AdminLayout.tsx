@@ -21,6 +21,7 @@ import {
   MessageCircle,
   ScrollText,
   Settings,
+  Share2,
   Shield,
   ShieldCheck,
   Sparkles,
@@ -285,12 +286,17 @@ export function AdminLayout() {
           id: 'showcase',
           label: n.staffShowcase,
           hint: n.staffShowcaseHint,
-          items: when(
-            can('showcase'),
-            { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 /> },
-            { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake /> },
-            { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 /> }
-          ),
+          items: [
+            ...when(
+              can('showcase'),
+              { to: '/admin/customers', label: t.showcase.adminCustomersTitle, icon: <Building2 /> },
+              { to: '/admin/partners', label: t.showcase.adminPartnersTitle, icon: <Handshake /> },
+              { to: '/admin/portfolio', label: t.showcase.adminProjectsTitle, icon: <FolderGit2 /> }
+            ),
+            // Super admin only, and not a grantable permission — like the team
+            // page: what the company's own site shows is not delegated.
+            ...when(isSuper, { to: '/admin/social-rail', label: t.socialRail.adminTitle, icon: <Share2 /> }),
+          ],
         },
         {
           id: 'people',

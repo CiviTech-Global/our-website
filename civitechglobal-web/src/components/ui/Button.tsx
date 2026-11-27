@@ -13,8 +13,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const MARKETING_VARIANTS: Record<ButtonVariant, string> = {
+  /* The 10% accent as a fill: lemon with indigo lettering by day, aqua with
+     navy lettering by night — the tokens flip, the classes do not. */
   primary:
-    'bg-brand-green-500 text-white shadow-[0_2px_0_var(--color-brand-green-800)] hover:bg-brand-green-600 dark:bg-brand-green-400 dark:text-surface-50 dark:shadow-[0_2px_0_var(--color-brand-green-800)] dark:hover:bg-brand-green-300',
+    'bg-[var(--color-cta-bg)] text-[var(--color-cta-fg)] shadow-[0_2px_0_var(--color-cta-edge)] hover:brightness-105',
   secondary:
     'border border-border-default bg-surface-200 text-text-primary hover:border-border-strong hover:bg-surface-300',
   outline:

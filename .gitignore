@@ -33,3 +33,5 @@ civitech-deploy/android-signing.vault.yml
 # Private business strategy, roadmap and implementation notes. Kept out of
 # git because this repository is public.
 business-systems/
+
+.design-shots/
