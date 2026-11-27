@@ -240,6 +240,11 @@ export const staffShopSchema = z
 
 export const shopOwnerSearchSchema = z.object({ q: z.string().trim().max(80).default('') });
 
+/** Handing a shop to a different member: the desk's transfer action. */
+export const shopOwnerTransferSchema = z
+  .object({ ownerId: z.string().trim().min(1).max(40) })
+  .strict();
+
 /**
  * Every field optional, but not an empty body.
  *

@@ -115,6 +115,10 @@ describe('the TradeMaster feature gate', () => {
     for (const send of [
       (app: Parameters<typeof request>[0]) => request(app).post('/api/v1/trademaster/admin/shops').send({}),
       (app: Parameters<typeof request>[0]) => request(app).get('/api/v1/trademaster/admin/shop-owners?q=ali'),
+      // Transferring a shop and listing stock in one are the same desk's
+      // powers, and answer an anonymous probe exactly as opening does.
+      (app: Parameters<typeof request>[0]) => request(app).patch('/api/v1/trademaster/admin/shops/s1/owner').send({}),
+      (app: Parameters<typeof request>[0]) => request(app).post('/api/v1/trademaster/admin/shops/s1/products').send({}),
     ]) {
       expect((await send(off)).status).toBe(404);
       expect((await send(on)).status).toBe(401);

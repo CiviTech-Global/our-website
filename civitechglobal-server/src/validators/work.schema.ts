@@ -193,6 +193,17 @@ export const serviceSchema = z.object({
   removeImageIds: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
 });
 
+/**
+ * A service opened by the desk: the seller's fields, plus whose service it is
+ * (absent: the staff member's own).
+ */
+export const staffServiceSchema = serviceSchema.extend({
+  ownerId: z.string().trim().min(1).max(40).optional(),
+});
+
+/** Members the desk may open a service for, by name, email or username. */
+export const serviceOwnerSearchSchema = z.object({ q: trimmed(80).default('') });
+
 export const serviceStateSchema = z.object({ state: z.enum(['ACTIVE', 'PAUSED']) });
 
 export const serviceCatalogSchema = z.object({

@@ -98,16 +98,68 @@ function extraRows(input: ServiceInput) {
 // The seller
 // ---------------------------------------------------------------------------
 
-export async function createService(ownerId: string, input: ServiceInput, images: IncomingFile[]) {
-  await assertVerified(ownerId);
-  await assertMarketplaceAllowed(ownerId);
+/** What every new service must satisfy, whoever is creating it. */
+async function assertServiceDraft(input: ServiceInput, images: IncomingFile[]): Promise<void> {
   assertPackages(input.packages);
   if (input.workCategoryId) await assertWorkCategoryUsable(input.workCategoryId);
   if (images.length > MAX_IMAGES) throw new AppError(`حداکثر ${MAX_IMAGES} تصویر.`, 400);
+}
+
+export async function createService(ownerId: string, input: ServiceInput, images: IncomingFile[]) {
+  await assertVerified(ownerId);
+  await assertMarketplaceAllowed(ownerId);
+  await assertServiceDraft(input, images);
 
   const count = await prisma.service.count({ where: { ownerId } });
   if (count >= MAX_SERVICES) throw new AppError(`حداکثر ${MAX_SERVICES} خدمت می‌توانید داشته باشید.`, 409);
 
+  return insertService(ownerId, input, images);
+}
+
+/**
+ * A service opened by the desk: for a member, or for the staff member's own
+ * use — as a shop is.
+ *
+ * Two of the seller's gates do not apply, for the same reasons the book
+ * market and the shop desk skip them: identity verification — a staff member
+ * opening the listing is the verification, and staff accounts never go
+ * through the member flow — and the per-account ceiling, which exists against
+ * spam, not against the desk. A member whose market access is paused stays
+ * paused: staff can lift that first if they mean to.
+ *
+ * The service is a draft in the owner's dashboard, to be finished and
+ * submitted like any other; the plan's live-listing limit is checked at that
+ * submission, as it is for every seller.
+ */
+export async function createServiceAsStaff(
+  staffId: string,
+  ownerId: string | undefined,
+  input: ServiceInput,
+  images: IncomingFile[],
+) {
+  const owner = await prisma.user.findFirst({
+    where: { id: ownerId ?? staffId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!owner) throw new AppError('این کاربر پیدا نشد.', 404);
+  await assertMarketplaceAllowed(owner.id);
+  await assertServiceDraft(input, images);
+
+  const service = await insertService(owner.id, input, images);
+
+  if (owner.id !== staffId) {
+    notifySafely(owner.id, {
+      type: 'listing.reviewed',
+      title: 'خدمتی برای شما ساخته شد',
+      body: input.title.trim(),
+      link: '/dashboard/services',
+    });
+  }
+  return service;
+}
+
+/** The insert itself, shared by the seller's and the desk's paths. */
+async function insertService(ownerId: string, input: ServiceInput, images: IncomingFile[]) {
   const stored = await storeFiles(images, IMAGE_EXTENSIONS);
   try {
     return await prisma.service.create({

@@ -4013,3 +4013,28 @@ model SmsMessage {
   @@index([phoneHash, createdAt])
   @@map("sms_messages")
 }
+
+
+// ---------------------------------------------------------------------------
+// Site settings
+// ---------------------------------------------------------------------------
+
+/// One runtime setting for the public site, editable from the admin panel
+/// without a deploy — the first being the social/shortcut rail.
+///
+/// Generic on purpose: `key` names the setting and `value` holds whatever
+/// shape that setting needs. The shape is validated by the owning module's
+/// zod schema before anything is written, so this table stays out of the
+/// business of knowing what any one setting means.
+model SiteSetting {
+  /// e.g. "social_rail". Not a cuid: the key IS the identity.
+  key   String @id
+  value Json
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+  /// Who last changed it. A plain id, like SmsMessage.userId: nothing joins
+  /// on it, and the setting must outlive the account that last touched it.
+  updatedById String? @map("updated_by_id")
+
+  @@map("site_settings")
+}

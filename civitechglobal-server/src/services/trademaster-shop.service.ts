@@ -328,6 +328,57 @@ export async function searchShopOwners(q: string) {
   });
 }
 
+/**
+ * Handing a shop to its real owner.
+ *
+ * The desk opens shops for the company and for clients who came to the
+ * counter; when the real owner is ready, the shop moves to them. Only the
+ * owner changes: openedById stays as the record of who opened the shop, the
+ * moderation status and review trail are untouched, and the products stay
+ * where they are — they belong to the shop, not to a person. Both sides are
+ * told, because from the old owner's dashboard the shop simply disappears.
+ */
+export async function transferShopOwnership(shopId: string, ownerId: string) {
+  const shop = await prisma.business.findUnique({
+    where: { id: shopId },
+    select: { id: true, name: true, ownerId: true },
+  });
+  if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
+  if (shop.ownerId === ownerId) {
+    throw new AppError('این کاربر هم‌اکنون مالک فروشگاه است.', 409);
+  }
+
+  const owner = await prisma.user.findFirst({
+    where: { id: ownerId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!owner) throw new AppError('این کاربر پیدا نشد.', 404);
+  // A member whose market access is paused stays paused; staff can lift that
+  // first if they mean to hand a shop to them.
+  await assertMarketplaceAllowed(owner.id);
+
+  const updated = await prisma.business.update({
+    where: { id: shop.id },
+    data: { ownerId: owner.id },
+    select: { id: true, code: true, ownerId: true },
+  });
+
+  notifySafely(owner.id, {
+    type: 'listing.reviewed',
+    title: 'مالکیت یک فروشگاه به شما منتقل شد',
+    body: shop.name,
+    link: '/dashboard/shops',
+  });
+  notifySafely(shop.ownerId, {
+    type: 'listing.reviewed',
+    title: 'مالکیت فروشگاه شما منتقل شد',
+    body: shop.name,
+    link: '/dashboard/shops',
+  });
+
+  return updated;
+}
+
 /** The insert itself, shared by the seller's and the desk's paths. */
 async function insertShop(
   ownerId: string,

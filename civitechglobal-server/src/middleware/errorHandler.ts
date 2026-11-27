@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { MulterError } from 'multer';
 import { ZodError } from 'zod';
 import { logger } from '../config/logger.js';
 import { Sentry } from '../config/sentry.js';
@@ -44,6 +45,11 @@ const CLIENT_ERROR_NAMES = new Set(['JsonWebTokenError', 'TokenExpiredError', 'N
 
 function shouldReportToSentry(err: Error): boolean {
   if (err instanceof ZodError) return false;
+  // A multer limit breach (oversized photo, one file too many) is a client
+  // mistake the MulterError branch below answers as a 4xx — same reason as
+  // the ZodError above, the statusCode just lives in the branch instead of
+  // on the error.
+  if (err instanceof MulterError) return false;
   const statusCode = (err as MaybeHttpError).statusCode;
   if (typeof statusCode === 'number') return statusCode >= 500;
   // These carry no statusCode but are answered below as 401s — an expired
@@ -126,6 +132,33 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
       })),
     });
     return;
+  }
+
+  // Multer enforces the outer upload limits each route sets in its multer()
+  // options and reports a breach by calling next(new MulterError(...)).
+  // MulterError carries no statusCode, so without this branch every breach
+  // fell through to the generic 500 below — an outage in every status-code
+  // dashboard, and a Sentry event, for the same client mistake
+  // assertWithinLimits answers with a polite 413. Size and count breaches
+  // get that same 413; the messages mirror its Persian wording, kept generic
+  // because the error does not say which limit the route set. An unexpected
+  // file field or field key is a malformed form rather than an oversized
+  // one, so that is a 400.
+  if (err instanceof MulterError) {
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        res.status(413).json({ success: false, message: 'حجم فایل بیش از حد مجاز است.' });
+        return;
+      case 'LIMIT_FILE_COUNT':
+      case 'LIMIT_PART_COUNT':
+      case 'LIMIT_FIELD_COUNT':
+        res.status(413).json({ success: false, message: 'تعداد فایل‌های پیوست بیش از حد مجاز است.' });
+        return;
+      default:
+        // LIMIT_UNEXPECTED_FILE, LIMIT_FIELD_KEY and friends.
+        res.status(400).json({ success: false, message: 'درخواست آپلود معتبر نیست.' });
+        return;
+    }
   }
 
   const httpErr = err as MaybeHttpError;

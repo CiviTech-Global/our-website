@@ -25,6 +25,7 @@ import {
   shopUpdateSchema,
   staffShopSchema,
   shopOwnerSearchSchema,
+  shopOwnerTransferSchema,
   productSchema,
   productUpdateSchema,
   productBoardSchema,
@@ -370,6 +371,35 @@ router.post(
     const { ownerId, publish, ...input } = staffShopSchema.parse(payloadOf(req));
     const result = await shops.createShopAsStaff(req.user!.userId, ownerId, input, shopImagesOf(req), { publish });
     successResponse(res, serialize(result), publish ? 'فروشگاه ساخته و منتشر شد.' : 'پیش‌نویس فروشگاه ساخته شد.', 201);
+  })
+);
+
+/**
+ * Handing the shop to a different member — the desk's transfer action, for a
+ * shop that was opened for the company and is ready for its real owner.
+ */
+router.patch(
+  '/admin/shops/:id/owner',
+  ...canReview,
+  wrap(async (req, res) => {
+    const body = shopOwnerTransferSchema.parse(req.body);
+    const result = await shops.transferShopOwnership(param(req, 'id'), body.ownerId);
+    successResponse(res, serialize(result), 'مالکیت فروشگاه منتقل شد.');
+  })
+);
+
+/**
+ * A listing created from the desk, in any shop — the desk builds out the
+ * shops it opened without signing in as the owner. Draft, as on the seller's
+ * path; pictures and publishing stay where they were.
+ */
+router.post(
+  '/admin/shops/:id/products',
+  ...canReview,
+  wrap(async (req, res) => {
+    const input = productSchema.parse(req.body);
+    const result = await products.createProductAsStaff(param(req, 'id'), input);
+    successResponse(res, serialize(result), 'پیش‌نویس کالا ساخته شد.', 201);
   })
 );
 

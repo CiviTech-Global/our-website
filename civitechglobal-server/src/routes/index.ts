@@ -25,6 +25,7 @@ import sitemapRoutes from './sitemap.routes.js';
 import pushRoutes from './push.routes.js';
 import billingRoutes from './billing.routes.js';
 import paymentsRoutes from './payments.routes.js';
+import siteRoutes from './site.routes.js';
 
 const router = Router();
 
@@ -53,6 +54,10 @@ router.use('/contact', contactRoutes);
 
 // The public "تیم ما" page, and the super admin's control over it.
 router.use('/team', teamRoutes);
+
+// Runtime settings of the public site — the social/shortcut rail today.
+// Read publicly by every page, written only by the super admin.
+router.use('/site', siteRoutes);
 
 // The club of experts, and the consultations they give.
 router.use('/consult', consultationRoutes);

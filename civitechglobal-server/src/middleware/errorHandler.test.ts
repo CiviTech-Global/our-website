@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { MulterError } from 'multer';
 import { z, ZodError } from 'zod';
 import type { Request, Response } from 'express';
 import { errorHandler, AppError } from './errorHandler.js';
@@ -67,6 +68,43 @@ describe('errorHandler', () => {
     const res = run(Object.assign(new Error('Record to update not found'), { code: 'P2025' }));
 
     expect(res.statusCode).toBe(404);
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Multer answers its own upload limits by calling next(new MulterError()),
+   * which carries no statusCode — before this branch every oversized photo
+   * came back "Internal server error" and spent a Sentry event, blaming us
+   * for a file the caller can simply shrink.
+   */
+  it('answers a multer file-size limit with 413, and does not report it', () => {
+    captureException.mockClear();
+    const res = run(new MulterError('LIMIT_FILE_SIZE', 'photos'));
+
+    expect(res.statusCode).toBe(413);
+    const body = res.body as { success: boolean; message: string };
+    expect(body.success).toBe(false);
+    expect(body.message).toBe('حجم فایل بیش از حد مجاز است.');
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it('answers multer count limits with 413, and does not report them', () => {
+    captureException.mockClear();
+    for (const code of ['LIMIT_FILE_COUNT', 'LIMIT_PART_COUNT', 'LIMIT_FIELD_COUNT'] as const) {
+      const res = run(new MulterError(code));
+      expect(res.statusCode).toBe(413);
+      expect(res.body).toEqual({ success: false, message: 'تعداد فایل‌های پیوست بیش از حد مجاز است.' });
+    }
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it('answers a malformed multipart form with 400, and does not report it', () => {
+    captureException.mockClear();
+    for (const code of ['LIMIT_UNEXPECTED_FILE', 'LIMIT_FIELD_KEY'] as const) {
+      const res = run(new MulterError(code, 'photos'));
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({ success: false, message: 'درخواست آپلود معتبر نیست.' });
+    }
     expect(captureException).not.toHaveBeenCalled();
   });
 

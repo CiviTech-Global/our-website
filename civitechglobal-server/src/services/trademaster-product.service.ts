@@ -257,21 +257,56 @@ async function uniqueProductSlug(shopId: string, title: string, fallback: string
 // The seller's side
 // ---------------------------------------------------------------------------
 
-export async function createProduct(userId: string, shopId: string, input: ProductInput) {
-  await assertMarketplaceAllowed(userId);
-  const shop = await ownedShop(userId, shopId);
-  await assertMaySell(userId, shop.openedById);
-  assertSanePrice(input.price);
-
-  // A listing cannot be added to a shop that has not been through review.
-  // Allowing it would let somebody build a whole catalogue behind a shop that
-  // is later refused, and have it appear the moment the shop slips through.
+/**
+ * A listing cannot be added to a shop that has not been through review.
+ * Allowing it would let somebody build a whole catalogue behind a shop that
+ * is later refused, and have it appear the moment the shop slips through.
+ */
+function assertShopTakesListings(shop: { moderationStatus: ModerationStatus; state: string }): void {
   if (shop.moderationStatus !== 'APPROVED') {
     throw new AppError('ابتدا باید فروشگاه تأیید شود.', 409);
   }
   if (shop.state !== 'OPEN') {
     throw new AppError('این فروشگاه بسته است.', 409);
   }
+}
+
+export async function createProduct(userId: string, shopId: string, input: ProductInput) {
+  await assertMarketplaceAllowed(userId);
+  const shop = await ownedShop(userId, shopId);
+  await assertMaySell(userId, shop.openedById);
+  assertShopTakesListings(shop);
+
+  return insertProduct(shopId, input);
+}
+
+/**
+ * A listing created from the desk, in any shop.
+ *
+ * The market desk builds out a shop it opened — the company's own counter, or
+ * a client's — without signing in as the owner. The shop's state is checked
+ * exactly as the seller's path checks it; what is skipped is the ownership and
+ * identity checks, which the desk's permission replaces. The listing is still
+ * a draft: pictures and publishing happen from the owner's dashboard, or the
+ * desk reviews it like anything else.
+ */
+export async function createProductAsStaff(shopId: string, input: ProductInput) {
+  const shop = await prisma.business.findFirst({
+    where: { id: shopId },
+    select: { id: true, ownerId: true, moderationStatus: true, state: true },
+  });
+  if (!shop) throw new AppError('این فروشگاه پیدا نشد.', 404);
+  // The listing lands in the owner's shop, so the owner's market access is
+  // what matters — as when the desk opens the shop itself.
+  await assertMarketplaceAllowed(shop.ownerId);
+  assertShopTakesListings(shop);
+
+  return insertProduct(shopId, input);
+}
+
+/** The insert itself, shared by the seller's and the desk's paths. */
+async function insertProduct(shopId: string, input: ProductInput) {
+  assertSanePrice(input.price);
 
   const categoryId = text(input.categoryId) ?? null;
   if (categoryId) await assertCategoryFits(categoryId, input.kind);

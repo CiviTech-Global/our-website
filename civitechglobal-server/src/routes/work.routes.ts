@@ -14,6 +14,7 @@ import { requestedDisposition, serveStoredFile } from '../services/file-response
 import { listWorkCategories } from '../services/work-taxonomy.service.js';
 import * as work from '../services/project-work.service.js';
 import * as catalog from '../services/service-catalog.service.js';
+import { searchShopOwners } from '../services/trademaster-shop.service.js';
 import * as engagement from '../services/engagement.service.js';
 import { reviewSchema } from '../validators/marketplace.schema.js';
 import {
@@ -28,9 +29,11 @@ import {
   projectAlertCreateSchema,
   projectAlertUpdateSchema,
   serviceCatalogSchema,
+  serviceOwnerSearchSchema,
   serviceSchema,
   serviceStateSchema,
   staffServiceListSchema,
+  staffServiceSchema,
   talentQuerySchema,
   timesheetReviewSchema,
   timesheetSchema,
@@ -506,6 +509,33 @@ router.post(
 // ===========================================================================
 
 const canModerateFreelance = [authenticate, requirePermission(PERMISSIONS.freelance)] as const;
+
+/**
+ * Opening a service from the desk: for a member, or for the staff member's own
+ * use. Declared before /admin/services/:id would ever match "owners" — there is
+ * no such GET today, but the shop desk's equivalent sits in the same position.
+ */
+router.get(
+  '/admin/service-owners',
+  ...canModerateFreelance,
+  wrap(async (req, res) => {
+    const { q } = serviceOwnerSearchSchema.parse(req.query);
+    // The same deliberately narrow member search the shop desk uses; the full
+    // user list sits behind a different permission.
+    successResponse(res, serialize(await searchShopOwners(q)));
+  }),
+);
+
+router.post(
+  '/admin/services',
+  ...canModerateFreelance,
+  upload.array('images', 6),
+  wrap(async (req, res) => {
+    const { ownerId, removeImageIds: _none, ...input } = staffServiceSchema.parse(payloadOf(req));
+    const result = await catalog.createServiceAsStaff(req.user!.userId, ownerId, input, imagesOf(req));
+    successResponse(res, serialize(result), 'پیش‌نویس خدمت ساخته شد.', 201);
+  }),
+);
 
 router.get(
   '/admin/services',
