@@ -149,6 +149,19 @@ services:
       MOBILE_PLAY_URL: "{{ mobile_play_url }}"
       MOBILE_APK_ARM64_URL: "{{ mobile_apk_arm64_url }}"
       MOBILE_APK_ARMV7_URL: "{{ mobile_apk_armv7_url }}"
+{% if malware_scanner == 'clamav' %}
+    # Uploads fail CLOSED when clamd is unreachable (see MALWARE_SCANNER
+    # above), and clamd is not listening until its first signature load
+    # finishes — so an api that starts first answers 503 to every upload for
+    # minutes after each deploy. Wait on the healthcheck from the base file
+    # (whose 300s start_period covers that first load) instead of racing it.
+    # Conditional for the same reason compose_profiles is: without the
+    # scanning profile clamav is disabled, and depending on a disabled
+    # service is an error.
+    depends_on:
+      clamav:
+        condition: service_healthy
+{% endif %}
     deploy:
       resources:
         limits:

@@ -187,9 +187,12 @@ phone_token_ttl_seconds: 900
 # `import.meta.env.VITE_API_URL ?? '/api'`, which is origin-relative, so the
 # same image serves correctly from any hostname.
 enable_ssl: true
-# Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
-# request with a 413 before Node ever sees it.
-nginx_client_max_body_size: 2M
+# Must be >= the largest request the API accepts, or nginx rejects a legal
+# upload with a bare 413 before Node ever sees it. The ceiling is the
+# multipart one, not the express.json limit of 1mb: attachment.service.ts
+# accepts 10 MB per file and 25 MB across one request, so this is that 25 MB
+# plus multipart envelope overhead.
+nginx_client_max_body_size: 26M
 
 # Names this site answers to beyond domain_name and domain_alias. The bare IP
 # stays here so the address the site launched on keeps working after the domain

@@ -63,8 +63,9 @@ server {
 {% set server_names = ([domain_name] + ([domain_alias] if domain_alias else []) + nginx_extra_server_names) | unique | list %}
     server_name {{ server_names | join(' ') }};
 
-    # Must be >= the API's express.json limit of 1mb, or nginx rejects a legal
-    # request with a 413 before Node ever sees it.
+    # Must be >= the largest request the API accepts — a 25 MB multipart
+    # upload plus envelope overhead, not the 1mb express.json limit — or nginx
+    # rejects a legal upload with a 413 before Node ever sees it.
     client_max_body_size {{ nginx_client_max_body_size }};
     client_body_timeout 30s;
 
